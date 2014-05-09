@@ -5,41 +5,12 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import survey
+from __future__ import print_function
+
 import first
-import descriptive
 
 import thinkstats2
 import thinkplot
-
-
-def Process(table, name):
-    """Runs various analyses on this table.
-
-    Creates instance variables:
-        weights: sequence of int total weights in ounces
-        weight_pmf: Pmf object
-        weight_cdf: Cdf object
-        oz_pmf: Pmf of just the ounce field
-    """
-    descriptive.Process(table, name)
-
-    table.weights = [p.totalwgt_oz for p in table.records
-                     if p.totalwgt_oz != 'NA']
-    table.weight_pmf = thinkstats2.MakePmfFromList(table.weights, table.name)
-    table.weight_cdf = thinkstats2.MakeCdfFromList(table.weights, table.name)
-
-
-def MakeTables(data_dir='.'):
-    """Reads survey data and returns a tuple of Tables"""
-    table, firsts, others = first.MakeTables(data_dir)
-    pool = descriptive.PoolRecords(firsts, others)
-
-    Process(pool, 'live births')
-    Process(firsts, 'first babies')
-    Process(others, 'others')
-        
-    return pool, firsts, others
 
 
 def Resample(cdf, n=10000):
@@ -60,40 +31,59 @@ def MakeExample():
     thinkplot.Clf()
     thinkplot.Cdf(cdf)
     thinkplot.Save(root='example_cdf',
-                title='CDF',
-                xlabel='x',
-                ylabel='CDF(x)',
-                axis=[0, 6, 0, 1],
-                legend=False)    
+                   title='CDF',
+                   xlabel='x',
+                   ylabel='CDF(x)',
+                   axis=[0, 6, 0, 1],
+                   legend=False)    
 
 
-def MakeFigures(pool, firsts, others):
+def MakeFigures(live, firsts, others):
     """Creates several figures for the book."""
 
+    first_wgt = firsts.totalwgt_lb
+    first_wgt_dropna = first_wgt.dropna()
+    print('Firsts', len(first_wgt), len(first_wgt_dropna))
+    #assert len(first_wgt_dropna) == 4381
+ 
+    other_wgt = others.totalwgt_lb
+    other_wgt_dropna = other_wgt.dropna()
+    print('Others', len(other_wgt), len(other_wgt_dropna))
+    #assert len(other_wgt_dropna) == 4706
+
+    first_pmf = thinkstats2.MakePmfFromList(first_wgt_dropna, name='first')
+    other_pmf = thinkstats2.MakePmfFromList(other_wgt_dropna, name='other')
+
+    first_cdf = thinkstats2.MakeCdfFromPmf(first_pmf)
+    other_cdf = thinkstats2.MakeCdfFromPmf(other_pmf)
+
+    width = 0.4 / 16
+
     # plot PMFs of birth weights for first babies and others
-    thinkplot.Clf()
-    thinkplot.Hist(firsts.weight_pmf, linewidth=0, color='blue')
-    thinkplot.Hist(others.weight_pmf, linewidth=0, color='orange')
+    thinkplot.PrePlot(2)
+    thinkplot.Hist(first_pmf, width=-width)
+    thinkplot.Hist(other_pmf, width=width)
     thinkplot.Save(root='nsfg_birthwgt_pmf',
-                title='Birth weight PMF',
-                xlabel='weight (ounces)',
-                ylabel='probability')
+                   title='Birth weight PMF',
+                   xlabel='weight (pounds)',
+                   ylabel='probability')
 
     # plot CDFs of birth weights for first babies and others
-    thinkplot.Clf()
-    thinkplot.Cdf(firsts.weight_cdf, linewidth=2, color='blue')
-    thinkplot.Cdf(others.weight_cdf, linewidth=2, color='orange')
+    thinkplot.PrePlot(2)
+    thinkplot.Cdf(first_cdf)
+    thinkplot.Cdf(other_cdf)
     thinkplot.Save(root='nsfg_birthwgt_cdf',
-                title='Birth weight CDF',
-                xlabel='weight (ounces)',
-                ylabel='probability',
-                axis=[0, 200, 0, 1])
+                   title='Birth weight CDF',
+                   xlabel='weight (pounds)',
+                   ylabel='probability',
+              #     axis=[0, 200/16.0, 0, 1]
+                   )
+
 
 def main(name, data_dir=''):
+    live, firsts, others = first.MakeFrames()
+    MakeFigures(live, firsts, others)
     MakeExample()
-
-    pool, firsts, others = MakeTables(data_dir)
-    MakeFigures(pool, firsts, others)
     
 
 if __name__ == '__main__':

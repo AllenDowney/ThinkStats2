@@ -4,174 +4,118 @@ by Allen B. Downey, available from greenteapress.com
 Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
+from __future__ import print_function
 
 import math
-import matplotlib.pyplot as pyplot
 
+import first
 import thinkstats2
 import thinkplot
-import survey
-import first
 
 
-def Process(table, name):
-    """Runs various analyses on this table."""
-    first.Process(table)
-    table.name = name
-
-    table.var = thinkstats2.Var(table.lengths, table.mu)
-    table.trim = thinkstats2.TrimmedMean(table.lengths)
-
-    table.hist = thinkstats2.MakeHistFromList(table.lengths, name=name)
-    table.pmf = thinkstats2.MakePmfFromHist(table.hist)
-        
-        
-def PoolRecords(*tables):
-    """Construct a table with records from all tables.
-    
-    Args:
-        constructor: init method used to make the new table
-    
-        tables: any number of tables
-
-    Returns:
-        new table object
-    """
-    pool = survey.Pregnancies()
-    for table in tables:
-        pool.ExtendRecords(table.records)
-    return pool
-
-
-def MakeTables(data_dir='.'):
-    """Reads survey data and returns a tuple of Tables"""
-    table, firsts, others = first.MakeTables(data_dir)
-    pool = PoolRecords(firsts, others)
-
-    Process(pool, 'live births')
-    Process(firsts, 'first babies')
-    Process(others, 'others')
-        
-    return pool, firsts, others
-
-
-def Summarize(pool, firsts, others):
+def Summarize(live, firsts, others):
     """Print various summary statistics."""
-    
-    print
-    print 'Variance'
-    print 'First babies', firsts.var 
-    print 'Others', others.var
 
-    diff_mu = firsts.mu - others.mu
+    mean0 = live.prglngth.mean()
+    mean1 = firsts.prglngth.mean()
+    mean2 = others.prglngth.mean()
 
-    print 'Difference in mean', diff_mu
+    var0 = live.prglngth.var()
+    var1 = firsts.prglngth.var()
+    var2 = others.prglngth.var()
 
-    sigma = math.sqrt(pool.var)
+    print('Mean')
+    print('First babies', mean1)
+    print('Others', mean2)
 
-    print 'Pooled mean', pool.mu
-    print 'Pooled variance', pool.var
-    print 'Pooled sigma', sigma
+    print('Variance')
+    print('First babies', var1)
+    print('Others', var2)
 
-    print firsts.mu, others.mu
-    print firsts.trim, others.trim
-    
-    live_lengths = pool.hist.GetDict().items()
-    live_lengths.sort()
-    print 'Shortest lengths:'
-    for weeks, count in live_lengths[:10]:
-        print weeks, count
-    
-    print 'Longest lengths:'
-    for weeks, count in live_lengths[-10:]:
-        print weeks, count
+    diff_mean = mean1 - mean2
+    print('Difference in mean', diff_mean)
+
+    print('Live mean', mean0)
+    print('Live variance', var0)
+    print('Live sigma', math.sqrt(var0))
+
+    length_hist = thinkstats2.MakeHistFromList(live.prglngth)
+    items = length_hist.Items()
+    items.sort()
+
+    print('Shortest lengths:')
+    for weeks, count in items[:10]:
+        print(weeks, count)
+
+    print('Longest lengths:')
+    for weeks, count in items[-10:]:
+        print(weeks, count)
     
 
 def MakeFigures(firsts, others):
-    """Plot Hists and Pmfs for the pregnancy length."""
+    """Plot Hists and Pmfs for pregnancy length.
 
-    # bar options is a list of option dictionaries to be passed to thinkplot.bar
-    bar_options = [
-        dict(color='0.9'),
-        dict(color='blue')
-        ]
-
-    # make the histogram
-    axis = [23, 46, 0, 2700]
-    Hists([firsts.hist, others.hist])
-    thinkplot.Save(root='nsfg_hist', 
-                title='Histogram',
-                xlabel='weeks',
-                ylabel='frequency',
-                axis=axis)
-
-    # make the PMF
-    axis = [23, 46, 0, 0.6]
-    Hists([firsts.pmf, others.pmf])
-    thinkplot.Save(root='nsfg_pmf',
-                title='PMF',
-                xlabel='weeks',
-                ylabel='probability',
-                axis=axis)
-
-
-def Hists(hists):
-    """Plot two histograms on the same axes.
-
-    hists: list of Hist
+    firsts: DataFrame
+    others: DataFrame
     """
+
+    first_hist = thinkstats2.MakeHistFromList(firsts.prglngth)
+    first_pmf = thinkstats2.MakePmfFromHist(first_hist)
+
+    other_hist = thinkstats2.MakeHistFromList(others.prglngth)
+    other_pmf = thinkstats2.MakePmfFromHist(other_hist)
+
     width = 0.4
-    shifts = [-width, 0.0]
+    first_options = dict(label='first', width=-width)
+    other_options = dict(label='other', width=width)
 
-    option_list = [
-        dict(color='0.9'),
-        dict(color='blue')
-        ]
+    # plot the histograms
+    thinkplot.PrePlot(2)
+    thinkplot.Hist(first_hist, **first_options)
+    thinkplot.Hist(other_hist, **other_options)
 
-    for i, hist in enumerate(hists):
-        xs, fs = hist.Render()
-        xs = Shift(xs, shifts[i])
-        pyplot.bar(xs, fs, label=hist.name, width=width, **option_list[i])
+    axis = [27, 46, 0, 2700]
+    thinkplot.Save(root='nsfg_hist', 
+                   title='Histogram',
+                   xlabel='weeks',
+                   ylabel='frequency',
+                   axis=axis)
 
+    # plot the PMFs
+    thinkplot.PrePlot(2)
+    thinkplot.Hist(first_pmf, **first_options)
+    thinkplot.Hist(other_pmf, **other_options)
 
-def Shift(xs, shift):
-    """Adds a constant to a sequence of values.
+    axis = [27, 46, 0, 0.6]
+    thinkplot.Save(root='nsfg_pmf',
+                   title='PMF',
+                   xlabel='weeks',
+                   ylabel='probability',
+                   axis=axis)
 
-    Args:
-      xs: sequence of values
-
-      shift: value to add
-
-    Returns:
-      sequence of numbers
-    """
-    return [x+shift for x in xs]
-
-
-def MakeDiffFigure(firsts, others):
-    """Plot the difference between the PMFs."""
-
+    # plot the differences in the PMFs
     weeks = range(35, 46)
     diffs = []
     for week in weeks:
-        p1 = firsts.pmf.Prob(week)
-        p2 = others.pmf.Prob(week)
+        p1 = first_pmf.Prob(week)
+        p2 = other_pmf.Prob(week)
         diff = 100 * (p1 - p2)
         diffs.append(diff)
 
-    pyplot.bar(weeks, diffs, align='center')
+    thinkplot.PrePlot(1)
+    thinkplot.Bar(weeks, diffs, align='center')
     thinkplot.Save(root='nsfg_diffs',
-                title='Difference in PMFs',
-                xlabel='weeks',
-                ylabel='100 (PMF$_{first}$ - PMF$_{other}$)',
-                legend=False)
+                   title='Difference in PMFs',
+                   xlabel='weeks',
+                   ylabel='percentage points',
+                   legend=False)
 
 
-def main(name, data_dir=''):
-    pool, firsts, others = MakeTables(data_dir)
-    Summarize(pool, firsts, others)
+def main(script):
+    live, firsts, others = first.MakeFrames()
+    Summarize(live, firsts, others)
+
     MakeFigures(firsts, others)
-    MakeDiffFigure(firsts, others)
 
 
 if __name__ == '__main__':

@@ -5,6 +5,8 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+from __future__ import print_function
+
 import math
 import matplotlib
 import matplotlib.pyplot as pyplot
@@ -147,7 +149,7 @@ def Underride(d, **options):
     if d is None:
         d = {}
 
-    for key, val in options.iteritems():
+    for key, val in options.items():
         d.setdefault(key, val)
 
     return d
@@ -163,7 +165,19 @@ def Figure(**options):
     """Sets options for the current figure."""
     Underride(options, figsize=(6, 8))
     pyplot.figure(**options)
-    
+
+
+def UnderrideColor(options):    
+    color_iter = Brewer.GetIter()
+
+    if color_iter:
+        try:
+            options = Underride(options, color=color_iter.next())
+        except StopIteration:
+            print('Warning: Brewer ran out of colors.')
+            Brewer.ClearIter()
+    return options
+
 
 def Plot(xs, ys, style='', **options):
     """Plots a line.
@@ -174,17 +188,22 @@ def Plot(xs, ys, style='', **options):
       style: style string passed along to pyplot.plot
       options: keyword args passed to pyplot.plot
     """
-    color_iter = Brewer.GetIter()
-
-    if color_iter:
-        try:
-            options = Underride(options, color=color_iter.next())
-        except StopIteration:
-            print 'Warning: Brewer ran out of colors.'
-            Brewer.ClearIter()
-        
+    options = UnderrideColor(options)
     options = Underride(options, linewidth=3, alpha=0.8)
     pyplot.plot(xs, ys, style, **options)
+
+
+def Bar(xs, ys, **options):
+    """Plots a line.
+
+    Args:
+      xs: sequence of x values
+      ys: sequence of y values
+      options: keyword args passed to pyplot.bar
+    """
+    options = UnderrideColor(options)
+    options = Underride(options, linewidth=0, alpha=0.8)
+    pyplot.bar(xs, ys, **options)
 
 
 def Scatter(xs, ys, **options):
@@ -239,18 +258,12 @@ def Hist(hist, **options):
       options: keyword args passed to pyplot.bar
     """
     # find the minimum distance between adjacent values
-    xs, fs = hist.Render()
+    xs, ys = hist.Render()
     width = min(Diff(xs))
-
+    options = Underride(options, width=width)
     if hist.name:
         options = Underride(options, label=hist.name)
-
-    options = Underride(options, 
-                        align='center',
-                        linewidth=0,
-                        width=width)
-
-    pyplot.bar(xs, fs, **options)
+    Bar(xs, ys, **options)
 
 
 def Hists(hists, **options):
@@ -470,7 +483,7 @@ def SaveFormat(root, fmt='eps'):
       fmt: string format
     """
     filename = '%s.%s' % (root, fmt)
-    print 'Writing', filename
+    print('Writing', filename)
     pyplot.savefig(filename, format=fmt, dpi=300)
 
 
@@ -498,7 +511,7 @@ save = Save
 def main():
     color_iter = Brewer.ColorGenerator(7)
     for color in color_iter:
-        print color
+        print(color)
 
 if __name__ == '__main__':
     main()

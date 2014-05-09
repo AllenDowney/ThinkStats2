@@ -5,88 +5,51 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import survey
-import thinkstats2
+from __future__ import print_function
+
+import nsfg
 
 
-def PartitionRecords(table):
-    """Divides records into two lists: first babies and others.
+def MakeFrames():
+    """Reads pregnancy data and partitions first babies and others.
 
-    Only live births are included
-
-    Args:
-        table: pregnancy Table
+    returns: DataFrames (all live births, first babies, others)
     """
-    firsts = survey.Pregnancies()
-    others = survey.Pregnancies()
+    preg = nsfg.ReadFemPreg()
 
-    for p in table.records:
-        # skip non-live births
-        if p.outcome != 1:
-            continue
+    live = preg[preg.outcome == 1]
+    firsts = live[live.birthord == 1]
+    others = live[live.birthord != 1]
 
-        if p.birthord == 1:
-            firsts.AddRecord(p)
-        else:
-            others.AddRecord(p)
+    assert len(live) == 9148
+    assert len(firsts) == 4413
+    assert len(others) == 4735
 
-    return firsts, others
+    return live, firsts, others
 
 
-def Process(table):
-    """Runs analysis on the given table.
-    
-    Args:
-        table: table object
-    """
-    table.lengths = [p.prglength for p in table.records]
-    table.n = len(table.lengths)
-    table.mu = thinkstats2.Mean(table.lengths)
-
-
-def MakeTables(data_dir='.'):
-    """Reads survey data and returns tables for first babies and others."""
-    table = survey.Pregnancies()
-    table.ReadRecords(data_dir)
-
-    firsts, others = PartitionRecords(table)
-    
-    return table, firsts, others
-
-
-def ProcessTables(*tables):
-    """Processes a list of tables
-    
-    Args:
-        tables: gathered argument tuple of Tuples
-    """
-    for table in tables:
-        Process(table)
-        
-        
-def Summarize(data_dir):
+def Summarize():
     """Prints summary statistics for first babies and others.
-    
-    Returns:
-        tuple of Tables
     """
-    table, firsts, others = MakeTables(data_dir)
-    ProcessTables(firsts, others)
-        
-    print 'Number of first babies', firsts.n
-    print 'Number of others', others.n
+    live, firsts, others = MakeFrames()
 
-    mu1, mu2 = firsts.mu, others.mu
+    print(len(live), 'live births')
+    print(len(firsts), 'first live births')
+    print(len(others), 'other live births')
 
-    print 'Mean gestation in weeks:' 
-    print 'First babies', mu1 
-    print 'Others', mu2
+    mean1 = firsts.prglngth.mean()
+    mean2 = others.prglngth.mean()
+
+    print('Mean gestation in weeks:')
+    print('First babies', mean1)
+    print('Others', mean2)
     
-    print 'Difference in days', (mu1 - mu2) * 7.0
+    print('Difference in weeks', mean1 - mean2)
+    print('Difference in days', (mean1 - mean2) * 7.0)
 
 
-def main(name, data_dir='.'):
-    Summarize(data_dir)
+def main(_script):
+    Summarize()
     
 
 if __name__ == '__main__':
