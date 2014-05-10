@@ -5,248 +5,105 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import Cdf
-import cumulative
-import math
-import myplot
+from __future__ import print_function
+
+import first
+
+import thinkstats2
+import thinkplot
+
 import random
-import thinkstats
+import numpy as np
 import matplotlib.pyplot as pyplot
 
 
-def RunTest(root,
-            pool,
-            actual1,
-            actual2, 
-            iters=1000,
-            trim=False,
-            partition=False):
-    """Computes the distributions of delta under H0 and HA.
-    
-    Args:
-        root: string filename root for the plots        
-        pool: sequence of values from the pooled distribution
-        actual1: sequence of values in group 1
-        actual2: sequence of values in group 2
-        iters: how many resamples
-        trim: whether to trim the sequences
-        partition: whether to cross-validate by partitioning the data
-    """
-    if trim:
-        pool.sort()
-        actual1.sort()
-        actual2.sort()
-        pool = thinkstats.Trim(pool)
-        actual1 = thinkstats.Trim(actual1)
-        actual2 = thinkstats.Trim(actual2)
+class HypothesisTest(object):
+    """Represents a hypothesis test."""
 
-    if partition:
-        n = len(actual1)
-        m = len(actual2)
-        actual1, model1 = Partition(actual1, n/2)
-        actual2, model2 = Partition(actual2, m/2)
-        pool = model1 + model2
-    else:
-        model1 = actual1
-        model2 = actual2
+    def __init__(self, data):
+        """Initializes.
 
-    # P(E|H0)
-    peh0 = Test(root + '_deltas_cdf',
-                actual1, actual2, pool, pool,
-                iters, plot=True)
+        data: data in whatever form is relevant
+        """
+        self.data = data
+        self.actual = self.TestStatistic(data)
 
-    # P(E|Ha)
-    peha = Test(root + '_deltas_ha_cdf',
-               actual1, actual2, model1, model2,
-               iters)
+    def TestStatistic(self, data):
+        """Computes the test statistic.
 
-    prior = 0.5
-    pe = prior*peha + (1-prior)*peh0
-    posterior = prior*peha / pe
-    print 'Posterior', posterior
+        data: data in whatever form is relevant        
+        """
+        group1, group2 = data
+        mean1 = thinkstats2.Mean(group1)
+        mean2 = thinkstats2.Mean(group2)
+        test_stat = abs(mean1 - mean2)
+        return test_stat
 
+    def SimulateNull(self):
+        """Simulates the null hypothesis.
 
-def Test(root, actual1, actual2, model1, model2, iters=1000, plot=False):
-    """Estimates p-values based on differences in the mean.
-    
-    Args:
-        root: string filename base for plots        
-        actual1:
-        actual2: sequences of observed values for groups 1 and 2
-        model1: 
-        model2: sequences of values from the hypothetical distributions
-        iters: how many resamples
-        plot: whether to plot the distribution of differences in the mean
-    """
-    n = len(actual1)
-    m = len(actual2)
-    
-    mu1, mu2, delta = DifferenceInMean(actual1, actual2)
-    delta = abs(delta)
+        returns: test statistic based on simulated data
+        """
+        group1, group2 = self.data
+        n, m = len(group1), len(group2)
+        pool = np.hstack((group1, group2))
+        np.random.shuffle(pool)
+        data = pool[:n], pool[n:]
+        test_stat = self.TestStatistic(data)
+        return test_stat
 
-    cdf, pvalue = PValue(model1, model2, n, m, delta, iters)
-    print 'n:', n
-    print 'm:', m
-    print 'mu1', mu1
-    print 'mu2', mu2
-    print 'delta', delta
-    print 'p-value', pvalue
+    def PValue(self, iters=1000):
+        """Computes the sample distribution of the test statistic and p-value.
 
-    if plot:
-        PlotCdf(root, cdf, delta)
-        
-    return pvalue
-    
-    
-def DifferenceInMean(actual1, actual2):
-    """Computes the difference in mean between two groups.
+        iters: number of iterations
 
-    Args:
-        actual1: sequence of float
-        actual2: sequence of float
+        returns: Cdf object, float p-value
+        """
+        self.sample_stats = [self.SimulateNull() for i in range(iters)]
+        self.sample_cdf = thinkstats2.MakeCdfFromList(self.sample_stats)
 
-    Returns:
-        tuple of (mu1, mu2, mu1-mu2)
-    """
-    mu1 = thinkstats.Mean(actual1)
-    mu2 = thinkstats.Mean(actual2)
-    delta = mu1 - mu2
-    return mu1, mu2, delta
+        p_value = 1 - self.sample_cdf.Prob(self.actual)
+        return p_value
+
+    def PlotCdf(self, root):
+        """Draws a Cdf with vertical lines at the observed test stat.
+
+        root: string used to generate filenames
+        """
+        def VertLine(x):
+            """Draws a vertical line at x."""
+            xs = [x, x]
+            ys = [0, 1]
+            thinkplot.Plot(xs, ys, color='0.7')
+
+        VertLine(self.actual)
+
+        thinkplot.PrePlot(1)
+        thinkplot.Cdf(self.sample_cdf)
+
+        thinkplot.Save(root,
+                       title='Permutation test',
+                       xlabel='difference in means (weeks)',
+                       ylabel='CDF',
+                       legend=False) 
 
 
-def PValue(model1, model2, n, m, delta, iters=1000):
-    """Computes the distribution of deltas with the model distributions.
-
-    And the p-value of the observed delta.
-
-    Args:
-        model1: 
-        model2: sequences of values from the hypothetical distributions
-        n: sample size from model1
-        m: sample size from model2
-        delta: the observed difference in the means
-        iters: how many samples to generate
-    """
-    deltas = [Resample(model1, model2, n, m) for i in range(iters)]
-    mean_var = thinkstats.MeanVar(deltas)
-    print '(Mean, Var) of resampled deltas', mean_var
-
-    cdf = Cdf.MakeCdfFromList(deltas)
-
-    # compute the two tail probabilities
-    left = cdf.Prob(-delta)
-    right = 1.0 - cdf.Prob(delta)
-    
-    pvalue = left + right
-    print 'Tails (left, right, total):', left, right, left+right
-
-    return cdf, pvalue
-
-
-def PlotCdf(root, cdf, delta):
-    """Draws a Cdf with vertical lines at the observed delta.
-
-    Args:
-       root: string used to generate filenames
-       cdf: Cdf object
-       delta: float observed difference in means    
-    """
-    def VertLine(x):
-        """Draws a vertical line at x."""
-        xs = [x, x]
-        ys = [0, 1]
-        pyplot.plot(xs, ys, linewidth=2, color='0.7')
-        
-    VertLine(-delta)
-    VertLine(delta)
-
-    xs, ys = cdf.Render()    
-    pyplot.subplots_adjust(bottom=0.11)
-    pyplot.plot(xs, ys, linewidth=2, color='blue')
-    
-    myplot.Save(root,
-                title='Resampled differences',
-                xlabel='difference in means (weeks)',
-                ylabel='CDF(x)',
-                legend=False) 
-    
-
-def Resample(t1, t2, n, m):
-    """Draws samples and computes the difference in mean.
-    
-    Args:
-        t1: sequence of values
-        t2: sequence of values
-        
-        n: size of the sample to draw from t1
-        m: size of the sample to draw from t2
-    """
-    sample1 = SampleWithReplacement(t1, n)
-    sample2 = SampleWithReplacement(t2, m)
-    mu1, mu2, delta = DifferenceInMean(sample1, sample2)
-    return delta
-
-
-def Partition(t, n):
-    """Splits a sequence into two random partitions.
-    
-    Side effect: shuffles t
-    
-    Args:
-        t: sequence of values
-        n: size of the first partition
-
-    Returns:
-        two lists of values
-    """
-    random.shuffle(t)
-    return t[:n], t[n:]
-
-
-def SampleWithReplacement(t, n):
-    """Generates a sample with replacement.
-    
-    Args:
-        t: sequence of values
-        n: size of the sample
-        
-    Returns:
-        list of values
-    """    
-    return [random.choice(t) for i in range(n)]
-
-
-def SampleWithoutReplacement(t, n):
-    """Generates a sample without replacement.
-    
-    Args:
-        t: sequence of values
-        
-        n: size of the sample
-        
-    Returns:
-        list of values
-    """    
-    return random.sample(t, n)
- 
- 
 def main():
-    random.seed(1)
+    thinkstats2.RandomSeed(17)
 
     # get the data
-    pool, firsts, others = cumulative.MakeTables()
-    mean_var = thinkstats.MeanVar(pool.lengths)
-    print '(Mean, Var) of pooled data', mean_var
-    
-    # run the test
-    RunTest('length', 
-            pool.lengths,
-            firsts.lengths, 
-            others.lengths, 
-            iters=1000,
-            trim=False,
-            partition=False)
+    live, firsts, others = first.MakeFrames()
+    mean_var = thinkstats2.MeanVar(live.prglngth)
+    print('(Mean, Var) of prglength for live births', mean_var)
+    data = firsts.prglngth.values, others.prglngth.values
 
+    # run the test
+    ht = HypothesisTest(data)
+    ht.SimulateNull()
+    p_value = ht.PValue(iters=1000)
+    print('p-value =', p_value)
+    ht.PlotCdf(root='hypothesis1')
+    
 
 if __name__ == "__main__":
     main()

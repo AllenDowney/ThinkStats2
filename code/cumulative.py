@@ -12,8 +12,11 @@ import first
 import thinkstats2
 import thinkplot
 
+# TODO: find out what resample was used for or remove it
 
 def Resample(cdf, n=10000):
+    """
+    """
     sample = cdf.Sample(n)
     new_cdf = thinkstats2.MakeCdfFromList(sample, 'resampled')
     thinkplot.Clf()
@@ -39,7 +42,12 @@ def MakeExample():
 
 
 def MakeFigures(live, firsts, others):
-    """Creates several figures for the book."""
+    """Creates several figures for the book.
+
+    live: DataFrame
+    firsts: DataFrame
+    others: DataFrame
+    """
 
     first_wgt = firsts.totalwgt_lb
     first_wgt_dropna = first_wgt.dropna()

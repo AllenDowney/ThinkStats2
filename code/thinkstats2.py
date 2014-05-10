@@ -2264,6 +2264,32 @@ def ReadStataDct(dct_file):
     return Dictionary(variables, colspecs, names)
 
 
+def SampleWithReplacement(t, n):
+    """Generates a sample with replacement.
+    
+    Args:
+        t: sequence of values
+        n: size of the sample
+        
+    Returns:
+        list of values
+    """    
+    return [random.choice(t) for i in range(n)]
+
+
+def SampleWithoutReplacement(t, n):
+    """Generates a sample without replacement.
+    
+    Args:
+        t: sequence of values
+        n: size of the sample
+        
+    Returns:
+        list of values
+    """    
+    return random.sample(t, n)
+ 
+
 def main():
     pass
     
