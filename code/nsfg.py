@@ -21,12 +21,10 @@ def CleanPregFrame(preg):
     # birthweight is stored in two columns, lbs and oz.
     # convert to a single column in lb
     
-    args = ([51, 97, 98, 99], 'NaN')
+    args = ([51, 97, 98, 99], float('NaN'))
     preg.birthwgt_lb.replace(*args, inplace=True)
     preg.birthwgt_oz.replace(*args, inplace=True)
     preg['totalwgt_lb'] = preg.birthwgt_lb + preg.birthwgt_oz / 16.0    
-
-    print(preg.birthwgt_lb.value_counts())
 
     # due to a bug in ReadStataDct, the last variable gets clipped;
     # so for now set it to NA

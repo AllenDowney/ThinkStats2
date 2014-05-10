@@ -172,7 +172,7 @@ def UnderrideColor(options):
 
     if color_iter:
         try:
-            options = Underride(options, color=color_iter.next())
+            options = Underride(options, color=next(color_iter))
         except StopIteration:
             print('Warning: Brewer ran out of colors.')
             Brewer.ClearIter()

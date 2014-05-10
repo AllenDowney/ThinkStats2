@@ -331,12 +331,12 @@ class _DictWrapper(object):
 
     def Total(self):
         """Returns the total of the frequencies/probabilities in the map."""
-        total = sum(self.d.itervalues())
+        total = sum(self.d.values())
         return total
 
     def MaxLike(self):
         """Returns the largest frequency/probability in the map."""
-        return max(self.d.itervalues())
+        return max(self.d.values())
 
 
 class Hist(_DictWrapper):

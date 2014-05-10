@@ -40,7 +40,7 @@ def Summarize(live, firsts, others):
     print('Live sigma', math.sqrt(var0))
 
     length_hist = thinkstats2.MakeHistFromList(live.prglngth)
-    items = length_hist.Items()
+    items = list(length_hist.Items())
     items.sort()
 
     print('Shortest lengths:')
