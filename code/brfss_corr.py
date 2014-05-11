@@ -13,7 +13,6 @@ import sys
 
 import brfss
 import brfss_scatter
-import correlation
 
 
 """
@@ -46,21 +45,21 @@ def ComputeCorrelations():
     print 'Number of records:', len(resp.records)
 
     heights, weights = resp.GetHeightWeight()
-    pearson = correlation.Corr(heights, weights)
+    pearson = thinkstats2.Corr(heights, weights)
     print 'Pearson correlation (weights):', pearson
 
     log_weights = Log(weights)
-    pearson = correlation.Corr(heights, log_weights)
+    pearson = thinkstats2.Corr(heights, log_weights)
     print 'Pearson correlation (log weights):', pearson
 
-    spearman = correlation.SpearmanCorr(heights, weights)
+    spearman = thinkstats2.SpearmanCorr(heights, weights)
     print 'Spearman correlation (weights):', spearman
 
-    inter, slope = correlation.LeastSquares(heights, log_weights)
+    inter, slope = thinkstats2.LeastSquares(heights, log_weights)
     print 'Least squares inter, slope (log weights):', inter, slope
 
-    res = correlation.Residuals(heights, log_weights, inter, slope)
-    R2 = correlation.CoefDetermination(log_weights, res)
+    res = thinkstats2.Residuals(heights, log_weights, inter, slope)
+    R2 = thinkstats2.CoefDetermination(log_weights, res)
     print 'Coefficient of determination:', R2
     print 'sqrt(R^2):', math.sqrt(R2)
 
