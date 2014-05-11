@@ -27,30 +27,9 @@ class HypothesisTest(object):
         """
         self.data = data
         self.actual = self.TestStatistic(data)
-
-    def TestStatistic(self, data):
-        """Computes the test statistic.
-
-        data: data in whatever form is relevant        
-        """
-        group1, group2 = data
-        mean1 = thinkstats2.Mean(group1)
-        mean2 = thinkstats2.Mean(group2)
-        test_stat = abs(mean1 - mean2)
-        return test_stat
-
-    def SimulateNull(self):
-        """Simulates the null hypothesis.
-
-        returns: test statistic based on simulated data
-        """
-        group1, group2 = self.data
-        n, m = len(group1), len(group2)
-        pool = np.hstack((group1, group2))
-        np.random.shuffle(pool)
-        data = pool[:n], pool[n:]
-        test_stat = self.TestStatistic(data)
-        return test_stat
+        self.MakeModel()
+        self.sample_stats = None
+        self.sample_cdf = None
 
     def PValue(self, iters=1000):
         """Computes the sample distribution of the test statistic and p-value.
@@ -59,16 +38,15 @@ class HypothesisTest(object):
 
         returns: Cdf object, float p-value
         """
-        self.sample_stats = [self.SimulateNull() for i in range(iters)]
+        self.sample_stats = [self.TestStatistic(self.RunModel()) 
+                             for i in range(iters)]
         self.sample_cdf = thinkstats2.MakeCdfFromList(self.sample_stats)
 
         p_value = 1 - self.sample_cdf.Prob(self.actual)
         return p_value
 
-    def PlotCdf(self, root):
+    def PlotCdf(self):
         """Draws a Cdf with vertical lines at the observed test stat.
-
-        root: string used to generate filenames
         """
         def VertLine(x):
             """Draws a vertical line at x."""
@@ -81,11 +59,76 @@ class HypothesisTest(object):
         thinkplot.PrePlot(1)
         thinkplot.Cdf(self.sample_cdf)
 
-        thinkplot.Save(root,
-                       title='Permutation test',
-                       xlabel='difference in means (weeks)',
-                       ylabel='CDF',
-                       legend=False) 
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: data in whatever form is relevant        
+        """
+        raise thinkstats2.UnimplementedMethodException()
+
+    def MakeModel(self):
+        """Build a model of the null hypothesis.
+        """
+        raise thinkstats2.UnimplementedMethodException()
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        raise thinkstats2.UnimplementedMethodException()
+
+
+class DiffMeansPermute(HypothesisTest):
+
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: data in whatever form is relevant        
+        """
+        group1, group2 = data
+        test_stat = abs(group1.mean() - group2.mean())
+        return test_stat
+
+    def MakeModel(self):
+        """Build a model of the null hypothesis.
+        """
+        group1, group2 = self.data
+        self.n, self.m = len(group1), len(group2)
+        self.pool = np.hstack((group1, group2))
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        np.random.shuffle(self.pool)
+        data = self.pool[:self.n], self.pool[self.n:]
+        return data
+
+
+class DiffStdPermute(DiffMeansPermute):
+
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: data in whatever form is relevant        
+        """
+        group1, group2 = data
+        test_stat = abs(group1.std() - group2.std())
+        return test_stat
+
+
+class DiffMeansResample(DiffMeansPermute):
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        group1 = np.random.choice(self.pool, self.n, replace=True)
+        group2 = np.random.choice(self.pool, self.m, replace=True)
+        return group1, group2
 
 
 def main():
@@ -97,12 +140,41 @@ def main():
     print('(Mean, Var) of prglength for live births', mean_var)
     data = firsts.prglngth.values, others.prglngth.values
 
-    # run the test
-    ht = HypothesisTest(data)
-    ht.SimulateNull()
+    # test the difference in means
+    ht = DiffMeansPermute(data)
     p_value = ht.PValue(iters=1000)
     print('p-value =', p_value)
-    ht.PlotCdf(root='hypothesis1')
+
+    ht.PlotCdf()
+    thinkplot.Save(root='hypothesis1',
+                   title='Permutation test',
+                   xlabel='difference in means (weeks)',
+                   ylabel='CDF',
+                   legend=False) 
+    
+    # test the difference in std
+    ht = DiffStdPermute(data)
+    p_value = ht.PValue(iters=1000)
+    print('p-value =', p_value)
+
+    ht.PlotCdf()
+    thinkplot.Save(root='hypothesis2',
+                   title='Permutation test',
+                   xlabel='difference in std (weeks)',
+                   ylabel='CDF',
+                   legend=False) 
+    
+    # test the difference in means by resampling
+    ht = DiffStdPermute(data)
+    p_value = ht.PValue(iters=1000)
+    print('p-value =', p_value)
+
+    ht.PlotCdf()
+    thinkplot.Save(root='hypothesis3',
+                   title='Resampling test',
+                   xlabel='difference in means (weeks)',
+                   ylabel='CDF',
+                   legend=False) 
     
 
 if __name__ == "__main__":
