@@ -218,6 +218,17 @@ def Scatter(xs, ys, **options):
     pyplot.scatter(xs, ys, **options)
 
 
+def HexBin(xs, ys, **options):
+    """Makes a scatter plot.
+
+    xs: x values
+    ys: y values
+    options: options passed to pyplot.scatter
+    """
+    options = Underride(options, cmap=matplotlib.cm.Blues)
+    pyplot.hexbin(xs, ys, **options)
+
+
 def Pmf(pmf, **options):
     """Plots a Pmf or Hist as a line.
 

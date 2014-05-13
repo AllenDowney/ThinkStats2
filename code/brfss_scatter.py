@@ -5,83 +5,104 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import math
-import matplotlib
-import matplotlib.pyplot as pyplot
-import random
+from __future__ import print_function
+
 import sys
 
+import numpy as np
+
 import brfss
-import myplot
+import thinkplot
+import thinkstats2
+
+def GetHeightWeight(df, hjitter=0.0, wjitter=0.0):
+    """Get sequences of height and weight.
+
+    df: DataFrame with htm3 and wtkg2
+    hjitter: float magnitude of random noise added to heights
+    wjitter: float magnitude of random noise added to weights
+
+    returns: tuple of sequences (heights, weights)
+    """
+    heights = df.htm3
+    if hjitter:
+        heights += np.random.uniform(-hjitter, hjitter, heights.size)
+
+    weights = df.wtkg2
+    if wjitter:
+        weights += np.random.uniform(-hjitter, hjitter, weights.size)
+
+    return heights, weights
 
 
-class Respondents(brfss.Respondents):
-    """Represents the respondent table."""
+def ScatterPlot(root, heights, weights, alpha=1.0):
+    """Make a scatter plot and save it.
 
-    def GetHeightWeight(self, jitter=0.0):
-        """Get sequences of height and weight.
+    root: string filename root
+    heights: sequence of float
+    weights: sequence of float
+    alpha: float
+    """
+    thinkplot.Scatter(heights, weights, alpha=alpha)
+    thinkplot.Save(root=root,
+                   xlabel='Height (cm)',
+                   ylabel='Weight (kg)',
+                   axis=[140, 210, 20, 200],
+                   legend=False)
 
-        Args:
-            jitter: float magnitude of random noise added to heights
 
-        Returns:
-            tuple of sequences (heights, weights)
-        """
-        heights = []
-        weights = []
-        for r in self.records:
-            if r.wtkg2 == 'NA' or r.htm3 == 'NA':
-                continue
-            
-            height = r.htm3 + random.uniform(-jitter, jitter)
-            
-            heights.append(height)
-            weights.append(r.wtkg2)
-            
-        return heights, weights
+def HexBin(root, heights, weights, bins=None):
+    """Make a hexbin plot and save it.
 
-    def ScatterPlot(self, root, heights, weights, alpha=1.0):
-        pyplot.scatter(heights, weights, alpha=alpha, edgecolors='none')
-        myplot.Save(root=root,
-                    xlabel='Height (cm)',
-                    ylabel='Weight (kg)',
-                    axis=[140, 210, 20, 200],
-                    legend=False)
-        
-    def HexBin(self, root, heights, weights, cmap=matplotlib.cm.Blues):
-        pyplot.hexbin(heights, weights, cmap=cmap)
-        myplot.Save(root=root,
-                    xlabel='Height (cm)',
-                    ylabel='Weight (kg)',
-                    axis=[140, 210, 20, 200],
-                    legend=False)
+    root: string filename root
+    heights: sequence of float
+    weights: sequence of float
+    bins: 'log' or None for linear
+    """
+    thinkplot.HexBin(heights, weights, bins=bins)
+    thinkplot.Save(root=root,
+                xlabel='Height (cm)',
+                ylabel='Weight (kg)',
+                axis=[140, 210, 20, 200],
+                legend=False)
+
+
+def SampleRows(df, nrows, replace=False):
+    """Choose a sample of rows from a DataFrame.
+
+    df: DataFrame
+    nrows: number of rows
+    replace: whether to sample with replacement
+
+    returns: DataFrame
+    """
+    indices = range(len(df))
+    sample_indices = np.random.choice(indices, nrows, replace=False)
+    sample = df.iloc[sample_indices]
+    return sample
 
 
 def MakeFigures():
-    resp = Respondents()
-    resp.ReadRecords(n=1000)
+    """Make scatterplots.
+    """
+    thinkstats2.RandomSeed(17)
+    
+    df = brfss.ReadBrfss(nrows=None)
+    sample = SampleRows(df, 5000, replace=False)
 
-    heights, weights = resp.GetHeightWeight(jitter=0.0)
-    pyplot.clf()
-    resp.ScatterPlot('scatter1', heights, weights)
+    heights, weights = GetHeightWeight(sample)
+    ScatterPlot('brfss_scatter1', heights, weights)
 
-    heights, weights = resp.GetHeightWeight(jitter=1.3)
-    pyplot.clf()
-    resp.ScatterPlot('scatter2', heights, weights)
+    heights, weights = GetHeightWeight(sample, hjitter=1.5, wjitter=1.1)
+    ScatterPlot('brfss_scatter2', heights, weights)
+    ScatterPlot('brfss_scatter3', heights, weights, alpha=0.1)
 
-    pyplot.clf()
-    resp.ScatterPlot('scatter3', heights, weights, alpha=0.2)
-
-    # read more respondents for the hexplot
-    resp = Respondents()
-    resp.ReadRecords(n=10000)
-    heights, weights = resp.GetHeightWeight(jitter=1.3)
-
-    pyplot.clf()
-    resp.HexBin('scatter4', heights, weights)
+    # make a hexbin of all records
+    heights, weights = GetHeightWeight(df, hjitter=1.3, wjitter=1.1)
+    HexBin('brfss_scatter4', heights, weights)
 
 
-def main(name):
+def main(script):
     MakeFigures()
 
 

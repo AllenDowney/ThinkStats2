@@ -24,23 +24,31 @@ def Summarize(df, column, title):
         ]
 
     print(title)
-    print('key\tn\tmean\tvar\tsigma\tcv')
+    print('key\tn\tmean\tvar\tstd\tcv')
     for key, series in items:
-        mu, var = series.mean(), series.var()
-        sigma = math.sqrt(var)
-        cv = sigma / mu
-        t = key, len(series), mu, var, sigma, cv
+        mean, var = series.mean(), series.var()
+        std = math.sqrt(var)
+        cv = std / mean
+        t = key, len(series), mean, var, std, cv
         print('%s\t%d\t%4.2f\t%4.2f\t%4.2f\t%4.4f' % t)
 
 
 def CleanBrfssFrame(df):
     """Recodes BRFSS variables.
+
+    df: DataFrame
     """
+    # clean age
     df.age.replace([7, 9], float('NaN'), inplace=True)
+
+    # clean height
     df.htm3.replace([999], float('NaN'), inplace=True)
+
+    # clean weight
     df.wtkg2.replace([99999], float('NaN'), inplace=True)
     df.wtkg2 /= 100.0
 
+    # clean weight a year ago
     df.wtyrago.replace([7777, 9999], float('NaN'), inplace=True)
     df['wtyrago'] = df.wtyrago.apply(lambda x: x/2.2 if x < 9000 else x-9000)
 
@@ -49,6 +57,8 @@ def ReadBrfss(filename='CDBRFS08.ASC.gz', compression='gzip', nrows=None):
     """Reads the BRFSS data.
 
     filename: string
+    compression: string
+    nrows: int number of rows to read, or None for all
 
     returns: DataFrame
     """
@@ -86,6 +96,7 @@ def main(script, nrows=1000):
         assert(df.sex.value_counts()[2] == 668)
         assert(df.wtkg2.value_counts()[90.91] == 49)
         assert(df.wtyrago.value_counts()[160/2.2] == 49)
+        assert(df.htm3.value_counts()[163] == 103)
         print('%s: All tests passed.' % script)
 
 
