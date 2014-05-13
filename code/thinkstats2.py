@@ -2192,30 +2192,39 @@ def PearsonMedianSkewness(xs):
     return gp
 
 
-class Dictionary(object):
+class FixedWidthVariables(object):
     """Represents a set of variables in a fixed width file."""
 
-    def __init__(self, variables, colspecs, names):
+    def __init__(self, variables, index_base=0):
         """Initializes.
 
-        variables: list of (start, vtype, name, fstring, long_desc) tuples
+        variables: DataFrame
+        index_base: are the indices 0 or 1 based?
+
+        Attributes:
         colspecs: list of (start, end) index tuples
         names: list of string variable names
         """
         self.variables = variables
-        self.colspecs = colspecs
-        self.names = names
 
-    def ReadFixedWidth(self, dat_file, compression='gzip'):
+        # note: by default, subtract 1 from colspecs
+        self.colspecs = variables[['start', 'end']] - index_base
+
+        # convert colspecs to a list of pair of int
+        self.colspecs = self.colspecs.astype(np.int).values.tolist()
+        self.names = variables['name']
+
+    def ReadFixedWidth(self, filename, compression='gzip', nrows=None):
         """Reads a fixed width ASCII file.
 
-        dat_file: string filename
+        filename: string filename
         compression: string
 
         returns: DataFrame
         """
-        frame = pd.read_fwf(dat_file,
+        frame = pd.read_fwf(filename,
                             compression=compression,
+                            nrows=nrows,
                             colspecs=self.colspecs, 
                             names=self.names,
                             header=None)
@@ -2225,11 +2234,11 @@ class Dictionary(object):
 def ReadStataDct(dct_file):
     """Reads a Stata dictionary file.
 
-    returns: Dictionary object
+    returns: FixedWidthVariables object
     """
     type_map = dict(byte=int, int=int, float=float, double=float)
 
-    variables = []
+    var_info = []
     for line in open(dct_file):
         match = re.search( r'_column\(([^)]*)\)', line)
         if match:
@@ -2241,54 +2250,18 @@ def ReadStataDct(dct_file):
             else:
                 vtype = type_map[vtype]
             long_desc = ' '.join(t[4:]).strip('"')
-            variables.append((start, vtype, name, fstring, long_desc))
+            var_info.append((start, vtype, name, fstring, long_desc))
             
-    colspecs = []
-    names = []
-    for i in range(len(variables)):
-        start, vtype, name, fstring, long_desc = variables[i]
-        names.append(name)
-        try:
-            end = variables[i+1][0]
-            colspecs.append((start-1, end-1))
-        except IndexError:
-            # Note: this won't work properly until Pandas Issue 7079 is
-            # resolved so pd.read_fwf accepts None as a colspec
+    columns = ['start', 'type', 'name', 'fstring', 'desc']
+    variables = pd.DataFrame(var_info, columns=columns)
 
-            # In the meantime, it lops one character off the end of the
-            # last field.
+    # fill in the end column by shifting the start column
+    variables['end'] = variables.start.shift(-1)
+    variables['end'][len(variables)-1] = 0
 
-            # TODO: replace -1 with None (see DocString above)
-            colspecs.append((start-1, -1))
+    dct = FixedWidthVariables(variables, index_base=1)
+    return dct
 
-    return Dictionary(variables, colspecs, names)
-
-
-def SampleWithReplacement(t, n):
-    """Generates a sample with replacement.
-    
-    Args:
-        t: sequence of values
-        n: size of the sample
-        
-    Returns:
-        list of values
-    """    
-    return [random.choice(t) for i in range(n)]
-
-
-def SampleWithoutReplacement(t, n):
-    """Generates a sample without replacement.
-    
-    Args:
-        t: sequence of values
-        n: size of the sample
-        
-    Returns:
-        list of values
-    """    
-    return random.sample(t, n)
- 
 
 def main():
     pass

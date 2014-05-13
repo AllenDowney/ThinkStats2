@@ -19,8 +19,7 @@ def CleanPregFrame(preg):
     preg.agepreg /= 100.0
 
     # birthweight is stored in two columns, lbs and oz.
-    # convert to a single column in lb
-    
+    # convert to a single column in lb    
     args = ([51, 97, 98, 99], float('NaN'))
     preg.birthwgt_lb.replace(*args, inplace=True)
     preg.birthwgt_oz.replace(*args, inplace=True)

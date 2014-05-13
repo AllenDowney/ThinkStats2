@@ -5,140 +5,89 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+from __future__ import print_function
+
 import math
 import sys
-import survey
-import thinkstats
+import pandas as pd
+
+import thinkstats2
 
 
-class Respondents(survey.Table):
-    """Represents the respondent table."""
+def Summarize(df, column, title):
+    """Print summary statistics male, female and all."""
 
-    def ReadRecords(self, data_dir='.', n=None):
-        filename = self.GetFilename()
-        self.ReadFile(data_dir,
-                      filename,
-                      self.GetFields(), 
-                      survey.Respondent,
-                      n)
-        self.Recode()
+    items = [
+        ('all', df[column]),
+        ('male', df[df.sex == 1][column]),
+        ('female', df[df.sex == 2][column]),
+        ]
 
-    def GetFilename(self):
-        """Get the name of the data file.
-
-        This function can be overridden by child classes.
-
-        The BRFSS data is available from thinkstats.com/CDBRFS08.ASC.gz
-
-        """
-        return 'CDBRFS08.ASC.gz'
-
-    def GetFields(self):
-        """Returns a tuple specifying the fields to extract.
-        
-        BRFSS codebook 
-        http://www.cdc.gov/brfss/technical_infodata/surveydata/2008.htm
-
-        The elements of the tuple are field, start, end, case.
-
-                field is the name of the variable
-                start and end are the indices as specified in the NSFG docs
-                case is a callable that converts the result to int, float, etc.
-        """
-        return [
-            ('age', 101, 102, int),
-            ('weight2', 119, 122, int),
-            ('wtyrago', 127, 130, int),
-            ('wtkg2', 1254, 1258, int),
-            ('htm3', 1251, 1253, int),
-            ('sex', 143, 143, int),
-            ]
-
-    def Recode(self):
-        """Recode variables that need cleaning."""
-
-        def CleanWeight(weight):
-            if weight in [7777, 9999]:
-                return 'NA'
-            elif weight < 1000:
-                return weight / 2.2
-            elif 9000 < weight < 9999:
-                return weight - 9000
-            else:
-                return weight
-
-        for rec in self.records:
-            # recode wtkg2
-            if rec.wtkg2 in ['NA', 99999]:
-                rec.wtkg2 = 'NA'
-            else:
-                rec.wtkg2 /= 100.0
-
-            # recode wtyrago
-            rec.weight2 = CleanWeight(rec.weight2)
-            rec.wtyrago = CleanWeight(rec.wtyrago)
-
-            # recode htm3
-            if rec.htm3 == 999:
-                rec.htm3 = 'NA'
-
-            # recode age
-            if rec.age in [7, 9]:
-                rec.age = 'NA'
+    print(title)
+    print('key\tn\tmean\tvar\tsigma\tcv')
+    for key, series in items:
+        mu, var = series.mean(), series.var()
+        sigma = math.sqrt(var)
+        cv = sigma / mu
+        t = key, len(series), mu, var, sigma, cv
+        print('%s\t%d\t%4.2f\t%4.2f\t%4.2f\t%4.4f' % t)
 
 
-    def SummarizeHeight(self):
-        """Print summary statistics for male and female height."""
+def CleanBrfssFrame(df):
+    """Recodes BRFSS variables.
+    """
+    df.age.replace([7, 9], float('NaN'), inplace=True)
+    df.htm3.replace([999], float('NaN'), inplace=True)
+    df.wtkg2.replace([99999], float('NaN'), inplace=True)
+    df.wtkg2 /= 100.0
 
-        # make a dictionary that maps from gender code to list of heights
-        d = {1:[], 2:[], 'all':[]}
-        [d[r.sex].append(r.htm3) for r in self.records if r.htm3 != 'NA']
-        [d['all'].append(r.htm3) for r in self.records if r.htm3 != 'NA']
-        
-        print 'Height (cm):'
-        print 'key n     mean     var    sigma     cv'
-        for key, t in d.iteritems():
-            mu, var = thinkstats.TrimmedMeanVar(t)
-            sigma = math.sqrt(var)
-            cv = sigma / mu
-            print key, len(t), mu, var, sigma, cv
-
-        return d
-
-    def SummarizeWeight(self):
-        """Print summary statistics for male and female weight."""
-
-        # make a dictionary that maps from gender code to list of weights
-        d = {1:[], 2:[], 'all':[]}
-        [d[r.sex].append(r.weight2) for r in self.records if r.weight2 != 'NA']
-        [d['all'].append(r.weight2) for r in self.records if r.weight2 != 'NA']
-
-        print 'Weight (kg):'
-        print 'key n     mean     var    sigma     cv'
-        for key, t in d.iteritems():
-            mu, var = thinkstats.TrimmedMeanVar(t)
-            sigma = math.sqrt(var)
-            cv = sigma / mu
-            print key, len(t), mu, var, sigma, cv
+    df.wtyrago.replace([7777, 9999], float('NaN'), inplace=True)
+    df['wtyrago'] = df.wtyrago.apply(lambda x: x/2.2 if x < 9000 else x-9000)
 
 
-    def SummarizeWeightChange(self):
-        """Print the mean reported change in weight in kg."""
-        
-        data = [(r.weight2, r.wtyrago) for r in self.records
-                if r.weight2 != 'NA' and r.wtyrago != 'NA']
-        
-        changes = [(curr - prev) for curr, prev in data]
-            
-        print 'Mean change', thinkstats.Mean(changes)
-        
-    
-def main(name, data_dir='.'):
-    resp = Respondents()
-    resp.ReadRecords(data_dir)
-    resp.SummarizeHeight()
-    resp.SummarizeWeight()
-    resp.SummarizeWeightChange()
-    
+def ReadBrfss(filename='CDBRFS08.ASC.gz', compression='gzip', nrows=None):
+    """Reads the BRFSS data.
+
+    filename: string
+
+    returns: DataFrame
+    """
+    var_info = [
+        ('age', 101, 102, int),
+        ('sex', 143, 143, int),
+        ('wtyrago', 127, 130, int),
+        ('wtkg2', 1254, 1258, int),
+        ('htm3', 1251, 1253, int),
+        ]
+    columns = ['name', 'start', 'end', 'type']
+    variables = pd.DataFrame(var_info, columns=columns)
+    variables.end += 1
+    dct = thinkstats2.FixedWidthVariables(variables, index_base=1)
+
+    df = dct.ReadFixedWidth(filename, compression=compression, nrows=nrows)
+    CleanBrfssFrame(df)
+    return df
+
+
+def main(script, nrows=1000):
+    """Tests the functions in this module.
+
+    script: string script name
+    """
+    nrows = int(nrows)
+    df = ReadBrfss(nrows=nrows)
+
+    Summarize(df, 'htm3', 'Height (cm):')
+    Summarize(df, 'wtkg2', 'Weight (kg):')
+    Summarize(df, 'wtyrago', 'Weight year ago (kg):')
+
+    if nrows == 1000:
+        assert(df.age.value_counts()[40] == 28)
+        assert(df.sex.value_counts()[2] == 668)
+        assert(df.wtkg2.value_counts()[90.91] == 49)
+        assert(df.wtyrago.value_counts()[160/2.2] == 49)
+        print('%s: All tests passed.' % script)
+
+
 if __name__ == '__main__':
     main(*sys.argv)
