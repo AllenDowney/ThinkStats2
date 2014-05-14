@@ -1061,13 +1061,12 @@ the data.  An alternative is to look at the {\bf distribution} of the
 data, which describes how often each value appears.
 
 The most common representation of a distribution is a {\bf histogram},
-which is a graph that shows the frequency or probability
-of each value.\index{histogram}
-
+which is a graph that shows the frequency
+of each value.
 In this context, {\bf frequency} means the number of times a value
 appears in a dataset---it has nothing to do with the pitch of a sound
-or tuning of a radio signal.  A {\bf probability} is a frequency expressed
-as a fraction of the sample size, $n$.
+or tuning of a radio signal.
+\index{histogram}
 \index{frequency}
 \index{probability}
 \index{dictionary}
@@ -1082,8 +1081,25 @@ for x in t:
 \end{verbatim}
 
 The result is a dictionary that maps from values to frequencies.
-To get from frequencies to probabilities, we divide through by $n$,
-which is called {\bf normalization}:\index{normalization}
+Alternatively, you could use the {\tt Counter} class defined in the
+{\tt collections} module:
+
+\begin{verbatim}
+from collections import Counter
+counter = Counter(t)
+\end{verbatim}
+
+The result is a {\tt counter} object, which is a subclass of
+dictionary.  For details, see
+\url{https://docs.python.org/2/library/collections.html#collections.Counter}.
+
+Another way to represent a distribution is a {\bf probability mass
+  function} (PMF), which maps from each value to its probability.  A
+{\bf probability} is a frequency expressed as a fraction of the sample
+size, $n$.  To get from frequencies to probabilities, we divide
+through by $n$, which is called {\bf normalization}:\index{normalization}
+\index{PMF}
+\index{probability mass function}
 %
 \begin{verbatim}
 n = float(len(t))
@@ -1092,18 +1108,8 @@ for x, freq in hist.items():
     pmf[x] = freq / n
 \end{verbatim}
 
-The normalized histogram is called a {\bf PMF}, which stands for
-``probability mass function''; that is, it's a function that maps from
-values to probabilities (I'll explain ``mass'' in
-Section~\ref{density}).
-\index{PMF}
-\index{probability mass function}
-
-It might be confusing to call a Python dictionary a function.  In
-mathematics, a function is a map from one set of values to
-another.  In Python, we {\em usually} represent mathematical functions
-with function objects, but in this case we are using a dictionary
-(dictionaries are also called ``maps,'' if that helps).\index{map}
+The result is a dictionary, {\tt pmf}, that maps from each value
+to its probability.
 
 
 \section{Representing histograms}
@@ -1128,10 +1134,10 @@ mode:
 <thinkstats2.Hist object at 0xb76cf68c>
 \end{verbatim}
 
-{\tt thinkstats2.Hist} means that this object is a member of the Hist class,
-which is defined in the thinkstats2 module.  In general, I use upper case
-letters for the names of classes and functions, and lower case letters
-for variables.
+{\tt thinkstats2.Hist} means that this object is a member of the Hist
+class, which is defined in the thinkstats2 module.  In general, I use
+upper case letters for the names of classes and functions, and lower
+case letters for variables\footnote{TODO: comment on PEP8}.
 
 Hist objects provide methods to look up values and their
 probabilities.  {\tt Freq} takes a value and returns its frequency:
@@ -5122,10 +5128,10 @@ def MeanError(estimates, actual):
     return numpy.mean(errors)
 \end{verbatim}
 
-When I ran this code, the mean error for $S^2$ was -0.13.  As expected,
-this biased estimator tends to be too low.  For $S_{n-1}^2$, the mean
-error was 0.014.  As {\tt m} increases, we expect the mean error for
-$S_{n-1}^2$ to approach 0.
+When I ran this code, the mean error for $S^2$ was -0.13.  As
+expected, this biased estimator tends to be too low.  For $S_{n-1}^2$,
+the mean error was 0.014, about 10 times smaller.  As {\tt m}
+increases, we expect the mean error for $S_{n-1}^2$ to approach 0.
 
 Properties like MSE and bias are long-term expectations based on
 many iterations of the estimation game.  By running simulations like
@@ -5141,6 +5147,23 @@ If you choose an estimator with appropriate properties, and use it to
 generate an estimate, the next step is to characterize the
 uncertainty of the estimate, which is the topic of the next
 section.
+
+You can download code for these experiments from \url{}.
+
+\begin{exercise}
+
+So far we have used $\xbar$ and median to estimate $\mu$, and
+found that $\xbar$  yields lower MSE.
+
+As we used $S^2$ and $S_{n-1}^2$ to estimate $\sigma$, and found that
+$S^2$ is biased and $S_{n-1}^2$ unbiased.
+
+Run similar experiments to see if $\xbar$ and median are biased estimates
+of $\mu$.
+
+Also check whether $S^2$ or $S_{n-1}^2$ yields a lower MSE.
+
+\end{exercise}
 
 
 \section{Sampling distributions}
@@ -5216,11 +5239,11 @@ estimates would vary if we ran the experiment over and over.
 
 The mean of the sampling distribution is pretty close
 to the hypothetical value of $\mu$, which means that the experiment
-gets the right answer, on average.  After 1000 tries, the lowest
-result is 82 kg, and the highest is 98 kg.  That suggests that
+yields the right answer, on average.  After 1000 tries, the lowest
+result is 82 kg, and the highest is 98 kg.  This range suggests that
 the estimate might be off by 8 kg.  
 
-But there are better ways to summarize the sampling distribution.
+But there are other ways to summarize the sampling distribution.
 For each simulated experiment, we can compute the error, $\xbar - \mu$,
 and then compute the root mean squared error (RMSE).
 
@@ -5229,11 +5252,11 @@ The RMSE of the sampling distribution is called the {\bf standard
 which means that we expect the estimate to be off by 2.5 kg on
 average.
 
-Another way to summarize the sampling distribution is by reporting
+Another way to summarize the sampling error is by reporting
 percentiles of the sampling distribution.  In this example, the 5th
 percentile is 86 kg and the 95th percentile is 94 kg.  If we run the
 experiment many times, we expect the estimate to fall in this range
-about 90\% of the time.  As a result, this interval is called a 90\%
+about 90\% of the time.  This range is called a 90\%
 {\bf confidence interval}.
 
 People get confused about confidence intervals; they often think
@@ -5242,16 +5265,15 @@ falls in the 90\% confidence interval.  Sadly, that is not true.
 If you want to make a claim like that, you have to use Bayesian
 methods (see my book, {\it Think Bayes}).
 
-The sampling distribution
-gives you a sense of how reliable an estimate
+The sampling distribution answers a different question:
+it gives you a sense of how reliable an estimate
 is by telling you how much it would vary if you ran the experiment
-again.  
+again.
 
 It is important to remember that the confidence interval
 (and the standard error) only quantify sampling error; that is,
 error caused because you sampled only part of the population.
-
-Confidence intervals and standard errors do not account for other
+The sampling distribution does not account for other
 sources of error, notably sampling bias and measurement error, 
 which are the topics of the next section.
 
@@ -5340,8 +5362,8 @@ we expect $\lamhat$ to have the same problem.
 \index{robust}
 \index{outlier}
 
-We can find an alternative based on the sample median.  Remember
-that the median of an exponential distribution is $ln(2) / \lambda$,
+We can find an alternative based on the sample median.
+The median of an exponential distribution is $ln(2) / \lambda$,
 so working backwards again, we can define an estimator
 %
 \[ \lamhatmed = \ln(2) / m \]
@@ -5385,6 +5407,25 @@ of the distribution, $1 / \lambda$, but $L$ is not an unbiased
 estimator of $\lambda$.  Later we will see how to derive results
 like this mathematically.
 
+\begin{exercise}
+
+Run an experiment to test whether $\xbar$ is an unbiased estimator of
+the mean of the distribution, $1 / \lambda$.
+
+\end{exercise}
+
+\begin{exercise}
+
+Suppose you draw a sample with size $n=10$ from a population 
+with an exponential disrtribution with $\lambda=2$.  Simulate
+this experiment 1000 times and plot the sampling distribution of
+the estimate $\lamhat$.  Compute the standard error of the estimate
+and the 90\% confidence interval.
+
+Repeat the experiment with a few different values of $n$ and make
+a plot of standard error versus $n$.
+
+\end{exercise}
 
 
 \section{Glossary}
@@ -6249,10 +6290,27 @@ if it is false.
 \end{description}
 
 
-\chapter{Time series}
+
+\chapter{Multiple regression}
+
+\section{Weighted resampling}
 
 
-\chapter{}
+\chapter{Logistic regression}
+
+
+\chapter{Time series analysis}
+
+
+
+\chapter{Survival analysis}
+
+
+\chapter{Analytic statistics}
+
+\section{Estimation}
+
+\section{Hypothesis testing}
 
 
 \printindex
