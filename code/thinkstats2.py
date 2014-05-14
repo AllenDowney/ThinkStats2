@@ -1979,8 +1979,6 @@ def Trim(t, p=0.01):
 def TrimmedMean(t, p=0.01):
     """Computes the trimmed mean of a sequence of numbers.
 
-    Side effect: sorts the list.
-
     Args:
         t: sequence of numbers
         p: fraction of values to trim off each end

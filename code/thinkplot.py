@@ -447,7 +447,21 @@ def Config(**options):
         if name in options:
             getattr(pyplot, name)(options[name])
 
+    loc_dict = {'upper right': 1,
+                'upper left': 2,
+                'lower left': 3,
+                'lower right': 4,
+                'right': 5,
+                'center left': 6,
+                'center right': 7,
+                'lower center': 8,
+                'upper center': 9,
+                'center': 10,
+                }
+
     loc = options.get('loc', 0)
+    loc = loc_dict.get(loc, loc)
+
     legend = options.get('legend', True)
     if legend:
         pyplot.legend(loc=loc)
