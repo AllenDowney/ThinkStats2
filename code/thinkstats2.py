@@ -1840,27 +1840,38 @@ def LogBinomialCoef(n, k):
     return n * log(n) - k * log(k) - (n - k) * log(n - k)
 
 
-def NormalProbability(ys, jitter=0.0):
+def NormalProbability(ys, mu=0, sigma=1, jitter=0.0):
     """Generates data for a normal probability plot.
 
     ys: sequence of values
+    mu: mean parameter
+    sigma: standard deviations
     jitter: float magnitude of jitter added to the ys 
 
-    returns: xs, ys
+    returns: numpy arrays xs, ys
     """
     n = len(ys)
-    xs = np.random.normal(0, 1, n)
+    xs = np.random.normal(mu, sigma, n)
     xs.sort()
     
     if jitter:
-        ys = np.random.uniform(-jitter, +jitter, n) + ys
+        ys = Jitter(ys, jitter)
+    else:
+        ys = np.array(ys)
     ys.sort()
 
     return xs, ys
 
 
 def Jitter(values, jitter=0.5):
-    """Jitters the values by adding a uniform variate in (-jitter, jitter)."""
+    """Jitters the values by adding a uniform variate in (-jitter, jitter).
+
+    values: sequence
+    jitter: scalar magnitude of jitter
+    
+    returns: new numpy array
+    """
+    n = len(values)
     return np.random.uniform(-jitter, +jitter, n) + values
 
 

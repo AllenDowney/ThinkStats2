@@ -15,6 +15,7 @@ import brfss
 import thinkplot
 import thinkstats2
 
+
 def GetHeightWeight(df, hjitter=0.0, wjitter=0.0):
     """Get sequences of height and weight.
 
@@ -26,11 +27,11 @@ def GetHeightWeight(df, hjitter=0.0, wjitter=0.0):
     """
     heights = df.htm3
     if hjitter:
-        heights += np.random.uniform(-hjitter, hjitter, heights.size)
+        heights = thinkstats2.Jitter(heights, hjitter)
 
     weights = df.wtkg2
     if wjitter:
-        weights += np.random.uniform(-hjitter, hjitter, weights.size)
+        weights = thinkstats2.Jitter(weights, wjitter)
 
     return heights, weights
 
@@ -91,14 +92,22 @@ def MakeFigures():
     sample = SampleRows(df, 5000, replace=False)
 
     heights, weights = GetHeightWeight(sample)
+    assert(heights.values[100] == 175)
+    assert(weights.values[100] == 86.36)
+
     ScatterPlot('brfss_scatter1', heights, weights)
 
     heights, weights = GetHeightWeight(sample, hjitter=1.5, wjitter=1.1)
+    assert(int(heights.values[100]) == 173)
+    assert(int(weights.values[100]) == 85)
+
     ScatterPlot('brfss_scatter2', heights, weights)
     ScatterPlot('brfss_scatter3', heights, weights, alpha=0.1)
 
     # make a hexbin of all records
     heights, weights = GetHeightWeight(df, hjitter=1.3, wjitter=1.1)
+    assert(int(heights.values[100]) == 171)
+    assert(int(weights.values[100]) == 55)
     HexBin('brfss_scatter4', heights, weights)
 
 

@@ -5,158 +5,210 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import erf
-import Cdf
-import cumulative
+from __future__ import print_function
+
 import math
-import myplot
 import random
-import rankit
-import thinkstats
-import matplotlib.pyplot as pyplot
+import scipy.stats
 
-def ExpoCdf(x, lam):
-    """Evaluates CDF of the exponential distribution with parameter lam."""
-    return 1 - math.exp(-lam * x)
+import numpy as np
 
-def ParetoCdf(x, alpha, xmin):
-    """Evaluates CDF of the Pareto distribution with parameters alpha, xmin."""
-    if x < xmin:
-        return 0
-    return 1 - pow(x / xmin, -alpha)
+import nsfg
+import thinkplot
+import thinkstats2
+
 
 def ParetoMedian(xmin, alpha):
     """Computes the median of a Pareto distribution."""
     return xmin * pow(2, 1/alpha)
 
+
 def MakeExpoCdf():
     """Generates a plot of the exponential CDF."""
-    n = 40
-    max = 2.5
-    xs = [max*i/n for i in range(n)]
-    
-    lam = 2.0
-    ps = [ExpoCdf(x, lam) for x in xs]
-    
-    percentile = -math.log(0.05) / lam
-    print 'Fraction <= ', percentile, ExpoCdf(lam, percentile)
 
-    pyplot.clf()
-    pyplot.plot(xs, ps, linewidth=2)
-    myplot.Save('expo_cdf',
-                title='Exponential CDF',
-                xlabel='x',
-                ylabel='CDF',
-                legend=False)
+    thinkplot.PrePlot(3)
+    for lam in [2.0, 1, 0.5]:
+        xs, ps = RenderExpoCdf(lam, 0, 3.0, 50)        
+        thinkplot.Plot(xs, ps, label='lam=%g' % lam)
+    
+    thinkplot.Save(root='continuous_expo_cdf',
+                   title='Exponential CDF',
+                   xlabel='x',
+                   ylabel='CDF')
+
     
 def MakeParetoCdf():
     """Generates a plot of the Pareto CDF."""
-    n = 50
-    max = 10.0
-    xs = [max*i/n for i in range(n)]
-    
     xmin = 0.5
-    alpha = 1.0
-    ps = [ParetoCdf(x, alpha, xmin) for x in xs]
-    print 'Fraction <= 10', ParetoCdf(xmin, alpha, 10)
+
+    thinkplot.PrePlot(3)
+    for alpha in [2.0, 1.0, 0.5]:
+        xs, ps = RenderParetoCdf(xmin, alpha, 0, 10.0, n=100) 
+        thinkplot.Plot(xs, ps, label='alpha=%g' % alpha)
     
-    pyplot.clf()
-    pyplot.plot(xs, ps, linewidth=2)
-    myplot.Save('pareto_cdf',
-                title = 'Pareto CDF',
-                xlabel = 'x',
-                ylabel = 'CDF',
-                legend=False)
+    thinkplot.Save(root='continuous_pareto_cdf',
+                   title = 'Pareto CDF',
+                   xlabel = 'x',
+                   ylabel = 'CDF')
     
 
 def MakeParetoCdf2():
     """Generates a plot of the CDF of height in Pareto World."""
-    n = 50
-    max = 1000.0
-    xs = [max*i/n for i in range(n)]
-    
+    thinkplot.PrePlot(1)
+
     xmin = 100
-    alpha = 1.7
-    ps = [ParetoCdf(x, alpha, xmin) for x in xs]
-    print 'Median', ParetoMedian(xmin, alpha)
-    
-    pyplot.clf()
-    pyplot.plot(xs, ps, linewidth=2)
-    myplot.Save('pareto_height',
-                title='Pareto CDF',
-                xlabel='height (cm)',
-                ylabel='CDF',
-                legend=False)
+    alpha = 1.7    
+    xs, ps = RenderParetoCdf(xmin, alpha, 0, 1000.0, n=100) 
+    thinkplot.Plot(xs, ps)
+
+    median = ParetoMedian(xmin, alpha)
+
+    thinkplot.Save(root='continuous_pareto_height',
+                   title='Pareto CDF',
+                   xlabel='height (cm)',
+                   ylabel='CDF',
+                   legend=False)
     
 
+def RenderExpoCdf(lam, low, high, n=50):
+    """Generates sequences of xs and ps for an exponential CDF.
 
-def RenderNormalCdf(mu, sigma, max, n=50):
-    """Generates sequences of xs and ps for a normal CDF."""
-    xs = [max * i / n for i in range(n)]    
-    ps = [erf.NormalCdf(x, mu, sigma) for x in xs]
+    lam: parameter
+    low: float
+    high: float
+    n: number of points to render
+
+    returns: numpy arrays (xs, ps)
+    """
+    xs = np.linspace(low, high, n)
+    ps = 1 - np.exp(-lam * xs)
+    #ps = scipy.stats.expon.cdf(xs, scale=1.0/lam)
     return xs, ps
 
 
-def MakeNormalCdf():
-    """Generates a plot of the normal CDF."""
-    xs, ps = RenderNormalCdf(2.0, 0.5, 4.0)
+def RenderGaussianCdf(mu, sigma, low, high, n=50):
+    """Generates sequences of xs and ps for a Gaussian CDF.
+
+    mu: parameter
+    sigma: parameter
+    low: float
+    high: float
+    n: number of points to render
+
+    returns: numpy arrays (xs, ps)
+    """
+    xs = np.linspace(low, high, n)
+    ps = scipy.stats.norm.cdf(xs, mu, sigma)
+    return xs, ps
+
+
+def RenderParetoCdf(xmin, alpha, low, high, n=50):
+    """Generates sequences of xs and ps for a Pareto CDF.
+
+    xmin: parameter
+    alpha: parameter
+    low: float
+    high: float
+    n: number of points to render
+
+    returns: numpy arrays (xs, ps)
+    """
+    if low < xmin:
+        low = xmin
+    xs = np.linspace(low, high, n)
+    ps = 1 - (xs / xmin) ** -alpha
+
+    # NOTE: the pareto implementation in scipy uses a parameterization
+    # I don't understand.  See https://github.com/scipy/scipy/issues/3651
+    #ps = scipy.stats.pareto.cdf(xs, loc=xmin, b=alpha)
+
+    return xs, ps
+
+
+def MakeGaussianCdf():
+    """Generates a plot of the gaussian CDF."""
     
-    pyplot.clf()
-    pyplot.plot(xs, ps, linewidth=2)
-    myplot.Save('normal_cdf',
-              title='Normal CDF',
-              xlabel='x',
-              ylabel='CDF',
-              legend=False)
+    thinkplot.PrePlot(3)
+
+    mus = [1.0, 2.0, 3.0]
+    sigmas = [0.5, 0.4, 0.3]
+    for mu, sigma in zip(mus, sigmas):
+        xs, ps = RenderGaussianCdf(mu=mu, sigma=sigma, low=-1.0, high=4.0)
+        label = 'mu=%g, sigma=%g' % (mu, sigma)
+        thinkplot.Plot(xs, ps, label=label)
+
+    thinkplot.Save(root='continuous_gaussian_cdf',
+                   title='Gaussian CDF',
+                   xlabel='x',
+                   ylabel='CDF',
+                   loc=2)
     
     
-def MakeNormalModel(weights):
-    """Plot the CDF of birthweights with a normal model."""
+def MakeGaussianModel(weights):
+    """Plot the CDF of birthweights with a gaussian model."""
     
     # estimate parameters: trimming outliers yields a better fit
-    mu, var = thinkstats.TrimmedMeanVar(weights, p=0.01)
-    print 'Mean, Var', mu, var
+    mu, var = thinkstats2.TrimmedMeanVar(weights, p=0.01)
+    print('Mean, Var', mu, var)
     
     # plot the model
     sigma = math.sqrt(var)
-    print 'Sigma', sigma
-    xs, ps = RenderNormalCdf(mu, sigma, 200)
+    print('Sigma', sigma)
+    xs, ps = RenderGaussianCdf(mu, sigma, low=0, high=12.5)
 
-    pyplot.clf()
-    pyplot.plot(xs, ps, label='model', linewidth=4, color='0.8')
+    thinkplot.Plot(xs, ps, label='model', linewidth=4, color='0.8')
 
     # plot the data
-    cdf = Cdf.MakeCdfFromList(weights)
-    xs, ps = cdf.Render()
-    pyplot.plot(xs, ps, label='data', linewidth=2, color='blue')
- 
-    myplot.Save('nsfg_birthwgt_model',
-                title='Birth weights',
-                xlabel='birth weight (oz)',
-                ylabel='CDF')
+    cdf = thinkstats2.MakeCdfFromList(weights, name='data')
+
+    thinkplot.PrePlot(1)
+    thinkplot.Cdf(cdf) 
+    thinkplot.Save(root='continuous_birthwgt_model',
+                   title='Birth weights',
+                   xlabel='birth weight (lbs)',
+                   ylabel='CDF')
 
 
-def MakeNormalPlot(weights):
+def MakeNormalPlot(weights, term_weights):
     """Generates a normal probability plot of birth weights."""
-    rankit.MakeNormalPlot(weights, 
-                          root='nsfg_birthwgt_normal',
-                          ylabel='Birth weights (oz)',)
+
+    mean, var = thinkstats2.TrimmedMeanVar(weights, p=0.01)
+    std = math.sqrt(var)
+
+    xs = [-4, 4]
+    xs, ys = thinkstats2.FitLine(xs, mean, std)
+    thinkplot.Plot(xs, ys, linewidth=4, color='0.8')
+
+    thinkplot.PrePlot(2) 
+    xs, ys = thinkstats2.NormalProbability(weights)
+    thinkplot.Plot(xs, ys, label='all live')
+
+    xs, ys = thinkstats2.NormalProbability(term_weights)
+    thinkplot.Plot(xs, ys, label='full term')
+    thinkplot.Save(root='continuous_birthwgt_normal',
+                   title='Normal probability plot',
+                   xlabel='Standard deviations from mean',
+                   ylabel='Birth weight (lbs)')
+
 
 def main():
-    random.seed(17)
+    thinkstats2.RandomSeed(17)
 
     # make the continuous CDFs
     MakeExpoCdf()
     MakeParetoCdf()
     MakeParetoCdf2()
-    MakeNormalCdf()
+    MakeGaussianCdf()
 
     # test the distribution of birth weights for normality
-    pool, _, _ = cumulative.MakeTables()
-    
-    t = pool.weights
-    MakeNormalModel(t)
-    MakeNormalPlot(t)
+    preg = nsfg.ReadFemPreg()
+    full_term = preg[preg.prglngth >= 37]
+
+    weights = preg.totalwgt_lb.dropna()
+    term_weights = full_term.totalwgt_lb.dropna()
+
+    MakeGaussianModel(weights)
+    MakeNormalPlot(weights, term_weights)
 
     
 if __name__ == "__main__":
