@@ -2223,20 +2223,17 @@ class FixedWidthVariables(object):
         self.colspecs = self.colspecs.astype(np.int).values.tolist()
         self.names = variables['name']
 
-    def ReadFixedWidth(self, filename, compression='gzip', nrows=None):
+    def ReadFixedWidth(self, filename, **options):
         """Reads a fixed width ASCII file.
 
         filename: string filename
-        compression: string
 
         returns: DataFrame
         """
         frame = pd.read_fwf(filename,
-                            compression=compression,
-                            nrows=nrows,
                             colspecs=self.colspecs, 
                             names=self.names,
-                            header=None)
+                            **options)
         return frame
 
 

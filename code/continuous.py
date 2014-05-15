@@ -117,11 +117,7 @@ def RenderParetoCdf(xmin, alpha, low, high, n=50):
         low = xmin
     xs = np.linspace(low, high, n)
     ps = 1 - (xs / xmin) ** -alpha
-
-    # NOTE: the pareto implementation in scipy uses a parameterization
-    # I don't understand.  See https://github.com/scipy/scipy/issues/3651
-    #ps = scipy.stats.pareto.cdf(xs, loc=xmin, b=alpha)
-
+    #ps = scipy.stats.pareto.cdf(xs, scale=xmin, b=alpha)
     return xs, ps
 
 

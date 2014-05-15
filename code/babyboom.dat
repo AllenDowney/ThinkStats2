@@ -1,0 +1,103 @@
+NAME: Time of Birth, Sex, and Birth Weight of 44 Babies
+TYPE: Observational
+SIZE: 44 observations, 4 variables
+
+DESCRIPTIVE ABSTRACT:
+The dataset contains the time of birth, sex, and birth weight for each
+of 44 babies born in one 24-hour period at a Brisbane, Australia,
+hospital.  Also included is the number of minutes since midnight for
+each birth.
+
+SOURCE: 
+The data appeared in the Brisbane newspaper _The Sunday Mail_ on
+December 21, 1997.
+
+VARIABLE DESCRIPTIONS: 
+Columns
+ 1 -  8  Time of birth recorded on the 24-hour clock
+ 9 - 16  Sex of the child (1 = girl, 2 = boy)
+17 - 24  Birth weight in grams
+25 - 32  Number of minutes after midnight of each birth
+
+Values are aligned and delimited by blanks.  There are no missing
+values.
+
+STORY BEHIND THE DATA:
+Forty-four babies -- a new record -- were born in one 24-hour period at
+the Mater Mothers' Hospital in Brisbane, Queensland, Australia, on
+December 18, 1997.  For each of the 44 babies, _The Sunday Mail_
+recorded the time of birth, the sex of the child, and the birth weight
+in grams.
+
+Additional information about these data can be found in the "Datasets
+and Stories" article "A Simple Dataset for Demonstrating Common
+Distributions" in the _Journal of Statistics Education_ (Dunn 1999).
+
+PEDAGOGICAL NOTES:
+The data can be used to demonstrate fitting the binomial distribution
+(the number of boys/girls born out of 44 births), the geometric
+distribution (the number of births until a boy/girl is born), the
+Poisson distribution (births per hour for each hour), and the
+exponential distribution (times between births).  The normal
+distribution is found to be unsuitable for modeling the birth weights,
+but better results are obtained when birth weights are separated by
+sex.  The dataset can also be used to illustrate hypothesis tests about
+proportions, comparisons of birth weights by gender, the runs test of
+randomness of gender, and skewed data.
+
+REFERENCE:
+Steele, S. (December 21, 1997), "Babies by the Dozen for Christmas:
+24-Hour Baby Boom," _The Sunday Mail_ (Brisbane), p. 7.
+
+SUBMITTED BY:
+Peter K. Dunn
+Department of Mathematics and Computing
+University of Southern Queensland
+Toowoomba, Queensland, Australia 4350
+dunn@usq.edu.au
+
+START DATA:
+    0005       1    3837       5
+    0104       1    3334      64
+    0118       2    3554      78
+    0155       2    3838     115
+    0257       2    3625     177
+    0405       1    2208     245
+    0407       1    1745     247
+    0422       2    2846     262
+    0431       2    3166     271
+    0708       2    3520     428
+    0735       2    3380     455
+    0812       2    3294     492
+    0814       1    2576     494
+    0909       1    3208     549
+    1035       2    3521     635
+    1049       1    3746     649
+    1053       1    3523     653
+    1133       2    2902     693
+    1209       2    2635     729
+    1256       2    3920     776
+    1305       2    3690     785
+    1406       1    3430     846
+    1407       1    3480     847
+    1433       1    3116     873
+    1446       1    3428     886
+    1514       2    3783     914
+    1631       2    3345     991
+    1657       2    3034    1017
+    1742       1    2184    1062
+    1807       2    3300    1087
+    1825       1    2383    1105
+    1854       2    3428    1134
+    1909       2    4162    1149
+    1947       2    3630    1187
+    1949       2    3406    1189
+    1951       2    3402    1191
+    2010       1    3500    1210
+    2037       2    3736    1237
+    2051       2    3370    1251
+    2104       2    2121    1264
+    2123       2    3150    1283
+    2217       1    3866    1337
+    2327       1    3542    1407
+    2355       1    3278    1435
