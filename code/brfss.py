@@ -66,6 +66,7 @@ def ReadBrfss(filename='CDBRFS08.ASC.gz', compression='gzip', nrows=None):
         ('age', 101, 102, int),
         ('sex', 143, 143, int),
         ('wtyrago', 127, 130, int),
+        ('finalwt', 799, 808, int),
         ('wtkg2', 1254, 1258, int),
         ('htm3', 1251, 1253, int),
         ]
@@ -97,6 +98,7 @@ def main(script, nrows=1000):
         assert(df.wtkg2.value_counts()[90.91] == 49)
         assert(df.wtyrago.value_counts()[160/2.2] == 49)
         assert(df.htm3.value_counts()[163] == 103)
+        assert(df.finalwt.value_counts()[185.870345] == 13)
         print('%s: All tests passed.' % script)
 
 

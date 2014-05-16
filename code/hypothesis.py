@@ -45,6 +45,11 @@ class HypothesisTest(object):
         p_value = 1 - self.sample_cdf.Prob(self.actual)
         return p_value
 
+    def MaxTestStat(self):
+        """Returns the largest test statistic seen during simulations.
+        """
+        return max(self.sample_stats)
+
     def PlotCdf(self):
         """Draws a Cdf with vertical lines at the observed test stat.
         """
@@ -69,7 +74,8 @@ class HypothesisTest(object):
     def MakeModel(self):
         """Build a model of the null hypothesis.
         """
-        raise thinkstats2.UnimplementedMethodException()
+        # default behavior is nothing
+        pass
 
     def RunModel(self):
         """Run the model of the null hypothesis.

@@ -1907,30 +1907,6 @@ def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
                     alpha=0.5)
 
  
-def Cov(xs, ys, mux=None, muy=None):
-    """Computes Cov(X, Y).
-
-    Args:
-        xs: sequence of values
-        ys: sequence of values
-        mux: optional float mean of xs
-        muy: optional float mean of ys
-
-    Returns:
-        Cov(X, Y)
-    """
-    if mux is None:
-        mux = np.mean(xs)
-    if muy is None:
-        muy = np.mean(ys)
-
-    total = 0.0
-    for x, y in zip(xs, ys):
-        total += (x-mux) * (y-muy)
-
-    return total / len(xs)
-
-
 def Mean(xs):
     """Computes mean.
 
@@ -1941,24 +1917,36 @@ def Mean(xs):
     return np.mean(xs)
 
 
-def Var(xs, ddof=None):
+def Var(xs, mu=None, ddof=0):
     """Computes variance.
 
     xs: sequence of values
+    mu: option known mean
+    ddof: delta degrees of freedom
 
     returns: float
     """
-    return np.var(xs, ddof=ddof)
+    if mu is None:
+        mu = np.mean(xs)
+
+    ds = xs - mu 
+    return np.dot(ds, ds) / (len(xs) - ddof)
 
 
-def MeanVar(xs):
+def MeanVar(xs, ddof=0):
     """Computes mean and variance.
 
-    xs: sequence of values
+    Based on http://stackoverflow.com/questions/19391149/
+    numpy-mean-and-variance-from-single-function
 
+    xs: sequence of values
+    ddof: delta degrees of freedom
+    
     returns: pair of float, mean and var
     """
-    return np.mean(xs), np.var(xs)
+    xbar = np.mean(xs)
+    S2 = Var(xs, xbar, ddof)
+    return xbar, S2
 
 
 def Trim(t, p=0.01):
@@ -2007,6 +1995,51 @@ def TrimmedMeanVar(t, p=0.01):
     return mu, var
 
 
+def Cov(xs, ys, meanx=None, meany=None):
+    """Computes Cov(X, Y).
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+        meanx: optional float mean of xs
+        meany: optional float mean of ys
+
+    Returns:
+        Cov(X, Y)
+    """
+    if meanx is None:
+        meanx = np.mean(xs)
+    if meany is None:
+        meany = np.mean(ys)
+
+    total = 0.0
+    for x, y in zip(xs, ys):
+        total += (x-meanx) * (y-meany)
+
+    return total / len(xs)
+
+
+def Cov(xs, ys, meanx=None, meany=None):
+    """Computes Cov(X, Y).
+
+    Args:
+        xs: sequence of values
+        ys: sequence of values
+        meanx: optional float mean of xs
+        meany: optional float mean of ys
+
+    Returns:
+        Cov(X, Y)
+    """
+    if meanx is None:
+        meanx = np.mean(xs)
+    if meany is None:
+        meany = np.mean(ys)
+
+    cov = np.dot(xs-meanx, ys-meany) / len(xs)
+    return cov
+
+
 def Corr(xs, ys):
     """Computes Corr(X, Y).
 
@@ -2017,10 +2050,10 @@ def Corr(xs, ys):
     Returns:
         Corr(X, Y)
     """
-    xbar, varx = MeanVar(xs)
-    ybar, vary = MeanVar(ys)
+    meanx, varx = MeanVar(xs)
+    meany, vary = MeanVar(ys)
 
-    corr = Cov(xs, ys, xbar, ybar) / math.sqrt(varx * vary)
+    corr = Cov(xs, ys, meanx, meany) / math.sqrt(varx * vary)
 
     return corr
 
@@ -2060,11 +2093,11 @@ def LeastSquares(xs, ys):
     Returns:
         tuple of (intercept, slope)
     """
-    xbar, varx = MeanVar(xs)
-    ybar, vary = MeanVar(ys)
+    meanx, varx = MeanVar(xs)
+    meany, vary = MeanVar(ys)
 
-    slope = Cov(xs, ys, xbar, ybar) / varx
-    inter = ybar - slope * xbar
+    slope = Cov(xs, ys, meanx, meany) / varx
+    inter = meany - slope * meanx
 
     return inter, slope
 
@@ -2095,7 +2128,7 @@ def CoefDetermination(ys, res):
     Returns:
         float coefficient of determination
     """
-    ybar, vary = MeanVar(ys)
+    meany, vary = MeanVar(ys)
     resbar, varres = MeanVar(res)
     return 1 - varres / vary
 
@@ -2165,8 +2198,8 @@ def RawMoment(xs, k):
 def CentralMoment(xs, k):
     """Computes the kth central moment of xs.
     """
-    xbar = RawMoment(xs, 1)
-    return sum((x - xbar)**k for x in xs) / len(xs)
+    meanx = RawMoment(xs, 1)
+    return sum((x - meanx)**k for x in xs) / len(xs)
 
 
 def StandardizedMoment(xs, k):
