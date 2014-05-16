@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.0}
+\newcommand{\theversion}{2.0.1}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -261,39 +261,73 @@ Unported License, which is available at
 
 \section*{Why I wrote this book}
 
-{\em Think Stats: Probability and Statistics for Programmers} is a
-textbook for a new kind of introductory prob-stat class.  
-It emphasizes the use of statistics to explore large datasets.  It
-takes a computational approach, which has several advantages:
+{\em Think Stats: Probability and Statistics for Programmers} is an
+introduction to the practical tools of exploratory data analysis.
+
+When I start working with a new dataset, I follow these steps:
 
 \begin{itemize}
 
-\item Students write programs as a way of developing and testing their
-  understanding.  For example, they write functions to compute a least
-  squares fit, residuals, and the coefficient of determination.
-  Writing and testing this code requires them to understand the
-  concepts and implicitly corrects misunderstandings.
+\item Importing and cleaning: Whatever format the data is in, it
+usually takes some time and effort to read the data, clean and transform
+it, and check that everything made it through the translation process
+intact.
 
-\item Students run experiments to test statistical behavior.  For
-  example, they explore the Central Limit Theorem (CLT) by generating
-  samples from several distributions.  When they see that the sum of
-  values from a Pareto distribution doesn't converge to normal, they
-  remember the assumptions the CLT is based on.
+\item Single variable explorations: I usually start by examining one
+  variable at a time, finding out what the values mean and what
+  distributions of the variables are, and identifying appropriate
+  summary statistics.
+
+\item Pair-wise explorations: To identify possible relationships
+  between variables, I look at tables and scatter plots, and compute
+  correlations and linear fits.
+
+\item Multivariate analysis: If there are apparent relationships
+  between variables, I use multiple regression to add control variables
+  investigate more complex relationships.
+
+\item Estimation and hypothesis testing: When reporting statistical
+  results, it is important to answer three questions: How big is
+  the effect?  How much variability should we expect if we run the same
+  measurement again?  Is it likely that the apparent effect could be
+  due to chance?
+
+\item Visualization: During exploration, visualization is an important 
+  tool for finding possible relationships and effects.  Then if an
+  apparent effect holds up to scrutiny, visualization is an effective
+  way to communicate results.
+
+\end{itemize}
+
+
+This books takes a computational approach, which has several
+advantages:
+
+\begin{itemize}
+
+\item I present most ideas using simple Python code, rather than
+  mathematical notation.  In general, Python code is more readble;
+  also, because it is executable, readers can download it, run it,
+  and modify it.
+
+\item Each chapter includes exercies readers can do to develop
+  and solidify their learning.  When you write programs, you
+  express your understanding in code; when you debugging the
+  program, you are correcting your understanding.
+
+\item Some exercises involve running experiments to test statistical
+  behavior.  For example, you can explore the Central Limit Theorem
+  (CLT) by generating random samples and computing their sums.  The
+  resulting visualizations demonstrate why the CLT works, and when
+  it doesn't.
 
 \item Some ideas that are hard to grasp mathematically are easy to
   understand by simulation.  For example, we approximate p-values by
   running Monte Carlo simulations, which reinforces the meaning of the
   p-value.
 
-\item Using discrete distributions and computation makes it possible
-  to present topics like Bayesian estimation that are not usually
-  covered in an introductory class.  For example, one exercise asks
-  students to compute the posterior distribution for the ``German tank
-  problem,'' which is difficult analytically but surprisingly easy
-  computationally.
-
-\item Because students work in a general-purpose programming language
-  (Python), they are able to import data from almost any
+\item Because the book is based on a general-purpose programming language
+  (Python), readers can import data from almost any
   source.  They are not limited to data that has been cleaned and
   formatted for a particular statistics tool.
 
@@ -304,7 +338,7 @@ students work on a semester-long project that requires them to pose a
 statistical question, find a dataset that can address it, and apply
 each of the techniques they learn to their own data.
 
-To demonstrate the kind of analysis I want students to do, the book
+To demonstrate my approach to exploratory data analysis, the book
 presents a case study that runs through all of the chapters.  It uses
 data from two sources:
 
@@ -370,13 +404,58 @@ the book and I encourage you to follow those links; in many cases, the
 Wikipedia page picks up where my description leaves off.  The
 vocabulary and notation in this book are generally consistent with
 Wikipedia, unless I had a good reason to deviate.
-
 Other resources I found useful were Wolfram MathWorld and (of course)
-Google.  I also used two books, David MacKay's {\em Information
-  Theory, Inference, and Learning Algorithms}, which is the book that
-got me hooked on Bayesian statistics, and Press et al.'s {\em
-  Numerical Recipes in C}.  But both books are freely available online,
-so I don't feel too bad.
+Google.
+
+\section*{Using the code}
+
+The code and data used in this book are available from
+\url{https://github.com/AllenDowney/ThinkStats2}.  Git is a version
+control system that allows you to keep track of the files that
+make up a project.  A collection of files under Git's control is
+called a {\bf repository}.  GitHub is a hosting service that provides
+storage for Git repositories and a convenient web interface.
+
+The GitHub homepage for my repostory provides several ways to
+work with the code:
+
+\begin{itemize}
+
+\item You can create a copy of my repository
+on GitHub by pressing the {\sf Fork} button.  If you don't already
+have a GitHub account, you'll need to create one, but if you do, you'll
+have your own repository on GitHub that you can use to keep track
+of code you write while working on this book.
+
+\item You can also {\bf clone}
+my repository, which means that you create a copy of the files on
+your computer.  You don't need a GitHub account to do this, but you
+won't be able to write your changes back to my repository.
+
+\item If you don't want to use Git at all, you can download the files
+in a Zip file.
+
+\end{itemize}
+
+The code in this book is written to work in both Python 2 and Python 3
+with no translation.  However, you will need the following packages
+installed: Pandas, NumPy, SciPy, and matplotlib.
+
+Although these are commonly-used packages, they are not included with
+all Python installations, and they can be hard to install in some
+environments.  I developed this book using Anaconda from Continuum
+Analytics, which is a free Python installation that includes the all
+packages you'll need.
+
+I found Anaconda easy to install.  By
+default it does a user-level installation, not system-level, so you
+don't need administrative privilege to install it.  And it supports
+both Python 2 and Python 3.  You can download Anaconda from
+\url{http://continuum.io/downloads}.
+
+After you clone the repository or unzip the zip file, you should be able
+to execute ???
+
 
 Allen B. Downey \\*
 Needham MA \\*
@@ -475,55 +554,21 @@ Pearson's correlation.
 \mainmatter
 
 
-\chapter{Statistical thinking for programmers}
+\chapter{Data science for programmers}
 \label{intro}
 
-This book is about turning data into knowledge.  Data is cheap (at
-least relatively); knowledge is harder to come by.
+The thesis of this book is that data, combined with practical
+methods, can answer questions and guide decisions under uncertainty.
 
-I will present three related pieces:
-
-\begin{description}
-
-\item[Probability] is the study of random events.  Most people have an
-  intuitive understanding of degrees of probability, which is why you
-  can use words like ``probably'' and ``unlikely'' without special
-  training, but we will talk about how to make quantitative claims
-  about those degrees.
-\index{probability}
-
-\item[Statistics] is the discipline of using data samples to support
-  claims about populations.  Most statistical analysis is based on
-  probability, which is why these pieces are usually presented
-  together.
-\index{statistics}
-
-\item[Computation] is a tool that is well-suited to quantitative
-  analysis, and computers are commonly used to process statistics.
-  Also, computational experiments
-  are useful for exploring concepts in probability and statistics.
-\index{computation}
-
-\end{description}
-
-The thesis of this book is that if you know how to program, you can
-use that skill to help you understand probability and statistics.
-These topics are often presented from a mathematical perspective, and
-that approach works well for some people.  But some important ideas
-in this area are hard to work with mathematically and relatively
-easy to approach computationally.
-
-The rest of this chapter presents a case study motivated by a question
+As an example, I present a case study motivated by a question
 I heard when my wife and I were expecting our first child: do first
 babies tend to arrive late?
 \index{first babies}
 
-
-\section{Do first babies arrive late?}
-
-If you Google this question, you will find plenty of discussion.
-Some people claim it's true, others say it's a myth, and some people
-say it's the other way around: first babies come early.
+If you Google this question, you will find plenty of
+discussion.  Some people claim
+it's true, others say it's a myth, and some people say it's the other
+way around: first babies come early.
 
 In many of these discussions, people provide data to support their
 claims.  I found many examples like these:
@@ -555,7 +600,7 @@ evidence usually fails, because:
 \begin{description}
 
 \item[Small number of observations:] If the gestation period is longer
-  for first babies, the difference is probably small compared to the
+  for first babies, the difference is probably small compared to
   natural variation.  In that case, we might have to compare a large
   number of pregnancies to be sure that a difference exists.
 \index{sample size}
@@ -603,14 +648,14 @@ of statistics, which include:
   inconsistencies and identify limitations.
 \index{exploratory data analysis}
 
-\item[Hypothesis testing:] Where we see apparent effects, like a
-  difference between two groups, we will evaluate whether the effect
-  is real, or whether it might have happened by chance.
-\index{hypothesis testing}
-
 \item[Estimation:] We will use data from a sample to estimate
   characteristics of the general population.
 \index{estimation}
+
+\item[Hypothesis testing:] Where we see apparent effects, like a
+  difference between two groups, we will evaluate whether the effect
+  might have happened by chance.
+\index{hypothesis testing}
 
 \end{description}
 
@@ -689,6 +734,15 @@ and
 to make sure you understand why not.
 
 \end{exercise}
+
+
+\section{Importing the data}
+
+The code and data used in this book are available from
+\url{https://github.com/AllenDowney/ThinkStats2}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+???
 
 \begin{exercise}
 
