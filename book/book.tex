@@ -439,22 +439,38 @@ in a Zip file.
 
 The code in this book is written to work in both Python 2 and Python 3
 with no translation.  However, you will need the following packages
-installed: Pandas, NumPy, SciPy, and matplotlib.
+installed: 
+
+\begin{itemize}
+
+\item pandas for representing and analyzing data,
+  \url{http://pandas.pydata.org/}.
+
+\item NumPy for basic numerical computation, \url{http://www.numpy.org/}.
+
+\item SciPy for scientific computation including statistics,
+  \url{http://www.scipy.org/}.
+
+\item matplotlib for visualization, \url{http://matplotlib.org/}.
+
+\end{itemize}
 
 Although these are commonly-used packages, they are not included with
 all Python installations, and they can be hard to install in some
 environments.  I developed this book using Anaconda from Continuum
-Analytics, which is a free Python installation that includes the all
-packages you'll need.
+Analytics, which is a free Python distribution that includes all
+packages you'll need to run the code (and lots more).
 
-I found Anaconda easy to install.  By
-default it does a user-level installation, not system-level, so you
-don't need administrative privilege to install it.  And it supports
-both Python 2 and Python 3.  You can download Anaconda from
-\url{http://continuum.io/downloads}.
+I found Anaconda easy to install.  By default it does a user-level
+installation, not system-level, so you don't need administrative
+privilege.  And it supports both Python 2 and Python 3.  You can
+download Anaconda from \url{http://continuum.io/downloads}.
 
-After you clone the repository or unzip the zip file, you should be able
-to execute ???
+After you clone the repository or unzip the zip file, you should
+have a file called {\tt ThinkStats2/code/nsfg.py}.  If you run it,
+it should read a data file, run some tests, and print a message
+like, ``All tests passed.''  If you get import errors, it probably
+means there are some packages you need to install.  Good luck!
 
 
 Allen B. Downey \\*
@@ -742,7 +758,214 @@ The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  For information
 about downloading and working with this code, see Section~\ref{code}.
 
-???
+Once you download the code, you should
+have a file called {\tt ThinkStats2/code/nsfg.py}.  If you run it,
+it should read a data file, run some tests, and print a message
+like, ``All tests passed.''
+
+Let's see what it does.  Pregnancy data from Cycle 6 of the NSFG is in
+a file called {\tt 2002FemPreg.dat.gz}.  As the suffixes suggest, it
+is a gzip-compressed data file in plain text (ASCII), with fixed width
+columns.  Each line in the file contains data about one pregnancy.
+
+The format of the file is documented in {\tt 2002FemPreg.dct}, which
+is a Stata dictionary file.  Stata is a statistical software system;
+a ``dictionary'' in this context is a list of variable names and types,
+and indices that indicate where in each line to find each variable.
+
+For example:
+%
+\begin{verbatim}
+infile dictionary {
+  _column(1)  str12  caseid    %12s  "RESPONDENT ID NUMBER"
+  _column(13) byte   pregordr   %2f  "PREGNANCY ORDER (NUMBER)"
+}
+\end{verbatim}
+
+This dictionary describes two variables: {\tt caseid} is a 12-character
+string that represents the respondent ID; {\tt pregorder} is a 
+one-byte integer that indicates which pregnancy this record
+describes for this respondent.
+
+The code you downloaded includes {\tt ThinkStats2} which is a library
+that contains many classes and functions used in this book.  {\tt
+  ThinkStats2} provides functions to read the Stata dictionary and
+then use it to read the NSFG data file.
+
+Here's how it's used in {\tt nsfg.py}:
+
+\begin{verbatim}
+def ReadFemPreg(dct_file = '2002FemPreg.dct',
+                dat_file = '2002FemPreg.dat.gz'):
+    dct = thinkstats2.ReadStataDct(dct_file)
+    df = dct.ReadFixedWidth(dat_file, compression='gzip')
+    CleanPregFrame(df)
+    return df
+\end{verbatim}
+
+{\tt thinkstats2.ReadStataDct} takes the name of the dictionary file
+and returns a FixedWidthVariables object, which contains the information
+from the dictionary file and provides {\tt ReadFixedWidth}, which
+reads the data file.
+
+The result is a DataFrame, which is the fundamental data structure
+provided by Pandas.  A DataFrame behaves like a list in some ways,
+like an array in other ways, and also like a dictionary.
+
+You can think of it as an array that contains a row for
+each record, in this case one row per pregnancy, and a column for
+each variable.
+
+In addition to the data, a DataFrame also contains the variable
+names and their types, and it provides methods for accessing and modifying
+the data.
+
+So you can also think of a DataFrame as a dictionary that maps from
+each column name to a column of data.  The attribute {\tt columns}
+is a list of column names:  
+
+\begin{verbatim}
+>>> import nsfg
+>>> df = ReadFemPreg()
+>>> df.columns
+Index([u'caseid', u'pregordr', u'howpreg_n', u'howpreg_p', ... ])
+\end{verbatim}
+
+The result is an Index, which is another Pandas data structure.  For
+now, we'll treat it like a list:
+
+\begin{verbatim}
+>>> df.columns[1]
+'pregordr'
+\end{verbatim}
+
+To access a column from a DataFrame, you can use the variable
+name as a key:
+
+\begin{verbatim}
+>>> pregordr = df['pregordr']
+>>> type(pregordr)
+<class 'pandas.core.series.Series'>
+\end{verbatim}
+
+The result is a Series, yet another Pandas data structure.
+For now, you can think of a Series as a list, but there's
+a bit more to it.
+When you print a Series, you get the indices and the
+corresponding values:
+
+\begin{verbatim}
+>>> pregordr
+0     1
+1     2
+2     1
+3     2
+...
+13590    3
+13591    4
+13592    5
+Name: pregordr, Length: 13593, dtype: int64
+\end{verbatim}
+
+In addition, the Series prints the variable name, length, and data type;
+{\tt int64} is one of the data types provided by NumPy.  If you run
+this example on a 32-bit machine you might see {\tt int32}.
+
+You can access the elements of a Series using integer indices
+and slices:
+
+\begin{verbatim}
+>>> pregordr[0]
+1
+>>> pregordr[2:5]
+2    1
+3    2
+4    3
+Name: pregordr, dtype: int64
+\end{verbatim}
+
+The result of the index operator is an {\tt int64}; the
+results of the slice is another Series.
+
+You can also access the columns of a DataFrame using dot notation:
+
+\begin{verbatim}
+>>> pregordr = df.pregordr
+\end{verbatim}
+
+This notation doesn't work if the name of the variable has a space in
+it, which is one reason the name of the variable should not have a
+space in it.
+
+
+\section{Data cleaning}
+
+When you import data like this, you often have to check for errors,
+deal with special values, convert data into different formats, and
+perform calculations.  These operations are called {\bf data cleaning}.
+
+{\tt nsfg.py} provides {\tt CleanPregFrame}, a function that cleans
+the variables I am planning to use.
+
+\begin{verbatim}
+def CleanPregFrame(df):
+    df.agepreg /= 100.0
+
+    na_vals = [51, 97, 98, 99]
+    df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
+    df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
+    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0
+\end{verbatim}
+
+The first line transforms {\tt agepreg}, dividing each element by 100.
+In the data file, the respondent's age is encoded as an integer
+number of centiyears.  Dividing by 100 converts to years.
+
+\verb"birthwgt_lb" and \verb"birthwgt_oz" contain the weight of the
+baby, in pounds and ounces, for pregnancies that end in live birth.
+In addition it uses several special codes:
+
+\begin{verbatim}
+97	NOT ASCERTAINED
+98	REFUSED	 
+99	DON'T KNOW
+\end{verbatim}
+
+Special values that are encoded as numbers are {\em dangerous} because
+if they are not handled properly, the can easily introduce bogus
+values.  The replace method replaces these values with the floating-point
+value {\tt NaN}, which represents something that is ``not a number.''
+{\tt nan} is available from NumPy, which I imported as {\tt np}.
+
+As part of the IEEE floating-point standard, all mathematical
+operations return {\tt nan} if either argument is {\tt nan}:
+
+\begin{verbatim}
+>>> import numpy as np
+>>> np.nan / 100.0
+\end{verbatim}
+
+So computations with {\tt nan} tend to do the right thing.  And
+most Pandas functions handle {\tt nan} appropriately, at
+least for most applications.  But this will be a recurring issue.
+
+Finally, the last line of {\tt CleanPregFrame} creates a new
+column \verb"totalwgt_lb" that combines pounds and ounces into
+a single quantity, in pounds.
+
+
+\begin{exercise}
+\end{exercise}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
 
 \begin{exercise}
 

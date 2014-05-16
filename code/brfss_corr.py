@@ -102,6 +102,23 @@ class CorrelationPermute(hypothesis.HypothesisTest):
         return self.model
 
 
+def TestCorrelation(heights, weights):
+    """Test whether the correlation is statistically significant.
+
+    heights: sequence
+    weights: sequence
+    """
+
+    test = CorrelationPermute((heights, weights))
+    p_value = test.PValue()
+    print('p-value', p_value)
+    print('actual test statitic', test.actual)
+    print('max test statitic', test.MaxTestStat())
+
+    test.PlotCdf()
+    thinkplot.Show(xlabel='resampled correlation', ylabel='CDF')
+
+
 def main(name, nrows=None):
     thinkstats2.RandomSeed(17)
 
@@ -113,18 +130,9 @@ def main(name, nrows=None):
     columns = df[['htm3', 'wtkg2']].dropna()
     heights, weights = columns.htm3.values, columns.wtkg2.values
 
-    test = CorrelationPermute((heights, weights))
-    p_value = test.PValue()
-    print('p-value', p_value)
-    print('actual test statitic', test.actual)
-    print('max test statitic', test.MaxTestStat())
-
-    test.PlotCdf()
-    thinkplot.Show(xlabel='resampled correlation', ylabel='CDF')
-
+    TestCorrelation(heights, weights)
     if nrows == None:
         ComputeCorrelations(heights, weights)
-
 
 
 if __name__ == '__main__':
