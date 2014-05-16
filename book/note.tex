@@ -1,0 +1,300 @@
+\documentclass[12pt]{article}
+
+\usepackage{mathtools}
+
+\title{Bayes's theorem and logistic regression}
+\author{Allen B. Downey}
+
+\newcommand{\logit}{\mathrm{logit}}
+\renewcommand{\P}{\mathrm{P}}
+\renewcommand{\O}{\mathrm{O}}
+\newcommand{\LR}{\mathrm{LR}}
+\newcommand{\LO}{\mathrm{LO}}
+\newcommand{\LLR}{\mathrm{LLR}}
+\newcommand{\OR}{\mathrm{OR}}
+\newcommand{\LOR}{\mathrm{LOR}}
+\newcommand{\IF}{\mathrm{if}}
+\newcommand{\notH}{\neg H}
+
+\setlength{\headsep}{3ex}
+\setlength{\parindent}{0.0in}
+\setlength{\parskip}{1.7ex plus 0.5ex minus 0.5ex}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+My two favorite topics in probability and statistics are
+Bayes's theorem and logistic regression.  Because there are
+similarities between them, I have always assumed that there is
+a connection.  In this note, I demonstrate the
+connection mathematically, and (I hope) shed light on the
+motivation for logistic regression and the interpretation of
+the results.
+\end{abstract}
+
+
+\section{Bayes's theorem}
+
+I'll start by reviewing Bayes's theorem, using an example that came up
+when I was in grad school.  I signed up for a class on Theory of
+Computation.  On the first day of class, I was the first to arrive.  A
+few minutes later, another student arrived.  Because I was expecting
+most students in an advanced computer science class to be male, I was
+mildly surprised that the other student was female.  Another female
+student arrived a few minutes later, which was sufficiently
+surprising that I started to think I was in the wrong room.  When
+another female student arrived, I was confident I was in the wrong
+place (and it turned out I was).
+
+As each student arrived, I used the observed data to update my
+belief that I was in the right place.  We can use Bayes's theorem to
+quantify the calculation I was doing intuitively.
+
+I'll us $H$ to represent the hypothesis that I was in the right
+room, and $F$ to represent the observation that the first other
+student was female.  Bayes's theorem provides an algorithm for
+updating the probability of $H$:
+
+\[ \P(H|F) = \P(H)~\frac{\P(F|H)}{P(F)}\]
+
+Where
+
+\begin{itemize}
+
+\item $\P(H)$ is the prior probability of $H$ before the other
+student arrived.
+
+\item $\P(H|F)$ is the posterior probability of $H$, updated based
+on the observation $F$.
+
+\item $\P(F|H)$ is the likelihood of the data, $F$, assuming that
+the hypothesis is true.
+
+\item $P(F)$ is the likelihood of the data, independent of $H$.
+ 
+\end{itemize}
+
+Before I saw the other students, I was confident I was in the right
+room, so I might assign $\P(H)$ something like 90\%.
+
+When I was in grad school most advanced computer science classes were
+90\% male, so if I was in the right room, the likelihood of the
+first female student was only 10\%.  And the likelihood of three
+female students was only 0.1\%.
+
+If we don't assume I was in the right room, then the likelihood of
+the first female student was more like 50\%, so the likelihood
+of all three was 12.5\%.
+
+Plugging those numbers into Bayes's theorem yields $\P(H|F) = 0.64$
+after one female student, $\P(H|FF) = 0.26$ after the second,
+and $\P(H|FFF) = 0.07$ after the third.
+
+
+\section{Logistic regression}
+
+Logistic regression is based on the following functional form:
+
+\[ \logit(p) = \beta_0 + \beta_1 x_1 + ... + \beta_n x_n \]
+
+where the dependent variable, $p$, is a probability,
+the $x$s are explanatory variables, and the $\beta$s are
+coefficients we want to estimate.  The $\logit$ function is the
+log-odds, or
+
+\[ \logit(p) = \ln \left( \frac{p}{1-p} \right) \]
+
+When you present logistic regression like this, it raises
+three questions:
+
+\begin{itemize}
+
+\item Why is $\logit(p)$ the right choice for the dependent
+variable?
+
+\item Why should we expect the relationship between $\logit(p)$
+and the explanatory variables to be linear?
+
+\item How should we interpret the estimated parameters?
+
+\end{itemize}
+
+The answer to all of these questions turns out to be Bayes's
+theorem.  To demonstrate that, I'll use a simple example where
+there is only one explanatory variable.  But the derivation
+generalizes to multiple regression.
+
+On notation: I'll use $\P(H)$ for the probability
+that some hypothesis, $H$, is true.  $\O(H)$ is the odds of the same
+hypothesis, defined as
+
+\[ \O(H) = \frac{\P(H)}{1 - \P(H)} \]
+
+I'll use $\LO(H)$ to represent the log-odds of $H$:
+
+\[ \LO(H) = \ln \O(H) \]
+
+I'll also use $\LR$ for a likelihood ratio, and $\OR$ for an odds
+ratio.  Finally, I'll use $\LLR$ for a log-likelihood ratio, and
+$\LOR$ for a log-odds ratio.
+
+
+
+
+
+\section{Making the connection}
+
+To demonstrate the connection between Bayes's theorem and
+logistic regression, I'll start with the odds form
+of Bayes's theorem.  Continuing the previous example,
+I could write
+
+\begin{equation} \label{A}
+\O(H|F) = \O(H)~\LR(F|H)
+\end{equation}
+
+where
+
+\begin{itemize}
+
+\item $\O(H)$ is the prior odds that I was in the right room,
+
+\item $\O(H|F)$ is the posterior odds after seeing one female student,
+
+\item $\LR(F|H)$ is the likelihood ratio of the data, given
+the hypothesis.
+
+\end{itemize}
+
+The likelihood ratio of the data is:
+
+\[ \LR(F|H) = \frac{\P(F|H)}{\P(F|\notH)} \]
+
+where $\notH$ means $H$ is false.
+
+Noticing that logistic regression is expressed in terms of
+log-odds, my next move is to write the log-odds form of
+Bayes's theorem by taking the log of Eqn~\ref{A}:
+
+\begin{equation} \label{B}
+\LO(H|F) = \LO(H) + \LLR(F|H)
+\end{equation}
+
+If the first student to arrive had been male, we would write
+
+\begin{equation} \label{C} \nonumber
+\LO(H|M) = \LO(H) + \LLR(M|H)
+\end{equation}
+
+Or more generally if we use $X$ as a variable to represent
+the sex of the observed student, we would write
+
+\begin{equation} \label{D}
+\LO(H|X) = \LO(H) + \LLR(X|H)
+\end{equation}
+
+I'll assign $X=0$ if the observed student is female and
+$X=1$ if male.  Then I can write:
+
+\begin{equation} \label{E} \nonumber
+\LLR(X|H) = \left\{
+  \begin{array}{lr}
+    \LLR(F|H) & \IF ~X = 0\\
+    \LLR(M|H) & \IF ~X = 1
+  \end{array}
+\right.
+\end{equation}
+
+Or we can collapse these two expressions into one by using
+$X$ as a multiplier:
+
+\begin{equation} \label{F}
+\LLR(X|H) = \LLR(F|H) + X [\LLR(M|H) - \LLR(F|H)]
+\end{equation}
+
+
+\section{Odds ratios}
+
+The next move is to recognize that 
+the part of Eqn~\ref{F} in brackets is the log-odds ratio
+of $H$.  To see that, we need to look more closely at odds ratios.
+
+Odds ratios are often used in medicine to describe the association
+between a disease and a risk factor.  In the example scenario, we
+can use an odds ratio to express the odds of the hypothesis
+$H$ if we observe a male student, relative to the odds if we
+observe a female student:
+
+\[ \OR_X(H) = \frac{\O(H|M)}{\O(H|F)} \]
+
+I'm using the notation $\OR_X$ to represent the odds ratio
+associated with the variable $X$.
+
+Applying Bayes's theorem to
+the top and bottom of the previous expression yields
+
+\[ \OR_X(H) = \frac{\O(H)~\LR(M|H)}{\O(H)~\LR(F|H)} = 
+\frac{\LR(M|H)}{\LR(F|H)}\]
+
+Taking the log of both sides yields
+
+\begin{equation} \label{G}
+\LOR_X(H) = \LLR(M|H) - \LLR(F|H)
+\end{equation}
+
+This result should look familiar, since it appears in
+Eqn~\ref{F}.
+
+
+\section{Conclusion}
+
+Now we have all the pieces we need; we just have to assemble them.
+Combining Eqns~\ref{F} and \ref{G} yields  
+
+\begin{equation} \label{H}
+\LLR(H|X) = \LLR(F) + X~\LOR(X|H)
+\end{equation}
+
+Combining Eqns~\ref{D} and \ref{H} yields
+
+\begin{equation} \label{I}
+\LO(H|X) = \LO(H) + \LLR(F|H) + X~\LOR(X|H)
+\end{equation}
+
+Finally, combining Eqns~\ref{B} and \ref{I} yields
+
+\[ \LO(H|X) = \LO(H|F) + X~\LOR(X|H) \]
+
+We can think of this equation as the log-odds form of Bayes's theorem,
+with the update term expressed as a log-odds ratio.  Let's compare
+that to the functional form of logistic regression:
+
+\[ \logit(p) = \beta_0 + X \beta_1 \]
+
+The correspondence between these equations suggests the following
+interpretation:
+
+\begin{itemize}
+
+\item The predicted value, $\logit(p)$, is the posterior log
+odds of the hypothesis, given the observed data.
+
+\item The intercept, $\beta_0$, is the log-odds of the
+hypothesis if $X=0$.
+
+\item The coefficient of $X$, $\beta_1$, is a log-odds ratio
+that represents odds of $H$ when $X=1$, relative to
+when $X=0$.
+
+\end{itemize}
+
+This relationship between logistic regression and Bayes's theorem
+tells us how to interpret the estimated coefficients.  It also
+answers the question I posed at the beginning of this note:
+the functional form of logistic regression makes sense because
+it corresponds to the way Bayes's theorem uses data to update
+probabilities.
+
+\end{document}
