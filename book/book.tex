@@ -613,31 +613,31 @@ But we might want evidence that is more persuasive and
 an answer that is more reliable.  By those standards, anecdotal
 evidence usually fails, because:
 
-\begin{description}
+\begin{itemize}
 
-\item[Small number of observations:] If the gestation period is longer
+\item Small number of observations: If the gestation period is longer
   for first babies, the difference is probably small compared to
   natural variation.  In that case, we might have to compare a large
   number of pregnancies to be sure that a difference exists.
 \index{sample size}
 
-\item[Selection bias:] People who join a discussion of this question
+\item Selection bias: People who join a discussion of this question
   might be interested because their first babies were late.  In that
   case the process of selecting data would bias the results.
 \index{selection bias}
 \index{bias!selection}
 
-\item[Confirmation bias:] People who believe the claim might be more
+\item Confirmation bias:  People who believe the claim might be more
   likely to contribute examples that confirm it.  People who doubt the
   claim are more likely to cite counterexamples.
 \index{confirmation bias}
 \index{bias!confirmation}
 
-\item[Inaccuracy:] Anecdotes are often personal stories, and often
+\item Inaccuracy: Anecdotes are often personal stories, and often
   misremembered, misrepresented, repeated
   inaccurately, etc.
 
-\end{description}
+\end{itemize}
 
 So how can we do better?
 
@@ -646,34 +646,34 @@ So how can we do better?
 To address the limitations of anecdotes, we will use the tools
 of statistics, which include:
 
-\begin{description}
+\begin{itemize}
 
-\item[Data collection:] We will use data from a large national survey
+\item Data collection: We will use data from a large national survey
   that was designed explicitly with the goal of generating
   statistically valid inferences about the U.S. population.
 \index{data collection}
 
-\item[Descriptive statistics:] We will generate statistics that
+\item Descriptive statistics: We will generate statistics that
   summarize the data concisely, and evaluate different ways to
   visualize data.
 \index{descriptive statistics}
 
-\item[Exploratory data analysis:] We will look for
+\item Exploratory data analysis: We will look for
   patterns, differences, and other features that address the questions
   we are interested in.  At the same time we will check for
   inconsistencies and identify limitations.
 \index{exploratory data analysis}
 
-\item[Estimation:] We will use data from a sample to estimate
+\item Estimation: We will use data from a sample to estimate
   characteristics of the general population.
 \index{estimation}
 
-\item[Hypothesis testing:] Where we see apparent effects, like a
+\item Hypothesis testing: Where we see apparent effects, like a
   difference between two groups, we will evaluate whether the effect
   might have happened by chance.
 \index{hypothesis testing}
 
-\end{description}
+\end{itemize}
 
 By performing these steps with care to avoid pitfalls, we can
 reach conclusions that are more justifiable and more likely to be
@@ -820,7 +820,55 @@ In addition to the data, a DataFrame also contains the variable
 names and their types, and it provides methods for accessing and modifying
 the data.
 
-So you can also think of a DataFrame as a dictionary that maps from
+
+\section{Variables}
+
+For pregnancy records, we extract the following variables:
+
+\begin{itemize}
+
+\item caseid] is the integer ID of the respondent.
+
+\item prglength] is the integer duration of the pregnancy in weeks.
+
+\item outcome] is an integer code for the outcome of the pregnancy.
+The code 1 indicates a live birth.
+
+\item birthord] is the integer birth order of each live birth;
+for example, the code for a first child is 1. 
+For outcomes other than live birth, this field is blank.
+
+\item finalwgt] is the statistical weight associated with the respondent.
+It is a floating-point value that indicates the number of people in
+the U.S. population this respondent represents.  Members of oversampled
+groups have lower weights.\index{weight!sample}
+
+\end{itemize}
+
+If you read the casebook carefully, you will see that most of these
+variables are {\bf recodes}, which means that they are not part of the
+{\bf raw data} collected by the survey, but they are calculated using
+the raw data.  \index{recode} \index{raw data}
+
+For example, {\tt prglength} for live births is equal to the raw
+variable {\tt wksgest} (weeks of gestation) if it is available;
+otherwise it is estimated using {\tt mosgest * 4.33} (months of
+gestation times the average number of weeks in a month).
+
+Recodes are often based on logic that checks the consistency and
+accuracy of the data.  In general it is a good idea to use recodes
+unless there is a compelling reason to process the raw data
+yourself.
+
+You might also notice that {\tt Pregnancies} has a method called
+{\tt Recode} that does some additional checking and recoding.
+
+
+
+
+\section{DataFrames}
+
+For now you can think of a DataFrame as a dictionary that maps from
 each column name to a column of data.  The attribute {\tt columns}
 is a list of column names:  
 
@@ -850,8 +898,7 @@ name as a key:
 
 The result is a Series, yet another Pandas data structure.
 For now, you can think of a Series as a list, but there's
-a bit more to it.
-When you print a Series, you get the indices and the
+a bit more to it.  When you print a Series, you get the indices and the
 corresponding values:
 
 \begin{verbatim}
@@ -868,7 +915,7 @@ Name: pregordr, Length: 13593, dtype: int64
 \end{verbatim}
 
 In addition, the Series prints the variable name, length, and data type;
-{\tt int64} is one of the data types provided by NumPy.  If you run
+{\tt int64} is one of the types provided by NumPy.  If you run
 this example on a 32-bit machine you might see {\tt int32}.
 
 You can access the elements of a Series using integer indices
@@ -885,7 +932,7 @@ Name: pregordr, dtype: int64
 \end{verbatim}
 
 The result of the index operator is an {\tt int64}; the
-results of the slice is another Series.
+result of the slice is another Series.
 
 You can also access the columns of a DataFrame using dot notation:
 
@@ -893,33 +940,36 @@ You can also access the columns of a DataFrame using dot notation:
 >>> pregordr = df.pregordr
 \end{verbatim}
 
-This notation doesn't work if the name of the variable has a space in
-it, which is one reason the name of the variable should not have a
-space in it.
+This notation only works if the column name is a valid Python
+identifier, so it has to begin with a letter, can't contain spaces, etc.
 
 
-\section{Data cleaning}
+\section{Transformation}
 
 When you import data like this, you often have to check for errors,
 deal with special values, convert data into different formats, and
 perform calculations.  These operations are called {\bf data cleaning}.
 
-{\tt nsfg.py} provides {\tt CleanPregFrame}, a function that cleans
+{\tt nsfg.py} includes {\tt CleanPregFrame}, a function that cleans
 the variables I am planning to use.
 
 \begin{verbatim}
 def CleanPregFrame(df):
     df.agepreg /= 100.0
 
-    na_vals = [51, 97, 98, 99]
+    na_vals = [97, 98, 99]
     df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
     df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
-    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0
+
+    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0    
 \end{verbatim}
 
-The first line transforms {\tt agepreg}, dividing each element by 100.
-In the data file, the respondent's age is encoded as an integer
-number of centiyears.  Dividing by 100 converts to years.
+{\tt agepreg} contains the mother's age at the end of the
+pregnancy.  
+In the data file, {\tt agepreg} is encoded as an integer
+number of centiyears.  So the first line divides each element
+of {\tt agepreg} by 100, yielding a floating-point value in
+years.
 
 \verb"birthwgt_lb" and \verb"birthwgt_oz" contain the weight of the
 baby, in pounds and ounces, for pregnancies that end in live birth.
@@ -932,10 +982,11 @@ In addition it uses several special codes:
 \end{verbatim}
 
 Special values that are encoded as numbers are {\em dangerous} because
-if they are not handled properly, the can easily introduce bogus
-values.  The replace method replaces these values with the floating-point
-value {\tt NaN}, which represents something that is ``not a number.''
-{\tt nan} is available from NumPy, which I imported as {\tt np}.
+if they are not handled properly, they can easily introduce bogus
+values.  The {\tt replace} method replaces these values with {\tt NaN}, 
+a special floating-point value that represents 
+``not a number.''  {\tt nan} is available from NumPy, which I imported
+as {\tt np}.
 
 As part of the IEEE floating-point standard, all mathematical
 operations return {\tt nan} if either argument is {\tt nan}:
@@ -954,8 +1005,23 @@ column \verb"totalwgt_lb" that combines pounds and ounces into
 a single quantity, in pounds.
 
 
-\begin{exercise}
-\end{exercise}
+
+\section{Validation}
+
+
+In my initial exploration of this dataset, I found one value in
+\verb"birthwgt_lb" that is clearly wrong, unless one of the babies
+in this dataset was actually 51 pounds at birth.  So I added
+this line to replace invalid values with {\tt NaN}:
+
+\begin{verbatim}
+df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
+\end{verbatim}
+
+The expression in brackets yields a Series of type {\tt bool}, 
+where True indicates that the condition is true.  When a boolean
+Series is used as an index, it selects only the elements that
+satisfy the condition; in this case, it replaces them with {\tt NaN}.
 
 \begin{verbatim}
 \end{verbatim}
@@ -967,249 +1033,79 @@ a single quantity, in pounds.
 \end{verbatim}
 
 
-\begin{exercise}
 
-In this exercise, you will download data from the NSFG; we will use
-this data throughout the book.
-\index{National Survey of Family Growth}
-\index{NSFG}
+\section{Interpretation}
 
-\begin{enumerate}
+To work with data effectively, you have to think on two levels at the
+same time: the level of statistics and the level of context.
 
-\item Go to \url{http://thinkstats2.com/nsfg.html}.  Read the terms of
-use for this data and click ``I accept these terms'' (assuming that you do).
+As an example, let's look at the sequence of outcomes for a few
+respondents.  Because of the way the data files are organized, we have
+to do some processing to match up each pregnancy record with a respondent.
+Here's a function that does that:
 
-\item Download the files named {\tt 2002FemResp.dat.gz} and {\tt
-  2002FemPreg.dat.gz}.  The first is the respondent file, which contains
-  one line for each of the 7,643 female respondents.
-  The second file contains one line for each pregnancy reported by a
-  respondent.
-
-\item Online documentation of the survey is at
-  \url{http://www.icpsr.umich.edu/nsfg6}.
-  Browse the sections in the left navigation bar to get a sense of
-  what data are included.  You can also read the questionnaires
-  at \url{http://cdc.gov/nchs/data/nsfg/nsfg_2002_questionnaires.htm}.
-
-\item The web page for this book provides code to process the data
-  files from the NSFG.  Download \url{http://thinkstats2.com/survey.py}
-  and run it in the same directory you put the data files in.  It
-  should read the data files and print the number of lines in each:
-\index{{\tt survey.py}}
-%
 \begin{verbatim}
-Number of respondents 7643
-Number of pregnancies 13593
+def MakePregMap(df):
+    d = {}
+    for index, caseid in df.caseid.iteritems():
+        d.setdefault(caseid, []).append(index)
+    return d
 \end{verbatim}
 
-\item Browse the code to get a sense of what it does.  The next
-section explains how it works.
+{\tt df} is the DataFrame with pregnancy data.  The {\tt iteritems}
+method creates an iterator that enumerates the index (row number)
+and {\tt caseid} for each pregnancy.
 
-\end{enumerate}
+{\tt d} is a dictionary that maps from each caseid to a list of
+indices, so for each respondent we can look up the indices of
+that respondent's pregnancies.
 
-\end{exercise}
+This example looks up one respondent and prints a list of outcomes
+for her pregnancies:
 
-\section{Tables and records}
-
-Each line in the respondents file contains information about one
-respondent.  This information is called a {\bf record}.  The
-values that make up a record are called {\bf fields}.  A
-collection of records is called a {\bf table}.
-\index{{\tt survey.py}}
-
-If you read {\tt survey.py} you will see class definitions for {\tt
-  Record}, which is an object that represents a record, and {\tt
-  Table}, which represents a table.
-
-There are two subclasses of
-{\tt Record}---{\tt Respondent} and {\tt Pregnancy}---which
-contain records from the respondent and pregnancy tables.
-For the time being, these classes are empty; in particular, there
-is no \verb"__init__" method to initialize their attributes.  Instead
-we will use {\tt Table.MakeRecord} to convert a line of text into
-a {\tt Record} object.
-\index{init method}
-\index{method!init}
-
-There are also two subclasses of {\tt Table}: {\tt Respondents}
-and {\tt Pregnancies}.  The \verb"__init__" method in each class
-specifies the default name of the data file and the type of
-record to create.  Each {\tt Table} object has an attribute
-named {\tt records}, which is a list of {\tt Record} objects.
-
-For each {\tt Table}, the {\tt GetFields} method returns
-a list of tuples that specify the fields from the record that
-will be stored as attributes in each {\tt Record} object.  (You
-might want to read that last sentence twice.)
-
-For example, here is {\tt Pregnancies.GetFields}:
-%
 \begin{verbatim}
-    def GetFields(self):
-        return [
-            ('caseid', 1, 12, int),
-            ('prglength', 275, 276, int),
-            ('outcome', 277, 277, int),
-            ('birthord', 278, 279, int),
-            ('finalwgt', 423, 440, float),
-            ]
+    caseid = 10229
+    indices = preg_map[caseid]
+    print(caseid, preg.outcome[indices].values)
 \end{verbatim}
 
-The first tuple says that the field {\tt caseid} is in columns
-1 through 12 and it's an integer.  Each tuple contains the following
-information:
+And here is the result:
 
-\begin{description}
+\begin{verbatim}
+10229 [4 4 4 4 4 4 1]
+\end{verbatim}
 
-\item[field:] The name of the attribute where the field
-will be stored.  Most of the time I use the name from the
-NSFG codebook, converted to all lower case.
+The outcome code {\tt 1} indicates a live birth. Code {\tt 4} indicates
+a miscarriage; that is, a preganancy that ended spontaneously, usually
+with no known medical cause.
 
-\item[start:] The index of the starting column for this
-field.
-For example, the start index for {\tt caseid} is 1.
-You can look up these indices in the NSFG codebook
-at \url{http://www.icpsr.umich.edu/nsfg6/}.
+Statistically this respondent is not unusual.  Miscarriages are common
+and there are other respondents who reported as many or more.
 
-\item[end:] The index of the ending column for this field; for
-  example, the end index for {\tt caseid} is 12.  The indices in the
-  NSFG codebook are not like list indices in Python: they start at 1,
-  and the end index is {\em inclusive}.
+But remembering the context, this data tells the story of a woman
+who was pregnant six times, each time ending in miscarriage.  If we
+look at this data with empathy, it is natural to infer from her
+persistence how much she wanted a child, and to feel some joy at
+the successful outcome of her seventh pregnancy.
 
-\item[conversion function:] A function that takes a string and
-  converts it to an appropriate type.  You can use built-in functions,
-  like {\tt int} and {\tt float}, or user-defined functions.  If the
-  conversion fails, the attribute gets the string value {\tt 'NA'}.
-  If you don't want to convert a field, you can provide an identity
-  function or use {\tt str}.
+Each record in the NSFG dataset represents a person who provided
+honest answers to many personal and difficult questions.  We can use
+this data to answer statistical questions about family life,
+reproduction, and health.  At the same time, we should remember the
+context, and the people, the data come from.
 
-\end{description}
 
-For pregnancy records, we extract the following variables:
 
-\begin{description}
+\section{Exercises}
 
-\item[caseid] is the integer ID of the respondent.
 
-\item[prglength] is the integer duration of the pregnancy in weeks.
-
-\item[outcome] is an integer code for the outcome of the pregnancy.
-The code 1 indicates a live birth.
-
-\item[birthord] is the integer birth order of each live birth;
-for example, the code for a first child is 1. 
-For outcomes other than live birth, this field is blank.
-
-\item[finalwgt] is the statistical weight associated with the respondent.
-It is a floating-point value that indicates the number of people in
-the U.S. population this respondent represents.  Members of oversampled
-groups have lower weights.\index{weight!sample}
-
-\end{description}
-
-If you read the casebook carefully, you will see that most of these
-variables are {\bf recodes}, which means that they are not part of the
-{\bf raw data} collected by the survey, but they are calculated using
-the raw data.  \index{recode} \index{raw data}
-
-For example, {\tt prglength} for live births is equal to the raw
-variable {\tt wksgest} (weeks of gestation) if it is available;
-otherwise it is estimated using {\tt mosgest * 4.33} (months of
-gestation times the average number of weeks in a month).
-
-Recodes are often based on logic that checks the consistency and
-accuracy of the data.  In general it is a good idea to use recodes
-unless there is a compelling reason to process the raw data
-yourself.
-
-You might also notice that {\tt Pregnancies} has a method called
-{\tt Recode} that does some additional checking and recoding.
 
 \begin{exercise}
 In this exercise you will write a program to explore the data
 in the Pregnancies table.
 
-\begin{enumerate}
-
-\item In the directory where you put {\tt survey.py} and the
-data files, create a file named \verb"first.py" and
-type or paste in the following code:
-\index{{\tt survey.py}}
-\index{{\tt first.py}}
-%
-\begin{verbatim}
-import survey
-table = survey.Pregnancies()
-table.ReadRecords()
-print 'Number of pregnancies', len(table.records)
-\end{verbatim}
-
-The result should be 13593 pregnancies.
-
-\item Write a loop that iterates \verb"table" and counts
-the number of live births.  Find the documentation of {\tt outcome}
-and confirm that your result is consistent with the summary
-in the documentation.
-
-\item Modify the loop to partition the live birth records into
-two groups, one for first babies and one for the others.  Again,
-read the documentation of {\tt birthord} to see if your results
-are consistent.
-
-When you are working with a new dataset, these kinds of checks
-are useful for finding errors and inconsistencies in the data,
-detecting bugs in your program, and checking your understanding
-of the way the fields are encoded.
-
-\item Compute the average pregnancy length (in weeks) for first
-babies and others.  Is there a difference between the groups?  How
-big is it?
-\index{pregnancy length}
-\index{length!pregnancy}
-
-\end{enumerate}
-
-You can download a solution to this exercise from
-\url{http://thinkstats2.com/first.py}.\index{{\tt first.py}}
 
 \end{exercise}
-
-
-\section{Significance}
-
-In the previous exercise, you compared the gestation period for first
-babies and others; if things worked out, you found that first
-babies are born about 13 hours later, on average.
-\index{apparent effect}
-
-A difference like that is called an {\bf apparent effect}; that is,
-there might be something going on, but we are not yet sure.  There are
-several questions we still want to ask:
-
-\begin{itemize}
-
-\item If the two groups have different means, what about other {\bf
-  summary statistics}, like median and variance?  Can we be more
-  precise about how the groups differ?
-\index{summary statistic}
-
-\item Is it possible that the difference we saw could occur by chance,
-  even if the groups we compared were actually the same?  If so,
-  we would conclude that the effect was not {\bf statistically
-    significant}.
-\index{statistically significant}
-\index{significance}
-
-
-\item Is it possible that the apparent effect is due to selection bias or
-  some other error in the experimental setup?  If so, then we might
-  conclude that the effect is an {\bf artifact}; that is, something we
-  created (by accident) rather than found. 
-\index{artifact}
-
-\end{itemize}
-
-Answering these questions will take most of the rest of this book.
 
 
 \begin{exercise}
@@ -1246,83 +1142,83 @@ the data, or agree to certain terms of use.  Be persistent!
 
 \section{Glossary}
 
-\begin{description}
+\begin{itemize}
 
-\item[anecdotal evidence:] Evidence, often personal, that is collected
+\item anecdotal evidence: Evidence, often personal, that is collected
   casually rather than by a well-designed study.
 \index{anecdotal evidence}
 
-\item[population:] A group we are interested in studying.
+\item population: A group we are interested in studying.
   ``Population'' often refers to a
   group of people, but the term is used for other kinds of things,
   too.
 \index{population}
 
-\item[cross-sectional study:] A study that collects data about a
+\item cross-sectional study: A study that collects data about a
 population at a particular point in time.
 \index{cross-sectional study}
 \index{study!cross-sectional}
 
-\item[longitudinal study:] A study that follows a population over
+\item longitudinal study: A study that follows a population over
 time, collecting data from the same group repeatedly.
 \index{longitudinal study}
 \index{study!longitudinal}
 
-\item[respondent:] A person who responds to a survey.
+\item respondent: A person who responds to a survey.
 \index{respondent}
 
-\item[cohort:] A group of respondents.
+\item cohort: A group of respondents.
 \index{cohort}
 
-\item[sample:] The subset of a population used to collect data.
+\item sample: The subset of a population used to collect data.
 \index{sample}
 
-\item[representative:] A sample is representative if every member
+\item representative: A sample is representative if every member
 of the population has the same chance of being in the sample.
 \index{representative}
 
-\item[oversampling:] The technique of increasing the representation
+\item oversampling: The technique of increasing the representation
 of a sub-population in order to avoid errors due to small sample
 sizes.
 \index{oversampling}
 
-\item[record:] In a database, a collection of information about
+\item record: In a database, a collection of information about
 a single person or other object of study.
 \index{record}
 
-\item[field:] In a database, one of the named variables that makes
+\item field: In a database, one of the named variables that makes
 up a record.
 \index{field}
 
-\item[table:] In a database, a collection of records.
+\item table: In a database, a collection of records.
 \index{table}
 
-\item[raw data:] Values collected and recorded with little or no
+\item raw data: Values collected and recorded with little or no
 checking, calculation or interpretation.
 \index{raw data}
 
-\item[recode:] A value that is generated by calculation and other
+\item recode: A value that is generated by calculation and other
 logic applied to raw data.
 \index{recode}
 
-\item[summary statistic:] The result of a computation that reduces
+\item summary statistic: The result of a computation that reduces
 a dataset to a single number (or at least a smaller set of numbers)
 that captures some characteristic of the data.
 \index{summary statistic}
 
-\item[apparent effect:] A measurement or summary statistic that
+\item apparent effect: A measurement or summary statistic that
 suggests that something interesting is happening.
 \index{apparent effect}
 
-\item[statistically significant:] An apparent effect is statistically
+\item statistically significant: An apparent effect is statistically
   significant if it is unlikely to occur by chance.
 \index{statistically significant}
 
-\item[artifact:] An apparent effect that is caused by bias,
+\item artifact: An apparent effect that is caused by bias,
   measurement error, or some other kind of error.
 \index{artifact}
 
-\end{description}
+\end{itemize}
 
 
 
@@ -1529,15 +1425,15 @@ first babies and others.
 Histograms are useful because they make the following features immediately
 apparent:
 
-\begin{description}
+\begin{itemize}
 
-\item[Mode:] The most common value in a distribution is called the
+\item Mode: The most common value in a distribution is called the
   {\bf mode}.  In Figure~\ref{nsfg_hist} there is a clear mode at 39
   weeks.  In this case, the mode is the summary statistic that does
   the best job of describing the typical value.
 \index{mode}
 
-\item[Shape:] Around the mode, the distribution is asymmetric; it
+\item Shape: Around the mode, the distribution is asymmetric; it
   drops off quickly to the right and more slowly to the left.  From a
   medical point of view, this makes sense.  Babies are often born
   early, but seldom later than 42 weeks.  Also, the right side of the
@@ -1545,13 +1441,13 @@ apparent:
   weeks.
 \index{shape}
 
-\item[Outliers:] Values far from the mode are called {\bf outliers}.
+\item Outliers: Values far from the mode are called {\bf outliers}.
   Some of these are just unusual cases, like babies born at 30 weeks.
   But many of them are probably due to errors, either in the reporting
   or recording of data.
 \index{outlier}
 
-\end{description}
+\end{itemize}
 
 Although histograms make some features apparent, they are usually not
 useful for comparing two distributions.  In this example, there are
@@ -1979,71 +1875,71 @@ precisely, and accurately.
 
 \section{Glossary}
 
-\begin{description}
+\begin{itemize}
 
-\item[central tendency:] A characteristic of a sample or population;
+\item central tendency: A characteristic of a sample or population;
 intuitively, it is the most average value. 
 \index{central tendency}
 
-\item[spread:] A characteristic of a sample or population;
+\item spread: A characteristic of a sample or population;
 intuitively, it describes how much variability there is.
 \index{spread}
 
-\item[variance:] A summary statistic often used to quantify spread.
+\item variance: A summary statistic often used to quantify spread.
 \index{variance}
 
-\item[standard deviation:] The square root of variance, also used
+\item standard deviation: The square root of variance, also used
 as a measure of spread.
 \index{standard deviation}
 
-\item[frequency:] The number of times a value appears in a sample.
+\item frequency: The number of times a value appears in a sample.
 \index{frequency}
 
-\item[histogram:] A mapping from values to frequencies, or a graph
+\item histogram: A mapping from values to frequencies, or a graph
 that shows this mapping.
 \index{histogram}
 
-\item[probability:] A frequency expressed as a fraction of the sample
+\item probability: A frequency expressed as a fraction of the sample
 size.
 \index{probability}
 
-\item[normalization:] The process of dividing a frequency by a sample
+\item normalization: The process of dividing a frequency by a sample
 size to get a probability.
 \index{normalization}
 
-\item[distribution:] A summary of the values that appear in a sample
+\item distribution: A summary of the values that appear in a sample
 and the frequency, or probability, of each.
 \index{distribution}
 
-\item[PMF:] Probability mass function: a representation of a distribution
+\item PMF: Probability mass function: a representation of a distribution
 as a function that maps from values to probabilities.
 \index{PMF}
 
-\item[mode:] The most frequent value in a sample.
+\item mode: The most frequent value in a sample.
 \index{mode}
 
-\item[outlier:] A value far from the central tendency.
+\item outlier: A value far from the central tendency.
 \index{outlier}
 
-\item[trim:] To remove outliers from a dataset.
+\item trim: To remove outliers from a dataset.
 \index{trim}
 
-\item[bin:] A range used to group nearby values.
+\item bin: A range used to group nearby values.
 \index{bin}
 
-\item[relative risk:] A ratio of two probabilities, often used to measure
+\item relative risk: A ratio of two probabilities, often used to measure
 a difference between distributions.
 \index{relative risk}
 
-\item[conditional probability:] A probability computed under the assumption
+\item conditional probability: A probability computed under the assumption
 that some condition holds.
 \index{conditional probability}
 
-\item[clinically significant:] A result, like a difference between groups,
+\item clinically significant: A result, like a difference between groups,
 that is relevant in practice.
 \index{clinically significant}
 
-\end{description}
+\end{itemize}
 
 
 \chapter{Cumulative distribution functions}
@@ -2382,14 +2278,14 @@ Cdfs are implemented with two sorted lists: {\tt xs}, which contains
 the values, and {\tt ps}, which contains the probabilities.  The
 most important methods Cdfs provide are:
 
-\begin{description}
+\begin{itemize}
 
-\item[{\tt Prob(x)}:] Given a value $x$, computes the probability $p = \CDF(x)$.
+\item {\tt Prob(x)}: Given a value $x$, computes the probability $p = \CDF(x)$.
 
-\item[{\tt Value(p)}:] Given a probability $p$, computes the
+\item {\tt Value(p)}: Given a probability $p$, computes the
 corresponding value, $x$; that is, the inverse CDF of $p$.
 
-\end{description}
+\end{itemize}
 
 Because {\tt xs} and {\tt ps} are sorted, these operations can use the
 bisection algorithm, which is efficient.  The run time is proportional
@@ -2640,37 +2536,37 @@ CDF.  Do these values suggest that the distribution is symmetric?
 
 \section{Glossary}
 
-\begin{description}
+\begin{itemize}
 
-\item[percentile rank:] The percentage of values in a distribution that are
+\item percentile rank: The percentage of values in a distribution that are
 less than or equal to a given value.
 \index{percentile rank}
 
-\item[CDF:] Cumulative distribution function, a function that maps
+\item CDF: Cumulative distribution function, a function that maps
   from values to their percentile ranks.
 \index{CDF}
 
-\item[percentile:] The value associated with a given percentile rank.
+\item percentile: The value associated with a given percentile rank.
 \index{percentile}
 
-\item[conditional distribution:] A distribution computed under the assumption
+\item conditional distribution: A distribution computed under the assumption
 that some condition holds.
 \index{conditional distribution}
 
-\item[resampling:] The process of generating a random sample from a
+\item resampling: The process of generating a random sample from a
 distribution that was computed from a sample.
 \index{resampling}
 
-\item[replacement:] During a sampling process, ``replacement'' indicates
+\item replacement: During a sampling process, ``replacement'' indicates
 that the population is the same for every sample.  ``Without replacement''
 indicates that each element can be selected only once.
 \index{replacement}
 
-\item[interquartile range:] A measure of spread, the difference between
+\item interquartile range: A measure of spread, the difference between
 the 75th and 25th percentiles.
 \index{interquartile range}
 
-\end{description}
+\end{itemize}
 
 
 \chapter{Modeling distributions}
@@ -3488,45 +3384,45 @@ distribution with those parameters.
 
 \section{Glossary}
 
-\begin{description}
+\begin{itemize}
 
-\item[empirical distribution:] The distribution of values in a sample.
+\item empirical distribution: The distribution of values in a sample.
 \index{empirical distribution}
 \index{distribution!empirical}
 
-\item[analytic distribution:] A distribution described by a analytic
+\item analytic distribution: A distribution described by a analytic
 function.
 \index{analytic distribution}
 \index{distribution!analytic}
 
-\item[interarrival time:] The elapsed time between two events.
+\item interarrival time: The elapsed time between two events.
 \index{interarrival time}
 
-\item[error function:] A special mathematical function, so-named
+\item error function: A special mathematical function, so-named
   because it comes up in the study of measurement errors.
 \index{error function}
 
-\item[normal probability plot:] A plot of the sorted values in a sample
+\item normal probability plot: A plot of the sorted values in a sample
 versus the expected value for each if their distribution is normal.
 \index{normal probability plot}
 \index{plot!normal probability}
 
-\item[rankit:] The expected value of an element in a sorted list of
+\item rankit: The expected value of an element in a sorted list of
 values from a normal distribution.
 \index{rankit}
 
-\item[model:] A useful simplification.  Analytic distributions are
+\item model: A useful simplification.  Analytic distributions are
 often good models of more complex empirical distributions.
 \index{model}
 
-\item[corpus:] A body of text used as a sample of a language.
+\item corpus: A body of text used as a sample of a language.
 \index{corpus}
 
-\item[hapaxlegomenon:] A word that appears only once in a corpus.
+\item hapaxlegomenon: A word that appears only once in a corpus.
 It appears twice in this book, so far.
 \index{hapaxlegomenon}
 
-\end{description}
+\end{itemize}
 
 
 \chapter{Probability Density}
@@ -4281,50 +4177,50 @@ using numerical integration.
 
 \section{Glossary}
 
-\begin{description}
+\begin{itemize}
 
-\item[skewness:] A characteristic of a distribution; intuitively, it
+\item skewness: A characteristic of a distribution; intuitively, it
 is a measure of how asymmetric the distribution is.
 \index{skewness}
 
-\item[robust:] A statistic is robust if it is relatively immune to the
+\item robust: A statistic is robust if it is relatively immune to the
   effect of outliers.
 \index{robust}
 
-\item[illusory superiority:] The tendency of people to imagine that
+\item illusory superiority: The tendency of people to imagine that
 they are better than average.
 \index{illusory superiority}
 \index{fallacy!illusory superiority}
 
-\item[random variable:] An object that represents a random process.
+\item random variable: An object that represents a random process.
 \index{random variable}
 \index{variable!random}
 
-\item[random variate:] A value generated by a random process.
+\item random variate: A value generated by a random process.
 \index{random variate}
 \index{variate!random}
 
-\item[PDF:] Probability density function, the derivative of a continuous CDF.
+\item PDF: Probability density function, the derivative of a continuous CDF.
 \index{PDF}
 \index{probability density function}
 
-\item[convolution:] An operation that computes the distribution of the
+\item convolution: An operation that computes the distribution of the
 sum of values from two distributions. 
 \index{convolution}
 
-%\item[Chi-squared distribution:] The distribution of the sum of squared
+%\item Chi-squared distribution: The distribution of the sum of squared
 %values from a normal distribution.
 
-%\item[Degrees of freedom:] The number of values in a sample that are
+%\item Degrees of freedom: The number of values in a sample that are
 %free to vary.
 
-\item[Central Limit Theorem:] ``The supreme law of Unreason,'' according
+\item Central Limit Theorem: ``The supreme law of Unreason,'' according
 to Sir Francis Galton, an early statistician.
 \index{Central Limit Theorem}
 \index{Galton, Francis}
 \index{unreason, supreme law}
 
-\end{description}
+\end{itemize}
 
 
 
@@ -5131,62 +5027,62 @@ Python.  But that's a whole other book.
 
 \section{Glossary}
 
-\begin{description}
+\begin{itemize}
 
-\item[correlation:] a description of the dependence between variables.
+\item correlation: a description of the dependence between variables.
 \index{correlation}
 
-\item[normalize:] To transform a set of values so that their mean is 0 and
+\item normalize: To transform a set of values so that their mean is 0 and
 their variance is 1.
 \index{normalize}
 
-\item[standard score:] A value that has been normalized.
+\item standard score: A value that has been normalized.
 \index{standard score}
 
-\item[covariance:] a measure of the tendency of two variables
+\item covariance: a measure of the tendency of two variables
 to vary together.
 \index{covariance}
 
-\item[rank:] The index where an element appears in a sorted list.
+\item rank: The index where an element appears in a sorted list.
 \index{rank}
 
-\item[least squares fit:] A model of a dataset that minimizes the
+\item least squares fit: A model of a dataset that minimizes the
 sum of squares of the residuals.
 \index{least squares fit}
 
-\item[residual:] A measure of the deviation of an actual value from a model.
+\item residual: A measure of the deviation of an actual value from a model.
 \index{residual}
 
-\item[dependent variable:] A variable we are trying to predict or explain.
+\item dependent variable: A variable we are trying to predict or explain.
 \index{dependent variable}
 
-\item[independent variable:] A variable we are using to predict a dependent
+\item independent variable: A variable we are using to predict a dependent
 variable, also called an explanatory variable.
 \index{independent variable}
 
-\item[coefficient of determination:] A measure of the goodness of fit
+\item coefficient of determination: A measure of the goodness of fit
 of a linear model.
 \index{coefficient!determination}
 
-\item[randomized controlled trial:] An experimental design in which subject
+\item randomized controlled trial: An experimental design in which subject
 are divided into groups at random, and different groups are given different
 treatments.
 \index{randomized controlled trial}
 
-\item[treatment:] An change or intervention applied to one group in a
+\item treatment: An change or intervention applied to one group in a
 controlled trial.
 \index{treatment group}
 
-\item[control group:] A group in a controlled trial that receives no
+\item control group: A group in a controlled trial that receives no
 treatment, or a treatment whose effect is known.
 \index{control group}
 
-\item[natural experiment:] An experimental design that takes advantage of
+\item natural experiment: An experimental design that takes advantage of
 a natural division of subjects into groups in ways that are at least
 approximately random.
 \index{natural experiment}
 
-\end{description}
+\end{itemize}
 
 
 
@@ -5707,55 +5603,55 @@ a plot of standard error versus $n$.
 
 \section{Glossary}
 
-\begin{description}
+\begin{itemize}
 
-\item[estimation:] The process of inferring the parameters of a distribution
+\item estimation: The process of inferring the parameters of a distribution
 from a sample.
 \index{estimation}
 
-\item[estimator:] A statistic used to estimate a parameter.
+\item estimator: A statistic used to estimate a parameter.
 \index{estimation}
 
-\item[mean squared error (MSE):] A measure of estimation error.
+\item mean squared error (MSE): A measure of estimation error.
 \index{mean squared error}
 \index{MSE}
 
-\item[root mean squared error (RMSE):] The square root of MSE,
+\item root mean squared error (RMSE): The square root of MSE,
 a more meaningful representation of typical error magnitude.
 \index{mean squared error}
 \index{MSE}
 
-\item[maximum likelihood estimator:] An estimator that computes the
+\item maximum likelihood estimator: An estimator that computes the
 point estimate with the highest likelihood.
 \index{MLE}
 \index{maximum likelihood estimator}
 
-\item[bias (of an estimator):] The tendency of an estimator to be above or
+\item bias (of an estimator): The tendency of an estimator to be above or
   below the actual value of the parameter, when averaged over repeated
   samples.  \index{biased estimator}
 
-\item[sampling bias:] Error in an estimate due to a sampling process
+\item sampling bias: Error in an estimate due to a sampling process
   that is not representative of the population. \index{sampling bias}
 
-\item[measurement error:] Error in an estimate due to errors collecting
+\item measurement error: Error in an estimate due to errors collecting
   or recording data. \index{measurement error}
 
-\item[sampling error:] Error in an estimate due to the limited
+\item sampling error: Error in an estimate due to the limited
   size of the sample and variation due to chance. \index{point estimation}
 
-\item[sampling distribution:] The distribution of a statistic if an
+\item sampling distribution: The distribution of a statistic if an
 experiment is repeated many times.
 \index{sampling distribution}
 
-\item[standard error:] The standard deviation of the sampling distribution,
+\item standard error: The standard deviation of the sampling distribution,
 which quantifies the variability in an estimate due to sampling error.
 \index{standard error}
 
-\item[confidence interval:] An interval that represents the expected
+\item confidence interval: An interval that represents the expected
   spread of an estimator if an experiment is repeated many times.
   \index{confidence interval} \index{interval!confidence}
 
-\end{description}
+\end{itemize}
 
 
 \chapter{Hypothesis testing}
@@ -5805,20 +5701,20 @@ All three of these questions are harder than they look.  Nevertheless,
 there is a general structure that people use to test statistical
 significance:
 
-\begin{description}
+\begin{itemize}
 
-\item[Null hypothesis:] The {\bf null hypothesis} is a model of the
+\item Null hypothesis: The {\bf null hypothesis} is a model of the
   system based on the assumption that the apparent effect is not real.
 \index{null hypothesis}
 
-\item[p-value:] The {\bf p-value} is the probability of seeing the apparent
+\item p-value: The {\bf p-value} is the probability of seeing the apparent
   effect under the null hypothesis.
 \index{p-value}
 
-\item[Interpretation:] Based on the p-value, we conclude that the
+\item Interpretation: Based on the p-value, we conclude that the
   effect is either statistically significant, or not.
 
-\end{description}
+\end{itemize}
 
 This process is called {\bf hypothesis testing}.  The underlying
 logic is similar to a proof by contradiction.  To prove a mathematical
@@ -6049,22 +5945,22 @@ That's a useful step, but it doesn't answer the original question,
 which is whether the effect is real.  There are several ways to
 interpret the result of a hypothesis test:
 
-\begin{description}
+\begin{itemize}
 
-\item[Classical:] In classical hypothesis testing, if a p-value
+\item Classical: In classical hypothesis testing, if a p-value
   is less than $\alpha$, you can say that the effect is statistically
   significant, but you can't conclude that it's real.  This
   formulation is careful to avoid leaping to conclusions, but it is
   unsatisfying because it provides no guidance for practical
   decision making.
 
-\item[Practical:] In practice, people are not so formal.  In most
+\item Practical: In practice, people are not so formal.  In most
   science journals, researchers report p-values without apology, and
   readers interpret them as evidence that the apparent effect is real.
   The lower the p-value, the higher their confidence in this
   conclusion.
 
-\end{description}
+\end{itemize}
 
 
 \section{Testing a correlation}
@@ -6510,61 +6406,61 @@ as $x$, this test would reject the null hypothesis with probability $p$.''
 
 \section{Glossary}
 
-\begin{description}
+\begin{itemize}
 
-\item[significant:] An effect is statistically significant if it is unlikely
+\item significant: An effect is statistically significant if it is unlikely
 to occur by chance.
 \index{significant}
 
-\item[null hypothesis:] A model of a system based on the assumption that
+\item null hypothesis: A model of a system based on the assumption that
 an apparent effect is due to chance.
 \index{null hypothesis}
 
-\item[p-value:] The probability that an effect could occur by chance.
+\item p-value: The probability that an effect could occur by chance.
 \index{p-value}
 
-\item[hypothesis testing:] The process of determining whether an apparent
+\item hypothesis testing: The process of determining whether an apparent
 effect is statistically significant.
 \index{hypothesis testing}
 
-\item[permutation test:] A way to compute p-values by generating
+\item permutation test: A way to compute p-values by generating
   permutations of an observed dataset.
   \index{permutation test}
 
-\item[false positive:] The conclusion that an effect is real when it is not.
+\item false positive: The conclusion that an effect is real when it is not.
 \index{false positive}
 
-\item[false negative:] The conclusion that an effect is due to chance when it
+\item false negative: The conclusion that an effect is due to chance when it
 is not.
 \index{false negative}
 
-\item[two-sided test:] A test that asks, ``What is the chance of an effect
+\item two-sided test: A test that asks, ``What is the chance of an effect
 as big as the observed effect, positive or negative?''
 
-\item[one-sided test:] A test that asks, ``What is the chance of an effect
+\item one-sided test: A test that asks, ``What is the chance of an effect
 as big as the observed effect, and with the same sign?''
 \index{one-sided test}
 \index{two-sided test}
 \index{test!one-sided}
 \index{test!two-sided}
 
-\item[test statistic:] A statistic used to measure the deviation of an
+\item test statistic: A statistic used to measure the deviation of an
 apparent effect from what is expected by chance.
 \index{test statistic}
 
-\item[chi-square test:] A test that uses the chi-square statistic as
+\item chi-square test: A test that uses the chi-square statistic as
 the test statistic.
 \index{ch-square test}
 
-\item[cell:] In a chi-square test, the categories the observations are
+\item cell: In a chi-square test, the categories the observations are
 divided into.
 \index{cell}
 
-\item[power:] The probability that a test will reject the null hypothesis
+\item power: The probability that a test will reject the null hypothesis
 if it is false.
 \index{power}
 
-\end{description}
+\end{itemize}
 
 
 
@@ -6998,4 +6894,40 @@ pretty close to what we estimated by resampling, 0.166.
 You can download the code I used in this section from
 \url{http://thinkstats2.com/hypothesis_analytic.py}
 \index{{\tt hypothesis\_analytic.py}}
+
+\section{Significance}
+
+In the previous exercise, you compared the gestation period for first
+babies and others; if things worked out, you found that first
+babies are born about 13 hours later, on average.
+\index{apparent effect}
+
+A difference like that is called an {\bf apparent effect}; that is,
+there might be something going on, but we are not yet sure.  There are
+several questions we still want to ask:
+
+\begin{itemize}
+
+\item If the two groups have different means, what about other {\bf
+  summary statistics}, like median and variance?  Can we be more
+  precise about how the groups differ?
+\index{summary statistic}
+
+\item Is it possible that the difference we saw could occur by chance,
+  even if the groups we compared were actually the same?  If so,
+  we would conclude that the effect was not {\bf statistically
+    significant}.
+\index{statistically significant}
+\index{significance}
+
+
+\item Is it possible that the apparent effect is due to selection bias or
+  some other error in the experimental setup?  If so, then we might
+  conclude that the effect is an {\bf artifact}; that is, something we
+  created (by accident) rather than found. 
+\index{artifact}
+
+\end{itemize}
+
+Answering these questions will take most of the rest of this book.
 

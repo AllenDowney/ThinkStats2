@@ -13,27 +13,6 @@ import sys
 import thinkstats2
 
 
-def CleanPregFrame(df):
-    """Recodes variables from the pregnancy frame.
-
-    df: DataFrame
-    """
-    # mother's age is encoded in centiyears; convert to years
-    df.agepreg /= 100.0
-
-    # birthweight is stored in two columns, lbs and oz.
-    # convert to a single column in lb    
-    na_vals = [51, 97, 98, 99]
-    df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
-    df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
-
-    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0    
-
-    # due to a bug in ReadStataDct, the last variable gets clipped;
-    # so for now set it to NA
-    df.cmintvw = 'NA'
-
-
 def ReadFemPreg(dct_file = '2002FemPreg.dct',
                 dat_file = '2002FemPreg.dat.gz'):
     """Reads the NSFG pregnancy data.
@@ -47,6 +26,45 @@ def ReadFemPreg(dct_file = '2002FemPreg.dct',
     df = dct.ReadFixedWidth(dat_file, compression='gzip')
     CleanPregFrame(df)
     return df
+
+
+def CleanPregFrame(df):
+    """Recodes variables from the pregnancy frame.
+
+    df: DataFrame
+    """
+    # mother's age is encoded in centiyears; convert to years
+    df.agepreg /= 100.0
+
+    # birthwgt_lb contains at least one bogus value (51 lbs)
+    # replace with NaN
+    df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
+
+    # replace 'not ascertained', 'refused', 'don't know' with NaN
+    na_vals = [97, 98, 99]
+    df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
+    df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
+
+    # birthweight is stored in two columns, lbs and oz.
+    # convert to a single column in lb    
+    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0    
+
+    # due to a bug in ReadStataDct, the last variable gets clipped;
+    # so for now set it to NaN
+    df.cmintvw = np.nan
+
+
+def MakePregMap(preg):
+    """Make a map from caseid to list of preg indices.
+
+    preg: DataFrame
+
+    returns: dict that maps from caseid to list of indices into preg df
+    """
+    d = {}
+    for index, caseid in preg.caseid.iteritems():
+        d.setdefault(caseid, []).append(index)
+    return d
 
 
 def main(script):

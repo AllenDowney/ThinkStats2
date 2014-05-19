@@ -2275,7 +2275,7 @@ def ReadStataDct(dct_file):
 
     returns: FixedWidthVariables object
     """
-    type_map = dict(byte=int, int=int, float=float, double=float)
+    type_map = dict(byte=int, int=int, long=int, float=float, double=float)
 
     var_info = []
     for line in open(dct_file):
