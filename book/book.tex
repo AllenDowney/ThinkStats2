@@ -1503,15 +1503,110 @@ functions in {\tt matplotlib}, but they know how to work with
 the objects defined in {\tt thinkstats2.py}.
 
 
-\section{First babies}
+\section{Outliers}
 
 Now we are ready to be back to the question from Chapter~\ref{}:
-``Are first babies more likely to be early?.''
+``Are first babies more likely to be early?.''  The code in
+this chapter is in {\tt first.py}.
+
+I start by selecting the rows from the pregnancy file where the outcome
+is a live birth, and the partition them into first births and others:
+
+\begin{verbatim}
+def MakeFrames():
+    preg = nsfg.ReadFemPreg()
+
+    live = preg[preg.outcome == 1]
+    firsts = live[live.birthord == 1]
+    others = live[live.birthord != 1]
+
+    return live, firsts, others
+\end{verbatim}
+
+Before going any farther, it is always a good idea to validate the
+results.  
+
+In the list of pregnancy lengths for live births, the 10 lowest values
+are \{0, 4, 9, 13, 17, 17, 18, 19, 20, 21\}.  Values below 10
+weeks are certainly errors; the most likely explanation is that the
+outcome was not coded correctly.
+Values higher than 30 weeks are
+probably legitimate.  At least some of them are probably errors, but
+some might be premature babies.
+
+On the other end, the highest values are:
+%
+\begin{verbatim}
+weeks  count
+43     148
+44     46
+45     10
+46     1
+47     1
+48     7
+50     2
+\end{verbatim}
+
+Most doctors recommend induced labor if a pregnancy exceeds 42 weeks,
+so some of the longer values are surprising.  In particular, 50 weeks
+seems medically unlikely.  Again, it's possible that the response
+was not coded correctly, or the respondent may not have reported
+accurately.
+
+Extreme values like this are called {\bf outliers}.  Some outliers
+are due to errors, but others might be legitimate but due to unusual
+events.  The best way to handle outliers depends on {\bf domain knowledge};
+that is, information about where the data come from and what they
+mean.  And it depends on what analysis you are planning to perform.
+
+In this example, the motivating question is whether first babies
+tend to be early (or late).  When people ask this question, they are
+usually interested in full-term pregnancies, so I think it is appropriate
+for this analysis to focus on pregnancies longer than 27 weeks.
 
 
+\section{First babies}
 
-Figure~\ref{nsfg_hist} shows histograms of pregnancy lengths for
-first babies and others.
+To compare pregnancy lengths for first babies and others, I plotted
+their histograms on the same axis.  Here's the code:
+
+\begin{verbatim}
+    first_hist = thinkstats2.MakeHistFromList(firsts.prglngth)
+    other_hist = thinkstats2.MakeHistFromList(others.prglngth)
+
+    width = 0.4
+    first_options = dict(label='first', width=-width)
+    other_options = dict(label='other', width=width)
+
+    # plot the histograms
+    thinkplot.PrePlot(2)
+    thinkplot.Hist(first_hist, **first_options)
+    thinkplot.Hist(other_hist, **other_options)
+
+    axis = [27, 46, 0, 2700]
+    thinkplot.Save(root='nsfg_hist', 
+                   title='Histogram',
+                   xlabel='weeks',
+                   ylabel='frequency',
+                   axis=axis)
+\end{verbatim}
+
+\verb"first_hist" and \verb"other_hist" are the histograms of
+pregnancy length for first babies and others.
+
+{\tt thinkplot.PrePlot} takes as an argument the number of histograms
+we are planning to plot; this allows {\tt thinkplot} to choose
+an appropriate collection of colors.
+
+{\tt thinkplot.Hist} takes a dictionary of options that control the
+appearance of the histograms.  I chose the width to leave some
+space between each pair of bars.  By default, the left edge of the
+bar lines up with the given value on the x-axis.  By giving one
+of the histograms {\tt width=-width}, I lined it up with the right
+edge.
+
+Finally, I adjusted the axis to show only data between 27 and 46 weeks.
+Figure~\ref{nsfg_hist} shows the result.
 \index{pregnancy length}
 \index{length!pregnancy}
 
