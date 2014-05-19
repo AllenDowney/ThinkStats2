@@ -24,11 +24,11 @@ def ReadFemPreg(dct_file = '2002FemPreg.dct',
     """
     dct = thinkstats2.ReadStataDct(dct_file)
     df = dct.ReadFixedWidth(dat_file, compression='gzip')
-    CleanPregFrame(df)
+    CleanFemPreg(df)
     return df
 
 
-def CleanPregFrame(df):
+def CleanFemPreg(df):
     """Recodes variables from the pregnancy frame.
 
     df: DataFrame
@@ -39,15 +39,17 @@ def CleanPregFrame(df):
     # birthwgt_lb contains at least one bogus value (51 lbs)
     # replace with NaN
     df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
-
+    
     # replace 'not ascertained', 'refused', 'don't know' with NaN
     na_vals = [97, 98, 99]
     df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
     df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
 
     # birthweight is stored in two columns, lbs and oz.
-    # convert to a single column in lb    
-    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0    
+    # convert to a single column in lb
+    # NOTE: creating a new column requires dictionary syntax,
+    # not attribute assignment (like df.totalwgt_lb)
+    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0    
 
     # due to a bug in ReadStataDct, the last variable gets clipped;
     # so for now set it to NaN
@@ -73,6 +75,7 @@ def main(script):
     script: string script name
     """
     df = ReadFemPreg()
+    print(df.shape)
 
     assert len(df) == 13593
 
@@ -94,6 +97,8 @@ def main(script):
 
     print('%s: All tests passed.' % script)
 
+    firsts = df[df.birthord == 1]
+    print(firsts.totalwgt_lb.mean())
 
 if __name__ == '__main__':
     main(*sys.argv)

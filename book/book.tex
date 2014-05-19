@@ -740,16 +740,11 @@ Of course, the drawback of oversampling is that it is not as easy
 to draw conclusions about the general population based on statistics
 from the survey.  We will come back to this point later.
 
-\begin{exercise}
-
-Although the NSFG has been conducted seven times, it is not a
-longitudinal study.  Read the Wikipedia pages
-\url{http://wikipedia.org/wiki/Cross-sectional_study}
-and
-\url{http://wikipedia.org/wiki/Longitudinal_study}
-to make sure you understand why not.
-
-\end{exercise}
+When working with this kind of data, it is important to be familiar
+with the {\bf codebook} which documents the design of the study, the
+survey questions, and the encoding of the responses.  The codebook and
+user's guide for the NSFG data are available from
+\url{http://www.cdc.gov/nchs/nsfg/nsfg_cycle6.htm}
 
 
 \section{Importing the data}
@@ -770,10 +765,11 @@ columns.  Each line in the file contains data about one pregnancy.
 
 The format of the file is documented in {\tt 2002FemPreg.dct}, which
 is a Stata dictionary file.  Stata is a statistical software system;
-a ``dictionary'' in this context is a list of variable names and types,
-and indices that indicate where in each line to find each variable.
+a ``dictionary'' in this context is a list of variable names, types,
+and indices that identify where in each line to find each variable.
 
-For example:
+For example, here are a few lines from the dictionary in {\tt
+  2002FemPreg.dct}:
 %
 \begin{verbatim}
 infile dictionary {
@@ -787,94 +783,53 @@ string that represents the respondent ID; {\tt pregorder} is a
 one-byte integer that indicates which pregnancy this record
 describes for this respondent.
 
-The code you downloaded includes {\tt ThinkStats2} which is a library
+The code you downloaded includes {\tt thinkstats2.py} which is a library
 that contains many classes and functions used in this book.  {\tt
-  ThinkStats2} provides functions to read the Stata dictionary and
-then use it to read the NSFG data file.
-
-Here's how it's used in {\tt nsfg.py}:
+  thinkstats2.py} provides functions to read the Stata dictionary and
+the NSFG data file.  Here's how it's used in {\tt nsfg.py}:
 
 \begin{verbatim}
 def ReadFemPreg(dct_file = '2002FemPreg.dct',
                 dat_file = '2002FemPreg.dat.gz'):
     dct = thinkstats2.ReadStataDct(dct_file)
     df = dct.ReadFixedWidth(dat_file, compression='gzip')
-    CleanPregFrame(df)
+    CleanFremPreg(df)
     return df
 \end{verbatim}
 
 {\tt thinkstats2.ReadStataDct} takes the name of the dictionary file
-and returns a FixedWidthVariables object, which contains the information
-from the dictionary file and provides {\tt ReadFixedWidth}, which
-reads the data file.
+and returns a {\tt FixedWidthVariables} object, which contains the
+information from the dictionary file and provides {\tt
+  ReadFixedWidth}, which reads the data file.
 
-The result is a DataFrame, which is the fundamental data structure
-provided by Pandas.  A DataFrame behaves like a list in some ways,
-like an array in other ways, and also like a dictionary.
 
-You can think of it as an array that contains a row for
-each record, in this case one row per pregnancy, and a column for
-each variable.
+\section{DataFrames}
+
+The result of {\tt ReadFixedWidth} is a DataFrame, which is the
+fundamental data structure provided by Pandas.  A DataFrame contains a
+row for each record, in this case one row per pregnancy, and a column
+for each variable.
 
 In addition to the data, a DataFrame also contains the variable
 names and their types, and it provides methods for accessing and modifying
 the data.
 
-
-\section{Variables}
-
-For pregnancy records, we extract the following variables:
-
-\begin{itemize}
-
-\item caseid] is the integer ID of the respondent.
-
-\item prglength] is the integer duration of the pregnancy in weeks.
-
-\item outcome] is an integer code for the outcome of the pregnancy.
-The code 1 indicates a live birth.
-
-\item birthord] is the integer birth order of each live birth;
-for example, the code for a first child is 1. 
-For outcomes other than live birth, this field is blank.
-
-\item finalwgt] is the statistical weight associated with the respondent.
-It is a floating-point value that indicates the number of people in
-the U.S. population this respondent represents.  Members of oversampled
-groups have lower weights.\index{weight!sample}
-
-\end{itemize}
-
-If you read the casebook carefully, you will see that most of these
-variables are {\bf recodes}, which means that they are not part of the
-{\bf raw data} collected by the survey, but they are calculated using
-the raw data.  \index{recode} \index{raw data}
-
-For example, {\tt prglength} for live births is equal to the raw
-variable {\tt wksgest} (weeks of gestation) if it is available;
-otherwise it is estimated using {\tt mosgest * 4.33} (months of
-gestation times the average number of weeks in a month).
-
-Recodes are often based on logic that checks the consistency and
-accuracy of the data.  In general it is a good idea to use recodes
-unless there is a compelling reason to process the raw data
-yourself.
-
-You might also notice that {\tt Pregnancies} has a method called
-{\tt Recode} that does some additional checking and recoding.
-
-
-
-
-\section{DataFrames}
-
-For now you can think of a DataFrame as a dictionary that maps from
-each column name to a column of data.  The attribute {\tt columns}
-is a list of column names:  
-
 \begin{verbatim}
 >>> import nsfg
->>> df = ReadFemPreg()
+>>> df = nsfg.ReadFemPreg()
+>>> df
+...
+[13593 rows x 243 columns]
+\end{verbatim}
+
+If you print {\tt df} you get a truncated view of the rows and
+columns, and the shape of the DataFrame, in this case 13593
+rows/records, and 243 columns/variables.
+
+The DataFrame attribute {\tt columns} returns a sequence of column
+names:
+
+\begin{verbatim}
 >>> df.columns
 Index([u'caseid', u'pregordr', u'howpreg_n', u'howpreg_p', ... ])
 \end{verbatim}
@@ -897,7 +852,7 @@ name as a key:
 \end{verbatim}
 
 The result is a Series, yet another Pandas data structure.
-For now, you can think of a Series as a list, but there's
+You can think of a Series as a list, but there's
 a bit more to it.  When you print a Series, you get the indices and the
 corresponding values:
 
@@ -944,29 +899,77 @@ This notation only works if the column name is a valid Python
 identifier, so it has to begin with a letter, can't contain spaces, etc.
 
 
+\section{Variables}
+
+We have already seen two variables in the NSFG dataset, {\tt caseid}
+and {\tt pregordr}, and we have seen that there are 243 variables in
+total.  For the explorations in this book, I'll use the following
+variables:
+
+\begin{itemize}
+
+\item {\tt caseid} is the integer ID of the respondent.
+
+\item {\tt prglength} is the integer duration of the pregnancy in weeks.
+
+\item {\tt outcome} is an integer code for the outcome of the
+  pregnancy.  The code 1 indicates a live birth.
+
+\item {\tt birthord} is the integer birth order of each live birth;
+  for example, the code for a first child is 1.  For outcomes other
+  than live birth, this field is blank.
+
+\item \verb"birthwgt_lb" and \verb"birthwgt_oz" contain the
+pounds and ounces parts of the birth weight of the baby.
+
+\item {\tt agepreg} is the mother's age at the end of the pregnancy.
+
+\item {\tt finalwgt} is the statistical weight associated with the
+  respondent.  It is a floating-point value that indicates the number
+  of people in the U.S. population this respondent represents.
+  Members of oversampled groups have lower
+  weights.\index{weight!sample}
+
+\end{itemize}
+
+If you read the codebook carefully, you will see that most of these
+variables are {\bf recodes}, which means that they are not part of the
+{\bf raw data} collected by the survey, but they are calculated using
+the raw data.  \index{recode} \index{raw data}
+
+For example, {\tt prglength} for live births is equal to the raw
+variable {\tt wksgest} (weeks of gestation) if it is available;
+otherwise it is estimated using {\tt mosgest * 4.33} (months of
+gestation times the average number of weeks in a month).
+
+Recodes are often based on logic that checks the consistency and
+accuracy of the data.  In general it is a good idea to use recodes
+unless there is a compelling reason to process the raw data
+yourself.
+
+
 \section{Transformation}
 
 When you import data like this, you often have to check for errors,
 deal with special values, convert data into different formats, and
 perform calculations.  These operations are called {\bf data cleaning}.
 
-{\tt nsfg.py} includes {\tt CleanPregFrame}, a function that cleans
+{\tt nsfg.py} includes {\tt CleanFemPreg}, a function that cleans
 the variables I am planning to use.
 
 \begin{verbatim}
-def CleanPregFrame(df):
+def CleanFemPreg(df):
     df.agepreg /= 100.0
 
     na_vals = [97, 98, 99]
     df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
     df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
 
-    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0    
+    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0    
 \end{verbatim}
 
 {\tt agepreg} contains the mother's age at the end of the
-pregnancy.  
-In the data file, {\tt agepreg} is encoded as an integer
+pregnancy.  In the data file, {\tt agepreg} is encoded as an integer
 number of centiyears.  So the first line divides each element
 of {\tt agepreg} by 100, yielding a floating-point value in
 years.
@@ -981,12 +984,11 @@ In addition it uses several special codes:
 99	DON'T KNOW
 \end{verbatim}
 
-Special values that are encoded as numbers are {\em dangerous} because
-if they are not handled properly, they can easily introduce bogus
-values.  The {\tt replace} method replaces these values with {\tt NaN}, 
-a special floating-point value that represents 
-``not a number.''  {\tt nan} is available from NumPy, which I imported
-as {\tt np}.
+Special values encoded as numbers are {\em dangerous} because if they
+are not handled properly, they can easily generate bogus results, like
+a 99-pound baby.  The {\tt replace} method replaces these values with
+{\tt NaN}, a special floating-point value that represents ``not a
+number.''
 
 As part of the IEEE floating-point standard, all mathematical
 operations return {\tt nan} if either argument is {\tt nan}:
@@ -996,23 +998,121 @@ operations return {\tt nan} if either argument is {\tt nan}:
 >>> np.nan / 100.0
 \end{verbatim}
 
-So computations with {\tt nan} tend to do the right thing.  And
-most Pandas functions handle {\tt nan} appropriately, at
-least for most applications.  But this will be a recurring issue.
+So computations with {\tt nan} tend to do the right thing.  Most
+Pandas functions handle {\tt nan} appropriately, at least for most
+applications.  But dealing with special values will be a recurring
+issue.
 
-Finally, the last line of {\tt CleanPregFrame} creates a new
+The last line of {\tt CleanFemPreg} creates a new
 column \verb"totalwgt_lb" that combines pounds and ounces into
 a single quantity, in pounds.
 
+One important note: when you add a new column to a DataFrame, you
+must use dictionary syntax, like this:
+
+\begin{verbatim}
+    # WRONG!
+    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0 
+\end{verbatim}
+
+Not dot notation, like this:
+
+\begin{verbatim}
+    # WRONG!
+    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0 
+\end{verbatim}
+
+This version adds an attribute to the DataFrame object, but does
+not add a column to the DataFrame!
 
 
 \section{Validation}
 
+When data is exported from one software environment and imported into
+another, it is possible for errors to be introduced.  And when you are
+getting familiar with a new dataset, you might interpret data
+incorrectly or introduce other misunderstandings.  If you take
+time to validate the data, you can save time later and avoid errors.
 
-In my initial exploration of this dataset, I found one value in
-\verb"birthwgt_lb" that is clearly wrong, unless one of the babies
-in this dataset was actually 51 pounds at birth.  So I added
-this line to replace invalid values with {\tt NaN}:
+One way to validate data is to compute basic statistics and compare
+them with published results.  For example, the NSFG codebook includes
+tables that summarize each variable.  Here is the table for
+{\tt outcome}, which encodes the outcome of each pregnancy:
+
+\begin{verbatim}
+value	label	 	        Total
+1	LIVE BIRTH	 	9148
+2	INDUCED ABORTION	1862
+3	STILLBIRTH	 	 120
+4	MISCARRIAGE	 	1921
+5	ECTOPIC PREGNANCY	 190
+6	CURRENT PREGNANCY	 352
+\end{verbatim}
+
+The {\tt Series} class provides \verb"value_counts", which
+counts the number of times each value appears.  If we select
+the {\tt outcome} Series from the DataFrame, we can use
+\verb"value_counts" to compare with the published data:
+
+\begin{verbatim}
+>>> df.outcome.value_counts().sort_index()
+1    9148
+2    1862
+3     120
+4    1921
+5     190
+6     352
+\end{verbatim}
+
+The result of \verb"value_counts" is a Series;
+\verb"sort_index" sorts the series by index, so the
+values appear in order.
+
+Comparing the results with the published table, it looks like
+{\tt outcome} validates.  Similarly, here is the published table for
+\verb"birthwgt_lb"
+
+\begin{verbatim}
+value	label                  Total
+.	INAPPLICABLE	 	4449
+0-5	UNDER 6 POUNDS	 	1125
+6	6 POUNDS	 	2223
+7	7 POUNDS	 	3049
+8	8 POUNDS	 	1889
+9-95	9 POUNDS OR MORE	 799
+\end{verbatim}
+
+And here are the value counts:
+
+\begin{verbatim}
+>>> df.birthwgt_lb.value_counts(sort=False)
+0        8
+1       40
+2       53
+3       98
+4      229
+5      697
+6     2223
+7     3049
+8     1889
+9      623
+10     132
+11      26
+12      10
+13       3
+14       3
+15       1
+51       1
+\end{verbatim}
+
+The counts for 6, 7, and 8 pounds check out, and if you add
+up the counts for 0-5 and 9-95, they check out, too.  But
+if you look more closely, you notice one value that is almost
+certainly an error, a 51 pound baby!  Most likely it was actually
+a 15 pound baby and the digits were reversed.
+
+I added this line to {\tt CleanFemPreg} to replace invalid values
+with {\tt NaN}:
 
 \begin{verbatim}
 df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
@@ -1022,16 +1122,6 @@ The expression in brackets yields a Series of type {\tt bool},
 where True indicates that the condition is true.  When a boolean
 Series is used as an index, it selects only the elements that
 satisfy the condition; in this case, it replaces them with {\tt NaN}.
-
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
-
 
 
 \section{Interpretation}
@@ -1056,7 +1146,7 @@ def MakePregMap(df):
 method creates an iterator that enumerates the index (row number)
 and {\tt caseid} for each pregnancy.
 
-{\tt d} is a dictionary that maps from each caseid to a list of
+{\tt d} is a dictionary that maps from each case ID to a list of
 indices, so for each respondent we can look up the indices of
 that respondent's pregnancies.
 
@@ -1084,32 +1174,66 @@ and there are other respondents who reported as many or more.
 
 But remembering the context, this data tells the story of a woman
 who was pregnant six times, each time ending in miscarriage.  If we
-look at this data with empathy, it is natural to infer from her
-persistence how much she wanted a child, and to feel some joy at
-the successful outcome of her seventh pregnancy.
+look at this data with empathy, it is natural to be moved by the
+story it tells.
 
 Each record in the NSFG dataset represents a person who provided
 honest answers to many personal and difficult questions.  We can use
 this data to answer statistical questions about family life,
-reproduction, and health.  At the same time, we should remember the
-context, and the people, the data come from.
-
+reproduction, and health.  At the same time, we have an obligation
+to consider the people represented by the data, and to afford them
+respect and gratitude.
 
 
 \section{Exercises}
 
-
-
 \begin{exercise}
-In this exercise you will write a program to explore the data
-in the Pregnancies table.
+In the repository your downloaded, you should find a file named
+\verb"chap01ex.ipynb", which is an iPython notebook.  You can
+launch iPython notebook from the command line like this:
 
+\begin{verbatim}
+$ ipython notebook &
+\end{verbatim}
 
+If iPython is installed, it should launch a server that runs in the
+background and open a browser to view the notebook.
+
+Open \verb"chap01ex.ipynb".  Some cells are already filled in, and
+you should execute them.  Other cells give you instructions for
+exercises you should try.
+
+A solution to this exercise is in \verb"chap01ex_soln.ipynb"
 \end{exercise}
 
 
 \begin{exercise}
-The best way to learn about statistics is to work on a project you are
+Create a file named \verb"chap01ex.py" and write code that reads
+the respondent file, {\tt 2002FemResp.dat.gz}.  You might want to
+start with a copy of {\tt nsfg.py} and modify it.
+
+The variable {\tt pregnum} is a recode that indicates how many
+times each respondent has been pregnant.  Print the value counts
+for this variable and compare them to the published results in
+the NSFG codebook.
+
+You can also cross-validate the respondent and pregnancy files by
+comparing {\tt pregnum} for each respondent with the number of
+records in the pregnancy file.
+
+You can use {\tt nsfg.MakePregMap} to make a dictionary that maps
+from each {\tt caseid} to a list of indices into the pregnancy
+DataFrame.
+
+Similarly, you might want to make a dictionary that maps from each
+{\tt caseid} to an index into the respondent DataFrame.
+
+A solution to this exercise is in \verb"chap01ex_soln.py"
+\end{exercise}
+
+
+\begin{exercise}
+The best way to learn about data science is to work on a project you are
 interested in.  Is there a question like, ``Do first babies arrive
 late,'' that you would like to investigate?
 
@@ -1122,14 +1246,11 @@ Look for data to help you address the question.  Governments are good
 sources because data from public research is often freely
 available.
 
-Google and other search engines can also help you find data, but it
-can be harder to evaluate the quality of resources on the web.
-
-If it seems like someone has answered your question, look closely to
-see whether the answer is justified.  There might be flaws in the data
-or the analysis that make the conclusion unreliable.  In that case you
-could perform a different analysis of the same data, or look for a
-better source of data.
+If it seems like someone has already answered your question, look
+closely to see whether the answer is justified.  There might be flaws
+in the data or the analysis that make the conclusion unreliable.  In
+that case you could perform a different analysis of the same data, or
+look for a better source of data.
 
 If you find a published paper that addresses your question, you
 should be able to get the raw data.  Many authors make their data
@@ -1186,13 +1307,6 @@ sizes.
 a single person or other object of study.
 \index{record}
 
-\item field: In a database, one of the named variables that makes
-up a record.
-\index{field}
-
-\item table: In a database, a collection of records.
-\index{table}
-
 \item raw data: Values collected and recorded with little or no
 checking, calculation or interpretation.
 \index{raw data}
@@ -1201,22 +1315,8 @@ checking, calculation or interpretation.
 logic applied to raw data.
 \index{recode}
 
-\item summary statistic: The result of a computation that reduces
-a dataset to a single number (or at least a smaller set of numbers)
-that captures some characteristic of the data.
-\index{summary statistic}
-
-\item apparent effect: A measurement or summary statistic that
-suggests that something interesting is happening.
-\index{apparent effect}
-
-\item statistically significant: An apparent effect is statistically
-  significant if it is unlikely to occur by chance.
-\index{statistically significant}
-
-\item artifact: An apparent effect that is caused by bias,
-  measurement error, or some other kind of error.
-\index{artifact}
+\item data cleaning: processes that include validating data, identifying
+errors, translating between data types and representations, etc.
 
 \end{itemize}
 
@@ -1229,15 +1329,16 @@ suggests that something interesting is happening.
 \label{distributions}
 \index{distribution}
 
-Summary statistics are concise, but dangerous, because they obscure
-the data.  An alternative is to look at the {\bf distribution} of the
-data, which describes how often each value appears.
+One of the best ways to summarize a variable is to report the
+values that appear in the dataset and how many times each
+value appears.  This summary is called the {\bf distribution}
+of the variable.
 
 The most common representation of a distribution is a {\bf histogram},
 which is a graph that shows the frequency
 of each value.
-In this context, {\bf frequency} means the number of times a value
-appears in a dataset---it has nothing to do with the pitch of a sound
+In this context, {\bf frequency} means the number of times the value
+appears---it has nothing to do with the pitch of a sound
 or tuning of a radio signal.
 \index{histogram}
 \index{frequency}
@@ -1266,51 +1367,30 @@ The result is a {\tt counter} object, which is a subclass of
 dictionary.  For details, see
 \url{https://docs.python.org/2/library/collections.html#collections.Counter}.
 
-Another way to represent a distribution is a {\bf probability mass
-  function} (PMF), which maps from each value to its probability.  A
-{\bf probability} is a frequency expressed as a fraction of the sample
-size, $n$.  To get from frequencies to probabilities, we divide
-through by $n$, which is called {\bf normalization}:\index{normalization}
-\index{PMF}
-\index{probability mass function}
-%
-\begin{verbatim}
-n = float(len(t))
-pmf = {}
-for x, freq in hist.items():
-    pmf[x] = freq / n
-\end{verbatim}
-
-The result is a dictionary, {\tt pmf}, that maps from each value
-to its probability.
+Or in pandas, we can use the
+Series method \verb"value_counts", which we saw in the previous
+chapter.
 
 
 \section{Representing histograms}
 \index{histogram}
 \index{Hist object}
-\index{{\tt pmf.py}@{\tt Pmf.py}}
 
-I wrote a Python module called {\tt thinkstats2.py} that contains class
-definitions for Hist objects, which represent histograms, and Pmf
-objects, which represent PMFs.  You can read the documentation at {\tt
-  thinkstats2.com/thinkstats2.html} and download the code from {\tt
-  thinkstats2.com/thinkstats2.py}.
+The Python module that accompanies this book, {\tt thinkstats2.py},
+provides a class definition for Hist objects, which represent
+histograms.  You can read the documentation at {\tt
+  thinkstats2.com/thinkstats2.html}.
 
-The function {\tt MakeHistFromList} takes a list of values and
-returns a new Hist object.  You can test it in Python's interactive
-mode:
+It also provides a function, {\tt MakeHistFromList}, that takes a
+sequence of values and returns a new Hist object.  You can test it in
+Python's interactive mode:
 %
 \begin{verbatim}
 >>> import thinkstats2
 >>> hist = thinkstats2.MakeHistFromList([1, 2, 2, 3, 5])
->>> print hist
+>>> hist
 <thinkstats2.Hist object at 0xb76cf68c>
 \end{verbatim}
-
-{\tt thinkstats2.Hist} means that this object is a member of the Hist
-class, which is defined in the thinkstats2 module.  In general, I use
-upper case letters for the names of classes and functions, and lower
-case letters for variables\footnote{TODO: comment on PEP8}.
 
 Hist objects provide methods to look up values and their
 probabilities.  {\tt Freq} takes a value and returns its frequency:
@@ -1352,17 +1432,19 @@ for val, freq in hist.Items():
 \end{verbatim}
 
 \begin{exercise}
+For the exercises in this chapter, create a file named
+{\tt chap02ex.py}.
+
 The mode of a distribution is the most frequent value (see
-\url{http://wikipedia.org/wiki/Mode_(statistics)}).  Write a function called
-    {\tt Mode} that takes a Hist object and returns the most frequent
-    value.\index{mode}
+\url{http://wikipedia.org/wiki/Mode_(statistics)}).  Write a function
+called {\tt Mode} that takes a Hist object and returns the most
+frequent value.\index{mode}
 
 As a more challenging version, write a function called {\tt AllModes}
 that takes a Hist object and returns a list of value-frequency
 pairs in descending order of frequency.  Hint: the {\tt operator}
 module provides a function called {\tt itemgetter} which you can
 pass as a key to {\tt sorted}.
-
 \end{exercise}
 
 
@@ -1378,9 +1460,9 @@ This package is included in many Python installations.  To see whether
 you have it, launch the Python interpreter and run:
 %
 \begin{verbatim}
-import matplotlib.pyplot as pyplot
-pyplot.pie([1,2,3])
-pyplot.show()
+>>> import matplotlib.pyplot as pyplot
+>>> pyplot.pie([1,2,3])
+>>> pyplot.show()
 \end{verbatim}
 
 If you have {\tt matplotlib} you should see a simple pie chart;
@@ -1401,14 +1483,32 @@ is the format {\tt bar} expects:
 >>> pyplot.show()
 \end{verbatim}
 
-I wrote a module called {\tt myplot.py} that provides functions
-for plotting histograms, PMFs and other objects we will see soon.
+The code that accompanies this book includes
+{\tt thinkplot.py}, which provides functions
+for plotting histograms and other objects we will see soon.
 You can read the documentation at {\tt
-  thinkstats2.com/myplot.html} and download the code from {\tt
-  thinkstats2.com/myplot.py}.  Or you can use
-{\tt pyplot} directly, if you prefer.  Either way, you can find
-the documentation for {\tt pyplot} on the web.
-\index{{\tt myplot.py}}
+  thinkstats2.com/thinkplot.html}. 
+\index{{\tt thinkplot.py}}
+
+To plot the same histogram with {\tt thinkplot.py}, try this:
+
+\begin{verbatim}
+>>> import thinkplot
+>>> thinkplot.Hist(hist, color='blue', alpha=0.5)
+>>> thinkplot.Show(xlabel='value', ylabel='frequency')
+\end{verbatim}
+
+Most of the functions in {\tt thinkplot.py} are wrappers for
+functions in {\tt matplotlib}, but they know how to work with
+the objects defined in {\tt thinkstats2.py}.
+
+
+\section{First babies}
+
+Now we are ready to be back to the question from Chapter~\ref{}:
+``Are first babies more likely to be early?.''
+
+
 
 Figure~\ref{nsfg_hist} shows histograms of pregnancy lengths for
 first babies and others.
@@ -1456,9 +1556,28 @@ differences in the histograms are due to sample sizes.  We can
 address this problem using PMFs.
 
 
-\section{Representing PMFs}
+\section{Probability Mass Functions}
 \index{Pmf object}
 \index{{\tt pmf.py}@{\tt Pmf.py}}
+
+
+Another way to represent a distribution is a {\bf probability mass
+  function} (PMF), which maps from each value to its probability.  A
+{\bf probability} is a frequency expressed as a fraction of the sample
+size, {\tt n}.  To get from frequencies to probabilities, we divide
+through by {\tt n}, which is called {\bf normalization}:\index{normalization}
+\index{PMF}
+\index{probability mass function}
+%
+\begin{verbatim}
+n = float(len(t))
+pmf = {}
+for x, freq in hist.items():
+    pmf[x] = freq / n
+\end{verbatim}
+
+The result is a dictionary, {\tt pmf}, that maps from each value
+to its probability.
 
 {\tt thinkstats2.py} provides a class called {\tt Pmf} that represents PMFs.
 The notation can be confusing, but here it is: {\tt Pmf} is the
@@ -1552,13 +1671,13 @@ There are two common ways to plot Pmfs:
 \begin{itemize}
 
 \item To plot a Pmf as a bar graph, you can use {\tt pyplot.bar}
-or {\tt myplot.Hist}.  Bar graphs are most useful if the number
+or {\tt thinkplot.Hist}.  Bar graphs are most useful if the number
 of values in the Pmf is small.
 \index{bar plot}
 \index{plot!bar}
 
 \item To plot a Pmf as a line, you can use {\tt pyplot.plot}
-or {\tt myplot.Pmf}.  Line plots are most useful if there are
+or {\tt thinkplot.Pmf}.  Line plots are most useful if there are
 a large number of values and the Pmf is smooth.
 \index{line plot}
 \index{plot!line}
@@ -1671,7 +1790,7 @@ we go any farther, let's take care of that.
 \index{descriptive statistics}
 \index{summary statistics}
 
-If you have a sample of $n$ values, $x_i$, the mean, $\xbar$, is
+If you have a sample of {\tt n} values, $x_i$, the mean, $\xbar$, is
 the sum of the values divided by the number of values; in other words
 %
 \[ \xbar = \frac{1}{n} \sum_i x_i \]
@@ -1734,7 +1853,7 @@ variance is in pounds squared.  Standard deviation is more meaningful;
 in this example the units are pounds.
 
 If you have prior experience, you might have seen a formula for
-variance with $n-1$ in the denominator, rather than $n$.  This
+variance with $n-1$ in the denominator, rather than {\tt n}.  This
 statistic is used to
 estimate the variance in a population using a sample.  We will come
 back to this in Chapter~\ref{estimation}.  \index{sample variance}
@@ -2045,9 +2164,7 @@ at my speed.
 Then I realized that I was the victim of selection bias.  The race
 was unusual in two ways: it used a staggered start, so teams started
 at different times; also, many teams included runners at different
-levels of ability.
-\index{bias!selection}
-\index{selection bias}
+levels of ability. \index{bias!selection} \index{selection bias}
 
 As a result, runners were spread out along the course with little
 relationship between speed and location.  When I started running my
@@ -2302,9 +2419,9 @@ The Cdf module provides several functions for making Cdfs, including
 {\tt MakeCdfFromList}, which takes a sequence of values
 and returns their Cdf.
 
-Finally, {\tt myplot.py} provides functions named {\tt Cdf} and
+Finally, {\tt thinkplot.py} provides functions named {\tt Cdf} and
 {\tt Cdfs} that plot Cdfs as lines.
-\index{{\tt myplot.py}}
+\index{{\tt thinkplot.py}}
 
 \begin{exercise}
 Download {\tt Cdf.py} and \verb"relay.py" (see
@@ -2448,7 +2565,7 @@ to implement than to explain, let's try it out.
 
 \begin{exercise}
 Write a function called {\tt Sample}, that takes a Cdf and
-an integer, n, and returns a list of $n$values chosen at
+an integer, n, and returns a list of {\tt n} values chosen at
 random from the Cdf.  Hint: use {\tt random.random}.
 You will find a solution to this exercise in {\tt Cdf.py}.
 \index{inverse CDF algorithm}
