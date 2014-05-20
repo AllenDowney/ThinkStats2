@@ -14,7 +14,7 @@ import thinkstats2
 
 
 def main(script):
-    """Tests the functions in this module.
+    """Code used while developing Chapter 1.
 
     script: string script name
     """
