@@ -1,7 +1,7 @@
 """This file contains code used in "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2010 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
@@ -32,26 +32,6 @@ def MakeFrames():
     return live, firsts, others
 
 
-def Summarize():
-    """Prints summary statistics for first babies and others.
-    """
-    live, firsts, others = MakeFrames()
-
-    print(len(live), 'live births')
-    print(len(firsts), 'first live births')
-    print(len(others), 'other live births')
-
-    mean1 = firsts.prglngth.mean()
-    mean2 = others.prglngth.mean()
-
-    print('Mean gestation in weeks:')
-    print('First babies', mean1)
-    print('Others', mean2)
-    
-    print('Difference in weeks', mean1 - mean2)
-    print('Difference in days', (mean1 - mean2) * 7.0)
-
-
 def Summarize(live, firsts, others):
     """Print various summary statistics."""
 
@@ -63,6 +43,10 @@ def Summarize(live, firsts, others):
     var1 = firsts.prglngth.var()
     var2 = others.prglngth.var()
 
+    print('Live mean', mean0)
+    print('Live variance', var0)
+    print('Live std', math.sqrt(var0))
+
     print('Mean')
     print('First babies', mean1)
     print('Others', mean2)
@@ -71,12 +55,13 @@ def Summarize(live, firsts, others):
     print('First babies', var1)
     print('Others', var2)
 
-    diff_mean = mean1 - mean2
-    print('Difference in mean', diff_mean)
+    print('Difference in weeks', mean1 - mean2)
+    print('Difference in hours', (mean1 - mean2) * 7 * 24)
 
-    print('Live mean', mean0)
-    print('Live variance', var0)
-    print('Live sigma', math.sqrt(var0))
+    print('Difference relative to 39 weeks', (mean1 - mean2) / 39 * 100)
+
+    d = thinkstats2.CohenEffectSize(firsts.prglngth, others.prglngth)
+    print('Cohen d', d)
 
 
 def PrintExtremes(live):
@@ -105,17 +90,14 @@ def PrintExtremes(live):
         print(weeks, count)
     
 
-def MakeFigures(live, firsts, others):
-    """Plot Hists and Pmfs for pregnancy length.
+def MakeFigures(firsts, others):
+    """Plot Hists and Pmfs of pregnancy length.
 
     firsts: DataFrame
     others: DataFrame
     """
     first_hist = thinkstats2.MakeHistFromList(firsts.prglngth)
-    first_pmf = thinkstats2.MakePmfFromHist(first_hist)
-
     other_hist = thinkstats2.MakeHistFromList(others.prglngth)
-    other_pmf = thinkstats2.MakePmfFromHist(other_hist)
 
     width = 0.4
     first_options = dict(label='first', width=-width)
@@ -134,6 +116,9 @@ def MakeFigures(live, firsts, others):
                    axis=axis)
 
     # plot the PMFs
+    first_pmf = thinkstats2.MakePmfFromHist(first_hist)
+    other_pmf = thinkstats2.MakePmfFromHist(other_hist)
+
     thinkplot.PrePlot(2)
     thinkplot.Hist(first_pmf, **first_options)
     thinkplot.Hist(other_pmf, **other_options)
@@ -167,11 +152,8 @@ def main(script):
     live, firsts, others = MakeFrames()
 
     PrintExtremes(live)
-
-    MakeFigures(live, firsts, others)
-
+    MakeFigures(firsts, others)
     Summarize(live, firsts, others)
-
 
 
 if __name__ == '__main__':

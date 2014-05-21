@@ -306,14 +306,14 @@ advantages:
 \begin{itemize}
 
 \item I present most ideas using simple Python code, rather than
-  mathematical notation.  In general, Python code is more readble;
+  mathematical notation.  In general, Python code is more readable;
   also, because it is executable, readers can download it, run it,
   and modify it.
 
-\item Each chapter includes exercies readers can do to develop
+\item Each chapter includes exercises readers can do to develop
   and solidify their learning.  When you write programs, you
-  express your understanding in code; when you debugging the
-  program, you are correcting your understanding.
+  express your understanding in code; while you are debugging the
+  program, you are also correcting your understanding.
 
 \item Some exercises involve running experiments to test statistical
   behavior.  For example, you can explore the Central Limit Theorem
@@ -408,6 +408,7 @@ Other resources I found useful were Wolfram MathWorld and (of course)
 Google.
 
 \section*{Using the code}
+\label{code}
 
 The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  Git is a version
@@ -416,7 +417,7 @@ make up a project.  A collection of files under Git's control is
 called a {\bf repository}.  GitHub is a hosting service that provides
 storage for Git repositories and a convenient web interface.
 
-The GitHub homepage for my repostory provides several ways to
+The GitHub homepage for my repository provides several ways to
 work with the code:
 
 \begin{itemize}
@@ -470,7 +471,12 @@ After you clone the repository or unzip the zip file, you should
 have a file called {\tt ThinkStats2/code/nsfg.py}.  If you run it,
 it should read a data file, run some tests, and print a message
 like, ``All tests passed.''  If you get import errors, it probably
-means there are some packages you need to install.  Good luck!
+means there are some packages you need to install.
+
+Most exercises use Python scripts, but some also use the iPython
+notebook.  If you have not used iPython notebook before, I suggest
+you start with the documentation at
+\url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
 
 
 Allen B. Downey \\*
@@ -581,10 +587,9 @@ I heard when my wife and I were expecting our first child: do first
 babies tend to arrive late?
 \index{first babies}
 
-If you Google this question, you will find plenty of
-discussion.  Some people claim
-it's true, others say it's a myth, and some people say it's the other
-way around: first babies come early.
+If you Google this question, you will find plenty of discussion.  Some
+people claim it's true, others say it's a myth, and some people say
+it's the other way around: first babies come early.
 
 In many of these discussions, people provide data to support their
 claims.  I found many examples like these:
@@ -640,6 +645,7 @@ evidence usually fails, because:
 \end{itemize}
 
 So how can we do better?
+
 
 \section{A statistical approach}
 
@@ -707,33 +713,28 @@ group repeatedly over a period of time.
 \index{longitudinal study}
 \index{study!longitudinal}
 
-The NSFG has been conducted seven times; each deployment is called
-a {\bf cycle}.  We will use data from Cycle 6, which was
-conducted from January 2002 to March 2003.
-\index{cycle}
+The NSFG has been conducted seven times; each deployment is called a
+{\bf cycle}.  We will use data from Cycle 6, which was conducted from
+January 2002 to March 2003.  \index{cycle}
 
-The goal of the survey is to draw conclusions about a
-{\bf population}; the target population of the NSFG is people in
-the United States aged 15-44.
-\index{population}
+The goal of the survey is to draw conclusions about a {\bf
+  population}; the target population of the NSFG is people in the
+United States aged 15-44.  \index{population}
 
-The people who participate in a survey are called {\bf respondents};
-a group of respondents is called a {\bf cohort}.
-In general, cross-sectional studies are meant to be {\bf
-  representative}, which means that every member of the target
-population has an equal chance of participating.  Of course that ideal
-is hard to achieve in practice, but people who conduct surveys come as
-close as they can.
-\index{respondent}
-\index{representative}
+The people who participate in a survey are called {\bf respondents}; a
+group of respondents is called a {\bf cohort}.  In general,
+cross-sectional studies are meant to be {\bf representative}, which
+means that every member of the target population has an equal chance
+of participating.  Of course that ideal is hard to achieve in
+practice, but people who conduct surveys come as close as they can.
+\index{respondent} \index{representative}
 
 The NSFG is not representative; instead it is deliberately {\bf
   oversampled}.  The designers of the study recruited three
 groups---Hispanics, African-Americans and teenagers---at rates higher
-than their representation in the U.S. population.
-The reason for oversampling is to make sure that the number of
-respondents in each of these groups is large enough to draw valid
-statistical inferences.
+than their representation in the U.S. population.  The reason for
+oversampling is to make sure that the number of respondents in each of
+these groups is large enough to draw valid statistical inferences.
 \index{oversampling}
 
 Of course, the drawback of oversampling is that it is not as easy
@@ -753,10 +754,9 @@ The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  For information
 about downloading and working with this code, see Section~\ref{code}.
 
-Once you download the code, you should
-have a file called {\tt ThinkStats2/code/nsfg.py}.  If you run it,
-it should read a data file, run some tests, and print a message
-like, ``All tests passed.''
+Once you download the code, you should have a file called {\tt
+  ThinkStats2/code/nsfg.py}.  If you run it, it should read a data
+file, run some tests, and print a message like, ``All tests passed.''
 
 Let's see what it does.  Pregnancy data from Cycle 6 of the NSFG is in
 a file called {\tt 2002FemPreg.dat.gz}.  As the suffixes suggest, it
@@ -823,8 +823,8 @@ the data.
 \end{verbatim}
 
 If you print {\tt df} you get a truncated view of the rows and
-columns, and the shape of the DataFrame, in this case 13593
-rows/records, and 243 columns/variables.
+columns, and the shape of the DataFrame, which is 13593
+rows/records and 243 columns/variables.
 
 The DataFrame attribute {\tt columns} returns a sequence of column
 names:
@@ -834,8 +834,9 @@ names:
 Index([u'caseid', u'pregordr', u'howpreg_n', u'howpreg_p', ... ])
 \end{verbatim}
 
-The result is an Index, which is another Pandas data structure.  For
-now, we'll treat it like a list:
+The result is an Index, which is another Pandas data structure.  
+We'll learn more about Index later, but for
+now we'll treat it like a list:
 
 \begin{verbatim}
 >>> df.columns[1]
@@ -852,8 +853,8 @@ name as a key:
 \end{verbatim}
 
 The result is a Series, yet another Pandas data structure.
-You can think of a Series as a list, but there's
-a bit more to it.  When you print a Series, you get the indices and the
+A Series is like a Python list with some additional features.
+When you print a Series, you get the indices and the
 corresponding values:
 
 \begin{verbatim}
@@ -869,7 +870,10 @@ corresponding values:
 Name: pregordr, Length: 13593, dtype: int64
 \end{verbatim}
 
-In addition, the Series prints the variable name, length, and data type;
+The indices are the integers from 0 to 13593.  In this case
+the elements are also integers.
+
+The last line includes the variable name, Series length, and data type;
 {\tt int64} is one of the types provided by NumPy.  If you run
 this example on a 32-bit machine you might see {\tt int32}.
 
@@ -915,12 +919,15 @@ variables:
 \item {\tt outcome} is an integer code for the outcome of the
   pregnancy.  The code 1 indicates a live birth.
 
-\item {\tt birthord} is the integer birth order of each live birth;
-  for example, the code for a first child is 1.  For outcomes other
-  than live birth, this field is blank.
+\item {\tt pregordr} is a counter that indicates the order of
+pregnancies for a respondent.
 
-\item \verb"birthwgt_lb" and \verb"birthwgt_oz" contain the
-pounds and ounces parts of the birth weight of the baby.
+\item {\tt birthord} is a counter that indicates the order of live
+  births for a respondent; for example, the code for a first child is
+  1.  For outcomes other than live birth, this field is blank.
+
+\item \verb"birthwgt_lb" and \verb"birthwgt_oz" contain the pounds and
+  ounces parts of the birth weight of the baby.
 
 \item {\tt agepreg} is the mother's age at the end of the pregnancy.
 
@@ -934,7 +941,7 @@ pounds and ounces parts of the birth weight of the baby.
 
 If you read the codebook carefully, you will see that most of these
 variables are {\bf recodes}, which means that they are not part of the
-{\bf raw data} collected by the survey, but they are calculated using
+{\bf raw data} collected by the survey; they are calculated using
 the raw data.  \index{recode} \index{raw data}
 
 For example, {\tt prglength} for live births is equal to the raw
@@ -1000,7 +1007,7 @@ operations return {\tt nan} if either argument is {\tt nan}:
 
 So computations with {\tt nan} tend to do the right thing.  Most
 Pandas functions handle {\tt nan} appropriately, at least for most
-applications.  But dealing with special values will be a recurring
+applications.  But dealing with missing data will be a recurring
 issue.
 
 The last line of {\tt CleanFemPreg} creates a new
@@ -1011,8 +1018,8 @@ One important note: when you add a new column to a DataFrame, you
 must use dictionary syntax, like this:
 
 \begin{verbatim}
-    # WRONG!
-    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0 
+    # CORRECT
+    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0 
 \end{verbatim}
 
 Not dot notation, like this:
@@ -1022,14 +1029,14 @@ Not dot notation, like this:
     df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0 
 \end{verbatim}
 
-This version adds an attribute to the DataFrame object, but does
-not add a column to the DataFrame!
+The version with dot notation adds an attribute to the DataFrame
+object, but that attribute is not treated as a new column!
 
 
 \section{Validation}
 
 When data is exported from one software environment and imported into
-another, it is possible for errors to be introduced.  And when you are
+another, errors might be introduced.  And when you are
 getting familiar with a new dataset, you might interpret data
 incorrectly or introduce other misunderstandings.  If you take
 time to validate the data, you can save time later and avoid errors.
@@ -1049,10 +1056,10 @@ value	label	 	        Total
 6	CURRENT PREGNANCY	 352
 \end{verbatim}
 
-The {\tt Series} class provides \verb"value_counts", which
-counts the number of times each value appears.  If we select
-the {\tt outcome} Series from the DataFrame, we can use
-\verb"value_counts" to compare with the published data:
+The {\tt Series} class provides the method \verb"value_counts", which
+counts the number of times each value appears.  If we select the {\tt
+  outcome} Series from the DataFrame, we can use \verb"value_counts"
+to compare with the published data:
 
 \begin{verbatim}
 >>> df.outcome.value_counts().sort_index()
@@ -1065,12 +1072,12 @@ the {\tt outcome} Series from the DataFrame, we can use
 \end{verbatim}
 
 The result of \verb"value_counts" is a Series;
-\verb"sort_index" sorts the series by index, so the
+\verb"sort_index" sorts the Series by index, so the
 values appear in order.
 
-Comparing the results with the published table, it looks like
-{\tt outcome} validates.  Similarly, here is the published table for
-\verb"birthwgt_lb"
+Comparing the results with the published table, it looks like the
+values in {\tt outcome} are correct.  Similarly, here is the published
+table for \verb"birthwgt_lb"
 
 \begin{verbatim}
 value	label                  Total
@@ -1108,16 +1115,15 @@ And here are the value counts:
 The counts for 6, 7, and 8 pounds check out, and if you add
 up the counts for 0-5 and 9-95, they check out, too.  But
 if you look more closely, you notice one value that is almost
-certainly an error, a 51 pound baby!  Most likely it was actually
-a 15 pound baby and the digits were reversed.
+certainly an error, a 51 pound baby!
 
-I added this line to {\tt CleanFemPreg} to replace invalid values
-with {\tt NaN}:
+To deal with this error, I added a line to {\tt CleanFemPreg}:
 
 \begin{verbatim}
 df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
 \end{verbatim}
 
+This statement replaces invalid values with {\tt NaN}.
 The expression in brackets yields a Series of type {\tt bool}, 
 where True indicates that the condition is true.  When a boolean
 Series is used as an index, it selects only the elements that
@@ -1147,7 +1153,8 @@ method creates an iterator that enumerates the index (row number)
 and {\tt caseid} for each pregnancy.
 
 {\tt d} is a dictionary that maps from each case ID to a list of
-indices, so for each respondent we can look up the indices of
+indices.  Using {\tt d} we can look up a respondent and 
+get the indices of
 that respondent's pregnancies.
 
 This example looks up one respondent and prints a list of outcomes
@@ -1159,23 +1166,26 @@ for her pregnancies:
     print(caseid, preg.outcome[indices].values)
 \end{verbatim}
 
-And here is the result:
+Using a list as an index into {\tt preg.outcome} selects the
+indicated values and yields a Series.  Instead of printing the
+whole Series, I selected the {\tt values} attribute, which is
+a NumPy array.  The result looks like this:
 
 \begin{verbatim}
 10229 [4 4 4 4 4 4 1]
 \end{verbatim}
 
 The outcome code {\tt 1} indicates a live birth. Code {\tt 4} indicates
-a miscarriage; that is, a preganancy that ended spontaneously, usually
+a miscarriage; that is, a pregnancy that ended spontaneously, usually
 with no known medical cause.
 
 Statistically this respondent is not unusual.  Miscarriages are common
 and there are other respondents who reported as many or more.
 
-But remembering the context, this data tells the story of a woman
-who was pregnant six times, each time ending in miscarriage.  If we
-look at this data with empathy, it is natural to be moved by the
-story it tells.
+But remembering the context, this data tells the story of a woman who
+was pregnant six times, each time ending in miscarriage.  Her seventh
+and most recent pregnancy ended in a live birth.  If we consider this
+data with empathy, it is natural to be moved by the story it tells.
 
 Each record in the NSFG dataset represents a person who provided
 honest answers to many personal and difficult questions.  We can use
@@ -1188,7 +1198,7 @@ respect and gratitude.
 \section{Exercises}
 
 \begin{exercise}
-In the repository your downloaded, you should find a file named
+In the repository you downloaded, you should find a file named
 \verb"chap01ex.ipynb", which is an iPython notebook.  You can
 launch iPython notebook from the command line like this:
 
@@ -1197,7 +1207,9 @@ $ ipython notebook &
 \end{verbatim}
 
 If iPython is installed, it should launch a server that runs in the
-background and open a browser to view the notebook.
+background and open a browser to view the notebook.  If you are not
+familiar with iPython, I suggest you start at
+\url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
 
 Open \verb"chap01ex.ipynb".  Some cells are already filled in, and
 you should execute them.  Other cells give you instructions for
@@ -1235,7 +1247,7 @@ A solution to this exercise is in \verb"chap01ex_soln.py"
 \begin{exercise}
 The best way to learn about data science is to work on a project you are
 interested in.  Is there a question like, ``Do first babies arrive
-late,'' that you would like to investigate?
+late,'' that you want to investigate?
 
 Think about questions you find personally interesting, or items of
 conventional wisdom, or controversial topics, or questions that have
@@ -1244,7 +1256,13 @@ lends itself to statistical inquiry.
 
 Look for data to help you address the question.  Governments are good
 sources because data from public research is often freely
-available.
+available.  Good places to start include \url{http://www.data.gov/},
+and \url{http://www.science.gov/}, and in the United Kingdom,
+\url{http://data.gov.uk/}.
+
+Two of my favorite data sets are the General Social Survey at
+\url{http://www3.norc.org/gss+website/}, and the European Social
+Survey at \url{http://www.europeansocialsurvey.org/}.
 
 If it seems like someone has already answered your question, look
 closely to see whether the answer is justified.  There might be flaws
@@ -1265,57 +1283,60 @@ the data, or agree to certain terms of use.  Be persistent!
 
 \begin{itemize}
 
-\item anecdotal evidence: Evidence, often personal, that is collected
+\item {\bf anecdotal evidence}: Evidence, often personal, that is collected
   casually rather than by a well-designed study.
 \index{anecdotal evidence}
 
-\item population: A group we are interested in studying.
+\item {\bf population}: A group we are interested in studying.
   ``Population'' often refers to a
   group of people, but the term is used for other kinds of things,
   too.
 \index{population}
 
-\item cross-sectional study: A study that collects data about a
+\item {\bf cross-sectional study}: A study that collects data about a
 population at a particular point in time.
 \index{cross-sectional study}
 \index{study!cross-sectional}
 
-\item longitudinal study: A study that follows a population over
+\item {\bf cycle}: In a repeated cross-sectional study, each repetition
+of the study is called a cycle.
+
+\item {\bf longitudinal study}: A study that follows a population over
 time, collecting data from the same group repeatedly.
 \index{longitudinal study}
 \index{study!longitudinal}
 
-\item respondent: A person who responds to a survey.
+\item {\bf respondent}: A person who responds to a survey.
 \index{respondent}
 
-\item cohort: A group of respondents.
+\item {\bf cohort}: A group of respondents.
 \index{cohort}
 
-\item sample: The subset of a population used to collect data.
+\item {\bf sample}: The subset of a population used to collect data.
 \index{sample}
 
-\item representative: A sample is representative if every member
+\item {\bf representative}: A sample is representative if every member
 of the population has the same chance of being in the sample.
 \index{representative}
 
-\item oversampling: The technique of increasing the representation
+\item {\bf oversampling}: The technique of increasing the representation
 of a sub-population in order to avoid errors due to small sample
 sizes.
 \index{oversampling}
 
-\item record: In a database, a collection of information about
+\item {\bf record}: In a database, a collection of information about
 a single person or other object of study.
 \index{record}
 
-\item raw data: Values collected and recorded with little or no
+\item {\bf raw data}: Values collected and recorded with little or no
 checking, calculation or interpretation.
 \index{raw data}
 
-\item recode: A value that is generated by calculation and other
+\item {\bf recode}: A value that is generated by calculation and other
 logic applied to raw data.
 \index{recode}
 
-\item data cleaning: processes that include validating data, identifying
+\item {\bf data cleaning}: processes that include validating data, identifying
 errors, translating between data types and representations, etc.
 
 \end{itemize}
@@ -1325,28 +1346,22 @@ errors, translating between data types and representations, etc.
 \chapter{Distributions}
 \label{descriptive}
 
-\section{Distributions}
-\label{distributions}
+\section{Histograms}
+\label{histograms}
+
+One of the best ways to describe a variable is to report the values
+that appear in the dataset and how many times each value appears.
+This description is called the {\bf distribution} of the variable.
 \index{distribution}
 
-One of the best ways to summarize a variable is to report the
-values that appear in the dataset and how many times each
-value appears.  This summary is called the {\bf distribution}
-of the variable.
-
 The most common representation of a distribution is a {\bf histogram},
-which is a graph that shows the frequency
-of each value.
-In this context, {\bf frequency} means the number of times the value
-appears---it has nothing to do with the pitch of a sound
-or tuning of a radio signal.
-\index{histogram}
-\index{frequency}
-\index{probability}
+which is a graph that shows the {\bf frequency} of each value.  In
+this context, ``frequency'' means the number of times the value
+appears.  \index{histogram} \index{frequency}
 \index{dictionary}
 
-In Python, an efficient way to compute frequencies is with a dictionary.
-Given a sequence of values, {\tt t}:
+In Python, an efficient way to compute frequencies is with a
+dictionary.  Given a sequence of values, {\tt t}:
 %
 \begin{verbatim}
 hist = {}
@@ -1363,7 +1378,7 @@ from collections import Counter
 counter = Counter(t)
 \end{verbatim}
 
-The result is a {\tt counter} object, which is a subclass of
+The result is a {\tt Counter} object, which is a subclass of
 dictionary.  For details, see
 \url{https://docs.python.org/2/library/collections.html#collections.Counter}.
 
@@ -1377,9 +1392,8 @@ chapter.
 \index{Hist object}
 
 The Python module that accompanies this book, {\tt thinkstats2.py},
-provides a class definition for Hist objects, which represent
-histograms.  You can read the documentation at {\tt
-  thinkstats2.com/thinkstats2.html}.
+provides a class named Hist, which represents a histogram.  You can
+read the documentation at {\tt thinkstats2.com/thinkstats2.html}.
 
 It also provides a function, {\tt MakeHistFromList}, that takes a
 sequence of values and returns a new Hist object.  You can test it in
@@ -1392,8 +1406,8 @@ Python's interactive mode:
 <thinkstats2.Hist object at 0xb76cf68c>
 \end{verbatim}
 
-Hist objects provide methods to look up values and their
-probabilities.  {\tt Freq} takes a value and returns its frequency:
+Hist objects provide the method {\tt Freq}, which takes a value and
+returns its frequency:
 %
 \begin{verbatim}
 >>> hist.Freq(2)
@@ -1431,30 +1445,14 @@ for val, freq in hist.Items():
      print val, freq
 \end{verbatim}
 
-\begin{exercise}
-For the exercises in this chapter, create a file named
-{\tt chap02ex.py}.
-
-The mode of a distribution is the most frequent value (see
-\url{http://wikipedia.org/wiki/Mode_(statistics)}).  Write a function
-called {\tt Mode} that takes a Hist object and returns the most
-frequent value.\index{mode}
-
-As a more challenging version, write a function called {\tt AllModes}
-that takes a Hist object and returns a list of value-frequency
-pairs in descending order of frequency.  Hint: the {\tt operator}
-module provides a function called {\tt itemgetter} which you can
-pass as a key to {\tt sorted}.
-\end{exercise}
-
 
 \section{Plotting histograms}
 \index{plotting}
 \index{{\tt pyplot}}
 
 There are a number of Python packages for making figures and graphs.
-The one I will demonstrate is {\tt pyplot}, which is part of
-the {\tt matplotlib} package at \url{http://matplotlib.sourceforge.net}.
+One of the most popular is {\tt pyplot}, which is part of
+the {\tt matplotlib} package (see \url{http://matplotlib.org}).
 
 This package is included in many Python installations.  To see whether
 you have it, launch the Python interpreter and run:
@@ -1471,7 +1469,7 @@ otherwise you will have to install it.
 \index{bar plot}
 \index{plot!bar}
 
-Histograms and PMFs are most often plotted as bar charts.  The
+Histograms are most often plotted as bar charts.  The
 {\tt pyplot} function to draw a bar chart is {\tt bar}.  Hist
 objects provide a method called {\tt Render} that returns a sorted
 list of values and a list of the corresponding frequencies, which
@@ -1499,18 +1497,19 @@ To plot the same histogram with {\tt thinkplot.py}, try this:
 \end{verbatim}
 
 Most of the functions in {\tt thinkplot.py} are wrappers for
-functions in {\tt matplotlib}, but they know how to work with
+functions in {\tt matplotlib}, customized to work with
 the objects defined in {\tt thinkstats2.py}.
 
 
 \section{Outliers}
 
-Now we are ready to be back to the question from Chapter~\ref{}:
-``Are first babies more likely to be early?.''  The code in
-this chapter is in {\tt first.py}.
+Now we are ready to get back to the question from Chapter~\ref{intro}:
+``Are first babies more likely to be late?.''  The code in
+this chapter is from {\tt first.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
 
 I start by selecting the rows from the pregnancy file where the outcome
-is a live birth, and the partition them into first births and others:
+is a live birth, and then partition them into first births and others:
 
 \begin{verbatim}
 def MakeFrames():
@@ -1523,18 +1522,19 @@ def MakeFrames():
     return live, firsts, others
 \end{verbatim}
 
-Before going any farther, it is always a good idea to validate the
-results.  
+Before going any farther, it is always a good idea to validate
+the data by checking for {\bf outliers}.  Outliers are extreme
+values that might be caused my errors in measurement and recording,
+or might be accurate measurements of rate events.
 
 In the list of pregnancy lengths for live births, the 10 lowest values
-are \{0, 4, 9, 13, 17, 17, 18, 19, 20, 21\}.  Values below 10
-weeks are certainly errors; the most likely explanation is that the
-outcome was not coded correctly.
-Values higher than 30 weeks are
-probably legitimate.  At least some of them are probably errors, but
-some might be premature babies.
+are \{0, 4, 9, 13, 17, 17, 18, 19, 20, 21\}.  Values below 10 weeks
+are certainly errors; the most likely explanation is that the outcome
+was not coded correctly.  Values higher than 30 weeks are probably
+legitimate.  Between 10 and 30 weeks, it is hard to be sure; some
+values are probably errors, but some represent premature babies.
 
-On the other end, the highest values are:
+On the other end of the range, the highest values are:
 %
 \begin{verbatim}
 weeks  count
@@ -1549,26 +1549,22 @@ weeks  count
 
 Most doctors recommend induced labor if a pregnancy exceeds 42 weeks,
 so some of the longer values are surprising.  In particular, 50 weeks
-seems medically unlikely.  Again, it's possible that the response
-was not coded correctly, or the respondent may not have reported
-accurately.
+seems medically unlikely.
 
-Extreme values like this are called {\bf outliers}.  Some outliers
-are due to errors, but others might be legitimate but due to unusual
-events.  The best way to handle outliers depends on {\bf domain knowledge};
+The best way to handle outliers depends on {\bf domain knowledge};
 that is, information about where the data come from and what they
 mean.  And it depends on what analysis you are planning to perform.
 
 In this example, the motivating question is whether first babies
 tend to be early (or late).  When people ask this question, they are
-usually interested in full-term pregnancies, so I think it is appropriate
-for this analysis to focus on pregnancies longer than 27 weeks.
+usually interested in full-term pregnancies, so for this analysis
+I will focus on pregnancies longer than 27 weeks.
 
 
 \section{First babies}
 
 To compare pregnancy lengths for first babies and others, I plotted
-their histograms on the same axis.  Here's the code:
+their histograms on the same axis.  Here's the code from {\tt first.py}:
 
 \begin{verbatim}
     first_hist = thinkstats2.MakeHistFromList(firsts.prglngth)
@@ -1591,15 +1587,15 @@ their histograms on the same axis.  Here's the code:
                    axis=axis)
 \end{verbatim}
 
-\verb"first_hist" and \verb"other_hist" are the histograms of
+\verb"first_hist" and \verb"other_hist" are histograms of
 pregnancy length for first babies and others.
 
 {\tt thinkplot.PrePlot} takes as an argument the number of histograms
-we are planning to plot; this allows {\tt thinkplot} to choose
+we are planning to plot; it uses this information to choose
 an appropriate collection of colors.
 
 {\tt thinkplot.Hist} takes a dictionary of options that control the
-appearance of the histograms.  I chose the width to leave some
+appearance of the histograms.  I chose a width that leaves some
 space between each pair of bars.  By default, the left edge of the
 bar lines up with the given value on the x-axis.  By giving one
 of the histograms {\tt width=-width}, I lined it up with the right
@@ -1611,75 +1607,323 @@ Figure~\ref{nsfg_hist} shows the result.
 \index{length!pregnancy}
 
 \begin{figure}
-% descriptive.py
+% first.py
 \centerline{\includegraphics[height=2.5in]{figs/nsfg_hist.pdf}}
 \caption{Histogram of pregnancy lengths.}
 \label{nsfg_hist}
 \end{figure}
 
-Histograms are useful because they make the following features immediately
-apparent:
+Histograms are useful because they make the most frequent values
+immediately apparent.  But they are not the best choice for comparing
+two distributions.  In this example, there are fewer ``first babies''
+than ``others,'' so some of the apparent differences in the histograms
+are due to sample sizes.  In the next chapter we address this problem
+using probability mass functions.
+
+
+\section{Summarizing distributions}
+\label{mean}
+
+A histogram is a complete description of the distribution of a sample;
+that is, given a histogram, we could reconstruct the values in the
+sample (although not their order).
+
+If the details of the distribution are important, it might be
+necessary to present a histogram.  But often we want to
+summarize the distribution with a few descriptive statistics.
+
+Some of the characteristics we might want to report are:
+
+\begin{description}
+
+\item[central tendency]: Do the values tend to cluster around
+a particular point?
+\index{central tendency}
+
+\item[modes]: Is there more that one cluster?
+\index{mode}
+
+\item[spread]: How much variability is there in the values?
+\index{spread}
+
+\item[tails]: How quickly do the probabilities drop off as we
+move away from the modes?
+\index{tail}
+
+\item[outliers]: Are there extreme values far from the modes?
+\index{outlier}
+
+\end{description}
+
+Statistics designed to answer these questions are called {\bf summary
+  statistics}.  By far the most common summary statistic is the {\bf
+  mean}, which is meant to describe the central tendency of the
+distribution.  \index{mean} \index{average} \index{summary statistics}
+
+If you have a sample of {\tt n} values, $x_i$, the mean, $\xbar$, is
+the sum of the values divided by the number of values; in other words
+%
+\[ \xbar = \frac{1}{n} \sum_i x_i \]
+%
+The words ``mean'' and ``average'' are sometimes used interchangeably,
+but I will maintain this distinction:
 
 \begin{itemize}
 
-\item Mode: The most common value in a distribution is called the
-  {\bf mode}.  In Figure~\ref{nsfg_hist} there is a clear mode at 39
-  weeks.  In this case, the mode is the summary statistic that does
-  the best job of describing the typical value.
-\index{mode}
+\item The ``mean'' of a sample is the summary statistic computed with
+  the previous formula.
 
-\item Shape: Around the mode, the distribution is asymmetric; it
-  drops off quickly to the right and more slowly to the left.  From a
-  medical point of view, this makes sense.  Babies are often born
-  early, but seldom later than 42 weeks.  Also, the right side of the
-  distribution is truncated because doctors often intervene after 42
-  weeks.
-\index{shape}
-
-\item Outliers: Values far from the mode are called {\bf outliers}.
-  Some of these are just unusual cases, like babies born at 30 weeks.
-  But many of them are probably due to errors, either in the reporting
-  or recording of data.
-\index{outlier}
+\item An ``average'' is one of several summary statistics you might
+  choose to describe a central tendency.
+\index{central tendency}
 
 \end{itemize}
 
-Although histograms make some features apparent, they are usually not
-useful for comparing two distributions.  In this example, there are
-fewer ``first babies'' than ``others,'' so some of the apparent
-differences in the histograms are due to sample sizes.  We can
-address this problem using PMFs.
+Sometimes the mean is a good description of a set of values.  For
+example, apples are all pretty much the same size (at least the ones
+sold in supermarkets).  So if I buy 6 apples and the total weight is 3
+pounds, it would be a reasonable summary to say they are about a half
+pound each.
+\index{weight!pumpkin}
+
+But pumpkins are more diverse.  Suppose I grow several varieties in my
+garden, and one day I harvest three decorative pumpkins that are 1
+pound each, two pie pumpkins that are 3 pounds each, and one Atlantic
+Giant\textregistered~pumpkin that weighs 591 pounds.  The mean of this
+sample is 100 pounds, but if I told you ``The average pumpkin in my
+garden is 100 pounds,'' that would be misleading.  In this example,
+there is no meaningful average because there is no typical pumpkin.
+\index{pumpkin}
 
 
-\section{Probability Mass Functions}
+
+\section{Variance}
+\index{variance}
+
+If there is no single number that summarizes pumpkin weights,
+we can do a little better with two numbers: mean and {\bf variance}.
+
+Variance is a summary statistic intended to describe the variability
+or spread of a distribution.  The variance of a set of values is
+%
+\[ S^2 = \frac{1}{n} \sum_i (x_i - \xbar)^2 \]
+%
+The term $x_i - \xbar$ is called the ``deviation from the mean,'' so
+variance is the mean squared deviation, which is why it is denoted
+with exponent 2.  The square root of variance, $S$, is the
+{\bf standard deviation}.  \index{deviation} \index{standard
+  deviation}
+
+By itself, variance is hard to interpret.  One problem is that the
+units are strange; in this case the measurements are in pounds, so the
+variance is in pounds squared.  Standard deviation is more meaningful;
+in this example the units are pounds.
+
+If you have prior experience, you might have seen a formula for
+variance with $n-1$ in the denominator, rather than {\tt n}.  This
+statistic is used to estimate the variance in a population using a
+sample.  We will come back to this in Chapter~\ref{estimation}.
+\index{sample variance}
+
+
+\section{Effect size}
+\index{effect size}
+
+An {\bf effect size} is a summary statistic intended describe, well,
+the size of an effect.  For example, to describe the difference
+between two groups, one obvious choice is the difference in the
+means.
+\index{effect size}
+
+For example, the mean pregnancy length for first babies is 38.6;
+for other babies it is 38.5.  The difference is 0.078 weeks, which
+works out to 13 hours.
+
+If we assume that this estimate is accurate, the difference in
+pregnancy length would have no practical consequences.  Without
+observing a large number of pregnancies, it is unlikely that anyone
+would notice a difference this small.
+
+As a fraction of the typical pregnancy length, this difference is
+about 0.2\%.
+
+Another way to convey the size of the effect is to compare the
+difference between groups to the variability withing groups.
+Cohen's $d$ is a statistic intended to do that; it is defined
+as
+%
+\[ d = \frac{\bar{x_1}}{\bar{x_2}}{s}  \]
+%
+where $\bar{x_1}$ and $\bar{x_2}$ are the means of the groups and
+$s$ is the ``pooled standard deviation'', which is a weighted sum of
+the standard deviations within groups.  Here's what it looks like in
+Python:
+
+\begin{verbatim}
+def CohenEffectSize(group1, group2):
+    diff = group1.mean() - group2.mean()
+
+    var1 = group1.var()
+    var2 = group1.var()
+    n1, n2 = len(group1), len(group2)
+
+    pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
+    d = diff / math.sqrt(pooled_var)
+    return d
+\end{verbatim}
+
+In this example, the difference in means is 0.028 standard deviations.
+To put that in perspective, the difference in height between men and
+women is about 1.7 standard deviations (see
+\url{https://en.wikipedia.org/wiki/Effect_size}).
+
+
+\section{Reporting results}
+
+We have seen several ways to describe the difference in pregnancy
+length (if there is one) between first babies and others.  How should
+we report these results?
+
+The answer depends on who is asking the question.  A scientist might
+be interested in any (real) effect, no matter how small.  A doctor
+might only care about effects that are {\bf clinically significant};
+that is, differences that affect treatment decisions.  A pregnant
+woman might be interested in results that are relevant to her, like
+the probability of delivering early or late.  \index{clinically
+  significant} \index{significance}
+
+How you report results also depends on your goals.  If you are trying
+to demonstrate the importance of an effect, you might choose summary
+statistics that emphasize differences.  If you are trying to reassure
+a patient, you might choose statistics that put the differences in
+context.
+
+Of course your decisions should also be guided by professional ethics.
+It is appropriate to design statistical report and visualizations and
+other statistics clearly and effectively.  But you should also do your
+best to make your reports honest, and to acknowledge uncertainty and
+limitations.
+
+
+\section{Exercises}
+
+\begin{exercise}
+Based on the results in this chapter, suppose you were
+asked to summarize what you learned about whether first
+babies arrive late.
+
+Which summary statistics would you use if you wanted to get a story
+on the evening news?  Which ones would you use if you wanted to
+reassure an anxious patient?
+\index{Adams, Cecil}
+\index{Straight Dope, The}
+
+Finally, imagine that you are Cecil Adams, author of {\it The Straight
+  Dope} (\url{http://straightdope.com}), and your job is to answer the
+question, ``Do first babies arrive late?''  Write a paragraph that
+uses the results in this chapter to answer the question clearly,
+precisely, and honestly.
+
+\end{exercise}
+
+
+For the exercises in this chapter, create a file named
+{\tt chap02ex.py}.  You can find a solution in
+\verb"chap02ex_soln.py".
+
+\begin{exercise}
+The mode of a distribution is the most frequent value (see
+\url{http://wikipedia.org/wiki/Mode_(statistics)}).  Write a function
+called {\tt Mode} that takes a Hist and returns the most
+frequent value.\index{mode}
+
+As a more challenging version, write a function called {\tt AllModes}
+that returns a list of value-frequency pairs in descending order of
+frequency.
+\end{exercise}
+
+
+\begin{exercise}
+Make a histogram for some other variables ???
+\end{exercise}
+
+
+
+
+\section{Glossary}
+
+\begin{itemize}
+
+\item distribution: A summary of the values that appear in a sample
+and the frequency, or probability, of each.
+\index{distribution}
+
+\item histogram: A mapping from values to frequencies, or a graph
+that shows this mapping.
+\index{histogram}
+
+\item frequency: The number of times a value appears in a sample.
+\index{frequency}
+
+\item outlier: A value far from the central tendency.
+\index{outlier}
+
+\item mode: The most frequent value in a sample, or one of the
+most frequent values.
+\index{mode}
+
+\item central tendency: A characteristic of a sample or population;
+intuitively, it is the most average value. 
+\index{central tendency}
+
+\item spread: A characteristic of a sample or population;
+intuitively, it describes how much variability there is.
+\index{spread}
+
+\item variance: A summary statistic often used to quantify spread.
+\index{variance}
+
+\item standard deviation: The square root of variance, also used
+as a measure of spread.
+\index{standard deviation}
+
+\item clinically significant: A result, like a difference between groups,
+that is relevant in practice.
+\index{clinically significant}
+
+\end{itemize}
+
+
+
+
+\chapter{Probability mass functions}
+\index{Probability mass function}
+
+\section{Pmfs}
 \index{Pmf object}
 \index{{\tt pmf.py}@{\tt Pmf.py}}
-
 
 Another way to represent a distribution is a {\bf probability mass
   function} (PMF), which maps from each value to its probability.  A
 {\bf probability} is a frequency expressed as a fraction of the sample
 size, {\tt n}.  To get from frequencies to probabilities, we divide
-through by {\tt n}, which is called {\bf normalization}:\index{normalization}
+through by {\tt n}, which is called {\bf normalization}.
+\index{probability}
+\index{normalization}
 \index{PMF}
 \index{probability mass function}
+
+Given a Hist, we can make a dictionary that maps from each
+value to its probability:
 %
 \begin{verbatim}
-n = float(len(t))
-pmf = {}
-for x, freq in hist.items():
-    pmf[x] = freq / n
+n = hist.Total()
+d = {}
+for x, freq in hist.Items():
+    d[x] = freq / n
 \end{verbatim}
-
-The result is a dictionary, {\tt pmf}, that maps from each value
-to its probability.
-
-{\tt thinkstats2.py} provides a class called {\tt Pmf} that represents PMFs.
-The notation can be confusing, but here it is: {\tt Pmf} is the
-name of the class, I often use {\tt pmf} as a variable name, and in
-this book, I use ``PMF'' to refer to the general concept
-of a probability mass function, independent of my implementation.
-
+%
+Or we can use the {\tt Pmf} class provided by {\tt thinkstats2.py}.
 To create a Pmf object, use {\tt MakePmfFromList}, which takes a list
 of values:
 %
@@ -1739,22 +1983,9 @@ To renormalize, call {\tt Normalize}:
 Pmf objects provide a {\tt Copy} method so you can make
 and modify a copy without affecting the original.
 
-\begin{exercise}
-According to Wikipedia, ``Survival analysis is a branch of statistics
-which deals with death in biological organisms and failure in
-mechanical systems;'' see \url{http://wikipedia.org/wiki/Survival_analysis}.
-\index{survival analysis}
-
-As part of survival analysis, it is often useful to compute the
-remaining lifetime of, for example, a mechanical component.  If we
-know the distribution of lifetimes and the age of the component,
-we can compute the distribution of remaining lifetimes.
-
-Write a function called {\tt RemainingLifetime} that takes a
-Pmf of lifetimes and an age, and returns a new Pmf that represents
-the distribution of remaining lifetimes.
-
-\end{exercise}
+My notation for PMFs can be confusing, so here it is: I use Pmf
+for the name of the class, {\tt pmf} as a variable name, and ``PMF''
+to refer to the mathematical concept of a probability mass function.
 
 
 \section{Plotting PMFs}
@@ -1780,7 +2011,7 @@ a large number of values and the Pmf is smooth.
 \end{itemize}
 
 \begin{figure}
-% descriptive.py
+% first.py
 \centerline{\includegraphics[height=2.5in]{figs/nsfg_pmf.pdf}}
 \caption{PMF of pregnancy lengths.}
 \label{nsfg_pmf}
@@ -1788,19 +2019,13 @@ a large number of values and the Pmf is smooth.
 \index{pregnancy length}
 \index{length!pregnancy}
 
-Figure~\ref{nsfg_pmf} shows the PMF of pregnancy lengths as a bar
-graph.  Using the PMF, we can see more clearly where the distributions
-differ.  First babies seem to be less likely than others to arrive on
-time (week 39) and more likely to be a late (weeks 41 and 42).
+Figure~\ref{nsfg_pmf} shows PMFs of pregnancy length for first babies
+and others as bar graphs.  Using the PMF, we can see more clearly
+where the distributions differ.  First babies seem to be less likely
+than others to arrive on time (week 39) and more likely to be a late
+(weeks 41 and 42).
 
-The code that generates the figures in this chapters is available from
-\url{http://thinkstats2.com/descriptive.py}.  To run it, you will need the
-modules it imports and the data from the NSFG (see
-Section~\ref{nsfg}).
-\index{National Survey of Family Growth}
-\index{NSFG}
-\index{{\tt descriptive.py}}
-
+The code that generates this figure is in {\tt first.py}.
 Note: {\tt pyplot} provides a function called {\tt hist} that
 takes a sequence of values, computes the histogram and plots it.
 Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
@@ -1811,10 +2036,12 @@ Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
 \index{visualization}
 \index{exploratory data analysis}
 
-Histograms and PMFs are useful for exploratory data analysis;
-once you have an idea what is going on, it is often useful to
-design a visualization that focuses on the apparent effect.
-\index{apparent effect}
+Histograms and PMFs are useful while you are exploring data and
+trying to identify patterns and relationships.
+
+Once you have an idea what is going on, a good next step is to
+design a visualization that makes the patterns your have identified
+clear and visible.
 
 In the NSFG data, the biggest differences in the distributions are
 near the mode.  So it makes sense to zoom in on that part of the
@@ -1822,14 +2049,14 @@ graph, and to transform the data to emphasize differences.
 \index{National Survey of Family Growth}
 \index{NSFG}
 
-Figure~\ref{nsfg_diffs} shows the difference between the PMFs for weeks
-35--45.  I multiplied by 100 to express the differences in percentage
-points.
+Figure~\ref{nsfg_diffs} shows the difference between the PMFs for
+weeks 35--45.  I multiplied the probabilities by 100 to express the
+differences in percentage points.
 
 \begin{figure}
-% descriptive.py
+% first.py
 \centerline{\includegraphics[height=2.5in]{figs/nsfg_diffs.pdf}}
-\caption{Difference in percentage, by week.}
+\caption{Difference, in percentage points, by week.}
 \label{nsfg_diffs}
 \end{figure}
 
@@ -1837,327 +2064,6 @@ This figure makes the pattern clearer: first babies are
 less likely to be born in week 39, and somewhat more likely
 to be born in weeks 41 and 42.
 
-
-\section{Relative risk}
-\label{relative.risk}
-\index{relative risk}
-
-We started with the question, ``Do first babies arrive late?''  To
-make that more precise, let's say that a baby is early if it is born
-during Week 37 or earlier, on time if it is born during Week 38, 39 or
-40, and late if it is born during Week 41 or later.  Ranges like these
-that are used to group data are called {\bf bins}.
-\index{bin}
-\index{{\tt risk.py}}
-
-\begin{exercise}
-Create a file named {\tt risk.py}.
-Write functions named {\tt ProbEarly}, {\tt ProbOnTime} and
-{\tt ProbLate} that take a PMF and compute the fraction of births
-that fall into each bin.  Hint: write a generalized function
-that these functions call.
-
-Make three PMFs, one for first babies, one for others, and one for
-all live births.  For each PMF, compute the probability of being
-born early, on time, or late.
-
-One way to summarize data like this is with {\bf relative risk},
-which is a ratio of two probabilities.  For example, the probability
-that a first baby is born early is 18.2\%.  For other babies it is
-16.8\%, so the relative risk is 1.08.  That means that first babies
-are about 8\% more likely to be early.
-
-Write code to confirm that result, then compute the relative risks of
-being born on time and being late.  You can download a solution
-from \url{http://thinkstats2.com/risk.py}.
-
-\end{exercise}
-
-
-\section{Means and averages}
-\label{mean}
-
-In the previous chapter, I mentioned three summary statistics---mean,
-variance and median---without explaining what they are.  So before
-we go any farther, let's take care of that.
-\index{mean}
-\index{average}
-\index{descriptive statistics}
-\index{summary statistics}
-
-If you have a sample of {\tt n} values, $x_i$, the mean, $\xbar$, is
-the sum of the values divided by the number of values; in other words
-%
-\[ \xbar = \frac{1}{n} \sum_i x_i \]
-%
-The words ``mean'' and ``average'' are sometimes used interchangeably,
-but I will maintain this distinction:
-
-\begin{itemize}
-
-\item The ``mean'' of a sample is the summary statistic computed with
-  the previous formula.
-
-\item An ``average'' is one of several summary statistics you might
-  choose to describe the typical value or the
-  {\bf central tendency} of a sample.
-\index{central tendency}
-
-\end{itemize}
-
-Sometimes the mean is a good description of a set of values.  For
-example, apples are all pretty much the same size (at least the ones
-sold in supermarkets).  So if I buy 6 apples and the total weight is 3
-pounds, it would be a reasonable summary to say they are about a half
-pound each.
-\index{weight!pumpkin}
-
-But pumpkins are more diverse.  Suppose I grow several varieties in my
-garden, and one day I harvest three decorative pumpkins that are 1
-pound each, two pie pumpkins that are 3 pounds each, and one Atlantic
-Giant\textregistered~pumpkin that weighs 591 pounds.  The mean of
-this sample is 100 pounds, but if I told you ``The average pumpkin
-in my garden is 100 pounds,'' that would be wrong, or at least
-misleading.  In this example, there is no meaningful average because
-there is no typical pumpkin.
-\index{pumpkin}
-
-
-
-\section{Variance}
-\index{variance}
-
-If there is no single number that summarizes pumpkin weights,
-we can do a little better with two numbers: mean and {\bf variance}.
-
-In the same way that the mean is intended to describe the central
-tendency, variance is intended to describe the {\bf spread}.
-The variance of a set of values is
-%
-\[ S^2 = \frac{1}{n} \sum_i (x_i - \xbar)^2 \]
-%
-The term $x_i - \xbar$ is called the ``deviation from the mean,'' so
-variance is the mean squared deviation, which is why it is denoted
-with exponent 2.  The square root of variance, $S$, is the
-{\bf standard deviation}.  \index{deviation} \index{standard
-  deviation}
-
-By itself, variance is hard to interpret.  One problem is that the
-units are strange; in this case the measurements are in pounds, so the
-variance is in pounds squared.  Standard deviation is more meaningful;
-in this example the units are pounds.
-
-If you have prior experience, you might have seen a formula for
-variance with $n-1$ in the denominator, rather than {\tt n}.  This
-statistic is used to
-estimate the variance in a population using a sample.  We will come
-back to this in Chapter~\ref{estimation}.  \index{sample variance}
-
-
-\begin{exercise}
-%
-\index{mean}
-\index{variance}
-\index{PMF}
-%
-In Section~\ref{mean} we computed the mean of a sample by adding up
-the elements and dividing by n.  If you are given a PMF, you can
-still compute the mean, but the process is slightly different:
-%
-\[ \xbar = \sum_i p_i x_i \]
-%
-where the $x_i$ are the unique values in the PMF and $p_i=PMF(x_i)$.
-Similarly, you can compute variance like this:
-%
-\[ S^2 = \sum_i p_i (x_i - \xbar)^2\]
-% 
-Write functions called {\tt PmfMean} and {\tt PmfVar} that take a
-Pmf object and compute the mean and variance.  To test these methods,
-check that they are consistent with the methods {\tt Mean} and {\tt
-  Var} provided by {\tt Pmf}.
-\index{{\tt pmf.py}@{\tt Pmf.py}}
-
-\end{exercise}
-
-
-\section{Outliers}
-\index{outlier}
-
-Outliers are values that are far from the central tendency.  Outliers
-might be caused by errors in collecting or processing the data, or
-they might be correct but unusual measurements.  It is always a good
-idea to check for outliers, and sometimes it is useful and appropriate
-to discard them.
-
-%weeks  count
-%0      1
-%4      1
-%9      1
-%13     1
-%17     2
-%18     1
-%19     1
-%20     1
-%21     2
-%22     7
-
-In the list of pregnancy lengths for live births, the 10 lowest values
-are \{0, 4, 9, 13, 17, 17, 18, 19, 20, 21\}.  Values below 20
-weeks are certainly errors, and values higher than 30 weeks are
-probably legitimate.  But values in between are
-hard to interpret.
-\index{pregnancy length}
-\index{length!pregnancy}
-
-On the other end, the highest values are:
-%
-\begin{verbatim}
-weeks  count
-43     148
-44     46
-45     10
-46     1
-47     1
-48     7
-50     2
-\end{verbatim}
-
-Again, some values are almost certainly errors,
-but it is hard to know for sure.  One option is to {\bf trim} the data
-by discarding some fraction of the highest and lowest values (see
-\url{http://wikipedia.org/wiki/Truncated_mean}).
-\index{trimmed mean}
-\index{mean!trimmed}
-\index{truncated mean}
-\index{mean!truncated}
-
-
-\section{Reporting results}
-
-At this point we have explored the data and seen several apparent
-effects.  For now, let's assume that these effects are real (but let's
-remember that it's an assumption).  How should we report these
-results?
-
-The answer might depend on who is asking the question.  For example, a
-scientist might be interested in any (real) effect, no matter how
-small.  A doctor might only care about effects that are {\bf
-  clinically significant}; that is, differences that affect treatment
-decisions.  A pregnant woman might be interested in results that are
-relevant to her, like the probability of delivering early or late.
-\index{clinically significant}
-\index{significance}
-
-How you report results also depends on your goals.  If you are
-trying to demonstrate the significance of an effect, you might choose
-summary statistics, like relative risk, that emphasize differences.
-If you are trying to reassure a patient, you might choose statistics
-that put the differences in context.
-
-\begin{exercise}
-Reusing code from {\tt survey.py} and {\tt first.py}, compute the
-standard deviation of gestation time for first babies and others.
-Does it look like the spread is the same for the two groups?
-\index{{\tt survey.py}}
-\index{{\tt first.py}}
-
-How big is the difference in the means compared to these standard
-deviations?  What does this comparison suggest about the statistical
-significance of the difference?
-\end{exercise}
-
-\begin{exercise}
-Based on the results from the previous exercises, suppose you were
-asked to summarize what you learned about whether first
-babies arrive late.
-
-Which summary statistics would you use if you wanted to get a story
-on the evening news?  Which ones would you use if you wanted to
-reassure an anxious patient?
-\index{Adams, Cecil}
-\index{Straight Dope, The}
-
-Finally, imagine that you are Cecil Adams, author of {\it The Straight
-  Dope} (\url{http://straightdope.com}), and your job is to answer the
-question, ``Do first babies arrive late?''  Write a paragraph that
-uses the results in this chapter to answer the question clearly,
-precisely, and accurately.
-
-\end{exercise}
-
-
-
-\section{Glossary}
-
-\begin{itemize}
-
-\item central tendency: A characteristic of a sample or population;
-intuitively, it is the most average value. 
-\index{central tendency}
-
-\item spread: A characteristic of a sample or population;
-intuitively, it describes how much variability there is.
-\index{spread}
-
-\item variance: A summary statistic often used to quantify spread.
-\index{variance}
-
-\item standard deviation: The square root of variance, also used
-as a measure of spread.
-\index{standard deviation}
-
-\item frequency: The number of times a value appears in a sample.
-\index{frequency}
-
-\item histogram: A mapping from values to frequencies, or a graph
-that shows this mapping.
-\index{histogram}
-
-\item probability: A frequency expressed as a fraction of the sample
-size.
-\index{probability}
-
-\item normalization: The process of dividing a frequency by a sample
-size to get a probability.
-\index{normalization}
-
-\item distribution: A summary of the values that appear in a sample
-and the frequency, or probability, of each.
-\index{distribution}
-
-\item PMF: Probability mass function: a representation of a distribution
-as a function that maps from values to probabilities.
-\index{PMF}
-
-\item mode: The most frequent value in a sample.
-\index{mode}
-
-\item outlier: A value far from the central tendency.
-\index{outlier}
-
-\item trim: To remove outliers from a dataset.
-\index{trim}
-
-\item bin: A range used to group nearby values.
-\index{bin}
-
-\item relative risk: A ratio of two probabilities, often used to measure
-a difference between distributions.
-\index{relative risk}
-
-\item conditional probability: A probability computed under the assumption
-that some condition holds.
-\index{conditional probability}
-
-\item clinically significant: A result, like a difference between groups,
-that is relevant in practice.
-\index{clinically significant}
-
-\end{itemize}
-
-
-\chapter{Cumulative distribution functions}
-\label{cumulative}
 
 \section{The class size paradox}
 \index{class size}
@@ -2236,6 +2142,219 @@ You can download a solution to this problem from
 \end{exercise}
 
 
+
+\section{The limits of PMFs}
+\index{PMF}
+
+PMFs work well if the number of values is small.  But as the
+number of values increases, the probability associated with each value
+gets smaller and the effect of random noise increases.
+
+For example, we might be interested in the distribution of birth
+weights.  In the NSFG data, the variable \verb"totalwgt_oz" records
+weight at birth in ounces.  Figure~\ref{nsfg_birthwgt_pmf} shows the
+PMF of these values for first babies and others.
+\index{National Survey of Family Growth}
+\index{NSFG}
+\index{birth weight}
+\index{weight!birth}
+
+\begin{figure}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_pmf.pdf}}
+\caption{PMF of birth weights.  This figure shows a limitation
+of PMFs: they are hard to compare.}
+\label{nsfg_birthwgt_pmf}
+\end{figure}
+
+Overall, these distributions resemble the familiar ``bell curve,'' with
+many values near the mean and a few values much higher and lower.
+
+But parts of this figure are hard to interpret.  There are many spikes
+and valleys, and some apparent differences between the distributions.
+It is hard to tell which of these features are significant.  Also, it
+is hard to see overall patterns; for example, which distribution do
+you think has the higher mean?
+\index{binning}
+
+These problems can be mitigated by binning the data;
+that is, dividing the domain into non-overlapping intervals and counting
+the number of values in each bin.  Binning can be useful, but it is
+tricky to get the size of the bins right.  If they are big enough to
+smooth out noise, they might also smooth out useful information.
+
+An alternative that avoids these problems is the cumulative
+distribution function, which is the subject of
+the next chapter.
+
+
+\section{DataFrame indexing}
+
+There are a lot of ways to select rows and columns from a DataFrame.
+In the previous chapter we looked at column selection.  Now let's
+look at row selection.
+
+First, I'll create a simple DataFrame of random numbers:
+
+\begin{verbatim}
+>>> import numpy as np
+>>> import pandas
+>>> array = np.random.randn(4, 2)
+>>> pandas.DataFrame(array)
+          0         1
+0 -0.143510  0.616050
+1 -1.489647  0.300774
+2 -0.074350  0.039621
+3 -1.369968  0.545897
+\end{verbatim}
+
+By default, the rows and columns are numbered starting at zero.
+But you can provide column names:
+
+\begin{verbatim}
+>>> columns = ['A', 'B']
+>>> pandas.DataFrame(array, columns=columns)
+          A         B
+0 -0.143510  0.616050
+1 -1.489647  0.300774
+2 -0.074350  0.039621
+3 -1.369968  0.545897
+\end{verbatim}
+
+You can also provide row names.  The set of row names is called the
+index, but the row names themselves are called labels.
+
+\begin{verbatim}
+>>> index = ['a', 'b', 'c', 'd']
+>>> pandas.DataFrame(array, columns=columns, index=index)
+          A         B
+a -0.143510  0.616050
+b -1.489647  0.300774
+c -0.074350  0.039621
+d -1.369968  0.545897
+\end{verbatim}
+
+As we saw in the previous chapter, simple indexing selects a
+column, returning a Series:
+
+\begin{verbatim}
+>>> df['A']
+a   -0.143510
+b   -1.489647
+c   -0.074350
+d   -1.369968
+Name: A, dtype: float64
+\end{verbatim}
+
+To select a row by label, you can use the {\tt loc} attribute, which
+returns a Series:
+
+\begin{verbatim}
+>>> df.loc['a']
+A   -0.14351
+B    0.61605
+Name: a, dtype: float64
+\end{verbatim}
+
+If you know the integer position of a row, rather than its
+label, you can use
+the {\tt iloc} attribute, which also returns a Series.
+
+\begin{verbatim}
+>>> df.iloc[0]
+A   -0.14351
+B    0.61605
+Name: a, dtype: float64
+\end{verbatim}
+
+{\tt loc} can also take a list of labels, and {\tt iloc} can take a list 
+of integer positions.  The result is a DataFrame.
+
+\begin{verbatim}
+>>> indices = ['a', 'c']
+>>> df.loc[indices]
+         A         B
+a -0.14351  0.616050
+c -0.07435  0.039621
+\end{verbatim}
+
+Finally, you can use a slice to select a range of rows
+by label:
+
+\begin{verbatim}
+>>> df['a':'c']
+          A         B
+a -0.143510  0.616050
+b -1.489647  0.300774
+c -0.074350  0.039621
+\end{verbatim}
+
+Or by integer position:
+
+\begin{verbatim}
+>>> df[0:2]
+          A         B
+a -0.143510  0.616050
+b -1.489647  0.300774
+\end{verbatim}
+
+The result in either case is a DataFrame, but notice that the
+first result includes the end of the slice; the second doesn't.
+
+My advice: if your rows have labels that are not simple
+integers, use the labels consistently and avoid
+using integer positions.
+
+
+
+\section{Exercises}
+
+\begin{exercise}
+%
+\index{mean}
+\index{variance}
+\index{PMF}
+%
+In Section~\ref{mean} we computed the mean of a sample by adding up
+the elements and dividing by n.  If you are given a PMF, you can
+still compute the mean, but the process is slightly different:
+%
+\[ \xbar = \sum_i p_i x_i \]
+%
+where the $x_i$ are the unique values in the PMF and $p_i=PMF(x_i)$.
+Similarly, you can compute variance like this:
+%
+\[ S^2 = \sum_i p_i (x_i - \xbar)^2\]
+% 
+Write functions called {\tt PmfMean} and {\tt PmfVar} that take a
+Pmf object and compute the mean and variance.  To test these methods,
+check that they are consistent with the methods {\tt Mean} and {\tt
+  Var} provided by {\tt Pmf}.
+\index{{\tt pmf.py}@{\tt Pmf.py}}
+\end{exercise}
+
+
+\begin{exercise}
+I started with the question, ``Are first babies more likely
+to be late?''  To address it, I computed the difference in
+means between groups of babies, but I ignored the possibility
+that there might be a difference between first babies and
+others {\em for the same woman}.
+
+To address this version of the question, select respondents who
+have at least two babies and compute pairwise differences.  Does
+this formulation of the question yield a different result?
+
+Hint: use {\tt nsfg.MakePregMap}.
+\end{exercise}
+
+
+\begin{exercise}
+Use the variable \verb"totalwgt_lb", investigate whether first
+babies lighter or heavier than others.
+\end{exercise}
+
+
 \begin{exercise}
 \label{relay}
 
@@ -2294,51 +2413,78 @@ solution from \url{http://thinkstats2.com/relay_soln.py}
 \end{exercise}
 
 
-\section{The limits of PMFs}
+
+\section{Glossary}
+
+\begin{itemize}
+
+\item central tendency: A characteristic of a sample or population;
+intuitively, it is the most average value. 
+\index{central tendency}
+
+\item spread: A characteristic of a sample or population;
+intuitively, it describes how much variability there is.
+\index{spread}
+
+\item variance: A summary statistic often used to quantify spread.
+\index{variance}
+
+\item standard deviation: The square root of variance, also used
+as a measure of spread.
+\index{standard deviation}
+
+\item frequency: The number of times a value appears in a sample.
+\index{frequency}
+
+\item histogram: A mapping from values to frequencies, or a graph
+that shows this mapping.
+\index{histogram}
+
+\item probability: A frequency expressed as a fraction of the sample
+size.
+\index{probability}
+
+\item normalization: The process of dividing a frequency by a sample
+size to get a probability.
+\index{normalization}
+
+\item distribution: A summary of the values that appear in a sample
+and the frequency, or probability, of each.
+\index{distribution}
+
+\item PMF: Probability mass function: a representation of a distribution
+as a function that maps from values to probabilities.
 \index{PMF}
 
-PMFs work well if the number of values is small.  But as the
-number of values increases, the probability associated with each value
-gets smaller and the effect of random noise increases.
+\item mode: The most frequent value in a sample.
+\index{mode}
 
-For example, we might be interested in the distribution of birth
-weights.  In the NSFG data, the variable \verb"totalwgt_oz" records
-weight at birth in ounces.  Figure~\ref{nsfg_birthwgt_pmf} shows the
-PMF of these values for first babies and others.
-\index{National Survey of Family Growth}
-\index{NSFG}
-\index{birth weight}
-\index{weight!birth}
+\item outlier: A value far from the central tendency.
+\index{outlier}
 
-\begin{figure}
-% cumulative.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_pmf.pdf}}
-\caption{PMF of birth weights.  This figure shows a limitation
-of PMFs: they are hard to compare.}
-\label{nsfg_birthwgt_pmf}
-\end{figure}
+\item trim: To remove outliers from a dataset.
+\index{trim}
 
-Overall, these distributions resemble the familiar ``bell curve,'' with
-many values near the mean and a few values much higher and lower.
+\item bin: A range used to group nearby values.
+\index{bin}
 
-But parts of this figure are hard to interpret.  There are many spikes
-and valleys, and some apparent differences between the distributions.
-It is hard to tell which of these features are significant.  Also, it
-is hard to see overall patterns; for example, which distribution do
-you think has the higher mean?
-\index{binning}
+\item relative risk: A ratio of two probabilities, often used to measure
+a difference between distributions.
+\index{relative risk}
 
-These problems can be mitigated by binning the data;
-that is, dividing the domain into non-overlapping intervals and counting
-the number of values in each bin.  Binning can be useful, but it is
-tricky to get the size of the bins right.  If they are big enough to
-smooth out noise, they might also smooth out useful information.
+\item conditional probability: A probability computed under the assumption
+that some condition holds.
+\index{conditional probability}
 
-An alternative that avoids these problems is the {\bf cumulative
-distribution function}, or {\bf CDF}.  But before we can get to that,
-we have to talk about percentiles.
-\index{cumulative distribution function}
-\index{CDF}
+\item clinically significant: A result, like a difference between groups,
+that is relevant in practice.
+\index{clinically significant}
+
+\end{itemize}
+
+
+\chapter{Cumulative distribution functions}
+\label{cumulative}
 
 
 \section{Percentiles}
@@ -2474,7 +2620,7 @@ If $x$ is greater than the largest value, $\CDF(x)$ is 1.
 
 Figure~\ref{example_cdf} is a graphical representation of this CDF.
 The CDF of a sample is a step function.  In the next chapter we
-will see distributions whose CDFs are continuous functions.  
+will see distributions whose CDFs are analytic functions.
 
 
 \section{Representing CDFs}
@@ -2803,7 +2949,7 @@ analytic distributions.
 \index{distribution!exponential}
 
 \begin{figure}
-% continuous.py
+% analytic.py
 \centerline{\includegraphics[height=2.5in]{figs/expo_cdf.pdf}}
 \caption{CDF of exponential distribution.}
 \label{expo_cdf}
@@ -2949,7 +3095,7 @@ parameters $x_{m} = 0.5$ and $\alpha = 1$.
 \index{parameter}
 
 \begin{figure}
-% continuous.py
+% analytic.py
 \centerline{\includegraphics[height=2.5in]{figs/pareto_cdf.pdf}}
 \caption{CDF of a Pareto distribution.}
 \label{pareto_cdf}
@@ -3110,7 +3256,7 @@ with parameters $\mu$ = 2.0 and $\sigma$ = 0.5.  The sigmoid shape of
 this curve is a recognizable characteristic of a normal distribution.
 
 \begin{figure}
-% continuous.py
+% analytic.py
 \centerline{\includegraphics[height=2.5in]{figs/normal_cdf.pdf}}
 \caption{CDF of a normal distribution.}
 \label{normal_cdf}
@@ -3126,7 +3272,7 @@ a normal distribution with the same mean and variance.
 \index{weight!birth}
 
 \begin{figure}
-% continuous.py
+% analytic.py
 \centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_model.pdf}}
 \caption{CDF of birth weights with a normal model.}
 \label{nsfg_birthwgt_model}
@@ -3286,7 +3432,7 @@ probability plot for the birth weight data.
 \index{weight!birth}
 
 \begin{figure}
-% continuous.py
+% analytic.py
 \centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_normal.pdf}}
 \caption{Normal probability plot of birth weights.}
 \label{nsfg_birthwgt_normal}
@@ -3835,7 +3981,7 @@ function names in the {\tt random} module include the word ``variate.''
 If I were just generating exponential variates, I would not bother to
 define a new class; I would use {\tt random.expovariate}.  But for
 other distributions it might be useful to use RandomVariable objects.
-For example, the Erlang distribution is a continuous distribution with
+For example, the Erlang distribution is an analytic distribution with
 parameters $\lambda$ and $k$ (see
 \url{http://wikipedia.org/wiki/Erlang_distribution}).
 \index{Erlang distribution}
@@ -3964,7 +4110,7 @@ normal with parameters $\mu$ and $\sigma$, you can write
 where the symbol $\sim$ means ``is distributed'' and the script letter
 $\normal$ stands for ``normal.''
 
-%The other continuous distributions in this chapter are sometimes
+%The other analytic distributions in this chapter are sometimes
 %written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
 %\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
 %\sigma^2)$.
@@ -4012,8 +4158,8 @@ that make their mean and variance similar.
 
 Generate random numbers from these distributions and compute the
 distribution of their sums.  Use the tests from
-Chapter~\ref{continuous} to see if the sum can be modeled by a
-continuous distribution.
+Chapter~\ref{analytic} to see if the sum can be modeled by an
+analytic distribution.
 
 \end{exercise}
 
@@ -4036,7 +4182,7 @@ of the sum is normal.
 \index{distribution!Gaussian}
 
 \item If we add values drawn from other distributions, the sum does not
-generally have one of the continuous distributions we have seen.
+generally have one of the analytic distributions we have seen.
 
 \end{itemize}
 
@@ -4362,7 +4508,7 @@ a CDF is the integral of a PDF.  But remember that a PDF maps from
 values to probability densities; to get a probability, you have to
 integrate.
 \index{discrete}
-\index{continuous}
+\index{analytic}
 
 To get from a discrete to a continuous distribution, you can perform
 various kinds of smoothing.  One form of smoothing is to assume that
@@ -4718,7 +4864,6 @@ nonlinear relationship, $\rho$ understates its strength.
 \index{linear relationship}
 
 \begin{figure}
-% descriptive.py
 \centerline{\includegraphics[height=2.5in]{figs/Correlation_examples.png}}
 \caption{Examples of datasets with a range of correlations.}
 \label{corr_examples}
@@ -4986,7 +5131,7 @@ very often.
 
 One way to address this problem is to use measurements to estimate the
 parameters of a Weibull distribution, then integrate over the
-continuous PDF to compute wind power density.
+analytic PDF to compute wind power density.
 \index{PDF}
 
 To estimate the parameters of a Weibull distribution, we can use the
@@ -5533,7 +5678,7 @@ generate an estimate, the next step is to characterize the
 uncertainty of the estimate, which is the topic of the next
 section.
 
-You can download code for these experiments from \url{}.
+% You can download code for these experiments from \url{}.
 
 \begin{exercise}
 
@@ -6177,8 +6322,8 @@ interpret the result of a hypothesis test:
 
 \section{Testing a correlation}
 
-The NSFG data we saw in Section~\ref{} includes records for
-xx preganancies.  For each pregnancy, we have the mother's age
+The NSFG data we saw in Section~\ref{nsfg} includes records for
+xx pregnancies.  For each pregnancy, we have the mother's age
 and the baby's weight at birth, and we might wonder whether they
 are correlated.  Do older mothers have heavier babies?  The
 code I used to answer this question is available from
@@ -6691,7 +6836,8 @@ if it is false.
 \chapter{Survival analysis}
 
 
-\chapter{Analytic statistics}
+\chapter{Operations on distributions}
+\label{operations}
 
 \section{Estimation}
 
@@ -7142,4 +7288,39 @@ several questions we still want to ask:
 \end{itemize}
 
 Answering these questions will take most of the rest of this book.
+
+\section{Relative risk}
+\label{relative.risk}
+\index{relative risk}
+
+We started with the question, ``Do first babies arrive late?''  To
+make that more precise, let's say that a baby is early if it is born
+during Week 37 or earlier, on time if it is born during Week 38, 39 or
+40, and late if it is born during Week 41 or later.  Ranges like these
+that are used to group data are called {\bf bins}.
+\index{bin}
+\index{{\tt risk.py}}
+
+\begin{exercise}
+Create a file named {\tt risk.py}.
+Write functions named {\tt ProbEarly}, {\tt ProbOnTime} and
+{\tt ProbLate} that take a PMF and compute the fraction of births
+that fall into each bin.  Hint: write a generalized function
+that these functions call.
+
+Make three PMFs, one for first babies, one for others, and one for
+all live births.  For each PMF, compute the probability of being
+born early, on time, or late.
+
+One way to summarize data like this is with {\bf relative risk},
+which is a ratio of two probabilities.  For example, the probability
+that a first baby is born early is 18.2\%.  For other babies it is
+16.8\%, so the relative risk is 1.08.  That means that first babies
+are about 8\% more likely to be early.
+
+Write code to confirm that result, then compute the relative risks of
+being born on time and being late.  You can download a solution
+from \url{http://thinkstats2.com/risk.py}.
+
+\end{exercise}
 

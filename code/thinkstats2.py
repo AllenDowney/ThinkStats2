@@ -1,7 +1,7 @@
 """This file contains code for use with "Think Bayes",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2012 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
@@ -1993,6 +1993,25 @@ def TrimmedMeanVar(t, p=0.01):
     t = Trim(t, p)
     mu, var = MeanVar(t)
     return mu, var
+
+
+def CohenEffectSize(group1, group2):
+    """Compute Cohen's d.
+
+    group1: Series or NumPy array
+    group2: Series or NumPy array
+
+    returns: float
+    """
+    diff = group1.mean() - group2.mean()
+
+    n1, n2 = len(group1), len(group2)
+    var1 = group1.var()
+    var2 = group1.var()
+
+    pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
+    d = diff / math.sqrt(pooled_var)
+    return d
 
 
 def Cov(xs, ys, meanx=None, meany=None):
