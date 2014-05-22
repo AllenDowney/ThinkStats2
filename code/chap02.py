@@ -32,9 +32,10 @@ def main(script):
 
     print(df['A'])
 
+    print(df[0:1])
+
     print(df.loc['a'])
     print(df.iloc[0])
-    print(df[0:1])
 
     indices = ['a', 'c']
     print(df.loc[indices])

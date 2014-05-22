@@ -8,6 +8,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 from __future__ import print_function
 
 import math
+import numpy as np
 
 import nsfg
 import thinkstats2
@@ -69,8 +70,7 @@ def PrintExtremes(live):
 
     live: DataFrame of live births
     """
-    length_hist = thinkstats2.MakeHistFromList(live.prglngth)
-    thinkplot.PrePlot(1)
+    length_hist = thinkstats2.Hist(live.prglngth)
     thinkplot.Hist(length_hist, label='live births')
 
     thinkplot.Save(root='nsfg_hist_live', 
@@ -90,18 +90,52 @@ def PrintExtremes(live):
         print(weeks, count)
     
 
+def MakeHists(live):
+    """Plot Hists for live births
+
+    live: DataFrame
+    others: DataFrame
+    """
+    hist = thinkstats2.Hist(live.birthwgt_lb, label='birthwgt_lb')
+    thinkplot.Hist(hist)
+    thinkplot.Save(root='first_wgt_lb_hist', 
+                   xlabel='pounds',
+                   ylabel='frequency',
+                   axis=[-1, 14, 0, 3200])
+
+    hist = thinkstats2.Hist(live.birthwgt_oz, label='birthwgt_oz')
+    thinkplot.Hist(hist)
+    thinkplot.Save(root='first_wgt_oz_hist', 
+                   xlabel='ounces',
+                   ylabel='frequency',
+                   axis=[-1, 16, 0, 1200])
+
+    hist = thinkstats2.Hist(np.floor(live.agepreg), label='agepreg')
+    thinkplot.Hist(hist)
+    thinkplot.Save(root='first_agepreg_hist', 
+                   xlabel='years',
+                   ylabel='frequency')
+
+    hist = thinkstats2.Hist(live.prglngth, label='prglngth')
+    thinkplot.Hist(hist)
+    thinkplot.Save(root='first_prglngth_hist', 
+                   xlabel='weeks',
+                   ylabel='frequency',
+                   axis=[-1, 53, 0, 5000])
+
+
 def MakeFigures(firsts, others):
     """Plot Hists and Pmfs of pregnancy length.
 
     firsts: DataFrame
     others: DataFrame
     """
-    first_hist = thinkstats2.MakeHistFromList(firsts.prglngth)
-    other_hist = thinkstats2.MakeHistFromList(others.prglngth)
+    first_hist = thinkstats2.Hist(firsts.prglngth)
+    other_hist = thinkstats2.Hist(others.prglngth)
 
     width = 0.4
-    first_options = dict(label='first', width=-width)
-    other_options = dict(label='other', width=width)
+    first_options = dict(label='first', align='left', width=-width)
+    other_options = dict(label='other', align='left', width=width)
 
     # plot the histograms
     thinkplot.PrePlot(2)
@@ -139,7 +173,6 @@ def MakeFigures(firsts, others):
         diff = 100 * (p1 - p2)
         diffs.append(diff)
 
-    thinkplot.PrePlot(1)
     thinkplot.Bar(weeks, diffs, align='center')
     thinkplot.Save(root='nsfg_diffs',
                    title='Difference in PMFs',
@@ -150,6 +183,9 @@ def MakeFigures(firsts, others):
 
 def main(script):
     live, firsts, others = MakeFrames()
+
+    MakeHists(live)
+    return
 
     PrintExtremes(live)
     MakeFigures(firsts, others)

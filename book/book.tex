@@ -956,6 +956,7 @@ yourself.
 
 
 \section{Transformation}
+\label{cleaning}
 
 When you import data like this, you often have to check for errors,
 deal with special values, convert data into different formats, and
@@ -1336,8 +1337,9 @@ checking, calculation or interpretation.
 logic applied to raw data.
 \index{recode}
 
-\item {\bf data cleaning}: processes that include validating data, identifying
-errors, translating between data types and representations, etc.
+\item {\bf data cleaning}: processes that include validating data,
+  identifying errors, translating between data types and
+  representations, etc.
 
 \end{itemize}
 
@@ -1395,13 +1397,13 @@ The Python module that accompanies this book, {\tt thinkstats2.py},
 provides a class named Hist, which represents a histogram.  You can
 read the documentation at {\tt thinkstats2.com/thinkstats2.html}.
 
-It also provides a function, {\tt MakeHistFromList}, that takes a
-sequence of values and returns a new Hist object.  You can test it in
-Python's interactive mode:
+The {\tt Hist} constructor can take a sequence, dictionary, Pandas
+Series, or another Hist.  You can test it in Python's interactive
+mode:
 %
 \begin{verbatim}
 >>> import thinkstats2
->>> hist = thinkstats2.MakeHistFromList([1, 2, 2, 3, 5])
+>>> hist = thinkstats2.Hist([1, 2, 2, 3, 5])
 >>> hist
 <thinkstats2.Hist object at 0xb76cf68c>
 \end{verbatim}
@@ -1449,6 +1451,13 @@ for val, freq in hist.Items():
 \section{Plotting histograms}
 \index{plotting}
 \index{{\tt pyplot}}
+
+\begin{figure}
+% first.py
+\centerline{\includegraphics[height=2.5in]{figs/first_wgt_lb_hist.pdf}}
+\caption{Histogram of the pound part of birth weight.}
+\label{first_wgt_lb_hist}
+\end{figure}
 
 There are a number of Python packages for making figures and graphs.
 One of the most popular is {\tt pyplot}, which is part of
@@ -1500,27 +1509,92 @@ Most of the functions in {\tt thinkplot.py} are wrappers for
 functions in {\tt matplotlib}, customized to work with
 the objects defined in {\tt thinkstats2.py}.
 
+\begin{figure}
+% first.py
+\centerline{\includegraphics[height=2.5in]{figs/first_wgt_oz_hist.pdf}}
+\caption{Histogram of the ounce part of birth weight.}
+\label{first_wgt_oz_hist}
+\end{figure}
+
+
+\section{NSFG variables}
+
+Now let's get back to the data from the NSFG.  The code in this
+chapter is from {\tt first.py}.  For information about downloading and
+working with this code, see Section~\ref{code}.
+
+When you start working with a new dataset, I suggest you explore
+the variables you are planning to use one at a time, and a good
+way to start is by looking at histograms.
+\index{histograms}
+
+In Section~\ref{cleaning} we cleaned transformed {\tt agepreg}
+from centiyears to years, and combined \verb"birthwgt_lb" and
+\verb"birthwgt_oz" into a single quantity, \verb"totalwgt_lb".
+In this section I'll use these variables to demonstrate some
+features of histograms.
+
+\begin{figure}
+% first.py
+\centerline{\includegraphics[height=2.5in]{figs/first_agepreg_hist.pdf}}
+\caption{Histogram of mother's age at end of pregnancy.}
+\label{first_agepreg_hist}
+\end{figure}
+
+I'll start by reading the data and selecting records for live
+births:
+
+\begin{verbatim}
+    preg = nsfg.ReadFemPreg()
+    live = preg[preg.outcome == 1]
+\end{verbatim}
+
+The expression in brackets is a boolean Series that
+selects rows from the DataFrame and returns a new DataFrame.
+Next I'll generate and plot the histogram of
+\verb"birthwgt_lb" for live births (this code is in {\tt first.py}).
+
+\begin{verbatim}
+    hist = thinkstats2.Hist(live.birthwgt_lb, label='birthwgt_lb')
+    thinkplot.Hist(hist)
+    thinkplot.Show()
+\end{verbatim}
+
+When the argument passed to {\tt Hist} is a pandas Series, any
+{\tt NaN} values are dropped.  {\tt label} is a string that appears
+in the legend when the Hist is plotted.
+
+Figure~\ref{first_wgt_lb_hist} shows the result.  The most common
+value, called the {\bf mode}, is 7 pounds.  The distribution is
+approximately bell-shaped, which is the shape of the {\bf Gaussian} or
+distribution, also called a {\bf normal} distribution.  But unlike a
+true Gaussian distribution, this distribution is asymmetric; it has
+a {\bf tail} that extends farther to the left than to the right.
+
+Figure~\ref{first_wgt_oz_hist} shows the histogram of
+\verb"birthwgt_oz", which is the ounces part of birth weight.  In
+theory we expect this distribution to be {\bf uniform}; that is, all
+values should have the same frequency.  In fact, 0 is more common than
+the other values, and 1 and 15 are less common, probably because
+respondents round off birth weights that are close to an integer
+value.
+
+Figure~\ref{first_wgt_oz_hist} shows the histogram of \verb"agepreg",
+the mother's age at the end of pregnancy.  The mode is 21 years.  The
+distribution is very roughly bell-shaped, but in this case the tail
+extends farther to the right than left, because of biological limits.
+
+Figure~\ref{first_prglngth_hist} shows the histogram of \verb"prglngth",
+the length of the pregnancy in weeks.  By far the most common value
+is 39 weeks.  The left tail is longer than the right, again for
+biological reasons; premature babies are common, but pregnancies seldom
+go past 43 weeks, and doctors often intervene if they do. 
+
 
 \section{Outliers}
 
-Now we are ready to get back to the question from Chapter~\ref{intro}:
-``Are first babies more likely to be late?.''  The code in
-this chapter is from {\tt first.py}.  For information
-about downloading and working with this code, see Section~\ref{code}.
-
-I start by selecting the rows from the pregnancy file where the outcome
-is a live birth, and then partition them into first births and others:
-
-\begin{verbatim}
-def MakeFrames():
-    preg = nsfg.ReadFemPreg()
-
-    live = preg[preg.outcome == 1]
-    firsts = live[live.birthord == 1]
-    others = live[live.birthord != 1]
-
-    return live, firsts, others
-\end{verbatim}
+Looking at histograms, it is easy to identify the most common
+values
 
 Before going any farther, it is always a good idea to validate
 the data by checking for {\bf outliers}.  Outliers are extreme
@@ -1752,7 +1826,7 @@ difference between groups to the variability withing groups.
 Cohen's $d$ is a statistic intended to do that; it is defined
 as
 %
-\[ d = \frac{\bar{x_1}}{\bar{x_2}}{s}  \]
+\[ d = \frac{\bar{x_1} - \bar{x_2}}{s}  \]
 %
 where $\bar{x_1}$ and $\bar{x_2}$ are the means of the groups and
 $s$ is the ``pooled standard deviation'', which is a weighted sum of
@@ -1799,18 +1873,17 @@ a patient, you might choose statistics that put the differences in
 context.
 
 Of course your decisions should also be guided by professional ethics.
-It is appropriate to design statistical report and visualizations and
-other statistics clearly and effectively.  But you should also do your
-best to make your reports honest, and to acknowledge uncertainty and
-limitations.
+It's ok to be persuasive; you {\em should} design statistical reports
+and visualizations that tell a story clearly.  But you should also do
+your best to make your reports honest, and to acknowledge uncertainty
+and limitations.
 
 
 \section{Exercises}
 
 \begin{exercise}
-Based on the results in this chapter, suppose you were
-asked to summarize what you learned about whether first
-babies arrive late.
+Based on the results in this chapter, suppose you were asked to
+summarize what you learned about whether first babies arrive late.
 
 Which summary statistics would you use if you wanted to get a story
 on the evening news?  Which ones would you use if you wanted to
