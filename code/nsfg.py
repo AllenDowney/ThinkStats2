@@ -54,15 +54,15 @@ def CleanPregFrame(df):
     df.cmintvw = np.nan
 
 
-def MakePregMap(preg):
+def MakePregMap(df):
     """Make a map from caseid to list of preg indices.
 
-    preg: DataFrame
+    df: DataFrame
 
     returns: dict that maps from caseid to list of indices into preg df
     """
     d = {}
-    for index, caseid in preg.caseid.iteritems():
+    for index, caseid in df.caseid.iteritems():
         d.setdefault(caseid, []).append(index)
     return d
 
