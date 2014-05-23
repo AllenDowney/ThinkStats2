@@ -284,7 +284,7 @@ intact.
 
 \item Multivariate analysis: If there are apparent relationships
   between variables, I use multiple regression to add control variables
-  investigate more complex relationships.
+  and investigate more complex relationships.
 
 \item Estimation and hypothesis testing: When reporting statistical
   results, it is important to answer three questions: How big is
@@ -806,7 +806,7 @@ information from the dictionary file and provides {\tt
 \section{DataFrames}
 
 The result of {\tt ReadFixedWidth} is a DataFrame, which is the
-fundamental data structure provided by Pandas.  A DataFrame contains a
+fundamental data structure provided by pandas.  A DataFrame contains a
 row for each record, in this case one row per pregnancy, and a column
 for each variable.
 
@@ -834,7 +834,7 @@ names:
 Index([u'caseid', u'pregordr', u'howpreg_n', u'howpreg_p', ... ])
 \end{verbatim}
 
-The result is an Index, which is another Pandas data structure.  
+The result is an Index, which is another pandas data structure.  
 We'll learn more about Index later, but for
 now we'll treat it like a list:
 
@@ -852,7 +852,7 @@ name as a key:
 <class 'pandas.core.series.Series'>
 \end{verbatim}
 
-The result is a Series, yet another Pandas data structure.
+The result is a Series, yet another pandas data structure.
 A Series is like a Python list with some additional features.
 When you print a Series, you get the indices and the
 corresponding values:
@@ -1007,7 +1007,7 @@ operations return {\tt nan} if either argument is {\tt nan}:
 \end{verbatim}
 
 So computations with {\tt nan} tend to do the right thing.  Most
-Pandas functions handle {\tt nan} appropriately, at least for most
+pandas functions handle {\tt nan} appropriately, at least for most
 applications.  But dealing with missing data will be a recurring
 issue.
 
@@ -1348,6 +1348,7 @@ logic applied to raw data.
 \chapter{Distributions}
 \label{descriptive}
 
+
 \section{Histograms}
 \label{histograms}
 
@@ -1395,9 +1396,9 @@ chapter.
 
 The Python module that accompanies this book, {\tt thinkstats2.py},
 provides a class named Hist, which represents a histogram.  You can
-read the documentation at {\tt thinkstats2.com/thinkstats2.html}.
+read the documentation at {\tt http://thinkstats2.com/thinkstats2.html}.
 
-The {\tt Hist} constructor can take a sequence, dictionary, Pandas
+The {\tt Hist} constructor can take a sequence, dictionary, pandas
 Series, or another Hist.  You can test it in Python's interactive
 mode:
 %
@@ -1435,7 +1436,7 @@ To loop through the values in order, you can use the built-in function
 %
 \begin{verbatim}
 for val in sorted(hist.Values()):
-    print val, hist.Freq(val)
+    print(val, hist.Freq(val))
 \end{verbatim}
 
 If you are planning to look up all of the frequencies, it is more
@@ -1444,7 +1445,7 @@ value-frequency pairs:
 %
 \begin{verbatim}
 for val, freq in hist.Items():
-     print val, freq
+     print(val, freq)
 \end{verbatim}
 
 
@@ -1494,7 +1495,7 @@ The code that accompanies this book includes
 {\tt thinkplot.py}, which provides functions
 for plotting histograms and other objects we will see soon.
 You can read the documentation at {\tt
-  thinkstats2.com/thinkplot.html}. 
+  http://thinkstats2.com/thinkplot.html}. 
 \index{{\tt thinkplot.py}}
 
 To plot the same histogram with {\tt thinkplot.py}, try this:
@@ -1564,6 +1565,13 @@ When the argument passed to {\tt Hist} is a pandas Series, any
 {\tt NaN} values are dropped.  {\tt label} is a string that appears
 in the legend when the Hist is plotted.
 
+\begin{figure}
+% first.py
+\centerline{\includegraphics[height=2.5in]{figs/first_prglngth_hist.pdf}}
+\caption{Histogram of pregnancy length in weeks.}
+\label{first_prglngth_hist}
+\end{figure}
+
 Figure~\ref{first_wgt_lb_hist} shows the result.  The most common
 value, called the {\bf mode}, is 7 pounds.  The distribution is
 approximately bell-shaped, which is the shape of the {\bf Gaussian} or
@@ -1594,15 +1602,25 @@ go past 43 weeks, and doctors often intervene if they do.
 \section{Outliers}
 
 Looking at histograms, it is easy to identify the most common
-values
+values and the shape of the distribution, but rare values are
+not always visible.
 
-Before going any farther, it is always a good idea to validate
-the data by checking for {\bf outliers}.  Outliers are extreme
-values that might be caused my errors in measurement and recording,
-or might be accurate measurements of rate events.
+Before going on, it is a good idea to check for {\bf
+  outliers}, which are extreme values that might be errors in
+measurement and recording, or might be accurate measurements of rate
+events.
+
+Hist provides method {\tt Largest} and {\tt Smallest}, which take
+an integer {\tt n} and return the {\tt n} largest or smallest
+values from the histogram with their frequencies:
+
+\begin{verbatim}
+    for weeks, freq in hist.Smallest(10):
+        print(weeks, freq)
+\end{verbatim}
 
 In the list of pregnancy lengths for live births, the 10 lowest values
-are \{0, 4, 9, 13, 17, 17, 18, 19, 20, 21\}.  Values below 10 weeks
+are \{0, 4, 9, 13, 17, 18, 19, 20, 21, 22\}.  Values below 10 weeks
 are certainly errors; the most likely explanation is that the outcome
 was not coded correctly.  Values higher than 30 weeks are probably
 legitimate.  Between 10 and 30 weeks, it is hard to be sure; some
@@ -1625,7 +1643,7 @@ Most doctors recommend induced labor if a pregnancy exceeds 42 weeks,
 so some of the longer values are surprising.  In particular, 50 weeks
 seems medically unlikely.
 
-The best way to handle outliers depends on {\bf domain knowledge};
+The best way to handle outliers depends on ``domain knowledge'';
 that is, information about where the data come from and what they
 mean.  And it depends on what analysis you are planning to perform.
 
@@ -1637,55 +1655,56 @@ I will focus on pregnancies longer than 27 weeks.
 
 \section{First babies}
 
-To compare pregnancy lengths for first babies and others, I plotted
-their histograms on the same axis.  Here's the code from {\tt first.py}:
+Now we can compare the distribution of pregnancy lengths for first
+babies and others.  I divided the DataFrame of live births using
+{\tt birthord}, and computed their histograms:
 
 \begin{verbatim}
-    first_hist = thinkstats2.MakeHistFromList(firsts.prglngth)
-    other_hist = thinkstats2.MakeHistFromList(others.prglngth)
+    firsts = live[live.birthord == 1]
+    others = live[live.birthord != 1]
 
-    width = 0.4
-    first_options = dict(label='first', width=-width)
-    other_options = dict(label='other', width=width)
+    first_hist = thinkstats2.Hist(firsts.prglngth)
+    other_hist = thinkstats2.Hist(others.prglngth)
+\end{verbatim}
 
-    # plot the histograms
+Then I plotted their histograms on the same axis:
+
+\begin{verbatim}
+    width = 0.45
     thinkplot.PrePlot(2)
-    thinkplot.Hist(first_hist, **first_options)
-    thinkplot.Hist(other_hist, **other_options)
+    thinkplot.Hist(first_hist, align='edge', width=-width)
+    thinkplot.Hist(other_hist, align='edge', width=width)
 
-    axis = [27, 46, 0, 2700]
     thinkplot.Save(root='nsfg_hist', 
                    title='Histogram',
                    xlabel='weeks',
                    ylabel='frequency',
-                   axis=axis)
+                   axis=[27, 46, 0, 2700])
 \end{verbatim}
-
-\verb"first_hist" and \verb"other_hist" are histograms of
-pregnancy length for first babies and others.
 
 {\tt thinkplot.PrePlot} takes as an argument the number of histograms
 we are planning to plot; it uses this information to choose
 an appropriate collection of colors.
 
-{\tt thinkplot.Hist} takes a dictionary of options that control the
-appearance of the histograms.  I chose a width that leaves some
-space between each pair of bars.  By default, the left edge of the
-bar lines up with the given value on the x-axis.  By giving one
-of the histograms {\tt width=-width}, I lined it up with the right
-edge.
-
-Finally, I adjusted the axis to show only data between 27 and 46 weeks.
-Figure~\ref{nsfg_hist} shows the result.
-\index{pregnancy length}
-\index{length!pregnancy}
-
 \begin{figure}
 % first.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_hist.pdf}}
+\centerline{\includegraphics[height=2.5in]{figs/first_nsfg_hist.pdf}}
 \caption{Histogram of pregnancy lengths.}
-\label{nsfg_hist}
+\label{first_nsfg_hist}
 \end{figure}
+
+{\tt thinkplot.Hist} normally uses {\tt align='center'} so that
+each bar is centered over its value.  For this figure, I use
+{\tt align='edge'} to line up the edge of the bars with the
+corresponding value.  A negative {\tt width} aligns with
+the right edge; a positive {\tt width} aligns with the left.
+With {\tt width=0.45}, the total width of the two bars is 0.9,
+leaving some space between each pair.
+
+Finally, I adjusted the axis to show only data between 27 and 46 weeks.
+Figure~\ref{first_nsfg_hist} shows the result.
+\index{pregnancy length}
+\index{length!pregnancy}
 
 Histograms are useful because they make the most frequent values
 immediately apparent.  But they are not the best choice for comparing
@@ -1788,43 +1807,52 @@ with exponent 2.  The square root of variance, $S$, is the
 {\bf standard deviation}.  \index{deviation} \index{standard
   deviation}
 
-By itself, variance is hard to interpret.  One problem is that the
-units are strange; in this case the measurements are in pounds, so the
-variance is in pounds squared.  Standard deviation is more meaningful;
-in this example the units are pounds.
-
 If you have prior experience, you might have seen a formula for
 variance with $n-1$ in the denominator, rather than {\tt n}.  This
 statistic is used to estimate the variance in a population using a
 sample.  We will come back to this in Chapter~\ref{estimation}.
 \index{sample variance}
 
+Pandas data structures provides methods to compute mean, variance and
+standard deviation:
+
+\begin{verbatim}
+    mean = live.prglngth.mean()
+    var = live.prglngth.var()
+    std = live.prglngth.std()
+\end{verbatim}
+
+For all live births, the mean pregnancy length is 38.6 weeks, the
+standard deviation is 2.7 weeks, which means we should expect
+deviations of 2-3 weeks to be common.
+
+Variance is 7.3, which is hard to interpret, especially since the
+units are weeks$^2$, or ``square weeks,'' whatever that means.
+Variance is useful in some calculations we'll see later, but it is not
+a good summary statistic.
+
 
 \section{Effect size}
 \index{effect size}
 
-An {\bf effect size} is a summary statistic intended describe, well,
-the size of an effect.  For example, to describe the difference
-between two groups, one obvious choice is the difference in the
-means.
-\index{effect size}
+An {\bf effect size} is a summary statistic intended describe (wait
+for it) the size of an effect.  For example, to describe the
+difference between two groups, one obvious choice is the difference in
+the means.  \index{effect size}
 
-For example, the mean pregnancy length for first babies is 38.6;
-for other babies it is 38.5.  The difference is 0.078 weeks, which
-works out to 13 hours.
+For example, the mean pregnancy length for first babies is 38.601; for
+other babies it is 38.523.  The difference is 0.078 weeks, which works
+out to 13 hours.  As a fraction of the typical pregnancy length, this
+difference is about 0.2\%.
 
-If we assume that this estimate is accurate, the difference in
-pregnancy length would have no practical consequences.  Without
+If we assume that this estimate is accurate, such a difference
+would have no practical consequences.  In fact, without
 observing a large number of pregnancies, it is unlikely that anyone
-would notice a difference this small.
-
-As a fraction of the typical pregnancy length, this difference is
-about 0.2\%.
+would notice this difference at all.
 
 Another way to convey the size of the effect is to compare the
 difference between groups to the variability withing groups.
-Cohen's $d$ is a statistic intended to do that; it is defined
-as
+Cohen's $d$ is a statistic intended to do that; it is defined:
 %
 \[ d = \frac{\bar{x_1} - \bar{x_2}}{s}  \]
 %
@@ -1899,27 +1927,29 @@ precisely, and honestly.
 
 \end{exercise}
 
+\begin{exercise}
+In the repository you downloaded, you should find a file named
+\verb"chap02ex.ipynb"; open it.  Some cells are already filled in, and
+you should execute them.  Other cells give you instructions for
+exercises you should try.
 
-For the exercises in this chapter, create a file named
-{\tt chap02ex.py}.  You can find a solution in
-\verb"chap02ex_soln.py".
+A solution to this exercise is in \verb"chap02ex_soln.ipynb"
+\end{exercise}
+
 
 \begin{exercise}
+For this exercise, create a file named {\tt chap02ex.py}.  You can
+find a solution in \verb"chap02ex_soln.py".
+
 The mode of a distribution is the most frequent value (see
 \url{http://wikipedia.org/wiki/Mode_(statistics)}).  Write a function
 called {\tt Mode} that takes a Hist and returns the most
 frequent value.\index{mode}
 
-As a more challenging version, write a function called {\tt AllModes}
+As a more challenging exercise, write a function called {\tt AllModes}
 that returns a list of value-frequency pairs in descending order of
 frequency.
 \end{exercise}
-
-
-\begin{exercise}
-Make a histogram for some other variables ???
-\end{exercise}
-
 
 
 
@@ -1928,7 +1958,7 @@ Make a histogram for some other variables ???
 \begin{itemize}
 
 \item distribution: A summary of the values that appear in a sample
-and the frequency, or probability, of each.
+and the frequency of each.
 \index{distribution}
 
 \item histogram: A mapping from values to frequencies, or a graph
@@ -1938,20 +1968,36 @@ that shows this mapping.
 \item frequency: The number of times a value appears in a sample.
 \index{frequency}
 
-\item outlier: A value far from the central tendency.
-\index{outlier}
-
 \item mode: The most frequent value in a sample, or one of the
 most frequent values.
 \index{mode}
+
+\item Gaussian distribution: An idealized model of a bell-shaped distribution,
+also known as a normal distribution. 
+\index{Gaussian distribution}
+\index{normal distribution}
+
+\item uniform distribution: A distribution in which all values have
+the same frequency.
+\index{uniform distribution}
+
+\item tail: The part of a distribution at the high and low extremes.
+\index{outlier}
 
 \item central tendency: A characteristic of a sample or population;
 intuitively, it is the most average value. 
 \index{central tendency}
 
-\item spread: A characteristic of a sample or population;
-intuitively, it describes how much variability there is.
+\item outlier: A value far from the central tendency.
+\index{outlier}
+
+\item spread: A measure of how spread out the values in a distribution
+are.
 \index{spread}
+
+\item summary statistic: A statistic that quantifies some aspect
+of a distribution, like central tendency or spread.
+\index{summary statistic}
 
 \item variance: A summary statistic often used to quantify spread.
 \index{variance}
@@ -1959,6 +2005,10 @@ intuitively, it describes how much variability there is.
 \item standard deviation: The square root of variance, also used
 as a measure of spread.
 \index{standard deviation}
+
+\item effect size: A summary statistic intended to quantify the size
+of an effect like a difference between groups.
+\index{effect size}
 
 \item clinically significant: A result, like a difference between groups,
 that is relevant in practice.
@@ -2003,7 +2053,7 @@ of values:
 \begin{verbatim}
 >>> import thinkstats2
 >>> pmf = thinkstats2.MakePmfFromList([1, 2, 2, 3, 5])
->>> print pmf
+>>> pmf
 <thinkstats2.Pmf object at 0xb76cf68c>
 \end{verbatim}
 
@@ -2084,21 +2134,21 @@ a large number of values and the Pmf is smooth.
 \end{itemize}
 
 \begin{figure}
-% first.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_pmf.pdf}}
+% probability.py
+\centerline{\includegraphics[height=2.5in]{figs/probability_nsfg_pmf.pdf}}
 \caption{PMF of pregnancy lengths.}
-\label{nsfg_pmf}
+\label{probability_nsfg_pmf}
 \end{figure}
 \index{pregnancy length}
 \index{length!pregnancy}
 
-Figure~\ref{nsfg_pmf} shows PMFs of pregnancy length for first babies
+Figure~\ref{probability_nsfg_pmf} shows PMFs of pregnancy length for first babies
 and others as bar graphs.  Using the PMF, we can see more clearly
 where the distributions differ.  First babies seem to be less likely
 than others to arrive on time (week 39) and more likely to be a late
 (weeks 41 and 42).
 
-The code that generates this figure is in {\tt first.py}.
+The code that generates this figure is in {\tt probability.py}.
 Note: {\tt pyplot} provides a function called {\tt hist} that
 takes a sequence of values, computes the histogram and plots it.
 Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
@@ -2122,15 +2172,15 @@ graph, and to transform the data to emphasize differences.
 \index{National Survey of Family Growth}
 \index{NSFG}
 
-Figure~\ref{nsfg_diffs} shows the difference between the PMFs for
+Figure~\ref{probability_nsfg_diffs} shows the difference between the PMFs for
 weeks 35--45.  I multiplied the probabilities by 100 to express the
 differences in percentage points.
 
 \begin{figure}
-% first.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_diffs.pdf}}
+% probability.py
+\centerline{\includegraphics[height=2.5in]{figs/probability_nsfg_diffs.pdf}}
 \caption{Difference, in percentage points, by week.}
-\label{nsfg_diffs}
+\label{probability_nsfg_diffs}
 \end{figure}
 
 This figure makes the pattern clearer: first babies are
@@ -2225,11 +2275,9 @@ gets smaller and the effect of random noise increases.
 
 For example, we might be interested in the distribution of birth
 weights.  In the NSFG data, the variable \verb"totalwgt_oz" records
-weight at birth in ounces.  Figure~\ref{nsfg_birthwgt_pmf} shows the
-PMF of these values for first babies and others.
-\index{National Survey of Family Growth}
-\index{NSFG}
-\index{birth weight}
+weight at birth in ounces.  Figure~\ref{nsfg_birthwgt_pmf} shows
+the PMF of these values for first babies and others.  \index{National
+  Survey of Family Growth} \index{NSFG} \index{birth weight}
 \index{weight!birth}
 
 \begin{figure}
@@ -3925,7 +3973,7 @@ the mean.
     mean, var = 163, 52.8
     sigma = math.sqrt(var)
     pdf = thinkstats2.GaussianPdf(mean, sigma)
-    print pdf.Density(mean + sigma)
+    print(pdf.Density(mean + sigma))
 \end{verbatim}
 
 The result is about 0.09, in units of probability mass per cm.
@@ -5602,8 +5650,8 @@ def Estimate1(n=7, m=1000):
         means.append(xbar)
         medians.append(median)
 
-    print 'rmse xbar', RMSE(means, mu)
-    print 'rmse median', RMSE(medians, mu)
+    print('rmse xbar', RMSE(means, mu))
+    print('rmse median', RMSE(medians, mu))
 \end{verbatim}
 
 Again, {\tt n} is the size of the sample, and {\tt m} is the
@@ -5711,8 +5759,8 @@ def Estimate2(n=7, m=1000):
         estimates1.append(biased)
         estimates2.append(unbiased)
 
-    print 'mean error biased', MeanError(estimates1, sigma**2)
-    print 'mean error unbiased', MeanError(estimates2, sigma**2)
+    print('mean error biased', MeanError(estimates1, sigma**2))
+    print('mean error unbiased', MeanError(estimates2, sigma**2))
 \end{verbatim}
 
 Again, {\tt n} is the sample size and {\tt m} is the number of times
@@ -5990,10 +6038,10 @@ def Estimate3(n=7, m=1000):
         means.append(L)
         medians.append(Lm)
 
-    print 'rmse L', RMSE(means, lam)
-    print 'rmse Lm', RMSE(medians, lam)
-    print 'mean error L', MeanError(means, lam)
-    print 'mean error Lm', MeanError(medians, lam)
+    print('rmse L', RMSE(means, lam))
+    print('rmse Lm', RMSE(medians, lam))
+    print('mean error L', MeanError(means, lam))
+    print('mean error Lm', MeanError(medians, lam))
 \end{verbatim}
 
 When I ran this experiment with $\lambda=2$, I found the RMSE of $L$ is 
@@ -6417,7 +6465,7 @@ variables:
 def ReadData(data_dir='.'):
     preg = survey.Pregnancies()
     preg.ReadRecords(data_dir)
-    print 'Number of pregnancies', len(preg.records)
+    print('Number of pregnancies', len(preg.records))
 
     res = []
     for p in preg.records:
@@ -6534,7 +6582,7 @@ and age:
 \begin{verbatim}
     fxs, fys = thinkstats2.FitLine(xs, inter, slope)
     i = len(fxs) / 2
-    print 'median weight, age', fxs[i], fys[i]
+    print('median weight, age', fxs[i], fys[i])
 \end{verbatim}
 
 If the mother is 24, we expect the baby to weigh 116 oz (or 7.25 pounds).

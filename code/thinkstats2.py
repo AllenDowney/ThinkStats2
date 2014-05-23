@@ -142,6 +142,8 @@ class _DictWrapper(object):
             self.d.update(values.items())
         elif isinstance(values, _DictWrapper):
             self.d.update(values.Items())
+            if not self.label:
+                self.label = values.label
         elif isinstance(values, pandas.Series):
             self.d.update(values.value_counts().iteritems())
         else:
@@ -315,6 +317,20 @@ class _DictWrapper(object):
     def MaxLike(self):
         """Returns the largest frequency/probability in the map."""
         return max(self.d.values())
+
+    def Largest(self, n=10):
+        """Returns the largest n values, with frequency/probability.
+
+        n: number of items to return
+        """
+        return sorted(self.d.items(), reverse=True)[:n]
+
+    def Smallest(self, n=10):
+        """Returns the smallest n values, with frequency/probability.
+
+        n: number of items to return
+        """
+        return sorted(self.d.items(), reverse=False)[:n]
 
 
 class Hist(_DictWrapper):
