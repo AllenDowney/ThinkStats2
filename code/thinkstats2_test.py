@@ -8,6 +8,8 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 import unittest
 import random
 
+from collections import Counter
+
 import thinkstats2
 
 class Test(unittest.TestCase):
@@ -92,9 +94,29 @@ class Test(unittest.TestCase):
         self.assertEquals(n, 90)
 
     def testHist(self):
-        hist = thinkstats2.MakeHistFromList('allen')
+        hist = thinkstats2.Hist('allen')
+        self.assertEquals(len(hist), 4)
         self.assertEquals(hist.Freq('l'), 2)
 
+        hist = thinkstats2.Hist(Counter('allen'))
+        self.assertEquals(len(hist), 4)
+        self.assertEquals(hist.Freq('l'), 2)
+
+        hist2 = thinkstats2.Hist('nella')
+        self.assertEquals(hist, hist2)
+
+    def testPmf(self):
+        pmf = thinkstats2.Pmf('allen')
+        self.assertEquals(len(pmf), 4)
+        self.assertEquals(pmf.Prob('l'), 0.4)
+
+        pmf = thinkstats2.Pmf(Counter('allen'))
+        self.assertEquals(len(pmf), 4)
+        self.assertEquals(pmf.Prob('l'), 0.4)
+
+        pmf2 = pmf.Copy()
+        self.assertEquals(pmf, pmf2)
+        
 
 if __name__ == "__main__":
     unittest.main()

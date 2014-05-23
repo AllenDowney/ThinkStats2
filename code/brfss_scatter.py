@@ -77,9 +77,9 @@ def SampleRows(df, nrows, replace=False):
 
     returns: DataFrame
     """
-    indices = range(len(df))
+    indices = df.index
     sample_indices = np.random.choice(indices, nrows, replace=False)
-    sample = df.iloc[sample_indices]
+    sample = df.loc[sample_indices]
     return sample
 
 

@@ -31,7 +31,7 @@ def MakeExpoCdf():
         xs, ps = RenderExpoCdf(lam, 0, 3.0, 50)        
         thinkplot.Plot(xs, ps, label='lam=%g' % lam)
     
-    thinkplot.Save(root='continuous_expo_cdf',
+    thinkplot.Save(root='analytic_expo_cdf',
                    title='Exponential CDF',
                    xlabel='x',
                    ylabel='CDF')
@@ -46,7 +46,7 @@ def MakeParetoCdf():
         xs, ps = RenderParetoCdf(xmin, alpha, 0, 10.0, n=100) 
         thinkplot.Plot(xs, ps, label='alpha=%g' % alpha)
     
-    thinkplot.Save(root='continuous_pareto_cdf',
+    thinkplot.Save(root='analytic_pareto_cdf',
                    title = 'Pareto CDF',
                    xlabel = 'x',
                    ylabel = 'CDF')
@@ -63,7 +63,7 @@ def MakeParetoCdf2():
 
     median = ParetoMedian(xmin, alpha)
 
-    thinkplot.Save(root='continuous_pareto_height',
+    thinkplot.Save(root='analytic_pareto_height',
                    title='Pareto CDF',
                    xlabel='height (cm)',
                    ylabel='CDF',
@@ -133,7 +133,7 @@ def MakeGaussianCdf():
         label = 'mu=%g, sigma=%g' % (mu, sigma)
         thinkplot.Plot(xs, ps, label=label)
 
-    thinkplot.Save(root='continuous_gaussian_cdf',
+    thinkplot.Save(root='analytic_gaussian_cdf',
                    title='Gaussian CDF',
                    xlabel='x',
                    ylabel='CDF',
@@ -159,7 +159,7 @@ def MakeGaussianModel(weights):
 
     thinkplot.PrePlot(1)
     thinkplot.Cdf(cdf) 
-    thinkplot.Save(root='continuous_birthwgt_model',
+    thinkplot.Save(root='analytic_birthwgt_model',
                    title='Birth weights',
                    xlabel='birth weight (lbs)',
                    ylabel='CDF')
@@ -181,7 +181,7 @@ def MakeNormalPlot(weights, term_weights):
 
     xs, ys = thinkstats2.NormalProbability(term_weights)
     thinkplot.Plot(xs, ys, label='full term')
-    thinkplot.Save(root='continuous_birthwgt_normal',
+    thinkplot.Save(root='analytic_birthwgt_normal',
                    title='Normal probability plot',
                    xlabel='Standard deviations from mean',
                    ylabel='Birth weight (lbs)')
@@ -190,7 +190,7 @@ def MakeNormalPlot(weights, term_weights):
 def main():
     thinkstats2.RandomSeed(17)
 
-    # make the continuous CDFs
+    # make the analytic CDFs
     MakeExpoCdf()
     MakeParetoCdf()
     MakeParetoCdf2()

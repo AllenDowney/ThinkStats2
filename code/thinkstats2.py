@@ -1,7 +1,7 @@
 """This file contains code for use with "Think Bayes",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2012 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
@@ -28,10 +28,12 @@ import math
 import random
 import re
 
+from collections import Counter
+
 import thinkplot
 
 import numpy as np
-import pandas as pd
+import pandas
 
 import scipy.stats
 from scipy.special import erf, erfinv
@@ -122,12 +124,12 @@ class Interpolator(object):
 class _DictWrapper(object):
     """An object that contains a dictionary."""
 
-    def __init__(self, values=None, name=''):
+    def __init__(self, values=None, label='', name=''):
         """Initializes the distribution.
 
         hypos: sequence of hypotheses
         """
-        self.name = name
+        self.label = label or name
         self.d = {}
 
         # flag whether the distribution is under a log transform
@@ -136,50 +138,24 @@ class _DictWrapper(object):
         if values is None:
             return
 
-        init_methods = [
-            self.InitPmf,
-            self.InitMapping,
-            self.InitSequence,
-            self.InitFailure,
-            ]
-
-        for method in init_methods:
-            try:
-                method(values)
-                break
-            except AttributeError:
-                continue
-
+        if isinstance(values, dict):
+            self.d.update(values.items())
+        elif isinstance(values, _DictWrapper):
+            self.d.update(values.Items())
+            if not self.label:
+                self.label = values.label
+        elif isinstance(values, pandas.Series):
+            self.d.update(values.value_counts().iteritems())
+        else:
+            self.d.update(Counter(values))
+            
         if len(self) > 0 and isinstance(self, Pmf):
             self.Normalize()
 
-    def InitSequence(self, values):
-        """Initializes with a sequence of equally-likely values.
-
-        values: sequence of values
+    def __eq__(self, other):
+        """Tests equality.
         """
-        for value in values:
-            self.Set(value, 1)
-
-    def InitMapping(self, values):
-        """Initializes with a map from value to probability.
-
-        values: map from value to probability
-        """
-        for value, prob in values.items():
-            self.Set(value, prob)
-
-    def InitPmf(self, values):
-        """Initializes with a Pmf.
-
-        values: Pmf object
-        """
-        for value, prob in values.Items():
-            self.Set(value, prob)
-
-    def InitFailure(self, values):
-        """Raises an error."""
-        raise ValueError('None of the initialization methods worked.')
+        return self.d == other.d
 
     def __len__(self):
         return len(self.d)
@@ -193,18 +169,19 @@ class _DictWrapper(object):
     def __contains__(self, value):
         return value in self.d
 
-    def Copy(self, name=None):
+    def Copy(self, label=None):
         """Returns a copy.
 
         Make a shallow copy of d.  If you want a deep copy of d,
         use copy.deepcopy on the whole object.
 
-        Args:
-            name: string name for the new Hist
+        label: string label for the new Hist
+
+        returns: new _DictWrapper with the same type
         """
         new = copy.copy(self)
         new.d = copy.copy(self.d)
-        new.name = name if name is not None else self.name
+        new.label = label if label is not None else self.label
         return new
 
     def Scale(self, factor):
@@ -285,6 +262,9 @@ class _DictWrapper(object):
         Returns:
             tuple of (sorted value sequence, freq/prob sequence)
         """
+        if np.isnan(min(self.d.keys())):
+            logging.warning('Hist: contains NaN, may not render correctly.')
+
         return zip(*sorted(self.Items()))
 
     def Print(self):
@@ -337,6 +317,20 @@ class _DictWrapper(object):
     def MaxLike(self):
         """Returns the largest frequency/probability in the map."""
         return max(self.d.values())
+
+    def Largest(self, n=10):
+        """Returns the largest n values, with frequency/probability.
+
+        n: number of items to return
+        """
+        return sorted(self.d.items(), reverse=True)[:n]
+
+    def Smallest(self, n=10):
+        """Returns the smallest n values, with frequency/probability.
+
+        n: number of items to return
+        """
+        return sorted(self.d.items(), reverse=False)[:n]
 
 
 class Hist(_DictWrapper):
@@ -397,9 +391,9 @@ class Pmf(_DictWrapper):
         """Gets probabilities for a sequence of values."""
         return [self.Prob(x) for x in xs]
 
-    def MakeCdf(self, name=None):
+    def MakeCdf(self, label=None):
         """Makes a Cdf."""
-        return MakeCdfFromPmf(self, name=name)
+        return MakeCdfFromPmf(self, label=label)
 
     def ProbGreater(self, x):
         """Probability that a sample from this Pmf exceeds x.
@@ -462,27 +456,6 @@ class Pmf(_DictWrapper):
         returns: float probability
         """
         return 1 - (self > obj)
-
-    def __eq__(self, obj):
-        """Less than.
-
-        obj: number or _DictWrapper
-
-        returns: float probability
-        """
-        if isinstance(obj, _DictWrapper):
-            return PmfProbEqual(self, obj)
-        else:
-            return self.Prob(obj)
-
-    def __ne__(self, obj):
-        """Less than.
-
-        obj: number or _DictWrapper
-
-        returns: float probability
-        """
-        return 1 - (self == obj)
 
     def Normalize(self, fraction=1.0):
         """Normalizes this PMF so the sum of all probs is fraction.
@@ -645,19 +618,19 @@ class Joint(Pmf):
     The values are sequences (usually tuples)
     """
 
-    def Marginal(self, i, name=''):
+    def Marginal(self, i, label=''):
         """Gets the marginal distribution of the indicated variable.
 
         i: index of the variable we want
 
         Returns: Pmf
         """
-        pmf = Pmf(name=name)
+        pmf = Pmf(label=label)
         for vs, prob in self.Items():
             pmf.Incr(vs[i], prob)
         return pmf
 
-    def Conditional(self, i, j, val, name=''):
+    def Conditional(self, i, j, val, label=''):
         """Gets the conditional distribution of the indicated variable.
 
         Distribution of vs[i], conditioned on vs[j] = val.
@@ -668,7 +641,7 @@ class Joint(Pmf):
 
         Returns: Pmf
         """
-        pmf = Pmf(name=name)
+        pmf = Pmf(label=label)
         for vs, prob in self.Items():
             if vs[j] != val: continue
             pmf.Incr(vs[i], prob)
@@ -718,115 +691,101 @@ def MakeJoint(pmf1, pmf2):
     return joint
 
 
-def MakeHistFromList(t, name=''):
+def MakeHistFromList(t, label=''):
     """Makes a histogram from an unsorted sequence of values.
 
     Args:
         t: sequence of numbers
-        name: string name for this histogram
+        label: string label for this histogram
 
     Returns:
         Hist object
     """
-    hist = Hist(name=name)
-    [hist.Incr(x) for x in t]
-    return hist
+    return Hist(t, label=label)
 
 
-def MakeHistFromDict(d, name=''):
+def MakeHistFromDict(d, label=''):
     """Makes a histogram from a map from values to frequencies.
 
     Args:
         d: dictionary that maps values to frequencies
-        name: string name for this histogram
+        label: string label for this histogram
 
     Returns:
         Hist object
     """
-    return Hist(d, name)
+    return Hist(d, label)
 
 
-def MakePmfFromList(t, name=''):
+def MakePmfFromList(t, label=''):
     """Makes a PMF from an unsorted sequence of values.
 
     Args:
         t: sequence of numbers
-        name: string name for this PMF
+        label: string label for this PMF
 
     Returns:
         Pmf object
     """
-    hist = MakeHistFromList(t)
-    d = hist.GetDict()
-    pmf = Pmf(d, name)
-    pmf.Normalize()
-    return pmf
+    return Pmf(t, label=label)
 
 
-def MakePmfFromDict(d, name=''):
+def MakePmfFromDict(d, label=''):
     """Makes a PMF from a map from values to probabilities.
 
     Args:
         d: dictionary that maps values to probabilities
-        name: string name for this PMF
+        label: string label for this PMF
 
     Returns:
         Pmf object
     """
-    pmf = Pmf(d, name)
-    pmf.Normalize()
-    return pmf
+    return Pmf(d, label=label)
 
 
-def MakePmfFromItems(t, name=''):
+def MakePmfFromItems(t, label=''):
     """Makes a PMF from a sequence of value-probability pairs
 
     Args:
         t: sequence of value-probability pairs
-        name: string name for this PMF
+        label: string label for this PMF
 
     Returns:
         Pmf object
     """
-    pmf = Pmf(dict(t), name)
-    pmf.Normalize()
-    return pmf
+    return Pmf(t, label=label)
 
 
-def MakePmfFromHist(hist, name=None):
+def MakePmfFromHist(hist, label=None):
     """Makes a normalized PMF from a Hist object.
 
     Args:
         hist: Hist object
-        name: string name
+        label: string label
 
     Returns:
         Pmf object
     """
-    if name is None:
-        name = hist.name
+    if label is None:
+        label = hist.label
 
-    # make a copy of the dictionary
-    d = dict(hist.GetDict())
-    pmf = Pmf(d, name)
-    pmf.Normalize()
-    return pmf
+    return Pmf(hist, label=label)
 
 
-def MakePmfFromCdf(cdf, name=None):
+def MakePmfFromCdf(cdf, label=None):
     """Makes a normalized Pmf from a Cdf object.
 
     Args:
         cdf: Cdf object
-        name: string name for the new Pmf
+        label: string label for the new Pmf
 
     Returns:
         Pmf object
     """
-    if name is None:
-        name = cdf.name
+    if label is None:
+        label = cdf.label
 
-    pmf = Pmf(name=name)
+    pmf = Pmf(label=label)
 
     prev = 0.0
     for val, prob in cdf.Items():
@@ -836,16 +795,16 @@ def MakePmfFromCdf(cdf, name=None):
     return pmf
 
 
-def MakeMixture(metapmf, name='mix'):
+def MakeMixture(metapmf, label='mix'):
     """Make a mixture distribution.
 
     Args:
       metapmf: Pmf that maps from Pmfs to probs.
-      name: string name for the new Pmf.
+      label: string label for the new Pmf.
 
     Returns: Pmf object.
     """
-    mix = Pmf(name=name)
+    mix = Pmf(label=label)
     for pmf, p1 in metapmf.Items():
         for x, p2 in pmf.Items():
             mix.Incr(x, p1 * p2)
@@ -872,27 +831,27 @@ class Cdf(object):
     Attributes:
         xs: sequence of values
         ps: sequence of probabilities
-        name: string used as a graph label.
+        label: string used as a graph label.
     """
 
-    def __init__(self, xs=None, ps=None, name=''):
+    def __init__(self, xs=None, ps=None, label=''):
         self.xs = [] if xs is None else xs
         self.ps = [] if ps is None else ps
-        self.name = name
+        self.label = label
 
-    def Copy(self, name=None):
+    def Copy(self, label=None):
         """Returns a copy of this Cdf.
 
         Args:
-            name: string name for the new Cdf
+            label: string label for the new Cdf
         """
-        if name is None:
-            name = self.name
-        return Cdf(list(self.xs), list(self.ps), name)
+        if label is None:
+            label = self.label
+        return Cdf(list(self.xs), list(self.ps), label)
 
-    def MakePmf(self, name=None):
+    def MakePmf(self, label=None):
         """Makes a Pmf."""
-        return MakePmfFromCdf(self, name=name)
+        return MakePmfFromCdf(self, label=label)
 
     def Values(self):
         """Returns a sorted list of values.
@@ -1064,12 +1023,12 @@ class Cdf(object):
         return cdf
 
 
-def MakeCdfFromItems(items, name=''):
+def MakeCdfFromItems(items, label=''):
     """Makes a cdf from an unsorted sequence of (value, frequency) pairs.
 
     Args:
         items: unsorted sequence of (value, frequency) pairs
-        name: string name for this CDF
+        label: string label for this CDF
 
     Returns:
         cdf: list of (value, fraction) pairs
@@ -1086,63 +1045,63 @@ def MakeCdfFromItems(items, name=''):
     total = float(runsum)
     ps = [c / total for c in cs]
 
-    cdf = Cdf(xs, ps, name)
+    cdf = Cdf(xs, ps, label)
     return cdf
 
 
-def MakeCdfFromDict(d, name=''):
+def MakeCdfFromDict(d, label=''):
     """Makes a CDF from a dictionary that maps values to frequencies.
 
     Args:
        d: dictionary that maps values to frequencies.
-       name: string name for the data.
+       label: string label for the data.
 
     Returns:
         Cdf object
     """
-    return MakeCdfFromItems(d.items(), name)
+    return MakeCdfFromItems(d.items(), label)
 
 
-def MakeCdfFromHist(hist, name=''):
+def MakeCdfFromHist(hist, label=''):
     """Makes a CDF from a Hist object.
 
     Args:
        hist: Pmf.Hist object
-       name: string name for the data.
+       label: string label for the data.
 
     Returns:
         Cdf object
     """
-    return MakeCdfFromItems(hist.Items(), name)
+    return MakeCdfFromItems(hist.Items(), label)
 
 
-def MakeCdfFromPmf(pmf, name=None):
+def MakeCdfFromPmf(pmf, label=None):
     """Makes a CDF from a Pmf object.
 
     Args:
        pmf: Pmf.Pmf object
-       name: string name for the data.
+       label: string label for the data.
 
     Returns:
         Cdf object
     """
-    if name == None:
-        name = pmf.name
-    return MakeCdfFromItems(pmf.Items(), name)
+    if label == None:
+        label = pmf.label
+    return MakeCdfFromItems(pmf.Items(), label)
 
 
-def MakeCdfFromList(seq, name=''):
+def MakeCdfFromList(seq, label=''):
     """Creates a CDF from an unsorted sequence.
 
     Args:
         seq: unsorted sequence of sortable values
-        name: string name for the cdf
+        label: string label for the cdf
 
     Returns:
        Cdf object
     """
     hist = MakeHistFromList(seq)
-    return MakeCdfFromHist(hist, name)
+    return MakeCdfFromHist(hist, label)
 
 
 class UnimplementedMethodException(Exception):
@@ -1249,12 +1208,12 @@ class Suite(Pmf):
             self.Set(hypo, Probability(odds))
 
 
-def MakeSuiteFromList(t, name=''):
+def MakeSuiteFromList(t, label=''):
     """Makes a suite from an unsorted sequence of values.
 
     Args:
         t: sequence of numbers
-        name: string name for this suite
+        label: string label for this suite
 
     Returns:
         Suite object
@@ -1264,54 +1223,54 @@ def MakeSuiteFromList(t, name=''):
     return MakeSuiteFromDict(d)
 
 
-def MakeSuiteFromHist(hist, name=None):
+def MakeSuiteFromHist(hist, label=None):
     """Makes a normalized suite from a Hist object.
 
     Args:
         hist: Hist object
-        name: string name
+        label: string label
 
     Returns:
         Suite object
     """
-    if name is None:
-        name = hist.name
+    if label is None:
+        label = hist.label
 
     # make a copy of the dictionary
     d = dict(hist.GetDict())
-    return MakeSuiteFromDict(d, name)
+    return MakeSuiteFromDict(d, label)
 
 
-def MakeSuiteFromDict(d, name=''):
+def MakeSuiteFromDict(d, label=''):
     """Makes a suite from a map from values to probabilities.
 
     Args:
         d: dictionary that maps values to probabilities
-        name: string name for this suite
+        label: string label for this suite
 
     Returns:
         Suite object
     """
-    suite = Suite(name=name)
+    suite = Suite(label=label)
     suite.SetDict(d)
     suite.Normalize()
     return suite
 
 
-def MakeSuiteFromCdf(cdf, name=None):
+def MakeSuiteFromCdf(cdf, label=None):
     """Makes a normalized Suite from a Cdf object.
 
     Args:
         cdf: Cdf object
-        name: string name for the new Suite
+        label: string label for the new Suite
 
     Returns:
         Suite object
     """
-    if name is None:
-        name = cdf.name
+    if label is None:
+        label = cdf.label
 
-    suite = Suite(name=name)
+    suite = Suite(label=label)
 
     prev = 0.0
     for val, prob in cdf.Items():
@@ -1331,14 +1290,14 @@ class Pdf(object):
         """
         raise UnimplementedMethodException()
 
-    def MakePmf(self, xs, name=''):
+    def MakePmf(self, xs, label=''):
         """Makes a discrete version of this Pdf, evaluated at xs.
 
         xs: equally-spaced sequence of values
 
         Returns: new Pmf
         """
-        pmf = Pmf(name=name)
+        pmf = Pmf(label=label)
         for x in xs:
             pmf.Set(x, self.Density(x))
         pmf.Normalize()
@@ -1382,9 +1341,9 @@ class EstimatedPdf(Pdf):
         """
         return self.kde.evaluate(x)
 
-    def MakePmf(self, xs, name=''):
+    def MakePmf(self, xs, label=''):
         ps = self.kde.evaluate(xs)
-        pmf = MakePmfFromItems(zip(xs, ps), name=name)
+        pmf = MakePmfFromItems(zip(xs, ps), label=label)
         return pmf
 
 
@@ -1548,7 +1507,6 @@ def EvalPoissonPmf(k, lam):
     # don't use the scipy function (yet).  for lam=0 it returns NaN;
     # should be 0.0
     # return scipy.stats.poisson.pmf(k, lam)
-
     return lam ** k * math.exp(-lam) / math.factorial(k)
 
 
@@ -1656,11 +1614,11 @@ class Beta(object):
 
     See http://en.wikipedia.org/wiki/Beta_distribution
     """
-    def __init__(self, alpha=1, beta=1, name=''):
+    def __init__(self, alpha=1, beta=1, label=''):
         """Initializes a Beta distribution."""
         self.alpha = alpha
         self.beta = beta
-        self.name = name
+        self.label = label
 
     def Update(self, data):
         """Updates a Beta distribution.
@@ -1691,7 +1649,7 @@ class Beta(object):
         """Evaluates the PDF at x."""
         return x ** (self.alpha - 1) * (1 - x) ** (self.beta - 1)
 
-    def MakePmf(self, steps=101, name=''):
+    def MakePmf(self, steps=101, label=''):
         """Returns a Pmf of this distribution.
 
         Note: Normally, we just evaluate the PDF at a sequence
@@ -1710,7 +1668,7 @@ class Beta(object):
 
         xs = [i / (steps - 1.0) for i in xrange(steps)]
         probs = [self.EvalPdf(x) for x in xs]
-        pmf = MakePmfFromDict(dict(zip(xs, probs)), name)
+        pmf = MakePmfFromDict(dict(zip(xs, probs)), label)
         return pmf
 
     def MakeCdf(self, steps=101):
@@ -1727,12 +1685,12 @@ class Dirichlet(object):
     See http://en.wikipedia.org/wiki/Dirichlet_distribution
     """
 
-    def __init__(self, n, conc=1, name=''):
+    def __init__(self, n, conc=1, label=''):
         """Initializes a Dirichlet distribution.
 
         n: number of dimensions
         conc: concentration parameter (smaller yields more concentration)
-        name: string name
+        label: string label
         """
         if n < 2:
             raise ValueError('A Dirichlet distribution with '
@@ -1740,7 +1698,7 @@ class Dirichlet(object):
 
         self.n = n
         self.params = np.ones(n, dtype=np.float) * conc
-        self.name = name
+        self.label = label
 
     def Update(self, data):
         """Updates a Dirichlet distribution.
@@ -1803,7 +1761,7 @@ class Dirichlet(object):
         alpha = self.params[i]
         return Beta(alpha, alpha0 - alpha)
 
-    def PredictivePmf(self, xs, name=''):
+    def PredictivePmf(self, xs, label=''):
         """Makes a predictive distribution.
 
         xs: values to go into the Pmf
@@ -1812,7 +1770,7 @@ class Dirichlet(object):
         """
         alpha0 = self.params.sum()
         ps = self.params / alpha0
-        return MakePmfFromItems(zip(xs, ps), name=name)
+        return MakePmfFromItems(zip(xs, ps), label=label)
 
 
 def BinomialCoef(n, k):
@@ -1993,6 +1951,25 @@ def TrimmedMeanVar(t, p=0.01):
     t = Trim(t, p)
     mu, var = MeanVar(t)
     return mu, var
+
+
+def CohenEffectSize(group1, group2):
+    """Compute Cohen's d.
+
+    group1: Series or NumPy array
+    group2: Series or NumPy array
+
+    returns: float
+    """
+    diff = group1.mean() - group2.mean()
+
+    n1, n2 = len(group1), len(group2)
+    var1 = group1.var()
+    var2 = group1.var()
+
+    pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
+    d = diff / math.sqrt(pooled_var)
+    return d
 
 
 def Cov(xs, ys, meanx=None, meany=None):
@@ -2263,10 +2240,10 @@ class FixedWidthVariables(object):
 
         returns: DataFrame
         """
-        frame = pd.read_fwf(filename,
-                            colspecs=self.colspecs, 
-                            names=self.names,
-                            **options)
+        frame = pandas.read_fwf(filename,
+                                colspecs=self.colspecs, 
+                                names=self.names,
+                                **options)
         return frame
 
 
@@ -2292,7 +2269,7 @@ def ReadStataDct(dct_file):
             var_info.append((start, vtype, name, fstring, long_desc))
             
     columns = ['start', 'type', 'name', 'fstring', 'desc']
-    variables = pd.DataFrame(var_info, columns=columns)
+    variables = pandas.DataFrame(var_info, columns=columns)
 
     # fill in the end column by shifting the start column
     variables['end'] = variables.start.shift(-1)

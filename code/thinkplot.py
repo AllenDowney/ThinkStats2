@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function
 
+import logging
 import math
 import matplotlib
 import matplotlib.pyplot as pyplot
@@ -86,6 +87,9 @@ class Brewer(object):
     @classmethod
     def GetIter(cls):
         """Gets the color iterator."""
+        if cls.color_iter is None:
+            cls.InitializeIter(7)
+
         return cls.color_iter
 
 
@@ -202,7 +206,7 @@ def Bar(xs, ys, **options):
       options: keyword args passed to pyplot.bar
     """
     options = UnderrideColor(options)
-    options = Underride(options, linewidth=0, alpha=0.8)
+    options = Underride(options, linewidth=0, alpha=0.6)
     pyplot.bar(xs, ys, **options)
 
 
@@ -237,8 +241,8 @@ def Pmf(pmf, **options):
       options: keyword args passed to pyplot.plot
     """
     xs, ps = pmf.Render()
-    if pmf.name:
-        options = Underride(options, label=pmf.name)
+    if pmf.label:
+        options = Underride(options, label=pmf.label)
     Plot(xs, ps, **options)
 
 
@@ -270,10 +274,19 @@ def Hist(hist, **options):
     """
     # find the minimum distance between adjacent values
     xs, ys = hist.Render()
-    width = min(Diff(xs))
-    options = Underride(options, width=width)
-    if hist.name:
-        options = Underride(options, label=hist.name)
+
+    if 'width' not in options:
+        try:
+            options['width'] = 0.9 * np.diff(xs).min()
+        except TypeError:
+            logging.warning("Hist: Can't compute bar width automatically."
+                            "Check for non-numeric types in Hist."
+                            "Or try providing width option."
+                            )
+
+    if hist.label:
+        options = Underride(options, label=hist.label)
+    options = Underride(options, align='center')
     Bar(xs, ys, **options)
 
 
@@ -349,8 +362,8 @@ def Cdf(cdf, complement=False, transform=None, **options):
         ps = [-math.log(p) for p in ps]
         scale['yscale'] = 'log'
 
-    if cdf.name:
-        options = Underride(options, label=cdf.name)
+    if cdf.label:
+        options = Underride(options, label=cdf.label)
 
     Plot(xs, ps, **options)
     return scale
@@ -537,6 +550,7 @@ def main():
     color_iter = Brewer.ColorGenerator(7)
     for color in color_iter:
         print(color)
+
 
 if __name__ == '__main__':
     main()
