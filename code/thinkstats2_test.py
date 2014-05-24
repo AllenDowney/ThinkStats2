@@ -114,8 +114,44 @@ class Test(unittest.TestCase):
         self.assertEquals(len(pmf), 4)
         self.assertEquals(pmf.Prob('l'), 0.4)
 
+        pmf = thinkstats2.Pmf(pmf)
+        self.assertEquals(len(pmf), 4)
+        self.assertEquals(pmf.Prob('l'), 0.4)
+
+        pmf = thinkstats2.Pmf(pmf.d.items())
+        self.assertEquals(len(pmf), 4)
+        self.assertEquals(pmf.Prob('l'), 0.4)
+
         pmf2 = pmf.Copy()
         self.assertEquals(pmf, pmf2)
+        
+    def testCdf(self):
+        t = [1, 2, 2, 3, 5]
+        pmf = thinkstats2.Pmf(t)
+
+        cdf = thinkstats2.Cdf(pmf)
+        self.assertEquals(len(cdf), 4)
+        self.assertAlmostEquals(cdf.Prob(2), 0.6)
+        self.assertAlmostEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.Cdf(pmf.Items())
+        self.assertEquals(len(cdf), 4)
+        self.assertAlmostEquals(cdf.Prob(2), 0.6)
+        self.assertAlmostEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.Cdf(t)
+        self.assertEquals(len(cdf), 4)
+        self.assertAlmostEquals(cdf.Prob(2), 0.6)
+        self.assertAlmostEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.Cdf(Counter(t))
+        self.assertEquals(len(cdf), 4)
+        self.assertAlmostEquals(cdf.Prob(2), 0.6)
+        self.assertAlmostEquals(cdf.Value(0.6), 2)
+
+        cdf2 = cdf.Copy()
+        self.assertAlmostEquals(cdf2.Prob(2), 0.6)
+        self.assertAlmostEquals(cdf2.Value(0.6), 2)
         
 
 if __name__ == "__main__":

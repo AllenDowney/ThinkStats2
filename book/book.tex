@@ -1672,8 +1672,8 @@ Then I plotted their histograms on the same axis:
 \begin{verbatim}
     width = 0.45
     thinkplot.PrePlot(2)
-    thinkplot.Hist(first_hist, align='edge', width=-width)
-    thinkplot.Hist(other_hist, align='edge', width=width)
+    thinkplot.Hist(first_hist, align='right', width=width)
+    thinkplot.Hist(other_hist, align='left', width=width)
 
     thinkplot.Save(root='nsfg_hist', 
                    title='Histogram',
@@ -1695,9 +1695,9 @@ an appropriate collection of colors.
 
 {\tt thinkplot.Hist} normally uses {\tt align='center'} so that
 each bar is centered over its value.  For this figure, I use
-{\tt align='edge'} to line up the edge of the bars with the
-corresponding value.  A negative {\tt width} aligns with
-the right edge; a positive {\tt width} aligns with the left.
+{\tt align='right'} and {\tt align='left'} to place
+corresponding bars on either side of the value.
+
 With {\tt width=0.45}, the total width of the two bars is 0.9,
 leaving some space between each pair.
 
@@ -2047,18 +2047,27 @@ for x, freq in hist.Items():
 \end{verbatim}
 %
 Or we can use the {\tt Pmf} class provided by {\tt thinkstats2.py}.
-To create a Pmf object, use {\tt MakePmfFromList}, which takes a list
-of values:
+Like {\tt Hist}, the {\tt Pmf} constructor can take a list, pandas
+Series, dictionary, Hist, or another Pmf object.  Here's an example
+with a simple list.
 %
 \begin{verbatim}
 >>> import thinkstats2
->>> pmf = thinkstats2.MakePmfFromList([1, 2, 2, 3, 5])
+>>> pmf = thinkstats2.Pmf([1, 2, 2, 3, 5])
 >>> pmf
 <thinkstats2.Pmf object at 0xb76cf68c>
 \end{verbatim}
 
-Pmf and Hist objects are similar in many ways.  The methods {\tt
-  Values} and {\tt Items} work the same way for both types.  The
+The result is normalized so the total probability is 1.
+
+\begin{verbatim}
+>>> pmf.Total()
+1.0
+\end{verbatim}
+
+Pmf and Hist objects are similar in many ways; in fact, they inherit
+many of their methods from a common parent class.  For example, the
+methods {\tt Values} and {\tt Items} work the same way for both.  The
 biggest difference is that a Hist maps from values to integer
 counters; a Pmf maps from values to floating-point probabilities.
 
@@ -2133,6 +2142,12 @@ a large number of values and the Pmf is smooth.
 
 \end{itemize}
 
+% TODO: add an example using Hist and Pmf, and warn about the
+% implicit interpolation when you use Pmf.
+
+
+\section{Comparing PMFs}
+
 \begin{figure}
 % probability.py
 \centerline{\includegraphics[height=2.5in]{figs/probability_nsfg_pmf.pdf}}
@@ -2142,11 +2157,11 @@ a large number of values and the Pmf is smooth.
 \index{pregnancy length}
 \index{length!pregnancy}
 
-Figure~\ref{probability_nsfg_pmf} shows PMFs of pregnancy length for first babies
-and others as bar graphs.  Using the PMF, we can see more clearly
-where the distributions differ.  First babies seem to be less likely
-than others to arrive on time (week 39) and more likely to be a late
-(weeks 41 and 42).
+Figure~\ref{probability_nsfg_pmf} shows PMFs of pregnancy length for
+first babies and others as bar graphs.  Using the PMF, we can see more
+clearly where the distributions differ.  First babies seem to be less
+likely than others to arrive on time (week 39) and more likely to be a
+late (weeks 41 and 42).
 
 The code that generates this figure is in {\tt probability.py}.
 Note: {\tt pyplot} provides a function called {\tt hist} that
@@ -2169,12 +2184,28 @@ clear and visible.
 In the NSFG data, the biggest differences in the distributions are
 near the mode.  So it makes sense to zoom in on that part of the
 graph, and to transform the data to emphasize differences.
+Here's the code:
 \index{National Survey of Family Growth}
 \index{NSFG}
 
-Figure~\ref{probability_nsfg_diffs} shows the difference between the PMFs for
-weeks 35--45.  I multiplied the probabilities by 100 to express the
-differences in percentage points.
+\begin{verbatim}
+    weeks = range(35, 46)
+    diffs = []
+    for week in weeks:
+        p1 = first_pmf.Prob(week)
+        p2 = other_pmf.Prob(week)
+        diff = 100 * (p1 - p2)
+        diffs.append(diff)
+
+    thinkplot.Bar(weeks, diffs)
+\end{verbatim}
+
+{\tt weeks} is the range of weeks; {\tt diffs} is the difference
+between the two PMFs in percentage points.
+Figure~\ref{probability_nsfg_diffs} shows the result.
+This figure makes the pattern clearer: first babies are
+less likely to be born in week 39, and somewhat more likely
+to be born in weeks 41 and 42.
 
 \begin{figure}
 % probability.py
@@ -2183,9 +2214,12 @@ differences in percentage points.
 \label{probability_nsfg_diffs}
 \end{figure}
 
-This figure makes the pattern clearer: first babies are
-less likely to be born in week 39, and somewhat more likely
-to be born in weeks 41 and 42.
+For now we should hold this conclusion only tentatively.
+We used the same dataset to identify an
+apparent difference and then chose a visualization that makes the
+difference apparent.  But we can't be sure this effect is real;
+it might be due to random variation.  We'll address this concern
+later.
 
 
 \section{The class size paradox}
@@ -2230,48 +2264,86 @@ average class size is 24.
 
 But if you survey a group of students, ask them how many
 students are in their classes, and compute the mean, you would
-think that the average class size was higher.
+think that the average class size was higher.  Let's see how
+much higher.
 
-\begin{exercise}
-Build a PMF of these data and compute the mean as perceived by the
-Dean.  Since the data have been grouped in bins, you can use the
-mid-point of each bin.
-\index{PMF}
+First, I'll make a distribution of the actual data, using the
+midpoint of each size range:
 
-Now find the distribution of class sizes as perceived by students
-and compute its mean.  
+\begin{verbatim}
+    d = { 7: 8, 12: 8, 17: 14, 22: 4, 
+          27: 6, 32: 12, 37: 8, 42: 3, 47: 2 }
 
-Suppose you want to find the distribution of class sizes at a
-college, but you can't get reliable data from the Dean.
-An alternative is to choose a random sample of students and ask them
-the number of students in each of their classes.  Then you could compute
-the PMF of their responses.
-\index{bias!oversampling}
-\index{oversampling}
+    pmf = thinkstats2.Pmf(d, label='actual')
+    print('mean', pmf.Mean())
+\end{verbatim}
 
-The result would be biased because large classes
-would be oversampled, but you could estimate the actual
-distribution of class sizes by applying an appropriate transformation
-to the observed distribution.
+The mean of this distribution is 23.7.  Next we'll compute the biased
+distribution as observed by students.
 
-Write a function called \verb"UnbiasPmf" that takes the PMF of the
-observed values and returns a new Pmf object that estimates the
-distribution of class sizes.
+\begin{verbatim}
+def BiasPmf(pmf, label):
+    new_pmf = pmf.Copy(label=label)
 
-You can download a solution to this problem from
-\url{http://thinkstats2.com/class_size.py}.
-\index{{\tt class\_size.py}}
+    for x, p in pmf.Items():
+        new_pmf.Mult(x, x)
+        
+    new_pmf.Normalize()
+    return new_pmf
+\end{verbatim}
 
-\end{exercise}
+For each class size, {\tt x}, we multiply the probability by
+{\tt x}, the number of students who observe that class size.
+The result is a new Pmf that represents the biased distribution.
 
+Now we can plot the actual and observed distributions:
+
+\begin{verbatim}
+    biased_pmf = BiasPmf(pmf, label='observed')
+    thinkplot.PrePlot(2)
+    thinkplot.Pmfs([pmf, biased_pmf])
+    thinkplot.Show()
+\end{verbatim}
+
+Figure~\ref{class_size1} shows the result.  In the biased distribution
+there are fewer small classes and more large ones.
+The mean of the biased distribution is 29.1, almost 25\% bigger
+than the actual mean.
+
+It is also possible to invert this operation.  Suppose you want to
+find the distribution of class sizes at a college, but you can't get
+reliable data from the Dean.  An alternative is to choose a random
+sample of students and ask them the number of students in each of
+their classes.
+\index{bias!oversampling} \index{oversampling}
+
+The result would be biased for the reasons we've just seen, but you
+use it to estimate the actual distribution.  Here's the function that
+unbiases a Pmf:
+
+\begin{verbatim}
+def UnbiasPmf(pmf, label):
+    new_pmf = pmf.Copy(label=label)
+
+    for x, p in pmf.Items():
+        new_pmf.Mult(x, 1.0/x)
+        
+    new_pmf.Normalize()
+    return new_pmf
+\end{verbatim}
+
+It's very similar to {\tt BiasPmf}; the only difference is that it
+divides each probability by {\tt x} instead of multiplying.
+
+The code for this example is in \url{chap03.py}.
 
 
 \section{The limits of PMFs}
 \index{PMF}
 
-PMFs work well if the number of values is small.  But as the
-number of values increases, the probability associated with each value
-gets smaller and the effect of random noise increases.
+PMFs work well if the number of values is small.  But as the number of
+values increases, the probability associated with each value gets
+smaller and the effect of random noise increases.
 
 For example, we might be interested in the distribution of birth
 weights.  In the NSFG data, the variable \verb"totalwgt_oz" records
@@ -2288,8 +2360,9 @@ of PMFs: they are hard to compare.}
 \label{nsfg_birthwgt_pmf}
 \end{figure}
 
-Overall, these distributions resemble the familiar ``bell curve,'' with
-many values near the mean and a few values much higher and lower.
+Overall, these distributions resemble the bell shape of a Gaussian
+distribution, with many values near the mean and a few values much
+higher and lower.
 
 But parts of this figure are hard to interpret.  There are many spikes
 and valleys, and some apparent differences between the distributions.
@@ -2298,15 +2371,14 @@ is hard to see overall patterns; for example, which distribution do
 you think has the higher mean?
 \index{binning}
 
-These problems can be mitigated by binning the data;
-that is, dividing the domain into non-overlapping intervals and counting
-the number of values in each bin.  Binning can be useful, but it is
-tricky to get the size of the bins right.  If they are big enough to
-smooth out noise, they might also smooth out useful information.
+These problems can be mitigated by binning the data; that is, dividing
+the range of values into non-overlapping intervals and counting the
+number of values in each bin.  Binning can be useful, but it is tricky
+to get the size of the bins right.  If they are big enough to smooth
+out noise, they might also smooth out useful information.
 
 An alternative that avoids these problems is the cumulative
-distribution function, which is the subject of
-the next chapter.
+distribution function, which is the subject of the next chapter.
 
 
 \section{DataFrame indexing}
@@ -2419,12 +2491,11 @@ a -0.143510  0.616050
 b -1.489647  0.300774
 \end{verbatim}
 
-The result in either case is a DataFrame, but notice that the
-first result includes the end of the slice; the second doesn't.
+The result in either case is a DataFrame, but notice that the first
+result includes the end of the slice; the second doesn't.
 
-My advice: if your rows have labels that are not simple
-integers, use the labels consistently and avoid
-using integer positions.
+My advice: if your rows have labels that are not simple integers, use
+the labels consistently and avoid using integer positions.
 
 
 
@@ -2456,6 +2527,12 @@ check that they are consistent with the methods {\tt Mean} and {\tt
 
 
 \begin{exercise}
+Use the variable \verb"totalwgt_lb", investigate whether first
+babies are lighter or heavier than others.
+\end{exercise}
+
+
+\begin{exercise}
 I started with the question, ``Are first babies more likely
 to be late?''  To address it, I computed the difference in
 means between groups of babies, but I ignored the possibility
@@ -2467,12 +2544,6 @@ have at least two babies and compute pairwise differences.  Does
 this formulation of the question yield a different result?
 
 Hint: use {\tt nsfg.MakePregMap}.
-\end{exercise}
-
-
-\begin{exercise}
-Use the variable \verb"totalwgt_lb", investigate whether first
-babies lighter or heavier than others.
 \end{exercise}
 
 
@@ -2512,6 +2583,8 @@ the difference in our speeds.  To see why, think about the extremes.
 If another runner is going at the same speed as me, neither of us will
 overtake the other.  If someone is going so fast that they cover the
 entire course while I am running, they are certain to overtake me.
+
+% TODO: reference BiasPmf
 
 Write a function called {\tt BiasPmf} that takes a Pmf representing
 the actual distribution of runners' speeds, and the speed of a running

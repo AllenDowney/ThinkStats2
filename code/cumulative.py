@@ -30,13 +30,12 @@ def Resample(cdf, n=10000):
 def MakeExample():
     """Make a simple example CDF."""
     t = [2, 1, 3, 2, 5]
-    cdf = thinkstats2.MakeCdfFromList(t)
+    cdf = thinkstats2.Cdf(t)
     thinkplot.Clf()
     thinkplot.Cdf(cdf)
     thinkplot.Save(root='example_cdf',
-                   title='CDF',
                    xlabel='x',
-                   ylabel='CDF(x)',
+                   ylabel='CDF',
                    axis=[0, 6, 0, 1],
                    legend=False)    
 
@@ -59,39 +58,40 @@ def MakeFigures(live, firsts, others):
     print('Others', len(other_wgt), len(other_wgt_dropna))
     #assert len(other_wgt_dropna) == 4706
 
-    first_pmf = thinkstats2.MakePmfFromList(first_wgt_dropna, name='first')
-    other_pmf = thinkstats2.MakePmfFromList(other_wgt_dropna, name='other')
+    first_pmf = thinkstats2.Pmf(first_wgt_dropna, name='first')
+    other_pmf = thinkstats2.Pmf(other_wgt_dropna, name='other')
 
-    first_cdf = thinkstats2.MakeCdfFromPmf(first_pmf)
-    other_cdf = thinkstats2.MakeCdfFromPmf(other_pmf)
+    first_cdf = thinkstats2.Cdf(first_pmf)
+    other_cdf = thinkstats2.Cdf(other_pmf)
 
     width = 0.4 / 16
 
     # plot PMFs of birth weights for first babies and others
     thinkplot.PrePlot(2)
-    thinkplot.Hist(first_pmf, width=-width)
-    thinkplot.Hist(other_pmf, width=width)
+    thinkplot.Hist(first_pmf, align='right', width=width)
+    thinkplot.Hist(other_pmf, align='left', width=width)
     thinkplot.Save(root='nsfg_birthwgt_pmf',
-                   title='Birth weight PMF',
+                   title='Birth weight',
                    xlabel='weight (pounds)',
-                   ylabel='probability')
+                   ylabel='PMF')
 
     # plot CDFs of birth weights for first babies and others
     thinkplot.PrePlot(2)
     thinkplot.Cdf(first_cdf)
     thinkplot.Cdf(other_cdf)
     thinkplot.Save(root='nsfg_birthwgt_cdf',
-                   title='Birth weight CDF',
+                   title='Birth weight',
                    xlabel='weight (pounds)',
-                   ylabel='probability',
-              #     axis=[0, 200/16.0, 0, 1]
+                   ylabel='CDF',
+                   axis=[0, 200/16.0, 0, 1]
                    )
 
 
 def main(name, data_dir=''):
+    MakeExample()
+
     live, firsts, others = first.MakeFrames()
     MakeFigures(live, firsts, others)
-    MakeExample()
     
 
 if __name__ == '__main__':

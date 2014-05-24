@@ -17,7 +17,7 @@ import thinkplot
 
 
 def MakeFigures(firsts, others):
-    """Plot Hists and Pmfs of pregnancy length.
+    """Plot Pmfs of pregnancy length.
 
     firsts: DataFrame
     others: DataFrame
@@ -28,8 +28,8 @@ def MakeFigures(firsts, others):
 
     width = 0.45
     thinkplot.PrePlot(2)
-    thinkplot.Hist(first_pmf, align='edge', width=-width)
-    thinkplot.Hist(other_pmf, align='edge', width=width)
+    thinkplot.Hist(first_pmf, align='right', width=width)
+    thinkplot.Hist(other_pmf, align='left', width=width)
 
     thinkplot.Save(root='probability_nsfg_pmf',
                    title='PMF',
@@ -46,7 +46,7 @@ def MakeFigures(firsts, others):
         diff = 100 * (p1 - p2)
         diffs.append(diff)
 
-    thinkplot.Bar(weeks, diffs, align='center')
+    thinkplot.Bar(weeks, diffs)
     thinkplot.Save(root='probability_nsfg_diffs',
                    title='Difference in PMFs',
                    xlabel='weeks',

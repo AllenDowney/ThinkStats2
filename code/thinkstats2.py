@@ -147,7 +147,12 @@ class _DictWrapper(object):
         elif isinstance(values, pandas.Series):
             self.d.update(values.value_counts().iteritems())
         else:
-            self.d.update(Counter(values))
+            try:
+                # see if it's a list of pairs
+                self.d.update(values)
+            except (ValueError, TypeError):
+                # finally, treat it like a list
+                self.d.update(Counter(values))
             
         if len(self) > 0 and isinstance(self, Pmf):
             self.Normalize()
@@ -833,17 +838,51 @@ class Cdf(object):
         ps: sequence of probabilities
         label: string used as a graph label.
     """
-
-    def __init__(self, xs=None, ps=None, label=''):
-        self.xs = [] if xs is None else xs
-        self.ps = [] if ps is None else ps
+    def __init__(self, obj=None, ps=None, label=''):
         self.label = label
+
+        if obj is None:
+            self.xs = []
+            self.ps = []
+            if ps is not None:
+                logging.warning("Cdf: can't pass ps without also passing xs.")
+            return
+        else:
+            # if the caller provides xs and ps, we're done            
+            if ps is not None:
+                self.xs = obj
+                self.ps = ps
+                return
+
+        # caller has provided a single value
+        if isinstance(obj, Cdf):
+            self.xs = copy.copy(obj.xs)
+            self.ps = copy.copy(obj.ps)
+            if not label:
+                self.label = obj.label
+            return
+
+        if isinstance(obj, Pmf):
+            pmf = obj
+            if not label:
+                self.label = obj.label
+        else:
+            pmf = Pmf(obj)
+
+        self.xs, probs = zip(*sorted(pmf.Items()))
+        self.ps = np.cumsum(probs)
+        print(self.ps)
+
+    def __len__(self):
+        return len(self.xs)
+
+    def __eq__(self, other):
+        return (self.xs == other.xs) and (self.ps == other.ps)
 
     def Copy(self, label=None):
         """Returns a copy of this Cdf.
 
-        Args:
-            label: string label for the new Cdf
+        label: string label for the new Cdf
         """
         if label is None:
             label = self.label

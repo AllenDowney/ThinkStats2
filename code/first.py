@@ -134,8 +134,8 @@ def MakeComparison(firsts, others):
 
     width = 0.45
     thinkplot.PrePlot(2)
-    thinkplot.Hist(first_hist, align='edge', width=-width)
-    thinkplot.Hist(other_hist, align='edge', width=width)
+    thinkplot.Hist(first_hist, align='right', width=width)
+    thinkplot.Hist(other_hist, align='left', width=width)
 
     thinkplot.Save(root='first_nsfg_hist', 
                    title='Histogram',

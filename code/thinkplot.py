@@ -286,7 +286,14 @@ def Hist(hist, **options):
 
     if hist.label:
         options = Underride(options, label=hist.label)
+
     options = Underride(options, align='center')
+    if options['align'] == 'left':
+        options['align'] = 'edge'
+    elif options['align'] == 'right':
+        options['align'] = 'edge'
+        options['width'] *= -1
+
     Bar(xs, ys, **options)
 
 
