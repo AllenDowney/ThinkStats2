@@ -870,7 +870,7 @@ class Cdf(object):
             hist = Hist(obj)
 
         self.xs, freqs = zip(*sorted(hist.Items()))
-        self.ps = np.cumsum(freqs) / hist.Total()
+        self.ps = np.cumsum(freqs, dtype=np.float) / hist.Total()
 
     def __len__(self):
         return len(self.xs)
@@ -975,6 +975,15 @@ class Cdf(object):
             number value
         """
         return self.Value(p / 100.0)
+
+    def PercentileRank(self, x):
+        """Returns the percentile rank of the value x.
+
+        x: potential value in the CDF
+
+        returns: percentile rank in the range 0 to 100
+        """
+        return self.Prob(x) * 100.0
 
     def Random(self):
         """Chooses a random value from this distribution."""

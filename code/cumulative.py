@@ -7,24 +7,13 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function
 
+import numpy as np
+
+import nsfg
 import first
 
 import thinkstats2
 import thinkplot
-
-# TODO: find out what resample was used for or remove it
-
-def Resample(cdf, n=10000):
-    """
-    """
-    sample = cdf.Sample(n)
-    new_cdf = thinkstats2.MakeCdfFromList(sample, 'resampled')
-    thinkplot.Clf()
-    thinkplot.Cdfs([cdf, new_cdf])
-    thinkplot.Save(root='resample_cdf',
-               title='CDF',
-               xlabel='weight in oz',
-               ylabel='CDF(x)') 
 
 
 def MakeExample():
@@ -33,7 +22,7 @@ def MakeExample():
     cdf = thinkstats2.Cdf(t)
     thinkplot.Clf()
     thinkplot.Cdf(cdf)
-    thinkplot.Save(root='example_cdf',
+    thinkplot.Save(root='cumulative_example_cdf',
                    xlabel='x',
                    ylabel='CDF',
                    axis=[0, 6, 0, 1],
@@ -58,11 +47,8 @@ def MakeFigures(live, firsts, others):
     print('Others', len(other_wgt), len(other_wgt_dropna))
     #assert len(other_wgt_dropna) == 4706
 
-    first_pmf = thinkstats2.Pmf(first_wgt_dropna, name='first')
-    other_pmf = thinkstats2.Pmf(other_wgt_dropna, name='other')
-
-    first_cdf = thinkstats2.Cdf(first_pmf)
-    other_cdf = thinkstats2.Cdf(other_pmf)
+    first_pmf = thinkstats2.Pmf(first_wgt_dropna, label='first')
+    other_pmf = thinkstats2.Pmf(other_wgt_dropna, label='other')
 
     width = 0.4 / 16
 
@@ -70,29 +56,74 @@ def MakeFigures(live, firsts, others):
     thinkplot.PrePlot(2)
     thinkplot.Hist(first_pmf, align='right', width=width)
     thinkplot.Hist(other_pmf, align='left', width=width)
-    thinkplot.Save(root='nsfg_birthwgt_pmf',
+    thinkplot.Save(root='cumulative_birthwgt_pmf',
                    title='Birth weight',
                    xlabel='weight (pounds)',
                    ylabel='PMF')
 
     # plot CDFs of birth weights for first babies and others
+    first_cdf = thinkstats2.Cdf(firsts.totalwgt_lb, label='first')
+    other_cdf = thinkstats2.Cdf(others.totalwgt_lb, label='other')
+
     thinkplot.PrePlot(2)
-    thinkplot.Cdf(first_cdf)
-    thinkplot.Cdf(other_cdf)
-    thinkplot.Save(root='nsfg_birthwgt_cdf',
+    thinkplot.Cdfs([first_cdf, other_cdf])
+    thinkplot.Save(root='cumulative_birthwgt_cdf',
                    title='Birth weight',
                    xlabel='weight (pounds)',
                    ylabel='CDF',
-                   axis=[0, 200/16.0, 0, 1]
+                   axis=[0, 12.5, 0, 1]
                    )
 
 
-def main(name, data_dir=''):
-    MakeExample()
+def MakeCdf(live):
+    """Plot the CDF of pregnancy lengths for live births.
+   
+    live: DataFrame for live births
+    """
+    cdf = thinkstats2.Cdf(live.prglngth, label='prglngth')
+    thinkplot.Cdf(cdf)
+    thinkplot.Save('cumulative_prglngth_cdf',
+                   title='Pregnancy length',
+                   xlabel='weeks',
+                   ylabel='CDF')
 
+
+def RandomFigure(live):
+    weights = live.totalwgt_lb
+    cdf = thinkstats2.Cdf(weights, label='totalwgt_lb')
+
+    sample = np.random.choice(weights, 100, replace=True)
+    ranks = [cdf.PercentileRank(x) for x in sample]
+
+    rank_cdf = thinkstats2.Cdf(ranks, label='percentile ranks')
+    thinkplot.Cdf(rank_cdf)
+    thinkplot.Save(root='cumulative_random',
+                   xlabel='percentile rank',
+                   ylabel='CDF')
+
+
+def TestSample(live):
+    weights = live.totalwgt_lb
+    cdf = thinkstats2.Cdf(weights, label='totalwgt_lb')
+
+    sample = cdf.Sample(1000)
+    sample_cdf = thinkstats2.Cdf(sample, label='sample')
+    thinkplot.Cdfs([cdf, sample_cdf])
+    thinkplot.Save(root='cumulative_sample',
+                   xlabel='weight (pounds)',
+                   ylabel='CDF')
+
+
+def main(name, data_dir=''):
+    thinkstats2.RandomSeed(17)
+
+    MakeExample()
     live, firsts, others = first.MakeFrames()
+    RandomFigure(live)
+    TestSample(live)
+    MakeCdf(live)
     MakeFigures(live, firsts, others)
-    
+
 
 if __name__ == '__main__':
     import sys
