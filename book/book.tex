@@ -804,6 +804,7 @@ information from the dictionary file and provides {\tt
 
 
 \section{DataFrames}
+\label{dataframe}
 
 The result of {\tt ReadFixedWidth} is a DataFrame, which is the
 fundamental data structure provided by pandas.  A DataFrame contains a
@@ -2128,46 +2129,57 @@ There are two common ways to plot Pmfs:
 
 \begin{itemize}
 
-\item To plot a Pmf as a bar graph, you can use {\tt pyplot.bar}
-or {\tt thinkplot.Hist}.  Bar graphs are most useful if the number
+\item To plot a Pmf as a bar graph, you can use 
+{\tt thinkplot.Hist}.  Bar graphs are most useful if the number
 of values in the Pmf is small.
 \index{bar plot}
 \index{plot!bar}
 
-\item To plot a Pmf as a line, you can use {\tt pyplot.plot}
-or {\tt thinkplot.Pmf}.  Line plots are most useful if there are
-a large number of values and the Pmf is smooth.
+\item To plot a Pmf as a step function, you can use
+{\tt thinkplot.Pmf}.  This option is most useful if there are
+a large number of values and the Pmf is smooth.  This function
+also works with Hist objects.
 \index{line plot}
 \index{plot!line}
 
 \end{itemize}
 
-% TODO: add an example using Hist and Pmf, and warn about the
-% implicit interpolation when you use Pmf.
-
-
-\section{Comparing PMFs}
-
 \begin{figure}
 % probability.py
 \centerline{\includegraphics[height=2.5in]{figs/probability_nsfg_pmf.pdf}}
-\caption{PMF of pregnancy lengths.}
+\caption{PMF of pregnancy lengths for first babies and others, using
+  bar graphs and step functions.}
 \label{probability_nsfg_pmf}
 \end{figure}
 \index{pregnancy length}
 \index{length!pregnancy}
 
 Figure~\ref{probability_nsfg_pmf} shows PMFs of pregnancy length for
-first babies and others as bar graphs.  Using the PMF, we can see more
-clearly where the distributions differ.  First babies seem to be less
-likely than others to arrive on time (week 39) and more likely to be a
-late (weeks 41 and 42).
+first babies and others using bar graphs (left) and step functions
+(right).
 
+By plotting the PMF instead of the histogram, we can compare the two
+distributions without distortion caused by the difference in sample
+size.  Based on this figure, first babies seem to be less likely than
+others to arrive on time (week 39) and more likely to be a late (weeks
+41 and 42).
+
+Whether you plot PMFs as bar graphs or step functions, I'll leave
+that up to you.
 The code that generates this figure is in {\tt probability.py}.
 Note: {\tt pyplot} provides a function called {\tt hist} that
 takes a sequence of values, computes the histogram and plots it.
 Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
 
+%\begin{figure}
+% probability.py
+%\centerline{\includegraphics[height=2.5in]{figs/probability_agepreg_hist.pdf}}
+%\caption{PMF of mother's age, plotted using Hist (left) and Pmf (right).}
+%\label{probability_agepreg_pmf}
+%\end{figure}
+
+%Figure~\ref{probability_agepreg_pmf} shows the distribution of mother's
+%age, plotted using {\tt thinkplot.Hist} and {\tt thinkplot.Pmf}.
 
 
 \section{Other visualizations}
@@ -2176,10 +2188,9 @@ Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
 
 Histograms and PMFs are useful while you are exploring data and
 trying to identify patterns and relationships.
-
 Once you have an idea what is going on, a good next step is to
 design a visualization that makes the patterns your have identified
-clear and visible.
+as clear as possible.
 
 In the NSFG data, the biggest differences in the distributions are
 near the mode.  So it makes sense to zoom in on that part of the
@@ -2217,13 +2228,17 @@ to be born in weeks 41 and 42.
 For now we should hold this conclusion only tentatively.
 We used the same dataset to identify an
 apparent difference and then chose a visualization that makes the
-difference apparent.  But we can't be sure this effect is real;
+difference apparent.  We can't be sure this effect is real;
 it might be due to random variation.  We'll address this concern
 later.
 
 
 \section{The class size paradox}
 \index{class size}
+
+Before we go on, I want to look at an example that demonstrates
+one kind of computation you can do with Pmf objects: I call
+this example the ``class size paradox.''
 
 At many American colleges and universities, the student-to-faculty
 ratio is about 10:1.  But students are often surprised to discover
@@ -2241,7 +2256,7 @@ but the number of students in a large class is (ahem!) large.
 \end{itemize}
 
 The first effect is obvious (at least once it is pointed out);
-the second is more subtle.  So let's look at an example.  Suppose
+the second is more subtle.  Let's look at an example.  Suppose
 that a college offers 65 classes in a given semester, with the
 following distribution of sizes:
 %
@@ -2260,15 +2275,7 @@ following distribution of sizes:
 
 If you ask the Dean for the average class size, he would
 construct a PMF, compute the mean, and report that the
-average class size is 24.
-
-But if you survey a group of students, ask them how many
-students are in their classes, and compute the mean, you would
-think that the average class size was higher.  Let's see how
-much higher.
-
-First, I'll make a distribution of the actual data, using the
-midpoint of each size range:
+average class size is 23.7.  Here's the code:
 
 \begin{verbatim}
     d = { 7: 8, 12: 8, 17: 14, 22: 4, 
@@ -2278,8 +2285,15 @@ midpoint of each size range:
     print('mean', pmf.Mean())
 \end{verbatim}
 
-The mean of this distribution is 23.7.  Next we'll compute the biased
-distribution as observed by students.
+But if you survey a group of students, ask them how many
+students are in their classes, and compute the mean, you would
+think the average class was bigger.  Let's see how
+much bigger.
+
+First, I'll compute the
+distribution as observed by students, where the probability
+associated with each class size is ``biased'' by the number
+of students in the class.
 
 \begin{verbatim}
 def BiasPmf(pmf, label):
@@ -2307,19 +2321,18 @@ Now we can plot the actual and observed distributions:
 
 Figure~\ref{class_size1} shows the result.  In the biased distribution
 there are fewer small classes and more large ones.
-The mean of the biased distribution is 29.1, almost 25\% bigger
+The mean of the biased distribution is 29.1, almost 25\% higher
 than the actual mean.
 
 It is also possible to invert this operation.  Suppose you want to
 find the distribution of class sizes at a college, but you can't get
 reliable data from the Dean.  An alternative is to choose a random
-sample of students and ask them the number of students in each of
-their classes.
-\index{bias!oversampling} \index{oversampling}
+sample of students and how many students are in their
+classes.  \index{bias!oversampling} \index{oversampling}
 
 The result would be biased for the reasons we've just seen, but you
-use it to estimate the actual distribution.  Here's the function that
-unbiases a Pmf:
+can use it to estimate the actual distribution.  Here's the function
+that unbiases a Pmf:
 
 \begin{verbatim}
 def UnbiasPmf(pmf, label):
@@ -2332,14 +2345,19 @@ def UnbiasPmf(pmf, label):
     return new_pmf
 \end{verbatim}
 
-It's very similar to {\tt BiasPmf}; the only difference is that it
+It's similar to {\tt BiasPmf}; the only difference is that it
 divides each probability by {\tt x} instead of multiplying.
 
-The code for this example is in \url{chap03.py}.
+The code for this example is in \url{chap03.py}.  It confirms that
+if we start with the actual distribution, apply {\tt BiasPmf}
+and apply {\tt UnbiasPmf} to the result, we get the original
+distribution back.
 
 
 \section{The limits of PMFs}
 \index{PMF}
+
+% TODO: move this into the next chapter?
 
 PMFs work well if the number of values is small.  But as the number of
 values increases, the probability associated with each value gets
@@ -2383,11 +2401,10 @@ distribution function, which is the subject of the next chapter.
 
 \section{DataFrame indexing}
 
-There are a lot of ways to select rows and columns from a DataFrame.
-In the previous chapter we looked at column selection.  Now let's
-look at row selection.
-
-First, I'll create a simple DataFrame of random numbers:
+In Section~\ref{dataframe} we read a pandas DataFrame and used it to
+select and modify data columns.  Now let's look at row selection.
+To start, I'll create a numpy array of random numbers and use it
+to initialize a DataFrame:
 
 \begin{verbatim}
 >>> import numpy as np
@@ -2401,8 +2418,8 @@ First, I'll create a simple DataFrame of random numbers:
 3 -1.369968  0.545897
 \end{verbatim}
 
-By default, the rows and columns are numbered starting at zero.
-But you can provide column names:
+By default, the rows and columns are numbered starting at zero, but
+you can provide column names:
 
 \begin{verbatim}
 >>> columns = ['A', 'B']
@@ -2415,7 +2432,7 @@ But you can provide column names:
 \end{verbatim}
 
 You can also provide row names.  The set of row names is called the
-index, but the row names themselves are called labels.
+index; the row names themselves are called labels.
 
 \begin{verbatim}
 >>> index = ['a', 'b', 'c', 'd']
@@ -2449,9 +2466,8 @@ B    0.61605
 Name: a, dtype: float64
 \end{verbatim}
 
-If you know the integer position of a row, rather than its
-label, you can use
-the {\tt iloc} attribute, which also returns a Series.
+If you know the integer position of a row, rather than its label, you
+can use the {\tt iloc} attribute, which also returns a Series.
 
 \begin{verbatim}
 >>> df.iloc[0]
@@ -2471,8 +2487,7 @@ a -0.14351  0.616050
 c -0.07435  0.039621
 \end{verbatim}
 
-Finally, you can use a slice to select a range of rows
-by label:
+Finally, you can use a slice to select a range of rows by label:
 
 \begin{verbatim}
 >>> df['a':'c']
@@ -2523,6 +2538,25 @@ Pmf object and compute the mean and variance.  To test these methods,
 check that they are consistent with the methods {\tt Mean} and {\tt
   Var} provided by {\tt Pmf}.
 \index{{\tt pmf.py}@{\tt Pmf.py}}
+\end{exercise}
+
+
+\begin{exercise}
+% TODO write the solution
+
+Something like the class size paradox appears if you survey people
+and ask how many children are in their family.  Families with more
+children are more likely to appear in your sample.  At the other
+extreme, families with no children have no chance to be in the sample.
+
+Use the NSFG respondent variable \verb"NUMKDHH" to construct the actual
+distribution for the number of children under 18 in the household.
+
+Now compute the biased distribution we would see if we surveyed the
+children and asked them how many children under 18 (including themselves)
+are in their household.  
+
+Plot the actual and biased distributions, and compute their means.
 \end{exercise}
 
 

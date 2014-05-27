@@ -16,6 +16,29 @@ import thinkstats2
 import thinkplot
 
 
+def MakeHists(live):
+    """Plot Hists for live births
+
+    live: DataFrame
+    others: DataFrame
+    """
+    hist = thinkstats2.Hist(np.floor(live.agepreg), label='agepreg')
+    thinkplot.PrePlot(2, cols=2)
+
+    thinkplot.SubPlot(1)
+    thinkplot.Hist(hist)
+    thinkplot.Config(xlabel='years',
+                     ylabel='frequency',
+                     axis=[0, 45, 0, 700])
+
+    thinkplot.SubPlot(2)
+    thinkplot.Pmf(hist)
+
+    thinkplot.Save(root='probability_agepreg_hist', 
+                   xlabel='years',
+                   axis=[0, 45, 0, 700])
+
+
 def MakeFigures(firsts, others):
     """Plot Pmfs of pregnancy length.
 
@@ -25,16 +48,21 @@ def MakeFigures(firsts, others):
     # plot the PMFs
     first_pmf = thinkstats2.Pmf(firsts.prglngth, label='first')
     other_pmf = thinkstats2.Pmf(others.prglngth, label='other')
-
     width = 0.45
-    thinkplot.PrePlot(2)
+
+    thinkplot.PrePlot(2, cols=2)
     thinkplot.Hist(first_pmf, align='right', width=width)
     thinkplot.Hist(other_pmf, align='left', width=width)
+    thinkplot.Config(xlabel='weeks',
+                     ylabel='probability',
+                     axis=[27, 46, 0, 0.6])
 
+    thinkplot.PrePlot(2)
+    thinkplot.SubPlot(2)
+    thinkplot.Pmf(first_pmf)
+    thinkplot.Pmf(other_pmf)
     thinkplot.Save(root='probability_nsfg_pmf',
-                   title='PMF',
                    xlabel='weeks',
-                   ylabel='probability',
                    axis=[27, 46, 0, 0.6])
 
     # plot the differences in the PMFs
@@ -57,6 +85,8 @@ def MakeFigures(firsts, others):
 def main(script):
     live, firsts, others = first.MakeFrames()
     MakeFigures(firsts, others)
+    return
+    MakeHists(live)
 
 
 if __name__ == '__main__':

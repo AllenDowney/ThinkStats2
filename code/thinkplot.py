@@ -93,7 +93,7 @@ class Brewer(object):
         return cls.color_iter
 
 
-def PrePlot(num=None, rows=1, cols=1):
+def PrePlot(num=None, rows=1, cols=1, plot=1):
     """Takes hints about what's coming.
 
     num: number of lines that will be plotted
@@ -101,24 +101,32 @@ def PrePlot(num=None, rows=1, cols=1):
     if num:
         Brewer.InitializeIter(num)
 
-    # TODO: get sharey and sharex working.  probably means switching
-    # to subplots instead of subplot.
-    # also, get rid of the gray background.
+    # resize the image, depending on the number of rows and cols
+    size_map = {(1, 2): (10, 6),
+                (2, 2): (8, 8),
+                }
 
+    if (rows, cols) in size_map:
+        fig = pyplot.gcf()
+        fig.set_size_inches(*size_map[rows, cols])
+
+    # create the first subplot
     if rows > 1 or cols > 1:
-        pyplot.subplots(rows, cols, sharey=True)
+        pyplot.subplot(rows, cols, plot)
         global SUBPLOT_ROWS, SUBPLOT_COLS
         SUBPLOT_ROWS = rows
         SUBPLOT_COLS = cols
-    
 
-def SubPlot(rows, cols, plot_number):
+
+def SubPlot(plot_number, rows=None, cols=None):
     """Configures the number of subplots and changes the current plot.
 
     rows: int
     cols: int
     plot_number: int
     """
+    rows = rows or SUBPLOT_ROWS
+    cols = cols or SUBPLOT_COLS
     pyplot.subplot(rows, cols, plot_number)
 
 
@@ -233,31 +241,31 @@ def HexBin(xs, ys, **options):
     pyplot.hexbin(xs, ys, **options)
 
 
-def Pmf(pmf, **options):
-    """Plots a Pmf or Hist as a line.
+def Pdf(pdf, **options):
+    """Plots a Pdf or Hist as a line.
 
     Args:
-      pmf: Hist or Pmf object
+      pdf: Hist or Pdf object
       options: keyword args passed to pyplot.plot
     """
-    xs, ps = pmf.Render()
-    if pmf.label:
-        options = Underride(options, label=pmf.label)
+    xs, ps = pdf.Render()
+    if pdf.label:
+        options = Underride(options, label=pdf.label)
     Plot(xs, ps, **options)
 
 
-def Pmfs(pmfs, **options):
-    """Plots a sequence of PMFs.
+def Pdfs(pdfs, **options):
+    """Plots a sequence of PDFs.
 
-    Options are passed along for all PMFs.  If you want different
-    options for each pmf, make multiple calls to Pmf.
+    Options are passed along for all PDFs.  If you want different
+    options for each pdf, make multiple calls to Pdf.
     
     Args:
-      pmfs: sequence of PMF objects
+      pdfs: sequence of PDF objects
       options: keyword args passed to pyplot.plot
     """
-    for pmf in pmfs:
-        Pmf(pmf, **options)
+    for pdf in pdfs:
+        Pdf(pdf, **options)
 
 
 def Hist(hist, **options):
@@ -309,6 +317,69 @@ def Hists(hists, **options):
     """
     for hist in hists:
         Hist(hist, **options)
+
+
+def Pmf(pmf, **options):
+    """Plots a Pmf or Hist as a line.
+
+    Args:
+      pmf: Hist or Pmf object
+      options: keyword args passed to pyplot.plot
+    """
+    xs, ys = pmf.Render()
+    low, high = min(xs), max(xs)
+
+    width = options.pop('width', None)
+    if width is None:
+        try:
+            width = np.diff(xs).min()
+        except TypeError:
+            logging.warning("Pmf: Can't compute bar width automatically."
+                            "Check for non-numeric types in Pmf."
+                            "Or try providing width option.")
+    points = []
+
+    lastx = np.nan
+    lasty = 0
+    for x, y in zip(xs, ys):
+        if (x - lastx) > 1e-5:
+            points.append((lastx, 0))
+            points.append((x, 0))
+
+        points.append((x, lasty))
+        points.append((x, y))
+        points.append((x+width, y))
+
+        lastx = x + width
+        lasty = y
+    points.append((lastx, 0))
+
+    if pmf.label:
+        options = Underride(options, label=pmf.label)
+
+    pxs, pys = zip(*points)
+
+    align = options.pop('align', 'center')
+    if align == 'center':
+        pxs = np.array(pxs) - width/2.0
+    if align == 'right':
+        pxs = np.array(pxs) - width
+
+    Plot(pxs, pys, **options)
+
+
+def Pmfs(pmfs, **options):
+    """Plots a sequence of PMFs.
+
+    Options are passed along for all PMFs.  If you want different
+    options for each pmf, make multiple calls to Pmf.
+    
+    Args:
+      pmfs: sequence of PMF objects
+      options: keyword args passed to pyplot.plot
+    """
+    for pmf in pmfs:
+        Pmf(pmf, **options)
 
 
 def Diff(t):
