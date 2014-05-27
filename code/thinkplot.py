@@ -444,6 +444,7 @@ def Cdf(cdf, complement=False, transform=None, **options):
         options = Underride(options, label=cdf.label)
 
     Plot(xs, ps, **options)
+    pyplot.ylim(0, 1)
     return scale
 
 
@@ -532,12 +533,13 @@ def Config(**options):
     the corresponding pyplot functions.
     """
     names = ['title', 'xlabel', 'ylabel', 'xscale', 'yscale',
-             'xticks', 'yticks', 'axis']
+             'xticks', 'yticks', 'axis', 'xlim', 'ylim']
 
     for name in names:
         if name in options:
             getattr(pyplot, name)(options[name])
 
+    # looks like this is not necessary: matplotlib understands text loc specs
     loc_dict = {'upper right': 1,
                 'upper left': 2,
                 'lower left': 3,
@@ -551,7 +553,7 @@ def Config(**options):
                 }
 
     loc = options.get('loc', 0)
-    loc = loc_dict.get(loc, loc)
+    #loc = loc_dict.get(loc, loc)
 
     legend = options.get('legend', True)
     if legend:

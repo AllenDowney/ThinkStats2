@@ -35,6 +35,38 @@ def AllModes(hist):
     return sorted(hist.Items(), key=itemgetter(1), reverse=True)
 
 
+def WeightDifference(live, firsts, others):
+    """Explore the difference in weight between first babies and others.
+
+    live: DataFrame of all live births
+    firsts: DataFrame of first babies
+    others: DataFrame of others
+    """
+    mean0 = live.totalwgt_lb.mean()
+    mean1 = firsts.totalwgt_lb.mean()
+    mean2 = others.totalwgt_lb.mean()
+
+    var1 = firsts.totalwgt_lb.var()
+    var2 = others.totalwgt_lb.var()
+
+    print('Mean')
+    print('First babies', mean1)
+    print('Others', mean2)
+
+    print('Variance')
+    print('First babies', var1)
+    print('Others', var2)
+
+    print('Difference in lbs', mean1 - mean2)
+    print('Difference in oz', (mean1 - mean2) * 16)
+
+    print('Difference relative to mean (%age points)', 
+          (mean1 - mean2) / mean0 * 100)
+
+    d = thinkstats2.CohenEffectSize(firsts.totalwgt_lb, others.totalwgt_lb)
+    print('Cohen d', d)
+
+
 def main(script):
     """Tests the functions in this module.
 
@@ -42,6 +74,9 @@ def main(script):
     """
     live, firsts, others = first.MakeFrames()
     hist = thinkstats2.Hist(live.prglngth)
+
+    # explore the weight difference between first babies and others
+    WeightDifference(live, firsts, others)
 
     # test Mode    
     mode = Mode(hist)

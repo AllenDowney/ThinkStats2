@@ -841,6 +841,10 @@ class Cdf(object):
     def __init__(self, obj=None, ps=None, label=''):
         self.label = label
 
+        if isinstance(obj, (_DictWrapper, Cdf)):
+            if not label:
+                self.label = obj.label
+
         if obj is None:
             self.xs = []
             self.ps = []
@@ -858,20 +862,15 @@ class Cdf(object):
         if isinstance(obj, Cdf):
             self.xs = copy.copy(obj.xs)
             self.ps = copy.copy(obj.ps)
-            if not label:
-                self.label = obj.label
             return
 
-        if isinstance(obj, Pmf):
-            pmf = obj
-            if not label:
-                self.label = obj.label
+        if isinstance(obj, Hist):
+            hist = obj
         else:
-            pmf = Pmf(obj)
+            hist = Hist(obj)
 
-        self.xs, probs = zip(*sorted(pmf.Items()))
-        self.ps = np.cumsum(probs)
-        print(self.ps)
+        self.xs, freqs = zip(*sorted(hist.Items()))
+        self.ps = np.cumsum(freqs) / hist.Total()
 
     def __len__(self):
         return len(self.xs)
