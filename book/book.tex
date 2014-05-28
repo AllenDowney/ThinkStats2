@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.2}
+\newcommand{\theversion}{2.0.3}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -2747,18 +2747,93 @@ its percentile rank in a set of scores; {\tt Percentile} takes
 a percentile rank and computes the corresponding score.
 
 
+\section{Conditional distributions}
+\index{conditional distribution}
+\index{distribution!conditional}
+
+A {\bf conditional distribution} is the distribution of a subset of
+the data, selected according to some condition.
+
+For example, if you are above average in weight, but way above average
+in height, then you might be relatively light for your height.  Here's
+how you could make that claim more precise.
+
+\begin{enumerate}
+
+\item Select a cohort of people who are the same height as you (within
+some range).
+\index{cohort}
+
+\item Find the CDF of weight for those people.
+
+\item Find the percentile rank of your weight in that distribution.
+
+\end{enumerate}
+
+Percentile ranks are useful for comparing measurements across
+different groups.  For example, people who compete in foot races are
+usually grouped by age and gender.  To compare people in different
+age groups, you can convert race times to percentile ranks.
+\index{percentile rank} \index{rank!percentile}
+
+A few years ago I ran the James Joyce Ramble 10K in
+Dedham MA; the results are available from
+\url{http://coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
+I finished in 42:44, which was 97th in a field of 1633.  I beat or
+tied 1537 runners out of 1633, so my percentile rank in the field is
+94\%.  \index{James Joyce Ramble} \index{race time}
+
+More generally, given position and field size, we can compute
+percentile rank:
+
+\begin{verbatim}
+def PositionToPercentile(position, field_size):
+    beat = field_size - position + 1
+    percentile = 100.0 * beat / field_size
+    return percentile
+\end{verbatim}
+
+In my age group, denoted M4049 for ``male between 40 and 49 years of
+age'', I came in 26th out of 256.  So my percentile rank in my age
+group was 90\%.
+
+If I am still running in 10 years (and I hope I am), I will be in
+the M5059 division.  Assuming that my percentile rank in my division
+is the same, how much slower should I expect to be?
+
+I can answer that question by converting my percentile rank in M4049
+to a position in M5059.  Here's the code:
+
+\begin{verbatim}
+def PositionToPercentile(position, field_size):
+    beat = field_size - position + 1
+    percentile = 100.0 * beat / field_size
+    return percentile
+\end{verbatim}
+
+There were 171 people in M5059, so I would have to come in between
+17th and 18th place to have the same percentile rank.  The finishing
+time of the 17th runner in M5059 was 46:05, so in the next 10 years I
+should expect to slow down by 3--4 minutes.
+
+I maintain a friendly rivalry with a student who is in the
+F2039 division.  How fast does she have to run her next 10K to
+``beat'' me in terms of percentile ranks?
+
+
 \section{Cumulative distribution functions}
 \index{cumulative distribution function}
 \index{CDF}
 
-Now we are ready to tackle the {\bf cumulative distribution function}
+Now that we understand percentiles and percentile ranks,
+we are ready to tackle the {\bf cumulative distribution function}
 (CDF).  The CDF is the function that maps from a value to its
 percentile rank in a distribution.
 
 The CDF is a function of $x$, where $x$ is any value that might appear
 in the distribution.  To evaluate $\CDF(x)$ for a particular value of
-$x$, we compute the fraction of the values in the distribution less
-than (or equal to) $x$.
+$x$, we compute the fraction of values in the distribution less
+than or equal to $x$.
 
 Here's what that looks like as a function that takes a sample,
 {\tt t}, and a value, {\tt x}:
@@ -2768,7 +2843,7 @@ def EvalCdf(t, x):
     count = 0.0
     for value in t:
         if value <= x:
-            count += 1.0
+            count += 1
 
     prob = count / len(t)
     return prob
@@ -2943,7 +3018,7 @@ Actually, there are several definitions of ``median,'' each with
 different properties.  But {\tt Percentile(50)} is simple and
 efficient to compute.
 
-Another percentile-based statistic is the interquartile range (IQR),
+Another percentile-based statistic is the {\bf interquartile range} (IQR),
 which is a measure of the spread of a distribution.  The IQR
 is the difference between the 75th and 25th percentiles.
 
@@ -3030,8 +3105,7 @@ that corresponds to the percentile rank you chose.
 from the Cdf.
 
 If {\tt Sample} works correctly, the distribution of the sample
-should match the original distribution.  Let's check; here's the
-code:
+should match the original distribution.  Here's how we can check:
 
 \begin{verbatim}
     weights = live.totalwgt_lb
@@ -3052,41 +3126,21 @@ This code is in {\tt cumulative.py}; you can run it to confirm
 that {\tt Cdf.Sample} works.
 
 
-\section{Conditional distributions}
-\index{conditional distribution}
-\index{distribution!conditional}
-
-A {\bf conditional distribution} is the distribution of a subset of
-the data which is selected according to a condition.
-
-For example, if you are above average in weight, but way above average
-in height, then you might be relatively light for your height.  Here's
-how you could make that claim more precise.
-
-\begin{enumerate}
-
-\item Select a cohort of people who are the same height as you (within
-some range).
-\index{cohort}
-
-\item Find the CDF of weight for those people.
-
-\item Find the percentile rank of your weight in that distribution.
-
-\end{enumerate}
-
-Percentile ranks are useful for comparing measurements from
-different tests, or tests applied to different groups.
-\index{percentile rank}
-\index{rank!percentile}
-
-For example, people who compete in foot races are usually grouped by
-age and gender.  To compare people in different groups, you can convert
-race times to percentile ranks.
-
-
 
 \section{Exercises}
+
+For the following exercises, you can start with \verb"chap04ex.ipynb".
+My solution is in \verb"chap04ex_soln.ipynb".
+
+\begin{exercise}
+How much did you weigh at birth?  If you don't know, call your mother
+or someone else who knows.  Using the NSFG data (all live births),
+compute the distribution of birth weights and use it to find your
+percentile rank.  If you were a first baby, find your percentile rank
+in the distribution for first babies.  Otherwise use the distribution
+for others.  If you are in the 90th percentile or higher, call your
+mother back and apologize.
+\end{exercise}
 
 \begin{exercise}
 The numbers generated by {\tt random.random} are supposed to be
@@ -3094,7 +3148,7 @@ uniform between 0 and 1; that is, every value in the range
 should have the same probability.
 
 Generate 1000 numbers from {\tt random.random} and plot their
-PMF and CDF.  Can you tell whether they are uniform?
+PMF and CDF.  Is the distribution uniform?
 
 You can read about the uniform distribution at
 \url{http://wikipedia.org/wiki/Uniform_distribution_(discrete)}.
@@ -3102,67 +3156,6 @@ You can read about the uniform distribution at
 \index{distribution!uniform}
 
 \end{exercise}
-
-
-\begin{exercise}
-How much did you weigh at birth?  If you don't know, call your mother
-or someone else who knows.  Using the pooled data (all live births),
-compute the distribution of birth weights and use it to find your
-percentile rank.  If you were a first baby, find your percentile rank
-in the distribution for first babies.  Otherwise use the distribution
-for others.  If you are in the 90th percentile or higher, call your
-mother back and apologize.
-
-\end{exercise}
-
-\begin{exercise}
-Suppose you and your classmates compute the percentile rank of your
-birth weights and then compute the CDF of the percentile ranks.  What do
-you expect it to look like?  Hint: what fraction of the class do you
-expect to be above the median?
-\index{birth weight}
-\index{weight!birth}
-
-\end{exercise}
-
-
-\begin{exercise}
-Write a function called {\tt Median} that takes a Cdf and computes the
-median, and one called {\tt Interquartile} that computes
-the interquartile range.
-
-Compute the 25th, 50th, and 75th percentiles of the birth weight
-CDF.  Do these values suggest that the distribution is symmetric?
-\index{symmetric}
-\index{birth weight}
-\index{weight!birth}
-
-\end{exercise}
-
-
-
-\begin{exercise}
-I recently ran the James Joyce Ramble 10K
-in Dedham MA.  The results are available from
-\url{http://coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
-Go to that page and find my results.  I came in 97th in a field
-of 1633, so what is my percentile rank in the field?
-\index{James Joyce Ramble}
-\index{race time}
-
-In my division (M4049 means ``male between 40 and 49 years of age'')
-I came in 26th out of 256.  What is my percentile rank in my division?
-
-If I am still running in 10 years (and I hope I am), I will be in
-the M5059 division.  Assuming that my percentile rank in my division
-is the same, how much slower should I expect to be?
-
-I maintain a friendly rivalry with a student who is in the
-F2039 division.  How fast does she have to run her next 10K to
-``beat'' me in terms of percentile ranks?
-
-\end{exercise}
-
 
 
 
@@ -3174,29 +3167,27 @@ F2039 division.  How fast does she have to run her next 10K to
 less than or equal to a given value.
 \index{percentile rank}
 
-\item CDF: Cumulative distribution function, a function that maps
-  from values to their percentile ranks.
-\index{CDF}
-
 \item percentile: The value associated with a given percentile rank.
 \index{percentile}
 
-\item conditional distribution: A distribution computed under the assumption
-that some condition holds.
+\item conditional distribution: The distribution of a subset of
+the data, selected according to some condition.
 \index{conditional distribution}
 
-\item resampling: The process of generating a random sample from a
-distribution that was computed from a sample.
-\index{resampling}
+\item Cumulative distribution function (CDF), a function that maps
+  from values to their cumulative probabilities.  $\CDF(x)$ is the
+  fraction of the sample less than or equal to $x$.  \index{CDF}
 
-\item replacement: During a sampling process, ``replacement'' indicates
-that the population is the same for every sample.  ``Without replacement''
-indicates that each element can be selected only once.
-\index{replacement}
+\item median: The 50th percentile, often used as a measure of central
+  tendency.  \index{median}
 
 \item interquartile range: A measure of spread, the difference between
 the 75th and 25th percentiles.
 \index{interquartile range}
+
+\item quantile: A sequence of values that correspond to equally-spaced
+percentile ranks; for example, quartiles are
+the 25th, 50th and 75th percentiles.
 
 \end{itemize}
 
@@ -5862,7 +5853,7 @@ in 8, and that's the best you can do.  \index{MLE} \index{maximum
 {\em I'm thinking of a distribution.}  It's a normal distribution, and 
 here's a (familiar) sample:
 
-{\tt [-0.441, 1.774, -0.101, -1.138, 2.975, -2.138]
+{\tt [-0.441, 1.774, -0.101, -1.138, 2.975, -2.138]}
 
 What do you think is the variance, $\sigma^2$, of my distribution?
 Again, the obvious choice is to use the sample variance, $S^2$, as an
@@ -6138,7 +6129,7 @@ Let's play one more round of the estimation game.
 {\em I'm thinking of a distribution.}  It's an exponential distribution, and 
 here's a sample:
 
-{\tt [5.384, 4.493, 19.198, 2.790, 6.122, 12.844]
+{\tt [5.384, 4.493, 19.198, 2.790, 6.122, 12.844]}
 
 What do you think is the parameter, $\lambda$, of this distribution?
 \index{parameter}

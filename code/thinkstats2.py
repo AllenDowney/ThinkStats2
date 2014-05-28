@@ -2243,8 +2243,15 @@ def Skewness(xs):
 def Median(xs):
     """Computes the median (50th percentile) of a sequence.
     """
-    cdf = MakeCdfFromList(xs)
+    cdf = Cdf(xs)
     return cdf.Value(0.5)
+
+
+def IQR(xs):
+    """Computes the interquartile of a sequence.
+    """
+    cdf = Cdf(xs)
+    return cdf.Value(0.25), cdf.Value(0.75)
 
 
 def PearsonMedianSkewness(xs):

@@ -69,4 +69,26 @@ t = [1, 2, 2, 3, 5]
 
 print('x', 'CDF(x)')
 for x in range(0, 7):
-    print(x, EvalCdf(x, t))
+    print(x, EvalCdf(t, x))
+
+
+
+def PositionToPercentile(position, field_size):
+    beat = field_size - position + 1
+    percentile = 100.0 * beat / field_size
+    return percentile
+
+def PercentileToPosition(percentile, field_size):
+    beat = percentile * field_size / 100.0
+    position = field_size - beat + 1
+    return position
+
+# my time 42:44
+print('Percentile rank in field', PositionToPercentile(97, 1633))
+print('Percentile rank in age group', PositionToPercentile(26, 256))
+
+percentile = PositionToPercentile(26, 256)
+print('Equivalent position in M50-59', PercentileToPosition(percentile, 171))
+# 17th place = 46:05
+print('Equivalent position in F20-29', PercentileToPosition(percentile, 448))
+# 48:28
