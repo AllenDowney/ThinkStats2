@@ -9,9 +9,11 @@ from __future__ import print_function
 
 import math
 import sys
-import pandas as pd
+import pandas
+import numpy as np
 
 import thinkstats2
+import thinkplot
 
 
 def Summarize(df, column, title):
@@ -71,7 +73,7 @@ def ReadBrfss(filename='CDBRFS08.ASC.gz', compression='gzip', nrows=None):
         ('htm3', 1251, 1253, int),
         ]
     columns = ['name', 'start', 'end', 'type']
-    variables = pd.DataFrame(var_info, columns=columns)
+    variables = pandas.DataFrame(var_info, columns=columns)
     variables.end += 1
     dct = thinkstats2.FixedWidthVariables(variables, index_base=1)
 
@@ -80,13 +82,79 @@ def ReadBrfss(filename='CDBRFS08.ASC.gz', compression='gzip', nrows=None):
     return df
 
 
+def MakeGaussianModel(weights):
+    """Plots a CDF with a Gaussian model.
+
+    weights: sequence
+    """
+    cdf = thinkstats2.Cdf(weights, label='weights')
+
+    mean, var = thinkstats2.TrimmedMeanVar(weights)
+    std = math.sqrt(var)
+    print('n, mean, std', len(weights), mean, std)
+
+    xmin = mean - 4 * std
+    xmax = mean + 4 * std
+
+    xs, ps = thinkstats2.RenderGaussianCdf(mean, std, xmin, xmax)
+    thinkplot.Plot(xs, ps, label='model', linewidth=4, color='0.8')
+    thinkplot.Cdf(cdf)
+
+
+def MakeNormalPlot(weights):
+    """Generates a normal probability plot of birth weights.
+
+    weights: sequence
+    """
+    mean, var = thinkstats2.TrimmedMeanVar(weights, p=0.01)
+    std = math.sqrt(var)
+
+    xs = [-5, 5]
+    xs, ys = thinkstats2.FitLine(xs, mean, std)
+    thinkplot.Plot(xs, ys, color='0.8', label='model')
+
+    xs, ys = thinkstats2.NormalProbability(weights)
+    thinkplot.Plot(xs, ys, label='weights')
+
+
+def MakeFigures(df):
+    """Generates CDFs and normal prob plots for weights and log weights."""
+    weights = df.wtkg2.dropna()
+    log_weights = np.log10(weights)
+
+    # plot weights on linear and log scales
+    thinkplot.PrePlot(cols=2)
+    MakeGaussianModel(weights)
+    thinkplot.Config(xlabel='adult weight (kg)', ylabel='CDF')
+
+    thinkplot.SubPlot(2)
+    MakeGaussianModel(log_weights)
+    thinkplot.Config(xlabel='adult weight (log10 kg)')
+
+    thinkplot.Save(root='brfss_weight')
+
+    # make normal probability plots on linear and log scales
+    thinkplot.PrePlot(cols=2)
+    MakeNormalPlot(weights)
+    thinkplot.Config(xlabel='z', ylabel='weights (kg)')
+
+    thinkplot.SubPlot(2)
+    MakeNormalPlot(log_weights)
+    thinkplot.Config(xlabel='z', ylabel='weights (log10 kg)')
+
+    thinkplot.Save(root='brfss_weight_normal')
+
+
 def main(script, nrows=1000):
     """Tests the functions in this module.
 
     script: string script name
     """
-    nrows = int(nrows)
+    thinkstats2.RandomSeed(17)
+
+    nrows = int(nrows)    
     df = ReadBrfss(nrows=nrows)
+    MakeFigures(df)
 
     Summarize(df, 'htm3', 'Height (cm):')
     Summarize(df, 'wtkg2', 'Weight (kg):')

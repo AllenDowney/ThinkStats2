@@ -12,6 +12,7 @@ import random
 import scipy.stats
 
 import numpy as np
+import pandas
 
 import nsfg
 import thinkplot
@@ -28,7 +29,7 @@ def MakeExpoCdf():
 
     thinkplot.PrePlot(3)
     for lam in [2.0, 1, 0.5]:
-        xs, ps = RenderExpoCdf(lam, 0, 3.0, 50)        
+        xs, ps = thinkstats2.RenderExpoCdf(lam, 0, 3.0, 50)        
         thinkplot.Plot(xs, ps, label='lam=%g' % lam)
     
     thinkplot.Save(root='analytic_expo_cdf',
@@ -37,28 +38,85 @@ def MakeExpoCdf():
                    ylabel='CDF')
 
     
+def ReadBabyBoom(filename='babyboom.dat'):
+    """Reads the babyboom data.
+
+    filename: string
+
+    returns: DataFrame
+    """
+    var_info = [
+        ('time', 1, 8, int),
+        ('sex', 9, 16, int),
+        ('weight_g', 17, 24, int),
+        ('minutes', 25, 32, int),
+        ]
+    columns = ['name', 'start', 'end', 'type']
+    variables = pandas.DataFrame(var_info, columns=columns)
+    variables.end += 1
+    dct = thinkstats2.FixedWidthVariables(variables, index_base=1)
+
+    df = dct.ReadFixedWidth(filename, skiprows=59)
+    return df
+
+
+def MakeBabyBoom():
+    """Plot CDF of interarrival time on log and linear scales.
+    """
+    # compute the interarrival times
+    df = ReadBabyBoom()
+    diffs = df.minutes.diff()
+    cdf = thinkstats2.Cdf(diffs, label='actual')
+
+    thinkplot.Cdf(cdf)
+    thinkplot.Save(root='analytic_interarrivals',
+                   title='Time between births',
+                   xlabel='minutes',
+                   ylabel='CDF',
+                   legend=False)
+
+    thinkplot.Cdf(cdf, complement=True)
+    thinkplot.Save(root='analytic_interarrivals_logy',
+                   title='Time between births',
+                   xlabel='minutes',
+                   ylabel='Complementary CDF',
+                   yscale='log',
+                   legend=False)
+
+    n = len(diffs)
+    lam = 44 / 24 * 60.0
+    sample = [random.expovariate(lam) for _ in range(n)]
+    model = thinkstats2.Cdf(sample, label='model')
+    
+    thinkplot.PrePlot(2)
+    thinkplot.Cdfs([cdf, model], complement=True)
+    thinkplot.Save(root='analytic_interarrivals_model',
+                   title='Time between births',
+                   xlabel='minutes',
+                   ylabel='Complementary CDF',
+                   yscale='log')
+
+
 def MakeParetoCdf():
     """Generates a plot of the Pareto CDF."""
     xmin = 0.5
 
     thinkplot.PrePlot(3)
     for alpha in [2.0, 1.0, 0.5]:
-        xs, ps = RenderParetoCdf(xmin, alpha, 0, 10.0, n=100) 
+        xs, ps = thinkstats2.RenderParetoCdf(xmin, alpha, 0, 10.0, n=100) 
         thinkplot.Plot(xs, ps, label='alpha=%g' % alpha)
     
     thinkplot.Save(root='analytic_pareto_cdf',
-                   title = 'Pareto CDF',
-                   xlabel = 'x',
-                   ylabel = 'CDF')
+                   title='Pareto CDF',
+                   xlabel='x',
+                   ylabel='CDF')
     
 
 def MakeParetoCdf2():
     """Generates a plot of the CDF of height in Pareto World."""
-    thinkplot.PrePlot(1)
-
     xmin = 100
     alpha = 1.7    
-    xs, ps = RenderParetoCdf(xmin, alpha, 0, 1000.0, n=100) 
+    xs, ps = thinkstats2.RenderParetoCdf(xmin, alpha, 0, 1000.0, n=100) 
     thinkplot.Plot(xs, ps)
 
     median = ParetoMedian(xmin, alpha)
@@ -70,57 +128,6 @@ def MakeParetoCdf2():
                    legend=False)
     
 
-def RenderExpoCdf(lam, low, high, n=50):
-    """Generates sequences of xs and ps for an exponential CDF.
-
-    lam: parameter
-    low: float
-    high: float
-    n: number of points to render
-
-    returns: numpy arrays (xs, ps)
-    """
-    xs = np.linspace(low, high, n)
-    ps = 1 - np.exp(-lam * xs)
-    #ps = scipy.stats.expon.cdf(xs, scale=1.0/lam)
-    return xs, ps
-
-
-def RenderGaussianCdf(mu, sigma, low, high, n=50):
-    """Generates sequences of xs and ps for a Gaussian CDF.
-
-    mu: parameter
-    sigma: parameter
-    low: float
-    high: float
-    n: number of points to render
-
-    returns: numpy arrays (xs, ps)
-    """
-    xs = np.linspace(low, high, n)
-    ps = scipy.stats.norm.cdf(xs, mu, sigma)
-    return xs, ps
-
-
-def RenderParetoCdf(xmin, alpha, low, high, n=50):
-    """Generates sequences of xs and ps for a Pareto CDF.
-
-    xmin: parameter
-    alpha: parameter
-    low: float
-    high: float
-    n: number of points to render
-
-    returns: numpy arrays (xs, ps)
-    """
-    if low < xmin:
-        low = xmin
-    xs = np.linspace(low, high, n)
-    ps = 1 - (xs / xmin) ** -alpha
-    #ps = scipy.stats.pareto.cdf(xs, scale=xmin, b=alpha)
-    return xs, ps
-
-
 def MakeGaussianCdf():
     """Generates a plot of the gaussian CDF."""
     
@@ -129,7 +136,8 @@ def MakeGaussianCdf():
     mus = [1.0, 2.0, 3.0]
     sigmas = [0.5, 0.4, 0.3]
     for mu, sigma in zip(mus, sigmas):
-        xs, ps = RenderGaussianCdf(mu=mu, sigma=sigma, low=-1.0, high=4.0)
+        xs, ps = thinkstats2.RenderGaussianCdf(mu=mu, sigma=sigma, 
+                                               low=-1.0, high=4.0)
         label = 'mu=%g, sigma=%g' % (mu, sigma)
         thinkplot.Plot(xs, ps, label=label)
 
@@ -150,12 +158,12 @@ def MakeGaussianModel(weights):
     # plot the model
     sigma = math.sqrt(var)
     print('Sigma', sigma)
-    xs, ps = RenderGaussianCdf(mu, sigma, low=0, high=12.5)
+    xs, ps = thinkstats2.RenderGaussianCdf(mu, sigma, low=0, high=12.5)
 
-    thinkplot.Plot(xs, ps, label='model', linewidth=4, color='0.8')
+    thinkplot.Plot(xs, ps, label='model', color='0.8')
 
     # plot the data
-    cdf = thinkstats2.MakeCdfFromList(weights, name='data')
+    cdf = thinkstats2.Cdf(weights, label='data')
 
     thinkplot.PrePlot(1)
     thinkplot.Cdf(cdf) 
@@ -163,6 +171,26 @@ def MakeGaussianModel(weights):
                    title='Birth weights',
                    xlabel='birth weight (lbs)',
                    ylabel='CDF')
+
+
+def MakeExampleNormalPlot():
+    """Generates a sample normal probability plot.
+    """
+    n = 1000
+    thinkplot.PrePlot(3) 
+
+    mus = [0, 1, 5]
+    sigmas = [1, 1, 2]
+    for mu, sigma in zip(mus, sigmas):
+        sample = np.random.normal(mu, sigma, n)
+        xs, ys = thinkstats2.NormalProbability(sample)
+        label = 'mu=%d, sigma=%d' % (mu, sigma)
+        thinkplot.Plot(xs, ys, label=label)
+
+    thinkplot.Save(root='analytic_normal_prob_example',
+                   title='Normal probability plot',
+                   xlabel='standard normal sample',
+                   ylabel='sample values')
 
 
 def MakeNormalPlot(weights, term_weights):
@@ -188,10 +216,14 @@ def MakeNormalPlot(weights, term_weights):
 
 
 def main():
-    thinkstats2.RandomSeed(17)
+    thinkstats2.RandomSeed(18)
+    MakeExampleNormalPlot()
+    return
 
     # make the analytic CDFs
     MakeExpoCdf()
+    MakeBabyBoom()
+
     MakeParetoCdf()
     MakeParetoCdf2()
     MakeGaussianCdf()

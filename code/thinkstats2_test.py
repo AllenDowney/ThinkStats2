@@ -153,6 +153,18 @@ class Test(unittest.TestCase):
         self.assertAlmostEquals(cdf2.Prob(2), 0.6)
         self.assertAlmostEquals(cdf2.Value(0.6), 2)
         
+    def testEvalGaussianCdf(self):
+        p = thinkstats2.EvalGaussianCdf(0)
+        self.assertAlmostEquals(p, 0.5)
+
+        p = thinkstats2.EvalGaussianCdf(2, 2, 3)
+        self.assertAlmostEquals(p, 0.5)
+
+        p = thinkstats2.EvalGaussianCdf(1000, 0, 1)
+        self.assertAlmostEquals(p, 1.0)
+
+        p = thinkstats2.EvalGaussianCdf(-1000, 0, 1)
+        self.assertAlmostEquals(p, 0.0)
 
 if __name__ == "__main__":
     unittest.main()

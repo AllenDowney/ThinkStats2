@@ -36,7 +36,7 @@ import numpy as np
 import pandas
 
 import scipy.stats
-from scipy.special import erf, erfinv
+import scipy.special
 
 ROOT2 = math.sqrt(2)
 
@@ -1618,10 +1618,10 @@ def StandardGaussianCdf(x):
     Returns:
         float
     """
-    return (erf(x / ROOT2) + 1) / 2
+    return (math.erf(x / ROOT2) + 1) / 2
 
 
-def GaussianCdf(x, mu=0, sigma=1):
+def EvalGaussianCdf(x, mu=0, sigma=1):
     """Evaluates the CDF of the gaussian distribution.
     
     Args:
@@ -1634,10 +1634,10 @@ def GaussianCdf(x, mu=0, sigma=1):
     Returns:
         float
     """
-    return StandardGaussianCdf(float(x - mu) / sigma)
+    return scipy.stats.norm.cdf(x, loc=mu, scale=sigma)
 
 
-def GaussianCdfInverse(p, mu=0, sigma=1):
+def EvalGaussianCdfInverse(p, mu=0, sigma=1):
     """Evaluates the inverse CDF of the gaussian distribution.
 
     See http://en.wikipedia.org/wiki/Normal_distribution#Quantile_function  
@@ -1652,8 +1652,71 @@ def GaussianCdfInverse(p, mu=0, sigma=1):
     Returns:
         float
     """
-    x = ROOT2 * erfinv(2 * p - 1)
+    x = ROOT2 * scipy.special.erfinv(2 * p - 1)
     return mu + x * sigma
+
+
+def EvalLognormalCdf(x, mu=0, sigma=1):
+    """Evaluates the CDF of the lognormal distribution.
+    
+    x: float or sequence
+    mu: mean parameter
+    sigma: standard deviation parameter
+                
+    Returns: float or sequence
+    """
+    return scipy.stats.lognorm.cdf(x, loc=mu, scale=sigma)
+
+
+def RenderExpoCdf(lam, low, high, n=50):
+    """Generates sequences of xs and ps for an exponential CDF.
+
+    lam: parameter
+    low: float
+    high: float
+    n: number of points to render
+
+    returns: numpy arrays (xs, ps)
+    """
+    xs = np.linspace(low, high, n)
+    ps = 1 - np.exp(-lam * xs)
+    #ps = scipy.stats.expon.cdf(xs, scale=1.0/lam)
+    return xs, ps
+
+
+def RenderGaussianCdf(mu, sigma, low, high, n=50):
+    """Generates sequences of xs and ps for a Gaussian CDF.
+
+    mu: parameter
+    sigma: parameter
+    low: float
+    high: float
+    n: number of points to render
+
+    returns: numpy arrays (xs, ps)
+    """
+    xs = np.linspace(low, high, n)
+    ps = scipy.stats.norm.cdf(xs, mu, sigma)
+    return xs, ps
+
+
+def RenderParetoCdf(xmin, alpha, low, high, n=50):
+    """Generates sequences of xs and ps for a Pareto CDF.
+
+    xmin: parameter
+    alpha: parameter
+    low: float
+    high: float
+    n: number of points to render
+
+    returns: numpy arrays (xs, ps)
+    """
+    if low < xmin:
+        low = xmin
+    xs = np.linspace(low, high, n)
+    ps = 1 - (xs / xmin) ** -alpha
+    #ps = scipy.stats.pareto.cdf(xs, scale=xmin, b=alpha)
+    return xs, ps
 
 
 class Beta(object):
@@ -1845,18 +1908,16 @@ def LogBinomialCoef(n, k):
     return n * log(n) - k * log(k) - (n - k) * log(n - k)
 
 
-def NormalProbability(ys, mu=0, sigma=1, jitter=0.0):
+def NormalProbability(ys, jitter=0.0):
     """Generates data for a normal probability plot.
 
     ys: sequence of values
-    mu: mean parameter
-    sigma: standard deviations
     jitter: float magnitude of jitter added to the ys 
 
     returns: numpy arrays xs, ys
     """
     n = len(ys)
-    xs = np.random.normal(mu, sigma, n)
+    xs = np.random.normal(0, 1, n)
     xs.sort()
     
     if jitter:
@@ -1892,24 +1953,22 @@ def FitLine(xs, inter, slope):
     return fit_xs, fit_ys
 
 
-def NormalProbabilityPlot(sample, label, data_color='blue', fit_color='gray'):
+def NormalProbabilityPlot(sample, label='', fit_color='0.8'):
     """Makes a normal probability plot with a fitted line.
 
     sample: sequence of numbers
     label: string
-    data_color: color string for the data
     fit_color: color string for the fitted line
     """
-    data = NormalProbability(sample)
-    fit = FitLine(*data)
+    xs, ys = NormalProbability(sample)
+    mean, var = MeanVar(sample)
+    std = math.sqrt(var)
 
-    thinkplot.plot(*fit, color=fit_color, alpha=0.5)
-    thinkplot.plot(*data,
-                    label=label,
-                    color=data_color,
-                    marker='.',
-                    markersize=5,
-                    alpha=0.5)
+    fit = FitLine(xs, mean, std)
+    thinkplot.Plot(*fit, color=fit_color, label='model')
+
+    xs, ys = NormalProbability(sample)
+    thinkplot.Plot(xs, ys, label=label)
 
  
 def Mean(xs):

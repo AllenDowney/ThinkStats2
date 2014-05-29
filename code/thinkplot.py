@@ -103,7 +103,7 @@ def PrePlot(num=None, rows=1, cols=1, plot=1):
 
     # resize the image, depending on the number of rows and cols
     size_map = {(1, 2): (10, 6),
-                (2, 2): (8, 8),
+                (2, 2): (10, 10),
                 }
 
     if (rows, cols) in size_map:
@@ -447,7 +447,6 @@ def Cdf(cdf, complement=False, transform=None, **options):
         options = Underride(options, label=cdf.label)
 
     Plot(xs, ps, **options)
-    pyplot.ylim(0, 1)
     return scale
 
 

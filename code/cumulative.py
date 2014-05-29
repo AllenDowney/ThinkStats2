@@ -108,6 +108,8 @@ def TestSample(live):
 
     sample = cdf.Sample(1000)
     sample_cdf = thinkstats2.Cdf(sample, label='sample')
+
+    thinkplot.PrePlot(2)
     thinkplot.Cdfs([cdf, sample_cdf])
     thinkplot.Save(root='cumulative_sample',
                    xlabel='weight (pounds)',
