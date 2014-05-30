@@ -5,6 +5,8 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+import sys
+
 import thinkstats2
 import thinkplot
 
@@ -24,38 +26,38 @@ def read_file(filename):
     return data
 
 
-def main():
-    filename = 'mystery0.dat'
+def main(script, filename='mystery0.dat'):
     data = read_file(filename)
     cdf = thinkstats2.MakeCdfFromList(data)
 
-    thinkplot.SubPlot(2, 3, 1)
+    thinkplot.PrePlot(rows=2, cols=3)
+    thinkplot.SubPlot(1)
     thinkplot.Cdf(cdf)
     thinkplot.Config(title='linear')
 
-    thinkplot.SubPlot(2, 3, 2)
+    thinkplot.SubPlot(2)
     scale = thinkplot.Cdf(cdf, xscale='log')
     thinkplot.Config(title='logx', **scale)
 
-    thinkplot.SubPlot(2, 3, 3)
+    thinkplot.SubPlot(3)
     scale = thinkplot.Cdf(cdf, transform='exponential')
     thinkplot.Config(title='expo', **scale)
 
-    thinkplot.SubPlot(2, 3, 4)
+    thinkplot.SubPlot(4)
     xs, ys = thinkstats2.NormalProbability(data)
     thinkplot.Plot(xs, ys)
     thinkplot.Config(title='normal')
 
-    thinkplot.SubPlot(2, 3, 5)
+    thinkplot.SubPlot(5)
     scale = thinkplot.Cdf(cdf, transform='pareto')
     thinkplot.Config(title='pareto', **scale)
 
-    thinkplot.SubPlot(2, 3, 6)
+    thinkplot.SubPlot(6)
     scale = thinkplot.Cdf(cdf, transform='weibull')
     thinkplot.Config(title='weibull', **scale)
 
-    thinkplot.Show()
+    thinkplot.Show(legend=False)
 
 
 if __name__ == '__main__':
-    main()
+    main(*sys.argv)

@@ -169,10 +169,20 @@ class _DictWrapper(object):
         return iter(self.d)
 
     def iterkeys(self):
+        """Returns an iterator over keys."""
         return iter(self.d)
 
     def __contains__(self, value):
         return value in self.d
+
+    def __getitem__(self, value):
+        return self.d.get(value, 0)
+
+    def __setitem__(self, value, prob):
+        self.d[value] = prob
+
+    def __delitem__(self, value):
+        del self.d[value]
 
     def Copy(self, label=None):
         """Returns a copy.
@@ -272,6 +282,10 @@ class _DictWrapper(object):
 
         return zip(*sorted(self.Items()))
 
+    def MakeCdf(self, label=None):
+        """Makes a Cdf."""
+        return Cdf(self, label=label)
+
     def Print(self):
         """Prints the values and freqs/probs in ascending order."""
         for val, prob in sorted(self.d.items()):
@@ -316,7 +330,7 @@ class _DictWrapper(object):
 
     def Total(self):
         """Returns the total of the frequencies/probabilities in the map."""
-        total = sum(self.d.values())
+        total = np.sum(self.d.values())
         return total
 
     def MaxLike(self):
@@ -343,7 +357,6 @@ class Hist(_DictWrapper):
 
     Values can be any hashable type; frequencies are integer counters.
     """
-
     def Freq(self, x):
         """Gets the frequency associated with the value x.
 
@@ -395,10 +408,6 @@ class Pmf(_DictWrapper):
     def Probs(self, xs):
         """Gets probabilities for a sequence of values."""
         return [self.Prob(x) for x in xs]
-
-    def MakeCdf(self, label=None):
-        """Makes a Cdf."""
-        return MakeCdfFromPmf(self, label=label)
 
     def ProbGreater(self, x):
         """Probability that a sample from this Pmf exceeds x.
@@ -471,13 +480,13 @@ class Pmf(_DictWrapper):
         Returns: the total probability before normalizing
         """
         if self.log:
-            raise ValueError("Pmf is under a log transform")
+            raise ValueError("Normalize: Pmf is under a log transform")
 
         total = self.Total()
         if total == 0.0:
-            raise ValueError('total probability is zero.')
-            logging.warning('Normalize: total probability is zero.')
-            return total
+            raise ValueError('Normalize: total probability is zero.')
+            #logging.warning('Normalize: total probability is zero.')
+            #return total
 
         factor = float(fraction) / total
         for x in self.d:
@@ -488,12 +497,12 @@ class Pmf(_DictWrapper):
     def Random(self):
         """Chooses a random element from this PMF.
 
+        Note: this is not very efficient.  If you plan to call
+        this more than a few times, consider converting to a CDF.
+
         Returns:
             float value from the Pmf
         """
-        if len(self.d) == 0:
-            raise ValueError('Pmf contains no values.')
-
         target = random.random()
         total = 0.0
         for x, p in self.d.items():
@@ -502,7 +511,7 @@ class Pmf(_DictWrapper):
                 return x
 
         # we shouldn't get here
-        assert False
+        raise ValueError('Random: Pmf might not be normalized.')
 
     def Mean(self):
         """Computes the mean of a PMF.
@@ -518,12 +527,10 @@ class Pmf(_DictWrapper):
     def Var(self, mu=None):
         """Computes the variance of a PMF.
 
-        Args:
-            mu: the point around which the variance is computed;
+        mu: the point around which the variance is computed;
                 if omitted, computes the mean
 
-        Returns:
-            float variance
+        returns: float variance
         """
         if mu is None:
             mu = self.Mean()
@@ -538,7 +545,7 @@ class Pmf(_DictWrapper):
 
         Returns: float probability
         """
-        prob, val = max((prob, val) for val, prob in self.Items())
+        _, val = max((prob, val) for val, prob in self.Items())
         return val
 
     def CredibleInterval(self, percentage=90):
@@ -558,7 +565,7 @@ class Pmf(_DictWrapper):
     def __add__(self, other):
         """Computes the Pmf of the sum of values drawn from self and other.
 
-        other: another Pmf
+        other: another Pmf or a scalar
 
         returns: new Pmf
         """
@@ -581,7 +588,7 @@ class Pmf(_DictWrapper):
         return pmf
 
     def AddConstant(self, other):
-        """Computes the Pmf of the sum a constant and  values from self.
+        """Computes the Pmf of the sum a constant and values from self.
 
         other: a number
 
@@ -593,6 +600,18 @@ class Pmf(_DictWrapper):
         return pmf
 
     def __sub__(self, other):
+        """Computes the Pmf of the diff of values drawn from self and other.
+
+        other: another Pmf
+
+        returns: new Pmf
+        """
+        try:
+            return self.SubPmf(other)
+        except AttributeError:
+            return self.AddConstant(-other)
+
+    def SubPmf(self, other):
         """Computes the Pmf of the diff of values drawn from self and other.
 
         other: another Pmf
@@ -648,7 +667,8 @@ class Joint(Pmf):
         """
         pmf = Pmf(label=label)
         for vs, prob in self.Items():
-            if vs[j] != val: continue
+            if vs[j] != val:
+                continue
             pmf.Incr(vs[i], prob)
 
         pmf.Normalize()
@@ -681,6 +701,8 @@ class Joint(Pmf):
 
 def MakeJoint(pmf1, pmf2):
     """Joint distribution of values from pmf1 and pmf2.
+
+    Assumes that the PMFs represent independent random variables.
 
     Args:
         pmf1: Pmf object
@@ -875,6 +897,15 @@ class Cdf(object):
     def __len__(self):
         return len(self.xs)
 
+    def __getitem__(self, x):
+        return self.Prob(x)
+
+    def __setitem__(self):
+        raise UnimplementedMethodException()
+
+    def __delitem__(self):
+        raise UnimplementedMethodException()
+
     def __eq__(self, other):
         return (self.xs == other.xs) and (self.ps == other.ps)
 
@@ -940,7 +971,8 @@ class Cdf(object):
         Returns:
             float probability
         """
-        if x < self.xs[0]: return 0.0
+        if x < self.xs[0]:
+            return 0.0
         index = bisect.bisect(self.xs, x)
         p = self.ps[index - 1]
         return p
@@ -957,8 +989,10 @@ class Cdf(object):
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
 
-        if p == 0: return self.xs[0]
-        if p == 1: return self.xs[-1]
+        if p == 0: 
+            return self.xs[0]
+        if p == 1: 
+            return self.xs[-1]
         index = bisect.bisect(self.ps, p)
         if p == self.ps[index - 1]:
             return self.xs[index - 1]
@@ -995,7 +1029,7 @@ class Cdf(object):
         Args:
             n: int length of the sample
         """
-        return [self.Random() for i in range(n)]
+        return [self.Random() for _ in range(n)]
 
     def Mean(self):
         """Computes the mean of a CDF.
@@ -1265,7 +1299,7 @@ def MakeSuiteFromList(t, label=''):
     Returns:
         Suite object
     """
-    hist = MakeHistFromList(t)
+    hist = MakeHistFromList(t, label=label)
     d = hist.GetDict()
     return MakeSuiteFromDict(d)
 
@@ -1905,7 +1939,7 @@ def LogBinomialCoef(n, k):
 
     Returns: float
     """
-    return n * log(n) - k * log(k) - (n - k) * log(n - k)
+    return n * math.log(n) - k * math.log(k) - (n - k) * math.log(n - k)
 
 
 def NormalProbability(ys, jitter=0.0):
@@ -2009,8 +2043,8 @@ def MeanVar(xs, ddof=0):
     returns: pair of float, mean and var
     """
     xbar = np.mean(xs)
-    S2 = Var(xs, xbar, ddof)
-    return xbar, S2
+    s2 = Var(xs, xbar, ddof)
+    return xbar, s2
 
 
 def Trim(t, p=0.01):
@@ -2095,30 +2129,6 @@ def Cov(xs, ys, meanx=None, meany=None):
     if meany is None:
         meany = np.mean(ys)
 
-    total = 0.0
-    for x, y in zip(xs, ys):
-        total += (x-meanx) * (y-meany)
-
-    return total / len(xs)
-
-
-def Cov(xs, ys, meanx=None, meany=None):
-    """Computes Cov(X, Y).
-
-    Args:
-        xs: sequence of values
-        ys: sequence of values
-        meanx: optional float mean of xs
-        meany: optional float mean of ys
-
-    Returns:
-        Cov(X, Y)
-    """
-    if meanx is None:
-        meanx = np.mean(xs)
-    if meany is None:
-        meany = np.mean(ys)
-
     cov = np.dot(xs-meanx, ys-meany) / len(xs)
     return cov
 
@@ -2177,7 +2187,7 @@ def LeastSquares(xs, ys):
         tuple of (intercept, slope)
     """
     meanx, varx = MeanVar(xs)
-    meany, vary = MeanVar(ys)
+    meany = Mean(ys)
 
     slope = Cov(xs, ys, meanx, meany) / varx
     inter = meany - slope * meanx
@@ -2211,8 +2221,8 @@ def CoefDetermination(ys, res):
     Returns:
         float coefficient of determination
     """
-    meany, vary = MeanVar(ys)
-    resbar, varres = MeanVar(res)
+    vary = Var(ys)
+    varres = Var(res)
     return 1 - varres / vary
 
 
@@ -2252,7 +2262,7 @@ def CorrelatedGenerator(rho):
     x = random.gauss(0, 1)
     yield x
 
-    sigma = math.sqrt(1 - rho**2);    
+    sigma = math.sqrt(1 - rho**2)
     while True:
         x = random.gauss(x * rho, sigma)
         yield x

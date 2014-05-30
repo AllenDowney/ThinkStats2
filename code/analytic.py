@@ -68,20 +68,20 @@ def MakeBabyBoom():
     diffs = df.minutes.diff()
     cdf = thinkstats2.Cdf(diffs, label='actual')
 
+    thinkplot.PrePlot(cols=2)
     thinkplot.Cdf(cdf)
-    thinkplot.Save(root='analytic_interarrivals',
-                   title='Time between births',
-                   xlabel='minutes',
-                   ylabel='CDF',
-                   legend=False)
+    thinkplot.Config(xlabel='minutes',
+                     ylabel='CDF',
+                     legend=False)
 
+    thinkplot.SubPlot(2)
     thinkplot.Cdf(cdf, complement=True)
-    thinkplot.Save(root='analytic_interarrivals_logy',
-                   title='Time between births',
-                   xlabel='minutes',
-                   ylabel='Complementary CDF',
-                   yscale='log',
-                   legend=False)
+    thinkplot.Config(xlabel='minutes',
+                     ylabel='CCDF',
+                     yscale='log',
+                     legend=False)
+
+    thinkplot.Save(root='analytic_interarrivals')
 
     n = len(diffs)
     lam = 44 / 24 * 60.0
@@ -93,7 +93,7 @@ def MakeBabyBoom():
     thinkplot.Save(root='analytic_interarrivals_model',
                    title='Time between births',
                    xlabel='minutes',
-                   ylabel='Complementary CDF',
+                   ylabel='CCDF',
                    yscale='log')
 
 
@@ -218,7 +218,6 @@ def MakeNormalPlot(weights, term_weights):
 def main():
     thinkstats2.RandomSeed(18)
     MakeExampleNormalPlot()
-    return
 
     # make the analytic CDFs
     MakeExpoCdf()

@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.3}
+\newcommand{\theversion}{2.0.4}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1974,7 +1974,7 @@ that shows this mapping.
 most frequent values.
 \index{mode}
 
-\item Gaussian distribution: An idealized model of a bell-shaped distribution,
+\item Gaussian distribution: An idealization of a bell-shaped distribution;
 also known as a normal distribution. 
 \index{Gaussian distribution}
 \index{normal distribution}
@@ -2900,7 +2900,7 @@ fundamental methods {\tt Cdf} provides are:
   $p = \CDF(x)$.
 
 \item {\tt Value(p)}: Given a probability {\tt p}, computes the
-corresponding value, {\tt x}; that is, the inverse CDF of {\tt p}.
+corresponding value, {\tt x}; that is, the {\bf inverse CDF} of {\tt p}.
 
 \end{itemize}
 
@@ -3174,9 +3174,12 @@ less than or equal to a given value.
 the data, selected according to some condition.
 \index{conditional distribution}
 
-\item Cumulative distribution function (CDF), a function that maps
+\item Cumulative distribution function (CDF): a function that maps
   from values to their cumulative probabilities.  $\CDF(x)$ is the
   fraction of the sample less than or equal to $x$.  \index{CDF}
+
+\item Inverse CDF: a function that maps from a probability, $p$, to
+  the corresponding value.
 
 \item median: The 50th percentile, often used as a measure of central
   tendency.  \index{median}
@@ -3199,17 +3202,22 @@ the 25th, 50th and 75th percentiles.
 \index{empirical distribution}
 \index{distribution!empirical}
 
-The distributions we have used so far are called {\bf
-  empirical distributions} because they are based on empirical
-observations, which are necessarily finite samples.
+The distributions we have used so far are called {\bf empirical
+  distributions} because they are based on empirical observations,
+which are necessarily finite samples.
 
 The alternative is an {\bf analytic distribution}, which is
 characterized by a CDF that is an analytic function (as opposed to a
-step function).  Many real world phenomena can be approximated by
-analytic distributions.
+step function).
+
+Analytic distributions can be used to model empirical distributions.
+In this context, a {\bf model} is a simplification that leaves out
+unneeded details.  This chapter presents common analytic distributions
+and uses them to model data from a variety of sources.
 
 
 \section{The exponential distribution}
+\label{exponential}
 \index{exponential distribution}
 \index{distribution!exponential}
 
@@ -3220,9 +3228,9 @@ analytic distributions.
 \label{analytic_expo_cdf}
 \end{figure}
 
-I'll start with the exponential distribution because it is relatively
-simple.  The CDF of the exponential distribution is an analytic
-function:
+I'll start with the {\bf exponential distribution} because it is
+relatively simple.  The CDF of the exponential distribution is an
+analytic function:
 %
 \[ \CDF(x) = 1 - e^{-\lambda x} \]
 %
@@ -3265,16 +3273,30 @@ with columns {\tt time}, {\tt sex}, \verb"weight_g", and {\tt minutes},
 where {\tt minutes} is time of birth converted to minutes since
 midnight.
 
+\begin{figure}
+% analytic.py
+\centerline{\includegraphics[height=2.5in]{figs/analytic_interarrivals.pdf}}
+\caption{CDF of interarrival times (left) and CCDF on a log-y scale (right).}
+\label{analytic_interarrival_cdf}
+\end{figure}
+
+%\begin{figure}
+% analytic.py
+%\centerline{\includegraphics[height=2.5in]{figs/analytic_interarrivals_logy.pdf}}
+%\caption{CCDF of interarrival times.}
+%\label{analytic_interarrival_ccdf}
+%\end{figure}
+
 {\tt diffs} is the difference between consecutive birth times, and
 {\tt cdf} is the distribution of these interarrival times.
-Figure~\ref{analytic_interarrival_cdf} shows the plotted CDF.
-It seems to have the general shape of
-an exponential distribution, but how can we tell?
-\index{complementary CDF} \index{CDF!complementary} \index{CCDF}
+Figure~\ref{analytic_interarrival_cdf} shows the CDF (left).  It seems
+to have the general shape of an exponential distribution, but how can
+we tell?
 
-One way is to plot the complementary CDF, $1 - CDF(x)$, on a
-log-y scale.  For data from an exponential distribution, the result
-is a straight line.  Let's see why that works.
+One way is to plot the {\bf complementary CDF}, which is $1 - \CDF(x)$,
+on a log-y scale.  For data from an exponential distribution, the
+result is a straight line.  Let's see why that works.
+\index{complementary CDF} \index{CDF!complementary} \index{CCDF}
 
 If you plot the complementary CDF (CCDF) of a dataset that you think is
 exponential, you expect to see a function like:
@@ -3292,12 +3314,6 @@ with slope $-\lambda$.  Here's how we can generate a plot like that:
 \index{CDF!complementary}
 \index{CCDF}
 
-\begin{figure}
-% analytic.py
-\centerline{\includegraphics[height=2.5in]{figs/analytic_interarrivals.pdf}}
-\caption{CDF of interarrival times}
-\label{analytic_interarrival_cdf}
-\end{figure}
 
 \begin{verbatim}
     thinkplot.Cdf(cdf, complement=True)
@@ -3310,16 +3326,7 @@ With the argument {\tt complement=True}, {\tt thinkplot.Cdf} computes
 the complementary CDF before plotting.  And with {\tt yscale='log'},
 {\tt thinkplot.Show} sets the {\tt y} axis to a logarithmic scale.
 
-\begin{figure}
-% analytic.py
-\centerline{\includegraphics[height=2.5in]{figs/analytic_interarrivals_logy.pdf}}
-\caption{CCDF of interarrival times.}
-\label{analytic_interarrival_ccdf}
-\end{figure}
-
-%TODO: place these figures side by side
-
-Figure~\ref{analytic_interarrival_ccdf} shows the result.  It is not
+Figure~\ref{analytic_interarrival_cdf} shows the result (right).  It is not
 exactly straight, which indicates that the exponential distribution is
 not a perfect model for this data.  Most likely the underlying
 assumption---that a birth is equally likely at any time of day---is
@@ -3330,14 +3337,14 @@ summarize the distribution with a single parameter.
 The parameter, $\lambda$, can be interpreted as a rate; that is, the
 number of events that occur, on average, in a unit of time.  In this
 example, 44 babies are born in 24 hours, so the rate is $\lambda =
-1.83$ babies per hour.  The mean of an exponential distribution is
-$1/\lambda$, so the mean time between babies is 0.55 hours.
+1.83$ births per hour.  The mean of an exponential distribution is
+$1/\lambda$, so the mean time between births is 0.55 hours.
 
 
 \section{The normal distribution}
 \label{normal}
 
-The normal distribution, also called Gaussian, is commonly
+The {\bf normal distribution}, also called Gaussian, is commonly
 used because it describes so many phenomena, at least approximately.
 It turns out that there is a good reason for its ubiquity, which we
 will get to in Section~\ref{CLT}.
@@ -3350,42 +3357,9 @@ will get to in Section~\ref{CLT}.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-The normal distribution is characterized by two parameters: the mean,
-$\mu$, and standard deviation $sigma$.  The normal distribution with
-$\mu=0$ and $\sigma=1$ is called the ``standard'' normal distribution.
-Its CDF is:
 %
-\[ \CDF(z) = \frac{1}{\sqrt{2 \pi}} \int_{-\infty}^z e^{-t^2/2} dt \]
+%\[ \CDF(z) = \frac{1}{\sqrt{2 \pi}} \int_{-\infty}^z e^{-t^2/2} dt \]
 %
-This integral does not have a closed form solution, but there are
-algorithms that evaluate it efficiently.  One of them is provided
-by SciPy: {\tt scipy.stats.norm} is an object that represents
-a normal distribution; it provides a method, {\tt cdf}, that evaluates
-the standard normal CDF:
-
-\begin{verbatim}
->>> import scipy.stats
->>> scipy.stats.norm.cdf(0)
-0.5
-\end{verbatim}
-
-The median of the standard normal distribution is 0, so
-$\CDF(0)$ is 0.5.
-
-{\tt norm.cdf} takes optional parameters: {\tt loc}, which
-specifies the mean, and {\tt scale}, which specifies the
-standard deviation.
-{\tt thinkstats2} provides {\tt GaussianCdf}, which uses
-{\tt norm.cdf}:
-
-\begin{verbatim}
-def EvalGaussianCdf(x, mu=0, sigma=1):
-    return scipy.stats.norm.cdf(x, loc=mu, scale=sigma)
-\end{verbatim}
-
-Figure~\ref{analytic_gaussian_cdf} shows the CDF of normal distributions
-with a range of parameters.  The sigmoid shape of
-these curves is a recognizable characteristic of a normal distribution.
 
 \begin{figure}
 % analytic.py
@@ -3393,6 +3367,42 @@ these curves is a recognizable characteristic of a normal distribution.
 \caption{CDF of normal distributions with a range of parameters.}
 \label{analytic_gaussian_cdf}
 \end{figure}
+
+The normal distribution is characterized by two parameters: the mean,
+$\mu$, and standard deviation $\sigma$.  The normal distribution with
+$\mu=0$ and $\sigma=1$ is called the {\bf standard normal
+  distribution}.  Its CDF is defined by an integral that does not have
+a closed form solution, but there are algorithms that evaluate it
+efficiently.  One of them is provided by SciPy: {\tt scipy.stats.norm}
+is an object that represents a normal distribution; it provides a
+method, {\tt cdf}, that evaluates the standard normal CDF:
+
+\begin{verbatim}
+>>> import scipy.stats
+>>> scipy.stats.norm.cdf(0)
+0.5
+\end{verbatim}
+
+This result is correct: the median of the standard normal distribution
+is 0 (the same as the mean), and half of the values fall below the
+median, so $\CDF(0)$ is 0.5.
+
+{\tt norm.cdf} takes optional parameters: {\tt loc}, which
+specifies the mean, and {\tt scale}, which specifies the
+standard deviation.
+
+{\tt thinkstats2} makes this function a little easier to use
+by providing {\tt GaussianCdf}, which takes parameters {\tt mu}
+and {\tt sigma} and evaluates the CDF at {\tt x}:
+
+\begin{verbatim}
+def EvalGaussianCdf(x, mu=0, sigma=1):
+    return scipy.stats.norm.cdf(x, loc=mu, scale=sigma)
+\end{verbatim}
+
+Figure~\ref{analytic_gaussian_cdf} shows CDFs for normal
+distributions with a range of parameters.  The sigmoid shape of these
+curves is a recognizable characteristic of a normal distribution.
 
 In the previous chapter we looked at the distribution of birth
 weights in the NSFG.  Figure~\ref{analytic_birthwgt_model} shows the
@@ -3549,7 +3559,7 @@ on the purposes.
 \index{CDF}
 
 If the logarithms of a set of values have a normal distribution, the
-values have a {\bf lognormal} distribution.  The CDF of the lognormal
+values have a {\bf lognormal distribution}.  The CDF of the lognormal
 distribution is the same as the CDF of the normal distribution,
 with $\log x$ substituted for $x$.
 %
@@ -3561,6 +3571,15 @@ the mean and standard deviation; the mean of a lognormal distribution
 is $\exp(\mu +\sigma^2/2)$ and the standard deviation is
 ugly (see \url{http://wikipedia.org/wiki/Log-normal_distribution}).
 \index{parameter} \index{weight!adult} \index{adult weight}
+
+\begin{figure}
+% brfss.py
+\centerline{
+\includegraphics[height=2.5in]{figs/brfss_weight.pdf}}
+\caption{CDF of adult weights on a linear scale (left) and
+log scale (right).}
+\label{brfss_weight}
+\end{figure}
 
 If a sample is approximately lognormal and you plot its CDF on a
 log-x scale, it will have the characteristic shape of a normal
@@ -3599,15 +3618,6 @@ and {\tt brfss.py}, which reads the file and analyses the data.
 \begin{figure}
 % brfss.py
 \centerline{
-\includegraphics[height=2.5in]{figs/brfss_weight.pdf}}
-\caption{CDF of adult weights on a linear scale (left) and
-log scale (right).}
-\label{brfss_weight}
-\end{figure}
-
-\begin{figure}
-% brfss.py
-\centerline{
 \includegraphics[height=2.5in]{figs/brfss_weight_normal.pdf}}
 \caption{Normal probability plots for adult weight on a linear scale
   (left) and log scale (right).}
@@ -3637,7 +3647,7 @@ a good model for this data.
 \index{distribution!Pareto}
 \index{Pareto, Vilfredo}
 
-The Pareto distribution is named after the economist Vilfredo Pareto,
+The {\bf Pareto distribution} is named after the economist Vilfredo Pareto,
 who used it to describe the distribution of wealth (see
 \url{http://wikipedia.org/wiki/Pareto_distribution}).  Since then, it
 has been used to describe phenomena in the natural and social sciences
@@ -3722,8 +3732,52 @@ you is relevant.
 \centerline{\includegraphics[height=2.5in]{figs/populations_normal.pdf}}
 \caption{CDF of city and town populations on a log-x scale (left), and
 normal probability plot of log-transformed populations (right).}
-\label{populations_pareto}
+\label{populations_normal}
 \end{figure}
+
+
+\section{Generating random numbers}
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{random number}
+\index{CDF}
+\index{inverse CDF algorithm}
+\index{uniform distribution}
+\index{distribution!uniform}
+
+Analytic CDFs can be used to generate random numbers with a given
+distribution function, $p = \CDF(x)$.  If there is an efficient way to
+compute the inverse CDF, we can generate random values
+with the appropriate distribution by choosing $p$ from a uniform
+distribution from 0 to 1, then choosing
+$x = ICDF(p)$.
+
+For example, the CDF of the exponential distribution is
+%
+\[ p = 1 - e^{-\lambda x} \]
+%
+Solving for $x$ yields:
+%
+\[ x = -\log (1 - p) / \lambda \]
+%
+So in Python we can write
+%
+\begin{verbatim}
+def expovariate(lam):
+    p = random.random()
+    x = -math.log(1-p) / lam
+    return x
+\end{verbatim}
+
+{\tt expovariate} takes {\tt lam} and returns a random value chosen
+from the exponential distribution with parameter {\tt lam}.
+
+Two notes about this implementation:
+I called the parameter \verb"lam" because \verb"lambda" is a Python
+keyword.  Also, since $\log 0$ is undefined, we have to
+be a little careful.  Most implementations of {\tt random.random}
+can return 0 but not 1, so $1 - p$ can be 1 but not 0, 
+so that works out well.  \index{random module}
 
 
 \section{Why model?}
@@ -3759,52 +3813,27 @@ are often the result of generative processes with positive feedback
 \index{distribution!Pareto}
 \index{analysis}
 
-Finally, analytic distributions lend themselves to mathematical
+Also, analytic distributions lend themselves to mathematical
 analysis, as we will see in Chapter~\ref{operations}.
 
+But it is important to remember that all models are imperfect.
+Data from the real world never fit an analytic distribution perfectly.
+People sometimes talk as if data are generated by models; for example,
+they might say that the distribution of human heights is normal,
+or the distribution of income is lognormal.  Taken literally, these
+claims cannot be true; there are always differences between the
+real world and mathematical models.
 
-\section{Generating random numbers}
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{random number}
-\index{CDF}
-\index{inverse CDF algorithm}
-\index{uniform distribution}
-\index{distribution!uniform}
-
-Analytic CDFs are also useful for generating random numbers.
-If there is an efficient way to compute the inverse CDF, $ICDF(p)$,
-we can generate random values with the appropriate distribution
-by choosing $p$ from a uniform distribution from 0 to 1, then choosing
-%
-\[ x = ICDF(p)\]
-%
-For example, the CDF of the exponential distribution is
-%
-\[ p = 1 - e^{-\lambda x} \]
-%
-Solving for $x$ yields:
-%
-\[ x = -\log (1 - p) / \lambda \]
-%
-So in Python we can write
-%
-\begin{verbatim}
-def expovariate(lam):
-    p = random.random()
-    x = -math.log(1-p) / lam
-    return x
-\end{verbatim}
-
-I called the parameter \verb"lam" because \verb"lambda" is a Python
-keyword.  Most implementations of {\tt random.random} can return 0 but
-not 1, so $1 - p$ can be 1 but not 0, which is good, because $\log 0$ is
-undefined.
-\index{random module}
-
+Models are useful if they capture the relevant aspects of the
+real world and leave out unneeded details.  But what is ``relevant''
+or ``unneeded'' depends on what you are planning to use the model
+for.
 
 
 \section{Exercises}
+
+For the following exercises, you can start with \verb"chap05ex.ipynb".
+My solution is in \verb"chap05ex_soln.ipynb".
 
 \begin{exercise}
 In the BRFSS (see Section~\ref{lognormal}), the distribution of
@@ -3826,50 +3855,22 @@ the U.S. male population is in this range?  Hint: use {\tt
 
 
 \begin{exercise}
-Collect the birthdays of the students in your class, sort them, and
-compute the interarrival times in days.  Plot the CDF of the interarrival
-times and the CCDF on a log-y scale.  Does it look like
-an exponential distribution?
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{birthday}
-
-\end{exercise}
-
-
-\begin{exercise}
-For small values of n, we don't expect an empirical distribution
-to fit an analytic distribution exactly.  One way to evaluate
-the quality of fit is to generate a sample from an analytic
-distribution and see how well it matches the data.
-\index{empirical distribution}
-\index{distribution!empirical}
-\index{random module}
-
-The function {\tt expovariate} in the {\tt random} module generates
-random values from an exponential distribution with a given value of
-$\lambda$.  Use it to generate 44 values from an exponential
-distribution with mean 32.6.  Plot the CCDF on a log-y scale and
-compare it to Figure~\ref{analytic_interarrival_ccdf}.
-\index{pyplot}
-
-\end{exercise}
-
-
-\begin{exercise}
 To get a feel for the Pareto distribution, imagine what the world
 would be like if the distribution of human height were Pareto.
-Choosing the parameters $x_{m} = 100$ cm and $\alpha = 1.7$, we
-get a distribution with a reasonable minimum, 100 cm,
-and median, 150 cm.
+Choosing the parameters $x_{m} = 1$ m and $\alpha = 1.7$, we
+get a distribution with a reasonable minimum, 1 m,
+and median, 1.5 m.
 \index{height}
 
-Generate 6 billion random values from this distribution.  What is the
-mean of this sample?  What fraction of the population is shorter than
-the mean?  How tall is the tallest person in Pareto World?
+What is the mean human height in Pareto world?  What is the mean of
+this sample?  What fraction of the population is shorter than the
+mean?  If there are 7 billion people in Pareto world, how many do we
+expect to be taller than 1 km?  How tall do we expect the tallest
+person to be?
 \index{Pareto World}
 
 \end{exercise}
+
 
 \begin{exercise}
 \label{weibull}
@@ -3891,6 +3892,52 @@ line indicate?
 
 Use {\tt random.weibullvariate} to generate a sample from a
 Weibull distribution and use it to test your transformation.
+
+\end{exercise}
+
+
+\begin{exercise}
+For small values of $n$, we don't expect an empirical distribution
+to fit an analytic distribution exactly.  One way to evaluate
+the quality of fit is to generate a sample from an analytic
+distribution and see how well it matches the data.
+\index{empirical distribution}
+\index{distribution!empirical}
+\index{random module}
+
+For example, in Section~\ref{exponential} we plotted the distribution
+of time between births and saw that it is approximately exponential.
+But the distribution is based on only 44 data points.  To see whether
+the data might have come from an exponential distribution, generate 44
+values from an exponential distribution with the same mean as the
+data, about 33 minutes between births.
+
+Plot the distribution of the random values and compare it to the
+actual distribution.  You can use {\tt random.expovariate} 
+to generate the values.  A solution to this problem is in
+\verb"chap05ex_soln.py".
+
+\end{exercise}
+
+
+\begin{exercise}
+In the repository for this book, you'll find a set of data files
+called {\tt mystery0.dat}, {\tt mystery1.dat}, and so on.  Each
+contains a sequence of random numbers generated from different
+distributions.
+
+You will also find \verb"test_models.py", a script that reads
+data from a file and plots the CDF under a variety of transforms.
+You can run it like this:
+
+\begin{verbatim}
+$ python test_models.py mystery0.dat
+\end{verbatim}
+
+Based on these plots, you should be able to infer what kind of
+distribution generated each file.  If you are stumped, you can
+look in {\tt mystery.py}, which contains the code that generated
+the files.
 
 \end{exercise}
 
@@ -3919,6 +3966,7 @@ solution to this exercise is in \url{hinc_soln.py}.
 
 
 
+
 \section{Glossary}
 
 \begin{itemize}
@@ -3931,32 +3979,29 @@ function.
 \index{analytic distribution}
 \index{distribution!analytic}
 
-\item interarrival time: The elapsed time between two events.
-\index{interarrival time}
-
-\item error function: A special mathematical function, so-named
-  because it comes up in the study of measurement errors.
-\index{error function}
-
-\item normal probability plot: A plot of the sorted values in a sample
-versus the expected value for each if their distribution is normal.
-\index{normal probability plot}
-\index{plot!normal probability}
-
-\item rankit: The expected value of an element in a sorted list of
-values from a normal distribution.
-\index{rankit}
-
 \item model: A useful simplification.  Analytic distributions are
 often good models of more complex empirical distributions.
 \index{model}
 
-\item corpus: A body of text used as a sample of a language.
-\index{corpus}
+\item interarrival time: The elapsed time between two events.
+\index{interarrival time}
 
-\item hapaxlegomenon: A word that appears only once in a corpus.
-It appears twice in this book, so far.
-\index{hapaxlegomenon}
+\item complementary CDF: A function that maps from a value, $x$,
+to the fraction of values that exceed $x$, which is $1 - \CDF(x)$.
+\index{complementary CDF}
+
+\item standard normal distribution: The normal distribution with
+mean 0 and standard deviation 1.
+\index{standard normal distribution}
+
+\item normal probability plot: A plot of the values in a sample versus
+random values from a standard normal distribution.
+\index{normal probability plot}
+\index{plot!normal probability}
+
+\item model: A useful simplification.  Analytic distributions are
+often good models of more complex empirical distributions.
+\index{model}
 
 \end{itemize}
 

@@ -102,8 +102,10 @@ def PrePlot(num=None, rows=1, cols=1, plot=1):
         Brewer.InitializeIter(num)
 
     # resize the image, depending on the number of rows and cols
-    size_map = {(1, 2): (10, 6),
+    size_map = {(1, 1): (8, 6),
+                (1, 2): (14, 6),
                 (2, 2): (10, 10),
+                (2, 3): (10, 14),
                 }
 
     if (rows, cols) in size_map:
@@ -171,7 +173,9 @@ def Clf():
     """Clears the figure and any hints that have been set."""
     Brewer.ClearIter()
     pyplot.clf()
-    
+    fig = pyplot.gcf()
+    fig.set_size_inches(8, 6)
+
 
 def Figure(**options):
     """Sets options for the current figure."""
@@ -569,9 +573,9 @@ def Show(**options):
 
     options: keyword args used to invoke various pyplot functions
     """
-    # TODO: figure out how to show more than one plot
     Config(**options)
     pyplot.show()
+    Clf()
 
 
 def Save(root=None, formats=None, **options):
