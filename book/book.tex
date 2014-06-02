@@ -4095,7 +4095,7 @@ deviations above.
 \begin{figure}
 % pdf_example.py
 \centerline{\includegraphics[height=2.2in]{figs/pdf_example.pdf}}
-\caption{A Gaussian PDF that models adult human height in the U.S.,
+\caption{A Gaussian PDF that models adult female height in the U.S.,
 and the kernel density estimate of a sample with $n=1000$.}
 \label{pdf_example}
 \end{figure}
@@ -4150,10 +4150,9 @@ distribution and generates an EstimatedPdf to fit it:
 KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
 evaluating the density at a sequence of equally spaced values.
 
-Figure~\ref{pdf_example} shows the Gaussian density function (actually
-a discrete approximation of it) and a KDE based on a sample of 1000
-random heights.  The estimate is a good match for the original
-distribution.
+Figure~\ref{pdf_example} shows the Gaussian density function and a KDE
+based on a sample of 1000 random heights.  The estimate is a good
+match for the original distribution.
 
 
 
@@ -4189,11 +4188,10 @@ class Exponential(RandomVariable):
         return random.expovariate(self.lam)
 \end{verbatim}
 
-The \verb"__init__" method takes the parameter, $\lambda$, and stores it as
-an attribute.  The {\tt Generate} method returns a random value
-from the exponential distribution with that parameter.
-\index{init method}
-\index{method!init}
+The \verb"__init__" method takes the parameter, $\lambda$, and stores
+it as an attribute.  The {\tt Generate} method returns a random value
+from the exponential distribution with that parameter.  \index{init
+  method} \index{method!init}
 
 Each time you invoke {\tt Generate}, you get a different value.  The
 value you get is called a {\bf random variate}, which is why many
@@ -4233,14 +4231,6 @@ given parameter; then {\tt Generate} uses it.  In general,
 \verb"__init__" can take any set of parameters and the {\tt
   Generate} function can implement any random process.
 
-\begin{exercise}
-Write a definition for a class that represents a random variable
-with a Gumbel distribution (see \url{http://wikipedia.org/wiki/Gumbel_distribution}).
-\index{Gumbel distribution}
-\index{distribution!Gumbel}
-
-\end{exercise}
-
 
 \section{Functions of random variables}
 \index{random variables}
@@ -4275,21 +4265,10 @@ have to generate a large sample to estimate $\CDF_{Z}$ accurately, and
 even then it is not exact.
 
 
-\begin{exercise}
-Suppose I draw two values from a distribution; what is the distribution
-of the larger value?  Write a RandomVariable class called {\tt Max}
-that generates values from $Z = max(X, Y)$.
-\index{max}
-
-As the number of values increases, the distribution of the maximum
-converges on one of the extreme value distributions; see
-\url{http://wikipedia.org/wiki/Gumbel_distribution}.
-\index{Gumbel distribution}
-\index{distribution!Gumbel}
-
-\end{exercise}
 
 \begin{exercise}
+
+%TODO: do this as an example
 If you are given Pmf objects, you can compute the distribution of
 the sum by enumerating all pairs of values:
 \index{Pmf object}
@@ -4358,34 +4337,6 @@ The other distributions we have looked at do not have these
 properties.
 \index{convolution}
 
-\begin{exercise}
-If 
-$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
-$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$, what 
-is the distribution of Z = aX + bY?
-
-\end{exercise}
-
-\begin{exercise}
-Let's see what happens when we add values from
-other distributions.  Choose a pair of distributions (any two of
-exponential, normal, lognormal, and Pareto) and choose parameters
-that make their mean and variance similar.
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{sum}
-
-Generate random numbers from these distributions and compute the
-distribution of their sums.  Use the tests from
-Chapter~\ref{analytic} to see if the sum can be modeled by an
-analytic distribution.
-
-\end{exercise}
-
 
 
 \section{Central limit theorem}
@@ -4443,7 +4394,7 @@ caveats:
 \item The number of values you need before you see convergence depends
   on the skewness of the distribution.  Sums from an exponential
   distribution converge for small sample sizes.  Sums from a
-  lognormal distribution do not.
+  lognormal distribution require much larger sizes.
 \index{lognormal distribution}
 \index{distribution!lognormal}
 
@@ -4473,6 +4424,9 @@ Hint: review Section~\ref{why_normal}.
 \end{exercise}
 
 \begin{exercise}
+
+%TODO: do this one as an example
+
 Choose a distribution (one of exponential, lognormal or Pareto) and
 choose values for the parameter(s).  Generate samples with sizes
 2, 4, 8, etc., and compute the distribution of their sums.  Use
@@ -4490,6 +4444,8 @@ normal.  How many terms do you have to add to see convergence?
 
 
 \begin{exercise}
+
+% TODO: do this one as an example
 Instead of the distribution of sums, compute the distribution of
 products; what happens as the number of terms increases?
 Hint: look at the distribution of the log of the products.
@@ -4562,8 +4518,8 @@ If the distribution is symmetric around its central tendency, it is
 unskewed.  If the values extend farther to the right, it is ``right
 skewed'' and if the values extend left, it is ``left skewed.''
 
-This use of ``skewed'' should not be confused with the common sense
-of ``biased.''  Skewness only describes the shape of the distribution;
+This use of ``skewed'' does not have the usual connotation of
+``biased.''  Skewness only describes the shape of the distribution;
 it says nothing about whether the sampling process might have been
 biased.
 
@@ -4574,12 +4530,14 @@ distribution.  Given a sequence of values, $x_i$, the {\bf sample
 \begin{verbatim}
 def StandardizedMoment(xs, k):
     var = CentralMoment(xs, 2)
-    sigma = math.sqrt(var)
-    return CentralMoment(xs, k) / sigma**k
+    std = math.sqrt(var)
+    return CentralMoment(xs, k) / std**k
 
 def Skewness(xs):
     return StandardizedMoment(xs, 3)
 \end{verbatim}
+
+% TODO: replace sigma with std in the code
 
 $g_1$ is the third {\bf standardized moment}, which means that it has
 been normalized so it has no units.
@@ -4631,6 +4589,7 @@ to the effect of outliers.
 \index{robust}
 
 \begin{exercise}
+% TODO: do this one as an exercise
 Compute the skewness for the distributions of pregnancy length and
 birth weight.  Are the results consistent with the shape of the
 distributions?  How does $g_p$ compare to $g_1$?
@@ -4642,28 +4601,113 @@ distributions?  How does $g_p$ compare to $g_1$?
 \end{exercise}
 
 
+
+\section{The distribution framework}
+\index{distribution framework}
+\index{framework, distributions}
+
+\begin{figure}
+\centerline{\includegraphics[height=2.2in]{figs/distribution_functions.pdf}}
+\caption{A framework that relates representations of distribution
+functions.}
+\label{dist_framework}
+\end{figure}
+
+At this point we have seen PMFs, CDFs and PDFs; let's take a minute
+to review.  Figure~\ref{dist_framework} shows how these functions relate
+to each other.
+\index{PMF}
+
+We started with PMFs, which represent the probabilities for a discrete
+set of values.  To get from a PMF to a CDF, we computed a cumulative
+sum.  To be more strictly correct, a discrete CDF should be called a
+cumulative mass function (CMF), but as far as I can tell no one uses
+that term.  \index{CDF}
+
+To get from a CDF to a PMF, you can compute differences in cumulative
+probabilities.
+\index{PDF}
+
+Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
+a CDF is the integral of a PDF.  But remember that a PDF maps from
+values to probability densities; to get a probability, you have to
+integrate.
+\index{discrete}
+\index{analytic}
+
+To get from a discrete to a continuous distribution, you can perform
+various kinds of smoothing.  One form of smoothing is to assume that
+the data come from an analytic continuous distribution
+(like exponential or normal) and to estimate the parameters of that
+distribution.  Another option is kernel density estimation.
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+\index{bin}
+
+The opposite of smoothing is discretizing, or quantizing.  If you
+evaluate a PDF at discrete points, you can generate a PMF that is at
+least an approximation of the PDF.  You can get a better approximation
+using numerical integration.
+\index{Bayesian estimation}
+\index{estimation!Bayesian}
+
+
+\section{Exercises}
+
 \begin{exercise}
-The ``Lake Wobegon effect'' is an amusing nickname\footnote{If you
-  don't get it, see \url{http://wikipedia.org/wiki/Lake_Wobegon}.} for {\bf
-  illusory superiority}, which is the tendency for people to
-overestimate their abilities relative to others.  For example, in some
-surveys, more than 80\% of respondents believe that they are better
-than the average driver (see
-  \url{http://wikipedia.org/wiki/Illusory_superiority}).
-\index{average}
-\index{Lake Wobegon effect}
-\index{illusory superiority}
-\index{fallacy!illusory superiority}
-
-If we interpret ``average'' to mean median, then this result is
-logically impossible, but if ``average'' is the mean, this result is
-possible, although unlikely.
-
-What percentage of the population has more than the average number
-of legs?
+Write a definition for a class that represents a random variable
+with a Gumbel distribution (see \url{http://wikipedia.org/wiki/Gumbel_distribution}).
+\index{Gumbel distribution}
+\index{distribution!Gumbel}
 
 \end{exercise}
 
+
+\begin{exercise}
+Suppose I draw two values from a distribution; what is the distribution
+of the larger value?  Write a RandomVariable class called {\tt Max}
+that generates values from $Z = max(X, Y)$.
+\index{max}
+
+As the number of values increases, the distribution of the maximum
+converges on one of the extreme value distributions; see
+\url{http://wikipedia.org/wiki/Gumbel_distribution}.
+\index{Gumbel distribution}
+\index{distribution!Gumbel}
+
+\end{exercise}
+
+\begin{exercise}
+If 
+$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
+$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$, what 
+is the distribution of Z = aX + bY?
+
+\end{exercise}
+
+\begin{exercise}
+Let's see what happens when we add values from
+other distributions.  Choose a pair of distributions (any two of
+exponential, normal, lognormal, and Pareto) and choose parameters
+that make their mean and variance similar.
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{lognormal distribution}
+\index{distribution!lognormal}
+\index{sum}
+
+Generate random numbers from these distributions and compute the
+distribution of their sums.  Use the tests from
+Chapter~\ref{analytic} to see if the sum can be modeled by an
+analytic distribution.
+
+\end{exercise}
 
 \begin{exercise}
 The Internal Revenue Service of the United States (IRS) provides data
@@ -4698,62 +4742,6 @@ Hint: use the PMF to compute the relative mean difference
 You can download a solution to this exercise from \url{http://thinkstats2.com/gini.py}.
 
 \end{exercise}
-
-
-\section{The distribution framework}
-\index{distribution framework}
-\index{framework, distributions}
-
-\begin{figure}
-\centerline{\includegraphics[height=2.2in]{figs/distribution_functions.pdf}}
-\caption{A framework that relates representations of distribution
-functions.}
-\label{dist_framework}
-\end{figure}
-
-At this point we have seen PMFs, CDFs and PDFs; let's take a minute
-to review.  Figure~\ref{dist_framework} shows how these functions relate
-to each other.
-\index{PMF}
-
-We started with PMFs, which represent the probabilities for a discrete
-set of values.  To get from a PMF to a CDF, we computed a cumulative sum.
-To be more consistent, a discrete CDF should be called a cumulative mass
-function (CMF), but as far as I can tell no one uses that term.
-\index{CDF}
-
-To get from a CDF to a PMF, you can compute differences in cumulative
-probabilities.
-\index{PDF}
-
-Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
-a CDF is the integral of a PDF.  But remember that a PDF maps from
-values to probability densities; to get a probability, you have to
-integrate.
-\index{discrete}
-\index{analytic}
-
-To get from a discrete to a continuous distribution, you can perform
-various kinds of smoothing.  One form of smoothing is to assume that
-the data come from an analytic continuous distribution
-(like exponential or normal) and to estimate the parameters of that
-distribution.  Another option is kernel density estimation.
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-\index{bin}
-
-The opposite of smoothing is discretizing, or quantizing.  If you
-evaluate a PDF at discrete points, you can generate a PMF that is at
-least an approximation of the PDF.  You can get a better approximation
-using numerical integration.
-\index{Bayesian estimation}
-\index{estimation!Bayesian}
-
-
 
 
 \section{Glossary}
