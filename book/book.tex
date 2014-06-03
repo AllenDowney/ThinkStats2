@@ -3553,10 +3553,8 @@ on the purposes.
 
 
 \section{The lognormal distribution}
+\label{brfss}
 \label{lognormal}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{CDF}
 
 If the logarithms of a set of values have a normal distribution, the
 values have a {\bf lognormal distribution}.  The CDF of the lognormal
@@ -3571,6 +3569,9 @@ the mean and standard deviation; the mean of a lognormal distribution
 is $\exp(\mu +\sigma^2/2)$ and the standard deviation is
 ugly (see \url{http://wikipedia.org/wiki/Log-normal_distribution}).
 \index{parameter} \index{weight!adult} \index{adult weight}
+\index{lognormal distribution}
+\index{distribution!lognormal}
+\index{CDF}
 
 \begin{figure}
 % brfss.py
@@ -4006,9 +4007,7 @@ often good models of more complex empirical distributions.
 \end{itemize}
 
 
-\chapter{Probability Density}
-
-\section{PDFs}
+\chapter{Probability density functions}
 \label{density}
 \index{PDF}
 \index{probability density function}
@@ -4054,8 +4053,7 @@ following methods:
   density of the distribution at {\tt x}.
 
 \item {\tt MakePmf}, which evaluates the density at a discrete set of
-  values and returns a Pmf that approximates the Pdf.  The parameter
-  of {\tt MakePmf} is a sequence of {\tt x} values.
+  values and returns a Pmf that approximates the Pdf.
 
 \end{itemize}  
 
@@ -4067,30 +4065,41 @@ example, {\tt thinkstats2} provides a class named {\tt GaussianPdf}
 that evaluates the Gaussian density function.
 
 The following example creates a GaussianPdf with the mean and variance
-of adult female heights, in cm, from the BRFSS.  Then it computes the
-density of the distribution at a location one standard deviation from
-the mean.
+of adult female heights, in cm, from the BRFSS (see
+Section~\ref{brfss}).  Then it computes the density of the
+distribution at a location one standard deviation from the mean.
 
 \begin{verbatim}
     mean, var = 163, 52.8
-    sigma = math.sqrt(var)
-    pdf = thinkstats2.GaussianPdf(mean, sigma)
-    print(pdf.Density(mean + sigma))
+    std = math.sqrt(var)
+    pdf = thinkstats2.GaussianPdf(mean, std)
+    print(pdf.Density(mean + std))
 \end{verbatim}
 
-The result is about 0.09, in units of probability mass per cm.
+The code in this chapter is in {\tt chap06.py}, in the repository
+for this book (see Section~\ref{code}).
+
+The result is about 0.03, in units of probability mass per cm.
 Again, a probability density doesn't mean much by itself.  But if
 we make a Pmf, we can plot it and see the shape of the distribution:
 
 \begin{verbatim}
-    xs = numpy.linspace(mean - 3*sigma, mean + 3*sigma, 100)
-    pmf = pdf.MakePmf(xs)
-    thinkplot.Pmf(pmf, label='Gaussian')
+    low, high, n = mean - 3*std, mean + 3*std, 100
+    pmf = pdf.MakePmf(low, high, n)
+    thinkplot.Pdf(pmf, label='Gaussian')
 \end{verbatim}
 
-{\tt numpy.linspace} returns a Numpy array with 100 values, equally
+The parameters of {\tt MakePdf} are a lower bound, an upper bound, and
+the number of points to evaluate, {\tt n}.  This example evaluates
+100 points, equally
 spaced from three standard deviations below the mean to three standard
 deviations above.
+
+{\tt thinkplot.Pdf} plots the resulting Pmf as a smooth function,
+as contrasted with {\tt thinkplot.Pmf}, which renders a Pmf as a
+step function.  Figure~\ref{pdf_example} shows the result, as well
+as a PDF estimated from a sample, which we'll see in the next
+section.
 
 \begin{figure}
 % pdf_example.py
@@ -4139,10 +4148,10 @@ distribution and generates an EstimatedPdf to fit it:
 \index{numpy}
 
 \begin{verbatim}
-    sample = [random.gauss(mean, sigma) for i in range(1000)]
+    sample = [random.gauss(mean, std) for i in range(100)]
     sample_pdf = thinkstats2.EstimatedPdf(sample)
-    sample_pmf = sample_pdf.MakePmf(xs)
-    thinkplot.Pmf(pmf, label='KDE')
+    sample_pmf = sample_pdf.MakePmf(low, high, n)
+    thinkplot.Pmf(pmf, label='sample KDE')
 \end{verbatim}
 
 \verb"sample" is a list of 1000 random heights.
@@ -4150,10 +4159,11 @@ distribution and generates an EstimatedPdf to fit it:
 KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
 evaluating the density at a sequence of equally spaced values.
 
-Figure~\ref{pdf_example} shows the Gaussian density function (actually
-a discrete approximation of it) and a KDE based on a sample of 1000
-random heights.  The estimate is a good match for the original
-distribution.
+Figure~\ref{pdf_example} shows the Gaussian density function and a KDE
+based on a sample of 1000 random heights.  The estimate is a good
+match for the original distribution.
+
+%TODO: what are estimated PDFs good for?
 
 
 
