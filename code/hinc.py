@@ -38,24 +38,24 @@ def ReadData(filename='hinc06.csv'):
         
     res = []
     for _, row in cols.iterrows():
-        label, count = row.values
-        count = int(count.replace(',', ''))
+        label, freq = row.values
+        freq = int(freq.replace(',', ''))
 
         t = label.split()
         low, high = Clean(t[0]), Clean(t[-1])
 
-        res.append((high, count))
+        res.append((high, freq))
 
     df = pandas.DataFrame(res)
     # correct the first range
     df[0][0] -= 1
-    # compute the cumulative sum of the counts
+    # compute the cumulative sum of the freqs
     df[2] = df[1].cumsum()
-    # normalize the cumulative counts
+    # normalize the cumulative freqs
     total = df[2][41]
     df[3] = df[2] / total
     # add column names
-    df.columns = ['income',  'count', 'cumsum', 'ps']
+    df.columns = ['income',  'freq', 'cumsum', 'ps']
     return df
 
 

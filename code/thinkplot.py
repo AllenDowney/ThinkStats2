@@ -246,13 +246,14 @@ def HexBin(xs, ys, **options):
 
 
 def Pdf(pdf, **options):
-    """Plots a Pdf or Hist as a line.
+    """Plots a Pdf, Pmf, or Hist as a line.
 
     Args:
-      pdf: Hist or Pdf object
+      pdf: Pdf, Pmf, or Hist object
       options: keyword args passed to pyplot.plot
     """
-    xs, ps = pdf.Render()
+    low, high = options.pop('low'), options.pop('high')
+    xs, ps = pdf.Render(low=low, high=high)
     if pdf.label:
         options = Underride(options, label=pdf.label)
     Plot(xs, ps, **options)

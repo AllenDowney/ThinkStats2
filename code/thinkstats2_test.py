@@ -95,6 +95,8 @@ class Test(unittest.TestCase):
 
     def testHist(self):
         hist = thinkstats2.Hist('allen')
+        self.assertEquals(len(str(hist)), 38)
+
         self.assertEquals(len(hist), 4)
         self.assertEquals(hist.Freq('l'), 2)
 
@@ -107,8 +109,13 @@ class Test(unittest.TestCase):
 
     def testPmf(self):
         pmf = thinkstats2.Pmf('allen')
+        # this one might not be a robust test
+        self.assertEquals(len(str(pmf)), 45)
+
         self.assertEquals(len(pmf), 4)
         self.assertEquals(pmf.Prob('l'), 0.4)
+        self.assertEquals(pmf['l'], 0.4)
+        self.assertEquals(pmf.Percentile(50), 'l')
 
         pmf = thinkstats2.Pmf(Counter('allen'))
         self.assertEquals(len(pmf), 4)
@@ -124,12 +131,17 @@ class Test(unittest.TestCase):
 
         pmf2 = pmf.Copy()
         self.assertEquals(pmf, pmf2)
+
+        xs, ys = pmf.Render()
+        self.assertEquals(tuple(xs), tuple(sorted(pmf.Values())))        
         
     def testCdf(self):
         t = [1, 2, 2, 3, 5]
         pmf = thinkstats2.Pmf(t)
 
         cdf = thinkstats2.Cdf(pmf)
+        self.assertEquals(len(str(cdf)), 40)
+
         self.assertEquals(len(cdf), 4)
         self.assertAlmostEquals(cdf.Prob(2), 0.6)
         self.assertAlmostEquals(cdf.Value(0.6), 2)
@@ -152,6 +164,25 @@ class Test(unittest.TestCase):
         cdf2 = cdf.Copy()
         self.assertAlmostEquals(cdf2.Prob(2), 0.6)
         self.assertAlmostEquals(cdf2.Value(0.6), 2)
+        
+    def testCdfRender(self):
+        t = [1, 2, 2, 3, 5]
+        cdf = thinkstats2.Cdf(t)
+        xs, ps = cdf.Render()
+        self.assertEquals(xs[0], 1)
+        self.assertEquals(ps[2], 0.2)
+        self.assertEquals(sum(xs), 22)
+        self.assertEquals(sum(ps), 4.2)
+        
+    def testPmfFromCdf(self):
+        t = [1, 2, 2, 3, 5]
+        pmf = thinkstats2.Pmf(t)
+        cdf = thinkstats2.Cdf(pmf)
+        pmf2 = thinkstats2.Pmf(cdf)
+        for x in pmf.Values():
+            self.assertAlmostEquals(pmf[x], pmf2[x])
+
+    # TODO: test Pdfs
         
     def testEvalGaussianCdf(self):
         p = thinkstats2.EvalGaussianCdf(0)

@@ -1504,7 +1504,7 @@ To plot the same histogram with {\tt thinkplot.py}, try this:
 
 \begin{verbatim}
 >>> import thinkplot
->>> thinkplot.Hist(hist, color='blue', alpha=0.5)
+>>> thinkplot.Hist(hist)
 >>> thinkplot.Show(xlabel='value', ylabel='frequency')
 \end{verbatim}
 
@@ -1526,12 +1526,14 @@ Now let's get back to the data from the NSFG.  The code in this
 chapter is from {\tt first.py}.  For information about downloading and
 working with this code, see Section~\ref{code}.
 
+% TODO: apparently I can't refer to a label in the preface?
+
 When you start working with a new dataset, I suggest you explore
 the variables you are planning to use one at a time, and a good
 way to start is by looking at histograms.
 \index{histograms}
 
-In Section~\ref{cleaning} we cleaned transformed {\tt agepreg}
+In Section~\ref{cleaning} we transformed {\tt agepreg}
 from centiyears to years, and combined \verb"birthwgt_lb" and
 \verb"birthwgt_oz" into a single quantity, \verb"totalwgt_lb".
 In this section I'll use these variables to demonstrate some
@@ -1589,7 +1591,7 @@ the other values, and 1 and 15 are less common, probably because
 respondents round off birth weights that are close to an integer
 value.
 
-Figure~\ref{first_wgt_oz_hist} shows the histogram of \verb"agepreg",
+Figure~\ref{first_agepreg_hist} shows the histogram of \verb"agepreg",
 the mother's age at the end of pregnancy.  The mode is 21 years.  The
 distribution is very roughly bell-shaped, but in this case the tail
 extends farther to the right than left, because of biological limits.
@@ -1609,7 +1611,7 @@ not always visible.
 
 Before going on, it is a good idea to check for {\bf
   outliers}, which are extreme values that might be errors in
-measurement and recording, or might be accurate measurements of rate
+measurement and recording, or might be accurate measurements of rare
 events.
 
 Hist provides method {\tt Largest} and {\tt Smallest}, which take
@@ -1848,7 +1850,7 @@ observing a large number of pregnancies, it is unlikely that anyone
 would notice this difference at all.
 
 Another way to convey the size of the effect is to compare the
-difference between groups to the variability withing groups.
+difference between groups to the variability within groups.
 Cohen's $d$ is a statistic intended to do that; it is defined:
 %
 \[ d = \frac{\bar{x_1} - \bar{x_2}}{s}  \]
@@ -1863,7 +1865,7 @@ def CohenEffectSize(group1, group2):
     diff = group1.mean() - group2.mean()
 
     var1 = group1.var()
-    var2 = group1.var()
+    var2 = group2.var()
     n1, n2 = len(group1), len(group2)
 
     pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
@@ -1871,7 +1873,7 @@ def CohenEffectSize(group1, group2):
     return d
 \end{verbatim}
 
-In this example, the difference in means is 0.028 standard deviations.
+In this example, the difference in means is 0.029 standard deviations.
 To put that in perspective, the difference in height between men and
 women is about 1.7 standard deviations (see
 \url{https://en.wikipedia.org/wiki/Effect_size}).
@@ -4163,307 +4165,192 @@ Figure~\ref{pdf_example} shows the Gaussian density function and a KDE
 based on a sample of 1000 random heights.  The estimate is a good
 match for the original distribution.
 
-%TODO: what are estimated PDFs good for?
+Estimating a density function with KDE is useful for several purposes:
+
+\begin{description}
+
+\item[Visualization]: During the exploration phase of a project,
+CDFs are usually the best visualization of a distribution.  After you
+look at a CDF, you can decide whether an estimated PDF is an appropriate
+model of the distribution.  If so, it can be a better choice for
+presenting the distribution to an audience that might be unfamiliar
+with CDFs.
+
+\item[Interpolation]: An estimated PDF is a way to get from a sample
+to a model of the population.  If you have reason to believe that
+the population distribution is continuous and smooth, you can use
+KDE to estimate the density for values that don't appear in the sample.
+
+\item[Simulation]: If your sample is an input to a simulation,
+it might be appropriate to smooth the sample distribution using KDE.
+That might allow the simulation to explore more possible outcomes,
+rather than replicating the observed sample.  
+
+\end{description}
 
 
+\section{The distribution framework}
+\index{distribution framework}
+\index{framework, distributions}
 
-\section{Random Variables}
-\index{random variable}
-\index{variable!random}
+\begin{figure}
+\centerline{\includegraphics[height=2.2in]{figs/distribution_functions.pdf}}
+\caption{A framework that relates representations of distribution
+functions.}
+\label{dist_framework}
+\end{figure}
 
-A {\bf random variable} represents a process that generates a random
-number.  Random variables are usually written with a capital letter,
-like $X$.  You can think of a random variable as a random number
-generator.
-\index{cumulative distribution function}
-\index{CDF}
+At this point we have seen PMFs, CDFs and PDFs; let's take a minute
+to review.  Figure~\ref{dist_framework} shows how these functions relate
+to each other.
+\index{PMF}
 
-For example, here is a definition for a class that represents
-random variables:
-%
-\begin{verbatim}
-class RandomVariable(object):
-    """Parent class for all random variables."""
-\end{verbatim}
+We started with PMFs, which represent the probabilities for a discrete
+set of values.  To get from a PMF to a CDF, we computed a cumulative
+sum.  To be more strictly correct, a discrete CDF should be called a
+cumulative mass function (CMF), but as far as I can tell no one uses
+that term.  \index{CDF}
 
-And here is a random variable with an exponential distribution:
+To get from a CDF to a PMF, you can compute differences in cumulative
+probabilities.
+\index{PDF}
+
+% TODO: show the code here
+
+Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
+a CDF is the integral of a PDF.  But remember that a PDF maps from
+values to probability densities; to get a probability, you have to
+integrate.
+\index{discrete}
+\index{analytic}
+
+To get from a discrete to a continuous distribution, you can perform
+various kinds of smoothing.  One form of smoothing is to assume that
+the data come from an analytic continuous distribution
+(like exponential or normal) and to estimate the parameters of that
+distribution.  Another option is kernel density estimation.
 \index{exponential distribution}
 \index{distribution!exponential}
-%
-\begin{verbatim}
-class Exponential(RandomVariable):
-    def __init__(self, lam):
-        self.lam = lam
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+\index{bin}
 
-    def Generate(self):
-        return random.expovariate(self.lam)
+The opposite of smoothing is discretizing, or quantizing.  If you
+evaluate a PDF at discrete points, you can generate a PMF that is an
+approximation of the PDF.  You can get a better approximation using
+numerical integration.  \index{Bayesian estimation}
+\index{estimation!Bayesian}
+
+
+\section{Hist implementation}
+
+At this point you should know how to use the basic types provided
+by {\tt thinkstats2}: Hist, Pmf, Cdf, and Pdf.  Hist and Pmf inherit
+from a parent class called \verb"_DictWrapper".  The underscore
+indicates that this class should not be used by code in other modules.
+The name indicates what it is: a dictionary wrapper.  The primary
+attribute is {\tt d}, the dictionary that maps from values to their
+frequencies.
+
+The values can be any hashable type.  The frequencies should be integers,
+but can be any numeric type.
+
+\verb"_DictWrapper" contains the methods appropriate for both
+{\tt Hist} and {\tt Pmf}, including the constructor, {\tt Values},
+{\tt Items} and {\tt Render}.  It also provides the modifier
+methods {\tt Set}, {\tt Incr}, {\tt Mult}, and {\tt Remove}.  These
+methods are all implemented with dictionary operations.  For example:
+
+\begin{verbatim}
+    def Incr(self, x, term=1):
+        self.d[x] = self.d.get(x, 0) + term
+
+    def Mult(self, x, factor):
+        self.d[x] = self.d.get(x, 0) * factor
+
+    def Remove(self, x):
+        del self.d[x]
 \end{verbatim}
 
-The \verb"__init__" method takes the parameter, $\lambda$, and stores
-it as an attribute.  The {\tt Generate} method returns a random value
-from the exponential distribution with that parameter.  \index{init
-  method} \index{method!init}
+Because {\tt Hist} operators and methods are based on dictionaries,
+you should expect getting and setting items to be constant time operations;
+that is, their run time does not increase as the Hist gets bigger.
 
-Each time you invoke {\tt Generate}, you get a different value.  The
-value you get is called a {\bf random variate}, which is why many
-function names in the {\tt random} module include the word ``variate.''
-\index{random variate}
-\index{variate!random}
+\verb"_DictWrapper" also provides special methods to support getting
+and setting items, so instead of using {\tt Incr} you could write:
 
-If I were just generating exponential variates, I would not bother to
-define a new class; I would use {\tt random.expovariate}.  But for
-other distributions it might be useful to use RandomVariable objects.
-For example, the Erlang distribution is an analytic distribution with
-parameters $\lambda$ and $k$ (see
-\url{http://wikipedia.org/wiki/Erlang_distribution}).
-\index{Erlang distribution}
-\index{distribution!Erlang}
-
-One way to generate values from an Erlang distribution is to add
-$k$ values from an exponential distribution with the same $\lambda$.
-Here's an implementation:
-%
 \begin{verbatim}
-class Erlang(RandomVariable):
-    def __init__(self, lam, k):
-        self.lam = lam
-        self.k = k
-        self.expo = Exponential(lam)
+    hist = thinkstats2.Hist()
+    hist['a'] += 1
+\end{verbatim}
 
-    def Generate(self):
-        total = 0
-        for i in range(self.k):
-            total += self.expo.Generate()
+{\tt Hist} also provides {\tt Freq}, which looks up the frequency
+of a given value.
+
+
+\section{Pmf implementation}
+
+{\tt Pmf} and {\tt Hist} are almost the same thing, except that a Pmf
+maps values to floating-point probabilities, rather than integer
+frequencies.  If the sum of the probabilities is 1, the Pmf is said to
+be ``normalized.''
+
+{\tt Pmf} provides {\tt Normalize}, which computes the sum of the
+probabilities and divides through by a factor:
+
+\begin{verbatim}
+    def Normalize(self, fraction=1.0):
+        total = self.Total()
+        if total == 0.0:
+            raise ValueError('Normalize: total probability is zero.')
+
+        factor = float(fraction) / total
+        for x in self.d:
+            self.d[x] *= factor
+
         return total
 \end{verbatim}
 
-The \verb"__init__" method creates an Exponential object with the
-given parameter; then {\tt Generate} uses it.  In general,
-\verb"__init__" can take any set of parameters and the {\tt
-  Generate} function can implement any random process.
+{\tt fraction} determines the sum of the probabilities after normalizing;
+the default value is 1.
+If the total probability is 0, the Pmf cannot be normalized, so
+{\tt Normalize} raises and error.
+
+{\tt Hist} and {\tt Pmf} have the same constructor.  It can take
+as an argument a Python {\tt dict}, a Hist, Pmf or Cdf, a pandas
+Series, a list of (value, frequency) pairs, or a sequence of values.
+
+If you instantiate a Pmf, the result is normalized.  If you
+instantiate a Hist, it is not.  To construct an unnormalized Pmf,
+you can create an empty Pmf and modify it.  The Pmf modifiers do
+not renormalize the Pmf.
 
 
-\section{Functions of random variables}
-\index{random variables}
-\index{CDF}
 
-Suppose we have two random variables, $X$ and $Y$, represented
-by RandomVariable objects.
-How can we compute the distribution of the sum $Z = X + Y$?
-\index{random variable}
-\index{variable!random}
-\index{sum}
+\section{Cdf implementation}
 
-One option is to write a RandomVariable object that generates
-the sum:
-%
+
 \begin{verbatim}
-class Sum(RandomVariable):
-    def __init__(X, Y):
-        self.X = X
-        self.Y = Y
-
-    def Generate():
-        return X.Generate() + Y.Generate()
 \end{verbatim}
 
-Given any RandomVariables, $X$ and $Y$, we can create a Sum
-object that represents $Z$.  Then we can use a sample from $Z$ to
-approximate $\CDF_{Z}$.
-
-This approach is simple and versatile, but not very efficient; we
-have to generate a large sample to estimate $\CDF_{Z}$ accurately, and
-even then it is not exact.
-
-
-
-\begin{exercise}
-
-%TODO: do this as an example
-If you are given Pmf objects, you can compute the distribution of
-the sum by enumerating all pairs of values:
-\index{Pmf object}
-%
 \begin{verbatim}
-for x in pmf_x.Values():
-    for y in pmf_y.Values():
-        z = x + y
 \end{verbatim}
 
-Write a function that takes $PMF_{X}$ and
-$PMF_{Y}$ and returns a new Pmf that represents the distribution of
-the sum $Z = X + Y$.
+\begin{verbatim}
+\end{verbatim}
 
-Write a similar function that computes the PMF of $Z = max(X, Y)$.
-
-\end{exercise}
+\begin{verbatim}
+\end{verbatim}
 
 
-
-\section{Why normal?}
-\label{why_normal}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-I said earlier that normal distributions are amenable to analysis,
-but I didn't say why.  One reason is that they are
-closed under linear transformation and convolution.  To explain what
-that means, it will help to introduce some notation.
-\index{analysis}
-\index{random variable}
-\index{variable!random}
-
-If the distribution of a random variable, X, is
-normal with parameters $\mu$ and $\sigma$, you can write
-%
-\[ X \sim \normal (\mu, \sigma^{2})\]
-%
-where the symbol $\sim$ means ``is distributed'' and the script letter
-$\normal$ stands for ``normal.''
-
-%The other analytic distributions in this chapter are sometimes
-%written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
-%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
-%\sigma^2)$.
-
-A linear transformation of $X$ is something like $X' = a X + b$, where
-$a$ and $b$ are real numbers.\index{linear transformation}
-A family of distributions is closed under
-linear transformation if $X'$ is in the same family as $X$.  The normal
-distribution has this property; if $X \sim \normal (\mu,
-\sigma^2)$,
-
-\[ X' \sim \normal (a \mu + b, a^{2} \sigma^2)\]
-
-Normal distributions are also closed under addition.  
-If $Z = X + Y$ and
-$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
-$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$ then
-%
-\[ Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
-%
-The other distributions we have looked at do not have these
-properties.
-\index{convolution}
+\section{Pdf implementation}
 
 
+% TODO: show code
 
-\section{Central limit theorem}
-\label{CLT}
-\index{Central Limit Theorem}
-
-So far we have seen:
-
-\begin{itemize}
-
-\item If we add values drawn from normal distributions, the distribution
-of the sum is normal.
-\index{sum}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-\item If we add values drawn from other distributions, the sum does not
-generally have one of the analytic distributions we have seen.
-
-\end{itemize}
-
-But it turns out that if we add up a large number of values from
-almost any distribution, the distribution of the sum converges to
-normal.
-
-More specifically, if the distribution of the values has mean and
-standard deviation $\mu$ and $\sigma$, the distribution of the sum is
-approximately $\normal(n \mu, n \sigma^2)$.
-
-This is called the {\bf Central Limit Theorem}.  It is one of the
-most useful tools for statistical analysis, but it comes with
-caveats:
-
-\begin{itemize}
-
-\item The values have to be drawn independently.
-\index{independent}
-
-\item The values have to come from the same distribution (although
-  this requirement can be relaxed).
-\index{identical}
-
-\item The values have to be drawn
-  from a distribution with finite mean and variance, so most Pareto
-  distributions are out.
-\index{mean}
-\index{variance}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{exponential distribution}
-\index{distribution!exponential}
-
-\item The number of values you need before you see convergence depends
-  on the skewness of the distribution.  Sums from an exponential
-  distribution converge for small sample sizes.  Sums from a
-  lognormal distribution require much larger sizes.
-\index{lognormal distribution}
-\index{distribution!lognormal}
-
-\end{itemize}
-
-The Central Limit Theorem explains, at least in part, the prevalence
-of normal distributions in the natural world.  Most characteristics of
-animals and other life forms are affected by a large number of genetic
-and environmental factors whose effect is additive.  The characteristics
-we measure are the sum of a large number of small effects, so their
-distribution tends to be normal.
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-\begin{exercise}
-If I draw a sample, $x_{1} .. x_{n}$, independently from a
-distribution with finite mean $\mu$ and variance $\sigma^2$, what is
-the distribution of the sample mean:
-%
-\[ \xbar = \frac{1}{n} \sum x_i \]
-%
-As $n$ increases, what happens to the variance of the sample mean?
-Hint: review Section~\ref{why_normal}.
-
-\end{exercise}
-
-\begin{exercise}
-
-%TODO: do this one as an example
-
-Choose a distribution (one of exponential, lognormal or Pareto) and
-choose values for the parameter(s).  Generate samples with sizes
-2, 4, 8, etc., and compute the distribution of their sums.  Use
-a normal probability plot to see if the distribution is approximately
-normal.  How many terms do you have to add to see convergence?
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{convergence}
-
-\end{exercise}
-
-
-\begin{exercise}
-
-% TODO: do this one as an example
-Instead of the distribution of sums, compute the distribution of
-products; what happens as the number of terms increases?
-Hint: look at the distribution of the log of the products.
-\index{logarithm}
-\index{product}
-
-\end{exercise}
+% TODO: discuss implementation
 
 
 \section{Moments}
@@ -4613,60 +4500,6 @@ distributions?  How does $g_p$ compare to $g_1$?
 
 
 
-\section{The distribution framework}
-\index{distribution framework}
-\index{framework, distributions}
-
-\begin{figure}
-\centerline{\includegraphics[height=2.2in]{figs/distribution_functions.pdf}}
-\caption{A framework that relates representations of distribution
-functions.}
-\label{dist_framework}
-\end{figure}
-
-At this point we have seen PMFs, CDFs and PDFs; let's take a minute
-to review.  Figure~\ref{dist_framework} shows how these functions relate
-to each other.
-\index{PMF}
-
-We started with PMFs, which represent the probabilities for a discrete
-set of values.  To get from a PMF to a CDF, we computed a cumulative
-sum.  To be more strictly correct, a discrete CDF should be called a
-cumulative mass function (CMF), but as far as I can tell no one uses
-that term.  \index{CDF}
-
-To get from a CDF to a PMF, you can compute differences in cumulative
-probabilities.
-\index{PDF}
-
-Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
-a CDF is the integral of a PDF.  But remember that a PDF maps from
-values to probability densities; to get a probability, you have to
-integrate.
-\index{discrete}
-\index{analytic}
-
-To get from a discrete to a continuous distribution, you can perform
-various kinds of smoothing.  One form of smoothing is to assume that
-the data come from an analytic continuous distribution
-(like exponential or normal) and to estimate the parameters of that
-distribution.  Another option is kernel density estimation.
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-\index{bin}
-
-The opposite of smoothing is discretizing, or quantizing.  If you
-evaluate a PDF at discrete points, you can generate a PMF that is at
-least an approximation of the PDF.  You can get a better approximation
-using numerical integration.
-\index{Bayesian estimation}
-\index{estimation!Bayesian}
-
-
 \section{Exercises}
 
 \begin{exercise}
@@ -4721,6 +4554,9 @@ analytic distribution.
 \end{exercise}
 
 \begin{exercise}
+
+% TODO: update this for the new dataset
+
 The Internal Revenue Service of the United States (IRS) provides data
 about income taxes, and other statistics, at \url{http://irs.gov/taxstats}.
 If you did Exercise~\ref{irs}, you have already worked with this data;
@@ -7061,9 +6897,357 @@ if it is false.
 \chapter{Operations on distributions}
 \label{operations}
 
-\section{Estimation}
+\section{Random Variables}
+\index{random variable}
+\index{variable!random}
 
-\section{Hypothesis testing}
+A {\bf random variable} represents a process that generates a random
+number.  Random variables are usually written with a capital letter,
+like $X$.  You can think of a random variable as a random number
+generator.
+\index{cumulative distribution function}
+\index{CDF}
+
+For example, here is a definition for a class that represents
+random variables:
+%
+\begin{verbatim}
+class RandomVariable(object):
+    """Parent class for all random variables."""
+\end{verbatim}
+
+And here is a random variable with an exponential distribution:
+\index{exponential distribution}
+\index{distribution!exponential}
+%
+\begin{verbatim}
+class Exponential(RandomVariable):
+    def __init__(self, lam):
+        self.lam = lam
+
+    def Generate(self):
+        return random.expovariate(self.lam)
+\end{verbatim}
+
+The \verb"__init__" method takes the parameter, $\lambda$, and stores
+it as an attribute.  The {\tt Generate} method returns a random value
+from the exponential distribution with that parameter.  \index{init
+  method} \index{method!init}
+
+Each time you invoke {\tt Generate}, you get a different value.  The
+value you get is called a {\bf random variate}, which is why many
+function names in the {\tt random} module include the word ``variate.''
+\index{random variate}
+\index{variate!random}
+
+If I were just generating exponential variates, I would not bother to
+define a new class; I would use {\tt random.expovariate}.  But for
+other distributions it might be useful to use RandomVariable objects.
+For example, the Erlang distribution is an analytic distribution with
+parameters $\lambda$ and $k$ (see
+\url{http://wikipedia.org/wiki/Erlang_distribution}).
+\index{Erlang distribution}
+\index{distribution!Erlang}
+
+One way to generate values from an Erlang distribution is to add
+$k$ values from an exponential distribution with the same $\lambda$.
+Here's an implementation:
+%
+\begin{verbatim}
+class Erlang(RandomVariable):
+    def __init__(self, lam, k):
+        self.lam = lam
+        self.k = k
+        self.expo = Exponential(lam)
+
+    def Generate(self):
+        total = 0
+        for i in range(self.k):
+            total += self.expo.Generate()
+        return total
+\end{verbatim}
+
+The \verb"__init__" method creates an Exponential object with the
+given parameter; then {\tt Generate} uses it.  In general,
+\verb"__init__" can take any set of parameters and the {\tt
+  Generate} function can implement any random process.
+
+
+\section{Functions of random variables}
+\index{random variables}
+\index{CDF}
+
+Suppose we have two random variables, $X$ and $Y$, represented
+by RandomVariable objects.
+How can we compute the distribution of the sum $Z = X + Y$?
+\index{random variable}
+\index{variable!random}
+\index{sum}
+
+One option is to write a RandomVariable object that generates
+the sum:
+%
+\begin{verbatim}
+class Sum(RandomVariable):
+    def __init__(X, Y):
+        self.X = X
+        self.Y = Y
+
+    def Generate():
+        return X.Generate() + Y.Generate()
+\end{verbatim}
+
+Given any RandomVariables, $X$ and $Y$, we can create a Sum
+object that represents $Z$.  Then we can use a sample from $Z$ to
+approximate $\CDF_{Z}$.
+
+This approach is simple and versatile, but not very efficient; we
+have to generate a large sample to estimate $\CDF_{Z}$ accurately, and
+even then it is not exact.
+
+
+
+\begin{exercise}
+
+%TODO: do this as an example
+If you are given Pmf objects, you can compute the distribution of
+the sum by enumerating all pairs of values:
+\index{Pmf object}
+%
+\begin{verbatim}
+for x in pmf_x.Values():
+    for y in pmf_y.Values():
+        z = x + y
+\end{verbatim}
+
+Write a function that takes $PMF_{X}$ and
+$PMF_{Y}$ and returns a new Pmf that represents the distribution of
+the sum $Z = X + Y$.
+
+Write a similar function that computes the PMF of $Z = max(X, Y)$.
+
+\end{exercise}
+
+
+
+\section{Why normal?}
+\label{why_normal}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+I said earlier that normal distributions are amenable to analysis,
+but I didn't say why.  One reason is that they are
+closed under linear transformation and convolution.  To explain what
+that means, it will help to introduce some notation.
+\index{analysis}
+\index{random variable}
+\index{variable!random}
+
+If the distribution of a random variable, X, is
+normal with parameters $\mu$ and $\sigma$, you can write
+%
+\[ X \sim \normal (\mu, \sigma^{2})\]
+%
+where the symbol $\sim$ means ``is distributed'' and the script letter
+$\normal$ stands for ``normal.''
+
+%The other analytic distributions in this chapter are sometimes
+%written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
+%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
+%\sigma^2)$.
+
+A linear transformation of $X$ is something like $X' = a X + b$, where
+$a$ and $b$ are real numbers.\index{linear transformation}
+A family of distributions is closed under
+linear transformation if $X'$ is in the same family as $X$.  The normal
+distribution has this property; if $X \sim \normal (\mu,
+\sigma^2)$,
+
+\[ X' \sim \normal (a \mu + b, a^{2} \sigma^2)\]
+
+Normal distributions are also closed under addition.  
+If $Z = X + Y$ and
+$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
+$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$ then
+%
+\[ Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
+%
+The other distributions we have looked at do not have these
+properties.
+\index{convolution}
+
+
+
+\section{Central limit theorem}
+\label{CLT}
+\index{Central Limit Theorem}
+
+So far we have seen:
+
+\begin{itemize}
+
+\item If we add values drawn from normal distributions, the distribution
+of the sum is normal.
+\index{sum}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+\item If we add values drawn from other distributions, the sum does not
+generally have one of the analytic distributions we have seen.
+
+\end{itemize}
+
+But it turns out that if we add up a large number of values from
+almost any distribution, the distribution of the sum converges to
+normal.
+
+More specifically, if the distribution of the values has mean and
+standard deviation $\mu$ and $\sigma$, the distribution of the sum is
+approximately $\normal(n \mu, n \sigma^2)$.
+
+This is called the {\bf Central Limit Theorem}.  It is one of the
+most useful tools for statistical analysis, but it comes with
+caveats:
+
+\begin{itemize}
+
+\item The values have to be drawn independently.
+\index{independent}
+
+\item The values have to come from the same distribution (although
+  this requirement can be relaxed).
+\index{identical}
+
+\item The values have to be drawn
+  from a distribution with finite mean and variance, so most Pareto
+  distributions are out.
+\index{mean}
+\index{variance}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{exponential distribution}
+\index{distribution!exponential}
+
+\item The number of values you need before you see convergence depends
+  on the skewness of the distribution.  Sums from an exponential
+  distribution converge for small sample sizes.  Sums from a
+  lognormal distribution require much larger sizes.
+\index{lognormal distribution}
+\index{distribution!lognormal}
+
+\end{itemize}
+
+The Central Limit Theorem explains, at least in part, the prevalence
+of normal distributions in the natural world.  Most characteristics of
+animals and other life forms are affected by a large number of genetic
+and environmental factors whose effect is additive.  The characteristics
+we measure are the sum of a large number of small effects, so their
+distribution tends to be normal.
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+\begin{exercise}
+If I draw a sample, $x_{1} .. x_{n}$, independently from a
+distribution with finite mean $\mu$ and variance $\sigma^2$, what is
+the distribution of the sample mean:
+%
+\[ \xbar = \frac{1}{n} \sum x_i \]
+%
+As $n$ increases, what happens to the variance of the sample mean?
+Hint: review Section~\ref{why_normal}.
+
+\end{exercise}
+
+\begin{exercise}
+
+%TODO: do this one as an example
+
+Choose a distribution (one of exponential, lognormal or Pareto) and
+choose values for the parameter(s).  Generate samples with sizes
+2, 4, 8, etc., and compute the distribution of their sums.  Use
+a normal probability plot to see if the distribution is approximately
+normal.  How many terms do you have to add to see convergence?
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{lognormal distribution}
+\index{distribution!lognormal}
+\index{convergence}
+
+\end{exercise}
+
+
+\begin{exercise}
+
+% TODO: do this one as an example
+Instead of the distribution of sums, compute the distribution of
+products; what happens as the number of terms increases?
+Hint: look at the distribution of the log of the products.
+\index{logarithm}
+\index{product}
+
+\end{exercise}
+
+\section{Exercises}
+
+\begin{exercise}
+Write a definition for a class that represents a random variable
+with a Gumbel distribution (see \url{http://wikipedia.org/wiki/Gumbel_distribution}).
+\index{Gumbel distribution}
+\index{distribution!Gumbel}
+
+\end{exercise}
+
+
+\begin{exercise}
+Suppose I draw two values from a distribution; what is the distribution
+of the larger value?  Write a RandomVariable class called {\tt Max}
+that generates values from $Z = max(X, Y)$.
+\index{max}
+
+As the number of values increases, the distribution of the maximum
+converges on one of the extreme value distributions; see
+\url{http://wikipedia.org/wiki/Gumbel_distribution}.
+\index{Gumbel distribution}
+\index{distribution!Gumbel}
+
+\end{exercise}
+
+\begin{exercise}
+If 
+$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
+$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$, what 
+is the distribution of Z = aX + bY?
+
+\end{exercise}
+
+\begin{exercise}
+Let's see what happens when we add values from
+other distributions.  Choose a pair of distributions (any two of
+exponential, normal, lognormal, and Pareto) and choose parameters
+that make their mean and variance similar.
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{lognormal distribution}
+\index{distribution!lognormal}
+\index{sum}
+
+Generate random numbers from these distributions and compute the
+distribution of their sums.  Use the tests from
+Chapter~\ref{analytic} to see if the sum can be modeled by an
+analytic distribution.
+
+\end{exercise}
+
 
 
 \printindex

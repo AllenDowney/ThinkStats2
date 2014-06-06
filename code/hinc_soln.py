@@ -10,6 +10,7 @@ from __future__ import print_function
 import numpy as np
 import pandas
 
+import hinc
 import thinkplot
 import thinkstats2
 
@@ -63,18 +64,6 @@ so you might have to
 """
 
 
-def Clean(s):
-    """Converts dollar amounts to integers."""
-    try:
-        return int(s.lstrip('$').replace(',', ''))
-    except ValueError:
-        if s == 'Under':
-            return 0
-        elif s == 'over':
-            return np.inf
-        return None
-
-
 class SmoothCdf(thinkstats2.Cdf):
     """Represents a CDF based on calculated quantiles.
     """
@@ -93,39 +82,6 @@ class SmoothCdf(thinkstats2.Cdf):
         """Compute inverse CDF(x), interpolating between probabilities.
         """
         return np.interp(p, self.ps, self.xs)
-
-
-def ReadData(filename='hinc06.csv'):
-    """Reads filename and returns populations in thousands
-
-    filename: string
-
-    returns: pandas Series of populations in thousands
-    """
-    data = pandas.read_csv(filename, header=None, skiprows=9)
-    cols = data[[0, 1]]
-        
-    res = []
-    for _, row in cols.iterrows():
-        label, count = row.values
-        count = int(count.replace(',', ''))
-
-        t = label.split()
-        low, high = Clean(t[0]), Clean(t[-1])
-
-        res.append((high, count))
-
-    df = pandas.DataFrame(res)
-    # correct the first range
-    df[0][0] -= 1
-    # compute the cumulative sum of the counts
-    df[2] = df[1].cumsum()
-    # normalize the cumulative counts
-    total = df[2][41]
-    df[3] = df[2] / total
-    # add column names
-    df.columns = ['income',  'count', 'cumsum', 'ps']
-    return df
 
 
 def MakeFigures(df):
@@ -175,7 +131,7 @@ def MakeFigures(df):
     
 
 def main():
-    df = ReadData()
+    df = hinc.ReadData()
     MakeFigures(df)
 
 
