@@ -132,7 +132,6 @@ def main(script):
 
     # test AllModes
     mode = AllMode(live.prglngth)
-    for 
 
     # test PmfMean and PmfVar
     prglngth = live.prglngth

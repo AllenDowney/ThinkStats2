@@ -2225,9 +2225,9 @@ class FixedWidthVariables(object):
         returns: DataFrame
         """
         frame = pandas.read_fwf(filename,
-                                colspecs=self.colspecs, 
-                                names=self.names,
-                                **options)
+                                           colspecs=self.colspecs, 
+                                           names=self.names,
+                                           **options)
         return frame
 
 
