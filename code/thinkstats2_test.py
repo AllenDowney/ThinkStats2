@@ -11,6 +11,7 @@ import random
 from collections import Counter
 
 import thinkstats2
+import thinkplot
 
 class Test(unittest.TestCase):
 
@@ -138,32 +139,71 @@ class Test(unittest.TestCase):
     def testCdf(self):
         t = [1, 2, 2, 3, 5]
         pmf = thinkstats2.Pmf(t)
+        hist = thinkstats2.Hist(t)
 
         cdf = thinkstats2.Cdf(pmf)
         self.assertEquals(len(str(cdf)), 40)
 
+        # when you make a Cdf from a Pdf, you might get some floating
+        # point representation error
         self.assertEquals(len(cdf), 4)
         self.assertAlmostEquals(cdf.Prob(2), 0.6)
-        self.assertAlmostEquals(cdf.Value(0.6), 2)
+        self.assertAlmostEquals(cdf[2], 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.MakeCdfFromPmf(pmf)
+        self.assertEquals(len(cdf), 4)
+        self.assertAlmostEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
 
         cdf = thinkstats2.Cdf(pmf.Items())
         self.assertEquals(len(cdf), 4)
         self.assertAlmostEquals(cdf.Prob(2), 0.6)
-        self.assertAlmostEquals(cdf.Value(0.6), 2)
+        self.assertEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.MakeCdfFromItems(pmf.Items())
+        self.assertEquals(len(cdf), 4)
+        self.assertAlmostEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.Cdf(pmf.d)
+        self.assertEquals(len(cdf), 4)
+        self.assertAlmostEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.MakeCdfFromDict(pmf.d)
+        self.assertEquals(len(cdf), 4)
+        self.assertAlmostEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.Cdf(hist)
+        self.assertEquals(len(cdf), 4)
+        self.assertEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.MakeCdfFromHist(hist)
+        self.assertEquals(len(cdf), 4)
+        self.assertEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
 
         cdf = thinkstats2.Cdf(t)
         self.assertEquals(len(cdf), 4)
-        self.assertAlmostEquals(cdf.Prob(2), 0.6)
-        self.assertAlmostEquals(cdf.Value(0.6), 2)
+        self.assertEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
+
+        cdf = thinkstats2.MakeCdfFromList(t)
+        self.assertEquals(len(cdf), 4)
+        self.assertEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
 
         cdf = thinkstats2.Cdf(Counter(t))
         self.assertEquals(len(cdf), 4)
-        self.assertAlmostEquals(cdf.Prob(2), 0.6)
-        self.assertAlmostEquals(cdf.Value(0.6), 2)
+        self.assertEquals(cdf.Prob(2), 0.6)
+        self.assertEquals(cdf.Value(0.6), 2)
 
         cdf2 = cdf.Copy()
-        self.assertAlmostEquals(cdf2.Prob(2), 0.6)
-        self.assertAlmostEquals(cdf2.Value(0.6), 2)
+        self.assertEquals(cdf2.Prob(2), 0.6)
+        self.assertEquals(cdf2.Value(0.6), 2)
         
     def testCdfRender(self):
         t = [1, 2, 2, 3, 5]
@@ -182,7 +222,49 @@ class Test(unittest.TestCase):
         for x in pmf.Values():
             self.assertAlmostEquals(pmf[x], pmf2[x])
 
-    # TODO: test Pdfs
+    def testGaussianPdf(self):
+        pdf = thinkstats2.GaussianPdf(mu=1, sigma=2)
+        self.assertEquals(len(str(pdf)), 31)
+        self.assertAlmostEquals(pdf.Density(3), 0.12098536226)
+
+        pmf = pdf.MakePmf()
+        self.assertAlmostEquals(pmf[1.0], 0.0239951295619)
+        xs, ps = pdf.Render()
+        self.assertEquals(xs[0], -5.0)
+        self.assertAlmostEquals(ps[0], 0.0022159242059690038)
+
+        pmf = thinkstats2.Pmf(pdf)
+        self.assertAlmostEquals(pmf[1.0], 0.0239951295619)
+        xs, ps = pmf.Render()
+        self.assertEquals(xs[0], -5.0)
+        self.assertAlmostEquals(ps[0], 0.00026656181123)
+        
+        cdf = thinkstats2.Cdf(pdf)
+        self.assertAlmostEquals(cdf[1.0], 0.51199756478094904)
+        xs, ps = cdf.Render()
+        self.assertEquals(xs[0], -5.0)
+        self.assertAlmostEquals(ps[0], 0.0)
+        thinkplot.Cdf(cdf)
+        thinkplot.Show()
+        
+    def testExponentialPdf(self):
+        pdf = thinkstats2.ExponentialPdf(lam=0.5)
+        self.assertEquals(len(str(pdf)), 24)
+        self.assertAlmostEquals(pdf.Density(3), 0.11156508007421491)
+        pmf = pdf.MakePmf()
+        self.assertAlmostEquals(pmf[1.0], 0.02977166586593202)
+        xs, ps = pdf.Render()
+        self.assertEquals(xs[0], 0.0)
+        self.assertAlmostEquals(ps[0], 0.5)
+        
+    def testEstimatedPdf(self):
+        pdf = thinkstats2.EstimatedPdf([1, 2, 2, 3, 5])
+        self.assertEquals(len(str(pdf)), 20)
+        self.assertAlmostEquals(pdf.Density(3), 0.19629968)
+        pmf = pdf.MakePmf()
+        self.assertAlmostEquals(pmf[1.0], 0.010172282816895044)        
+        pmf = pdf.MakePmf(low=0, high=6)
+        self.assertAlmostEquals(pmf[0.0], 0.0050742294053582942)
         
     def testEvalGaussianCdf(self):
         p = thinkstats2.EvalGaussianCdf(0)

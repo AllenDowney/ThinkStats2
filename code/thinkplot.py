@@ -252,8 +252,9 @@ def Pdf(pdf, **options):
       pdf: Pdf, Pmf, or Hist object
       options: keyword args passed to pyplot.plot
     """
-    low, high = options.pop('low'), options.pop('high')
-    xs, ps = pdf.Render(low=low, high=high)
+    low, high = options.pop('low', None), options.pop('high', None)
+    n = options.pop('n', None)
+    xs, ps = pdf.Render(low=low, high=high, n=n)
     if pdf.label:
         options = Underride(options, label=pdf.label)
     Plot(xs, ps, **options)

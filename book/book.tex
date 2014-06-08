@@ -4054,17 +4054,24 @@ following methods:
 \item {\tt Density}, which takes a value, {\tt x}, and returns the
   density of the distribution at {\tt x}.
 
-\item {\tt MakePmf}, which evaluates the density at a discrete set of
-  values and returns a Pmf that approximates the Pdf.
+\item {\tt Render}, which evaluates the density at a discrete set of
+  values and returns a pair of sequences, {\tt xs} and {\tt ps}.
+
+\item {\tt MakePmf}, which uses {\tt Render} to evaluate the density
+  at a discrete set of values and returns a normalized Pmf that
+  approximates the Pdf.
+
+\item {\tt GetLinspace}, which returns the default set of points used 
+  by {\tt Render} and {\tt MakePmf}.
 
 \end{itemize}  
 
 {\tt Pdf} is an abstract parent class, which means you should not
-instantiate it; that is, you cannot create a Pdf object.
-Instead, you should define a child class that inherits from {\tt Pdf}
-and provides the appropriate definition of {\tt Density}.  For
-example, {\tt thinkstats2} provides a class named {\tt GaussianPdf}
-that evaluates the Gaussian density function.
+instantiate it; that is, you cannot create a Pdf object.  Instead, you
+should define a child class that inherits from {\tt Pdf} and provides
+definitions of {\tt Density} and {\tt GetLinspace}.
+For example, {\tt thinkstats2} provides a class named {\tt
+  GaussianPdf} that evaluates the Gaussian density function.
 
 The following example creates a GaussianPdf with the mean and variance
 of adult female heights, in cm, from the BRFSS (see
@@ -4072,10 +4079,10 @@ Section~\ref{brfss}).  Then it computes the density of the
 distribution at a location one standard deviation from the mean.
 
 \begin{verbatim}
-    mean, var = 163, 52.8
-    std = math.sqrt(var)
-    pdf = thinkstats2.GaussianPdf(mean, std)
-    print(pdf.Density(mean + std))
+>>> mean, var = 163, 52.8
+>>> std = math.sqrt(var)
+>>> pdf = thinkstats2.GaussianPdf(mean, std)
+>>> pdf.Density(mean + std)
 \end{verbatim}
 
 The code in this chapter is in {\tt chap06.py}, in the repository
@@ -4083,25 +4090,28 @@ for this book (see Section~\ref{code}).
 
 The result is about 0.03, in units of probability mass per cm.
 Again, a probability density doesn't mean much by itself.  But if
-we make a Pmf, we can plot it and see the shape of the distribution:
+we plot the Pdf, we can see the shape of the distribution:
 
 \begin{verbatim}
-    low, high, n = mean - 3*std, mean + 3*std, 100
-    pmf = pdf.MakePmf(low, high, n)
-    thinkplot.Pdf(pmf, label='Gaussian')
+>>>> thinkplot.Pdf(pdf, label='Gaussian')
 \end{verbatim}
 
-The parameters of {\tt MakePdf} are a lower bound, an upper bound, and
-the number of points to evaluate, {\tt n}.  This example evaluates
-100 points, equally
-spaced from three standard deviations below the mean to three standard
-deviations above.
-
-{\tt thinkplot.Pdf} plots the resulting Pmf as a smooth function,
+{\tt thinkplot.Pdf} plots the Pdf as a smooth function,
 as contrasted with {\tt thinkplot.Pmf}, which renders a Pmf as a
 step function.  Figure~\ref{pdf_example} shows the result, as well
 as a PDF estimated from a sample, which we'll see in the next
 section.
+
+You can use {\tt MakePmf} to approximate the Pdf:
+
+\begin{verbatim}
+>>>> pmf = pdf.MakePmf()
+\end{verbatim}
+
+By default, the resulting Pmf contains 101 points equally spaced from
+{\tt mu - 3*sigma} to {\tt mu + 3*sigma}.  Optionally, {\tt MakePmf}
+and {\tt Render} can take keyword arguments {\tt low}, {\tt high},
+and {\tt n}.
 
 \begin{figure}
 % pdf_example.py
@@ -4132,8 +4142,8 @@ class EstimatedPdf(Pdf):
     def __init__(self, sample):
         self.kde = scipy.stats.gaussian_kde(sample)
 
-    def Density(self, x):
-        return self.kde.evaluate(x)
+    def Density(self, xs):
+        return self.kde.evaluate(xs)
 \end{verbatim}
 
 \verb"__init__" takes a sample
@@ -4146,17 +4156,16 @@ and returns the resulting density.
 \index{density}
 
 Here's an example that generates a sample from a Gaussian
-distribution and generates an EstimatedPdf to fit it:
+distribution and then makes an EstimatedPdf to fit it:
 \index{numpy}
 
 \begin{verbatim}
-    sample = [random.gauss(mean, std) for i in range(100)]
-    sample_pdf = thinkstats2.EstimatedPdf(sample)
-    sample_pmf = sample_pdf.MakePmf(low, high, n)
-    thinkplot.Pmf(pmf, label='sample KDE')
+>>> sample = [random.gauss(mean, std) for i in range(100)]
+>>> sample_pdf = thinkstats2.EstimatedPdf(sample)
+>>> thinkplot.Pdf(pdf, label='sample KDE')
 \end{verbatim}
 
-\verb"sample" is a list of 1000 random heights.
+\verb"sample" is a list of 100 random heights.
 \verb"sample_pdf" is a {\tt Pdf} object that containts the estimated
 KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
 evaluating the density at a sequence of equally spaced values.
@@ -4169,22 +4178,22 @@ Estimating a density function with KDE is useful for several purposes:
 
 \begin{description}
 
-\item[Visualization]: During the exploration phase of a project,
-CDFs are usually the best visualization of a distribution.  After you
-look at a CDF, you can decide whether an estimated PDF is an appropriate
-model of the distribution.  If so, it can be a better choice for
-presenting the distribution to an audience that might be unfamiliar
-with CDFs.
+\item[Visualization]: During the exploration phase of a project, CDFs
+  are usually the best visualization of a distribution.  After you
+  look at a CDF, you can decide whether an estimated PDF is an
+  appropriate model of the distribution.  If so, it can be a better
+  choice for presenting the distribution to an audience that is
+  unfamiliar with CDFs.
 
 \item[Interpolation]: An estimated PDF is a way to get from a sample
-to a model of the population.  If you have reason to believe that
-the population distribution is continuous and smooth, you can use
-KDE to estimate the density for values that don't appear in the sample.
+  to a model of the population.  If you have reason to believe that
+  the population distribution smooth, you can use KDE to interpolate
+  the density for values that don't appear in the sample.
 
-\item[Simulation]: If your sample is an input to a simulation,
-it might be appropriate to smooth the sample distribution using KDE.
-That might allow the simulation to explore more possible outcomes,
-rather than replicating the observed sample.  
+\item[Simulation]: If your sample is an input to a simulation, it
+  might be appropriate to smooth the sample distribution using KDE.
+  That might allow the simulation to explore more possible outcomes,
+  rather than replicating the observed data.
 
 \end{description}
 
@@ -4206,16 +4215,12 @@ to each other.
 \index{PMF}
 
 We started with PMFs, which represent the probabilities for a discrete
-set of values.  To get from a PMF to a CDF, we computed a cumulative
+set of values.  To get from a PMF to a CDF, you can compute a cumulative
 sum.  To be more strictly correct, a discrete CDF should be called a
 cumulative mass function (CMF), but as far as I can tell no one uses
 that term.  \index{CDF}
-
 To get from a CDF to a PMF, you can compute differences in cumulative
 probabilities.
-\index{PDF}
-
-% TODO: show the code here
 
 Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
 a CDF is the integral of a PDF.  But remember that a PDF maps from
@@ -4247,12 +4252,14 @@ numerical integration.  \index{Bayesian estimation}
 \section{Hist implementation}
 
 At this point you should know how to use the basic types provided
-by {\tt thinkstats2}: Hist, Pmf, Cdf, and Pdf.  Hist and Pmf inherit
-from a parent class called \verb"_DictWrapper".  The underscore
-indicates that this class should not be used by code in other modules.
-The name indicates what it is: a dictionary wrapper.  The primary
-attribute is {\tt d}, the dictionary that maps from values to their
-frequencies.
+by {\tt thinkstats2}: Hist, Pmf, Cdf, and Pdf.  The next few section
+provide some details about how they are implemented.
+
+Hist and Pmf inherit from a parent class called \verb"_DictWrapper".
+The leading underscore indicates that this class is ``internal;'' that
+is, it should not be used by code in other modules.  The name
+indicates what it is: a dictionary wrapper.  Its primary attribute is
+{\tt d}, the dictionary that maps from values to their frequencies.
 
 The values can be any hashable type.  The frequencies should be integers,
 but can be any numeric type.
@@ -4328,29 +4335,89 @@ you can create an empty Pmf and modify it.  The Pmf modifiers do
 not renormalize the Pmf.
 
 
-
 \section{Cdf implementation}
 
+A CDF is a map from values to their cumulative probabilities, so
+it would be reasonable to implement {\tt Cdf} as a \verb"_DictWrapper".
+But the values in a CDF are ordered and the values in a \verb"_DictWrapper"
+are not.  Also, it is often useful to compute the inverse CDF; that
+is, the mapping from cumulative probability to value.  So the
+implementaion I chose is two sorted lists.  That way I can use
+bisection to do a forward or inverse mapping in logarithmic time.
+
+The {\tt Cdf} constructor can take as a parameter a sequence of values
+or a pandas Series, a dictionary that maps from values to
+probabilities, a sequence of (value, probability) pairs, a Hist, Pmf,
+or Cdf.  Or if it is given two parameters, it treats them as a sorted
+sequence of values and the sequence of corresponding cumulative
+probabilities.
+
+Given a sequence, pandas Series, or dictionary the constructor makes
+a Hist.  Then it uses the Hist to initialize the attributes:
 
 \begin{verbatim}
+        self.xs, freqs = zip(*sorted(dw.Items()))
+        self.ps = np.cumsum(freqs, dtype=np.float)
+        self.ps /= self.ps[-1]
 \end{verbatim}
+
+{\tt xs} is the sorted list of values; {\tt freqs} is the list
+of corresponding frequencies.  {\tt np.cumsum} computes
+the cumulative sum of the frequencies.  Dividing through by the
+total frequency yields cumulative probabilities.
+
+Here is the implementation of {\tt Prob}, which takes a value
+and returns its cumulative probability: 
 
 \begin{verbatim}
+    def Prob(self, x):
+        if x < self.xs[0]:
+            return 0.0
+        index = bisect.bisect(self.xs, x)
+        p = self.ps[index - 1]
+        return p
 \end{verbatim}
+
+And here is the implementation of {\tt Value}, which takes a cumulative
+probability and returns the corresponding value:
 
 \begin{verbatim}
+    def Value(self, p):
+        if p < 0 or p > 1:
+            raise ValueError('Probability p must be in range [0, 1]')
+
+        if p == 0: 
+            return self.xs[0]
+        if p == 1: 
+            return self.xs[-1]
+        index = bisect.bisect(self.ps, p)
+        if p == self.ps[index - 1]:
+            return self.xs[index - 1]
+        else:
+            return self.xs[index]
 \end{verbatim}
+
+Given a Cdf, we can compute the Pmf by computing differences between
+consecutive cumulative probabilities.  If you call the Cdf constructor
+and pass a Pmf, it computes differences by calling {\tt Cdf.Items}:
+\index{Pmf}
 
 \begin{verbatim}
+    def Items(self):
+        a = self.ps
+        b = np.roll(a, 1)
+        b[0] = 0
+        return zip(self.xs, a-b)
 \end{verbatim}
 
+{\tt np.roll} shift the elements of {\tt a} to the right, and ``rolls''
+the last one back to the beginning.  We replace the first element of
+{\tt b} with 0 and then compute the difference {\tt a-b}.  The result
+is a NumPy array of probabilities.
 
-\section{Pdf implementation}
-
-
-% TODO: show code
-
-% TODO: discuss implementation
+{\tt Cdf} provides {\tt Shift} and {\tt Scale}, which modify the
+values in the Cdf, but the probabilities should be treated as
+immutable.
 
 
 \section{Moments}
@@ -4369,14 +4436,14 @@ Or if you prefer Python notation:
 
 \begin{verbatim}
 def RawMoment(xs, k):
-    return sum(x**k for x in xs) / float(len(xs))
+    return sum(x**k for x in xs) / len(xs)
 \end{verbatim}
 
 When $k=1$ the result is the sample mean, $\xbar$.  The other
 raw moments don't mean much by themselves, but they are used
 in some computations.
 
-Some of the {\bf central moments} are more useful.  The
+The {\bf central moments} are more useful.  The
 $k$th central moment is:
 %
 \[ m_k = \frac{1}{n} \sum_i (x_i - \xbar)^k \]
@@ -4389,23 +4456,24 @@ def CentralMoment(xs, k):
     return sum((x - xbar)**k for x in xs) / len(xs)
 \end{verbatim}
 
-When $k=2$ the result is the second central moment, also known
-as the variance.  The definition of variance gives a hint about
-why these statistics are called moments.  If we place a mass
-along a number line at each value, $x_i$, and then spin the
-number line around the mean, the moment of inertia of the spinning
-masses is the variance of the values.
-\index{moment of intertia}.
+When $k=2$ the result is the second central moment, which you might
+recognize as variance.  The definition of variance gives a hint about
+why these statistics are called moments.  If we place a mass along a
+number line at each value, $x_i$, and then spin the number line around
+the mean, the moment of inertia of the spinning masses is the variance
+of the values.  If you are not familiar with moment of intertia, see
+\url{http://en.wikipedia.org/wiki/Moment_of_inertia}.  \index{moment
+  of intertia}.
 
 When you report moment-based statistics, it is important to think
 about the units.  For example, if the values $x_i$ are in cm, the
 first raw moment is also in cm.  But the second moment is in
 cm$^2$, the third moment is in cm$^3$, and so on.
 
-Because of these units, moments are hard to interpret by themselves.  
-For the second moment, we solve the problem by computing the
-square root of variance, known
-as the standard deviation, which is in the same units as $x_i$.
+Because of these units, moments are hard to interpret by themselves.
+For the second moment, we solve the problem by computing the square
+root of variance, known as the standard deviation, which is in the
+same units as $x_i$.
 
 
 \section{Skewness}
@@ -4435,8 +4503,6 @@ def Skewness(xs):
     return StandardizedMoment(xs, 3)
 \end{verbatim}
 
-% TODO: replace sigma with std in the code
-
 $g_1$ is the third {\bf standardized moment}, which means that it has
 been normalized so it has no units.
 
@@ -4455,13 +4521,14 @@ Another way to evaluate the asymmetry of a distribution is to look
 at the relationship between the mean and median.
 Extreme values have more effect on the mean than the median, so
 in a distribution that skews left, the mean is less than the median.
+In a distribution that skews right, the mean is greater.
 \index{symmetry}
 \index{Pearson's median skewness coefficient}
 \index{coefficient!skewness}
 
 {\bf Pearson's median skewness coefficient} is an alternative measure
 of skewness that explicitly captures the relationship between the
-sample mean and the median:
+sample mean and median:
 %
 \[ g_p = 3 (\xbar - m) / S \]
 %
@@ -4485,6 +4552,9 @@ def PearsonMedianSkewness(xs):
 This statistic is {\bf robust}, which means that it is less vulnerable
 to the effect of outliers.
 \index{robust}
+
+As an example, let's look at the skewness of birthweights in the
+NSFG pregnancy data.
 
 \begin{exercise}
 % TODO: do this one as an exercise
