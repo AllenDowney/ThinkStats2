@@ -8,51 +8,70 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 from __future__ import print_function
 
 import math
-import numpy
-import random
+import scipy.stats
 
 import brfss
 import first
 import thinkstats2
 import thinkplot
 
-# TODO: add BRFSS data to git repo.
+
+def Summarize(data):
+    mean = data.mean()
+    std = data.std()
+    median = thinkstats2.Median(data)
+    print('mean', mean)
+    print('std', std)
+    print('median', median)
+    print('skewness', thinkstats2.Skewness(data))
+    print('pearson skewness', 
+          thinkstats2.PearsonMedianSkewness(data))
+
+    return mean, median
+
 
 def ComputeSkewnesses():
+    def VertLine(x, y):
+        thinkplot.Plot([x, x], [0, y], color='0.6', linewidth=1)
+
     live, firsts, others = first.MakeFrames()
     data = live.totalwgt_lb.dropna()
-
-    pdf = thinkstats2.EstimatedPdf(data)
-    thinkplot.Pdf(pdf)
-    thinkplot.Save(root='density_totalwgt_kde',
-                   xlabel='birth weight (lbs)',
-                   ylabel='PDF',
-                   legend=False)
-
     print('Birth weight')
-    print('skewness', thinkstats2.Skewness(data))
-    print('pearson skeweness', 
-          thinkstats2.PearsonMedianSkewness(data))
+    mean, median = Summarize(data)
 
-    df = brfss.ReadBrfss(nrows=1000)
-    data = df.wtkg2.dropna()
+    y = 0.35
+    VertLine(mean, y)
+    thinkplot.Text(mean-0.15, 0.1*y, 'mean', horizontalalignment='right')
+    VertLine(median, y)
+    thinkplot.Text(median+0.1, 0.1*y, 'median', horizontalalignment='left')
 
     pdf = thinkstats2.EstimatedPdf(data)
-    thinkplot.Pdf(pdf)
-    thinkplot.Save(root='density_wtkg2_kde',
-                   xlabel='adult weight (kg)',
-                   ylabel='PDF',
-                   legend=False)
+    thinkplot.Pdf(pdf, label='birth weight')
+    thinkplot.Save(root='density_totalwgt_kde',
+                   xlabel='lbs',
+                   ylabel='PDF')
 
+    df = brfss.ReadBrfss(nrows=None)
+    data = df.wtkg2.dropna()
     print('Adult weight')
-    print('skewness', thinkstats2.Skewness(data))
-    print('pearson skeweness', 
-          thinkstats2.PearsonMedianSkewness(data))
+    mean, median = Summarize(data)
+
+    y = 0.02499
+    VertLine(mean, y)
+    thinkplot.Text(mean+1, 0.1*y, 'mean', horizontalalignment='left')
+    VertLine(median, y)
+    thinkplot.Text(median-1.5, 0.1*y, 'median', horizontalalignment='right')
+
+    pdf = thinkstats2.EstimatedPdf(data)
+    thinkplot.Pdf(pdf, label='adult weight')
+    thinkplot.Save(root='density_wtkg2_kde',
+                   xlabel='kg',
+                   ylabel='PDF',
+                   xlim=[0, 200])
 
 
 def main():
     ComputeSkewnesses()
-    return
 
     random.seed(17)
 

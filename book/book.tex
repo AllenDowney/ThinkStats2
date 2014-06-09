@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.4}
+\newcommand{\theversion}{2.0.5}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -752,7 +752,8 @@ user's guide for the NSFG data are available from
 \section{Importing the data}
 
 The code and data used in this book are available from
-\url{https://github.com/AllenDowney/ThinkStats2}.  For information
+\url{https://github.com/AllenDowney/ThinkStats2}.
+  For information
 about downloading and working with this code, see Section~\ref{code}.
 
 Once you download the code, you should have a file called {\tt
@@ -2217,8 +2218,7 @@ as clear as possible.
 
 In the NSFG data, the biggest differences in the distributions are
 near the mode.  So it makes sense to zoom in on that part of the
-graph, and to transform the data to emphasize differences.
-Here's the code:
+graph, and to transform the data to emphasize differences:
 \index{National Survey of Family Growth}
 \index{NSFG}
 
@@ -2234,12 +2234,11 @@ Here's the code:
     thinkplot.Bar(weeks, diffs)
 \end{verbatim}
 
-{\tt weeks} is the range of weeks; {\tt diffs} is the difference
-between the two PMFs in percentage points.
-Figure~\ref{probability_nsfg_diffs} shows the result.
-This figure makes the pattern clearer: first babies are
-less likely to be born in week 39, and somewhat more likely
-to be born in weeks 41 and 42.
+In this code, {\tt weeks} is the range of weeks; {\tt diffs} is the
+difference between the two PMFs in percentage points.
+Figure~\ref{probability_nsfg_diffs} shows the result.  This figure
+makes the pattern clearer: first babies are less likely to be born in
+week 39, and somewhat more likely to be born in weeks 41 and 42.
 
 \begin{figure}
 % probability.py
@@ -2807,10 +2806,10 @@ I can answer that question by converting my percentile rank in M4049
 to a position in M5059.  Here's the code:
 
 \begin{verbatim}
-def PositionToPercentile(position, field_size):
-    beat = field_size - position + 1
-    percentile = 100.0 * beat / field_size
-    return percentile
+def PercentileToPosition(percentile, field_size):
+    beat = percentile * field_size / 100.0
+    position = field_size - beat + 1
+    return position
 \end{verbatim}
 
 There were 171 people in M5059, so I would have to come in between
@@ -2957,7 +2956,7 @@ clearly, than PMFs.
 \index{birth weight}
 \index{weight!birth}
 
-CDFs are expecially useful for comparing distributions.  For
+CDFs are especially useful for comparing distributions.  For
 example, here is the code that plots the CDF of birth
 weight for first babies and others.
 
@@ -3217,6 +3216,10 @@ In this context, a {\bf model} is a simplification that leaves out
 unneeded details.  This chapter presents common analytic distributions
 and uses them to model data from a variety of sources.
 
+The code for this chapter is in {\tt analytic.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+
 
 \section{The exponential distribution}
 \label{exponential}
@@ -3258,8 +3261,6 @@ complete dataset is in a file called {\tt babyboom.dat}, in the
 {\tt ThinkStats2} repository.
 \index{birth time}
 \index{Australia} \index{Brisbane}
-
-The code to read this file is in {\tt analytic.py}.  
 
 \begin{verbatim}
     df = ReadBabyBoom()
@@ -3956,8 +3957,8 @@ The Current Population Survey (CPS) is joint effort of the Bureau
 of Labor Statistics and the Census Bureau to study income and related
 variables.  Data collected in 2013 is available from
 \url{http://www.census.gov/hhes/www/cpstables/032013/hhinc/toc.htm}.
-I downloaded {\tt hinc.xls}, which is an Excel spreadsheet with
-information about household income, and converted it to {\tt hinc.csv},
+I downloaded {\tt hinc06.xls}, which is an Excel spreadsheet with
+information about household income, and converted it to {\tt hinc06.csv},
 a CSV file you will find in the repository for this book.  You
 will also find {\tt hinc.py}, which reads this file.
 
@@ -4022,6 +4023,12 @@ often good models of more complex empirical distributions.
 \index{CDF}
 \index{derivative}
 
+The code for this chapter is in {\tt density.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+
+\section{PDFs}
+
 The derivative of a CDF is called a {\bf probability density function},
 or PDF.  For example, the PDF of an exponential distribution is
 %
@@ -4042,7 +4049,7 @@ In physics, density is mass per unit of
 volume; in order to get a mass, you have to multiply by volume or,
 if the density is not constant, you have to integrate over volume.
 
-Similarly, probability density measures probability per unit of $x$.
+Similarly, {\bf probability density} measures probability per unit of $x$.
 In order to get a probability mass, you have to integrate over $x$.
 
 {\tt thinkstats2} provides a class called {\tt Pdf} that represents
@@ -4069,9 +4076,33 @@ following methods:
 {\tt Pdf} is an abstract parent class, which means you should not
 instantiate it; that is, you cannot create a Pdf object.  Instead, you
 should define a child class that inherits from {\tt Pdf} and provides
-definitions of {\tt Density} and {\tt GetLinspace}.
+definitions of {\tt Density} and {\tt GetLinspace}.  {\tt Pdf} provides
+{\tt Render} and {\tt MakePmf}.
+
 For example, {\tt thinkstats2} provides a class named {\tt
   GaussianPdf} that evaluates the Gaussian density function.
+
+\begin{verbatim}
+class GaussianPdf(Pdf):
+
+    def __init__(self, mu=0, sigma=1, label=''):
+        self.mu = mu
+        self.sigma = sigma
+        self.label = label
+
+    def Density(self, xs):
+        return scipy.stats.norm.pdf(xs, self.mu, self.sigma)
+
+    def GetLinspace(self):
+        low, high = self.mu-3*self.sigma, self.mu+3*self.sigma
+        return np.linspace(low, high, 101)
+\end{verbatim}
+
+The GaussianPdf object contains the parameters {\tt mu} and
+{\tt sigma}.  {\tt Density} uses
+{\tt scipy.stats.norm}, which is an object that represents a Gaussian
+distribution and provides {\tt cdf} and {\tt pdf}, among other
+methods (see Section~\ref{normal}).
 
 The following example creates a GaussianPdf with the mean and variance
 of adult female heights, in cm, from the BRFSS (see
@@ -4085,15 +4116,12 @@ distribution at a location one standard deviation from the mean.
 >>> pdf.Density(mean + std)
 \end{verbatim}
 
-The code in this chapter is in {\tt chap06.py}, in the repository
-for this book (see Section~\ref{code}).
-
 The result is about 0.03, in units of probability mass per cm.
 Again, a probability density doesn't mean much by itself.  But if
 we plot the Pdf, we can see the shape of the distribution:
 
 \begin{verbatim}
->>>> thinkplot.Pdf(pdf, label='Gaussian')
+>>> thinkplot.Pdf(pdf, label='Gaussian')
 \end{verbatim}
 
 {\tt thinkplot.Pdf} plots the Pdf as a smooth function,
@@ -4105,7 +4133,7 @@ section.
 You can use {\tt MakePmf} to approximate the Pdf:
 
 \begin{verbatim}
->>>> pmf = pdf.MakePmf()
+>>> pmf = pdf.MakePmf()
 \end{verbatim}
 
 By default, the resulting Pmf contains 101 points equally spaced from
@@ -4124,7 +4152,7 @@ and the kernel density estimate of a sample with $n=1000$.}
 
 \section{Kernel density estimation} 
 
-Kernel density estimation (KDE) is an algorithm that takes
+{\bf Kernel density estimation} (KDE) is an algorithm that takes
 a sample and finds an appropriately smooth PDF that fits 
 the data.  You can read details at
 \url{http://en.wikipedia.org/wiki/Kernel_density_estimation}.
@@ -4240,20 +4268,20 @@ distribution.  Another option is kernel density estimation.
 \index{distribution!normal}
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
-\index{bin}
 
-The opposite of smoothing is discretizing, or quantizing.  If you
+The opposite of smoothing is {\bf discretizing}, or quantizing.  If you
 evaluate a PDF at discrete points, you can generate a PMF that is an
 approximation of the PDF.  You can get a better approximation using
-numerical integration.  \index{Bayesian estimation}
-\index{estimation!Bayesian}
+numerical integration.  \index{discretize}
+\index{quantize}
+\index{bin}
 
 
 \section{Hist implementation}
 
 At this point you should know how to use the basic types provided
-by {\tt thinkstats2}: Hist, Pmf, Cdf, and Pdf.  The next few section
-provide some details about how they are implemented.
+by {\tt thinkstats2}: Hist, Pmf, Cdf, and Pdf.  The next few sections
+provide details about how they are implemented.
 
 Hist and Pmf inherit from a parent class called \verb"_DictWrapper".
 The leading underscore indicates that this class is ``internal;'' that
@@ -4302,7 +4330,7 @@ of a given value.
 {\tt Pmf} and {\tt Hist} are almost the same thing, except that a Pmf
 maps values to floating-point probabilities, rather than integer
 frequencies.  If the sum of the probabilities is 1, the Pmf is said to
-be ``normalized.''
+be normalized.
 
 {\tt Pmf} provides {\tt Normalize}, which computes the sum of the
 probabilities and divides through by a factor:
@@ -4352,7 +4380,7 @@ or Cdf.  Or if it is given two parameters, it treats them as a sorted
 sequence of values and the sequence of corresponding cumulative
 probabilities.
 
-Given a sequence, pandas Series, or dictionary the constructor makes
+Given a sequence, pandas Series, or dictionary, the constructor makes
 a Hist.  Then it uses the Hist to initialize the attributes:
 
 \begin{verbatim}
@@ -4553,111 +4581,111 @@ This statistic is {\bf robust}, which means that it is less vulnerable
 to the effect of outliers.
 \index{robust}
 
+\begin{figure}
+\centerline{\includegraphics[height=2.2in]{figs/density_totalwgt_kde.pdf}}
+\caption{Estimated PDF of birthweight data from the NSFG.}
+\label{density_totalwgt_kde}
+\end{figure}
+
 As an example, let's look at the skewness of birthweights in the
-NSFG pregnancy data.
+NSFG pregnancy data.  Here's the code to estimate and plot the PDF:
 
-\begin{exercise}
-% TODO: do this one as an exercise
-Compute the skewness for the distributions of pregnancy length and
-birth weight.  Are the results consistent with the shape of the
-distributions?  How does $g_p$ compare to $g_1$?
-\index{birth weight}
-\index{weight!birth}
-\index{pregnancy length}
-\index{length!pregnancy}
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    data = live.totalwgt_lb.dropna()
+    pdf = thinkstats2.EstimatedPdf(data)
+    thinkplot.Pdf(pdf, label='birth weight')
+\end{verbatim}
 
-\end{exercise}
+Figure~\ref{density_totalwgt_kde} shows the result.  The left tail appears
+longer than the right, so we suspect the distribution is skewed left.
+The mean, 7.27 lbs, is a bit less than
+the median, 7.38 lbs, so that is consistent with left skew.
+And both skewness coefficients are negative:
+sample skewness is -0.59;
+Pearson's median skewness is -0.23.
 
+\begin{figure}
+\centerline{\includegraphics[height=2.2in]{figs/density_wtkg2_kde.pdf}}
+\caption{Estimated PDF of adult weight data from the BRFSS.}
+\label{density_wtkg2_kde}
+\end{figure}
+
+Now let's compare this distribution to the distribution of adult
+weight in the BRFSS.  Again, here's the code:
+
+\begin{verbatim}
+    df = brfss.ReadBrfss(nrows=None)
+    data = df.wtkg2.dropna()
+    pdf = thinkstats2.EstimatedPdf(data)
+    thinkplot.Pdf(pdf, label='adult weight')
+\end{verbatim}
+
+Figure~\ref{density_wtkg2_kde} shows the result.  The distribution
+appears skewed to the right.  Sure enough, the mean, 79.0, is bigger
+than the median, 77.3.  The sample skewness is 1.1 and Pearson's
+median skewness is 0.26.
+
+The sign of the skewness coefficient indicates whether the distribution
+skews left or right, but other than that, they are hard to interpret.
+Sample skewness is less robust; that is, it is more
+susceptible to outliers.  As a result it is less reliable
+when applied to skewed distributions, exactly when it would be most
+relevant.
+
+Pearson's median skewness is based on a computed mean and variance,
+so it is also susceptible to outliers, but since it does not depend
+on a third moment, it is somewhat more robust.
 
 
 \section{Exercises}
 
 \begin{exercise}
-Write a definition for a class that represents a random variable
-with a Gumbel distribution (see \url{http://wikipedia.org/wiki/Gumbel_distribution}).
-\index{Gumbel distribution}
-\index{distribution!Gumbel}
 
-\end{exercise}
+The distribution of income is famously skewed to the right.  In this
+exercise, we'll measure how strong that skew is.
 
+The Current Population Survey (CPS) is joint effort of the Bureau
+of Labor Statistics and the Census Bureau to study income and related
+variables.  Data collected in 2013 is available from
+\url{http://www.census.gov/hhes/www/cpstables/032013/hhinc/toc.htm}.
+I downloaded {\tt hinc06.xls}, which is an Excel spreadsheet with
+information about household income, and converted it to {\tt hinc06.csv},
+a CSV file you will find in the repository for this book.  You
+will also find {\tt hinc2.py}, which reads this file and transforms
+the data.
 
-\begin{exercise}
-Suppose I draw two values from a distribution; what is the distribution
-of the larger value?  Write a RandomVariable class called {\tt Max}
-that generates values from $Z = max(X, Y)$.
-\index{max}
+The dataset is in the form of a series of income ranges and the number
+of respondents who fell in each range.  The lowest range includes
+respondents who reported annual household income ``Under \$5000.''
+The highest range includes respondents who made ``\$250,0000 or
+more.''
 
-As the number of values increases, the distribution of the maximum
-converges on one of the extreme value distributions; see
-\url{http://wikipedia.org/wiki/Gumbel_distribution}.
-\index{Gumbel distribution}
-\index{distribution!Gumbel}
+To estimate mean and other statistics from these data, we have to
+make some assumptions about the lower and upper bounds, and how
+the values are distributed in each range.  {\tt hinc2.py} provides
+{\tt InterpolateSample}, which shows one way to model
+this data.  It takes a DataFrame with a column, {\tt income}, that
+contains the upper bound of each range, and {\tt freq}, which contains
+the number of respondents in each frame.
 
-\end{exercise}
+It also takes \verb"log_upper", which is an assumed upper bound
+on the highest range, expressed in {\tt log10} dollars.  
+The default value, \verb"log_upper=6.0" represents the assumption
+that the largest income among the respondents is
+$10^6$, or one million dollars.
 
-\begin{exercise}
-If 
-$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
-$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$, what 
-is the distribution of Z = aX + bY?
+{\tt InterpolateSample} generates a pseudo-sample; that is, a sample
+of household incomes that yields the same number of respondents
+in each range as the actual data.  It assumes that incomes in
+each range are equally spaced on a log10 scale.
 
-\end{exercise}
+Compute the median, mean, skewness and Pearson's skewness of the
+resulting sample.  What fraction of households reports a taxable
+income below the mean?  How do the results depend on the assumed
+upper bound?
 
-\begin{exercise}
-Let's see what happens when we add values from
-other distributions.  Choose a pair of distributions (any two of
-exponential, normal, lognormal, and Pareto) and choose parameters
-that make their mean and variance similar.
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{sum}
-
-Generate random numbers from these distributions and compute the
-distribution of their sums.  Use the tests from
-Chapter~\ref{analytic} to see if the sum can be modeled by an
-analytic distribution.
-
-\end{exercise}
-
-\begin{exercise}
-
-% TODO: update this for the new dataset
-
-The Internal Revenue Service of the United States (IRS) provides data
-about income taxes, and other statistics, at \url{http://irs.gov/taxstats}.
-If you did Exercise~\ref{irs}, you have already worked with this data;
-otherwise, follow the instructions there to extract the distribution
-of incomes from this dataset.
-\index{Internal Revenue Service}
-\index{IRS}
-\index{income}
-\index{taxes}
-
-What fraction of the population reports a taxable income below the
-mean?
-
-Compute the median, mean, skewness and Pearson's skewness of the income
-data.  Because the data has been binned, you will have to make
-some approximations.
-\index{Gini coefficient}
-\index{coefficient!Gini}
-
-The Gini coefficient is a measure of income inequality.
-Read about it at \url{http://wikipedia.org/wiki/Gini_coefficient} and write a
-function called {\tt Gini} that computes it for the income
-distribution.
-\index{relative mean difference}
-
-Hint: use the PMF to compute the relative mean difference
-(see \url{http://wikipedia.org/wiki/Mean_difference}).
-\index{{\tt gini.py}}
-
-You can download a solution to this exercise from \url{http://thinkstats2.com/gini.py}.
-
+A solution to this exercise is in \verb"hinc2_soln.py".
 \end{exercise}
 
 
@@ -4665,46 +4693,47 @@ You can download a solution to this exercise from \url{http://thinkstats2.com/gi
 
 \begin{itemize}
 
+\item Probability density function (PDF): The derivative of a continuous CDF,
+a function that maps a value to its probability density.
+\index{PDF}
+\index{probability density function}
+
+\item Probability density: A quantity that can be integrated over a
+  range of values to yield a probability.  If the values are in units
+  of cm, for example, probability density is in units of probability
+  per cm.
+\index{probability density}
+
+\item Kernel density estimation (KDE): An algorithm that estimates a PDF
+based on a sample.
+\index{kernel density estimation}
+\index{KDE}
+
+\item discretize: To approximate a continuous function or distribution
+with a discrete function.  The opposite of smoothing.
+\index{discretize}
+
+\item raw moment: A statistic based on the sum of data raised to a power.
+
+\item central moment: A statistic based on deviation from the mean,
+raised to a power.
+
+\item standardized moment: A ratio of moments that has no units.
+
 \item skewness: A characteristic of a distribution; intuitively, it
 is a measure of how asymmetric the distribution is.
 \index{skewness}
 
+\item sample skewness: A moment-based statistic intended to quantify
+the skewness of a distribution.
+\index{sample skewness}
+
+\item Pearson's median skewness coefficient: A statistic intended to
+  quantify the skewness of a distribution.  \index{Pearson's skewness}
+
 \item robust: A statistic is robust if it is relatively immune to the
   effect of outliers.
 \index{robust}
-
-\item illusory superiority: The tendency of people to imagine that
-they are better than average.
-\index{illusory superiority}
-\index{fallacy!illusory superiority}
-
-\item random variable: An object that represents a random process.
-\index{random variable}
-\index{variable!random}
-
-\item random variate: A value generated by a random process.
-\index{random variate}
-\index{variate!random}
-
-\item PDF: Probability density function, the derivative of a continuous CDF.
-\index{PDF}
-\index{probability density function}
-
-\item convolution: An operation that computes the distribution of the
-sum of values from two distributions. 
-\index{convolution}
-
-%\item Chi-squared distribution: The distribution of the sum of squared
-%values from a normal distribution.
-
-%\item Degrees of freedom: The number of values in a sample that are
-%free to vary.
-
-\item Central Limit Theorem: ``The supreme law of Unreason,'' according
-to Sir Francis Galton, an early statistician.
-\index{Central Limit Theorem}
-\index{Galton, Francis}
-\index{unreason, supreme law}
 
 \end{itemize}
 

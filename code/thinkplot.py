@@ -253,7 +253,7 @@ def Pdf(pdf, **options):
       options: keyword args passed to pyplot.plot
     """
     low, high = options.pop('low', None), options.pop('high', None)
-    n = options.pop('n', None)
+    n = options.pop('n', 101)
     xs, ps = pdf.Render(low=low, high=high, n=n)
     if pdf.label:
         options = Underride(options, label=pdf.label)
@@ -533,6 +533,19 @@ def Pcolor(xs, ys, zs, pcolor=True, contour=False, **options):
         cs = pyplot.contour(X, Y, Z, **options)
         pyplot.clabel(cs, inline=1, fontsize=10)
         
+
+def Text(x, y, s, **options):
+    """Puts text in a figure.
+
+    x: number
+    y: number
+    s: string
+    options: keyword args passed to pyplot.text
+    """
+    options = Underride(options, verticalalignment='top',
+                        horizontalalignment='left')
+    pyplot.text(x, y, s, **options)
+
 
 def Config(**options):
     """Configures the plot.
