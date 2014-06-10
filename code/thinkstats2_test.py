@@ -9,6 +9,7 @@ import unittest
 import random
 
 from collections import Counter
+import numpy as np
 
 import thinkstats2
 import thinkplot
@@ -244,8 +245,6 @@ class Test(unittest.TestCase):
         xs, ps = cdf.Render()
         self.assertEquals(xs[0], -5.0)
         self.assertAlmostEquals(ps[0], 0.0)
-        thinkplot.Cdf(cdf)
-        thinkplot.Show()
         
     def testExponentialPdf(self):
         pdf = thinkstats2.ExponentialPdf(lam=0.5)
@@ -278,6 +277,22 @@ class Test(unittest.TestCase):
 
         p = thinkstats2.EvalGaussianCdf(-1000, 0, 1)
         self.assertAlmostEquals(p, 0.0)
+
+    def testCov(self):
+        t = [0, 4, 7, 3, 8, 1, 6, 2, 9, 5]
+        a = np.array(t)
+        t2 = [5, 4, 3, 0, 8, 9, 7, 6, 2, 1]
+
+        self.assertAlmostEquals(thinkstats2.Cov(t, a), 8.25)
+        self.assertAlmostEquals(thinkstats2.Cov(t, -a), -8.25)
+
+        self.assertAlmostEquals(thinkstats2.Corr(t, a), 1)
+        self.assertAlmostEquals(thinkstats2.Corr(t, -a), -1)
+        self.assertAlmostEquals(thinkstats2.Corr(t, t2), -0.1878787878)
+        
+        self.assertAlmostEquals(thinkstats2.SpearmanCorr(t, -a), -1)
+        self.assertAlmostEquals(thinkstats2.SpearmanCorr(t, t2), -0.1878787878)
+        
 
 if __name__ == "__main__":
     unittest.main()

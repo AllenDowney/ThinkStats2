@@ -29,6 +29,7 @@ import random
 import re
 
 from collections import Counter
+from operator import itemgetter
 
 import thinkplot
 
@@ -2070,10 +2071,12 @@ def Var(xs, mu=None, ddof=0):
 
     returns: float
     """
-    if mu is None:
-        mu = np.mean(xs)
+    xs = np.asarray(xs)
 
-    ds = xs - mu 
+    if mu is None:
+        mu = xs.mean()
+
+    ds = xs - mu
     return np.dot(ds, ds) / (len(xs) - ddof)
 
 
@@ -2088,7 +2091,8 @@ def MeanVar(xs, ddof=0):
     
     returns: pair of float, mean and var
     """
-    xbar = np.mean(xs)
+    xs = np.asarray(xs)
+    xbar = xs.mean()
     s2 = Var(xs, xbar, ddof)
     return xbar, s2
 
@@ -2175,7 +2179,7 @@ def Cov(xs, ys, meanx=None, meany=None):
     if meany is None:
         meany = np.mean(ys)
 
-    cov = np.dot(xs-meanx, ys-meany) / len(xs)
+    cov = np.dot(np.asarray(xs)-meanx, np.asarray(ys)-meany) / len(xs)
     return cov
 
 
@@ -2189,6 +2193,9 @@ def Corr(xs, ys):
     Returns:
         Corr(X, Y)
     """
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+
     meanx, varx = MeanVar(xs)
     meany, vary = MeanVar(ys)
 
@@ -2217,9 +2224,35 @@ def SpearmanCorr(xs, ys):
     Returns:
         float Spearman's correlation
     """
-    xranks = MapToRanks(xs)
-    yranks = MapToRanks(ys)
+    xranks = pandas.Series(xs).rank()
+    yranks = pandas.Series(ys).rank()
     return Corr(xranks, yranks)
+
+
+def MapToRanks(t):
+    """Returns a list of ranks corresponding to the elements in t.
+
+    Args:
+        t: sequence of numbers
+    
+    Returns:
+        list of integer ranks, starting at 1
+    """
+    # pair up each value with its index
+    pairs = enumerate(t)
+    
+    # sort by value
+    sorted_pairs = sorted(pairs, key=itemgetter(1))
+
+    # pair up each pair with its rank
+    ranked = enumerate(sorted_pairs)
+
+    # sort by index
+    resorted = sorted(ranked, key=lambda trip: trip[1][0])
+
+    # extract the ranks
+    ranks = [trip[0]+1 for trip in resorted]
+    return ranks
 
 
 def LeastSquares(xs, ys):
@@ -2270,32 +2303,6 @@ def CoefDetermination(ys, res):
     vary = Var(ys)
     varres = Var(res)
     return 1 - varres / vary
-
-
-def MapToRanks(t):
-    """Returns a list of ranks corresponding to the elements in t.
-
-    Args:
-        t: sequence of numbers
-    
-    Returns:
-        list of integer ranks, starting at 1
-    """
-    # pair up each value with its index
-    pairs = enumerate(t)
-    
-    # sort by value
-    sorted_pairs = sorted(pairs, key=lambda pair: pair[1])
-
-    # pair up each pair with its rank
-    ranked = enumerate(sorted_pairs)
-
-    # sort by index
-    resorted = sorted(ranked, key=lambda trip: trip[1][0])
-
-    # extract the ranks
-    ranks = [trip[0]+1 for trip in resorted]
-    return ranks
 
 
 def CorrelatedGenerator(rho):
