@@ -8,6 +8,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 from __future__ import print_function
 
 import math
+import random
 import scipy.stats
 
 import brfss
@@ -70,11 +71,7 @@ def ComputeSkewnesses():
                    xlim=[0, 200])
 
 
-def main():
-    ComputeSkewnesses()
-
-    random.seed(17)
-
+def MakePdfExample():
     # mean and var of women's heights in cm, from the BRFSS
     mean, var = 163, 52.8
     std = math.sqrt(var)
@@ -95,6 +92,13 @@ def main():
     thinkplot.Save(root='pdf_example',
                    xlabel='Height (cm)',
                    ylabel='Density')
+
+
+def main():
+    thinkstats2.RandomSeed(17)
+
+    MakePdfExample()
+    ComputeSkewnesses()
 
 
 if __name__ == '__main__':
