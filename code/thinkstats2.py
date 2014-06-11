@@ -1350,18 +1350,18 @@ class Pdf(object):
         """
         raise UnimplementedMethodException()
 
-    def MakePmf(self, label='', **options):
+    def MakePmf(self, **options):
         """Makes a discrete version of this Pdf.
 
-        label: string
-
         options can include
+        label: string
         low: low end of range
         high: high end of range
         n: number of places to evaluate
 
         Returns: new Pmf
         """
+        label = options.pop('label', '')
         xs, ps = self.Render(**options)
         return Pmf(zip(xs, ps), label=label)
 

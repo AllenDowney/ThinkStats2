@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.5}
+\newcommand{\theversion}{2.0.6}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1007,12 +1007,12 @@ operations return {\tt nan} if either argument is {\tt nan}:
 \begin{verbatim}
 >>> import numpy as np
 >>> np.nan / 100.0
+nan
 \end{verbatim}
 
-So computations with {\tt nan} tend to do the right thing.  Most
-pandas functions handle {\tt nan} appropriately, at least for most
-applications.  But dealing with missing data will be a recurring
-issue.
+So computations with {\tt nan} tend to do the right thing, and most
+pandas functions handle {\tt nan} appropriately.  But dealing with
+missing data will be a recurring issue.
 
 The last line of {\tt CleanFemPreg} creates a new
 column \verb"totalwgt_lb" that combines pounds and ounces into
@@ -1144,6 +1144,8 @@ respondents.  Because of the way the data files are organized, we have
 to do some processing to match up each pregnancy record with a respondent.
 Here's a function that does that:
 
+% TODO: clean this up by using caseid as the index
+
 \begin{verbatim}
 def MakePregMap(df):
     d = {}
@@ -1157,9 +1159,8 @@ method creates an iterator that enumerates the index (row number)
 and {\tt caseid} for each pregnancy.
 
 {\tt d} is a dictionary that maps from each case ID to a list of
-indices.  Using {\tt d} we can look up a respondent and 
-get the indices of
-that respondent's pregnancies.
+indices.  Using {\tt d} we can look up a respondent and get the
+indices of that respondent's pregnancies.
 
 This example looks up one respondent and prints a list of outcomes
 for her pregnancies:
@@ -1408,8 +1409,6 @@ mode:
 \begin{verbatim}
 >>> import thinkstats2
 >>> hist = thinkstats2.Hist([1, 2, 2, 3, 5])
->>> hist
-<thinkstats2.Hist object at 0xb76cf68c>
 \end{verbatim}
 
 Hist objects provide the method {\tt Freq}, which takes a value and
@@ -1494,12 +1493,10 @@ is the format {\tt bar} expects:
 >>> pyplot.show()
 \end{verbatim}
 
-The code that accompanies this book includes
-{\tt thinkplot.py}, which provides functions
-for plotting histograms and other objects we will see soon.
-You can read the documentation at {\tt
-  http://thinkstats2.com/thinkplot.html}. 
-\index{{\tt thinkplot.py}}
+The code that accompanies this book includes {\tt thinkplot.py}, which
+provides functions for plotting histograms and other objects we will
+see soon.  You can read the documentation at {\tt
+  http://thinkstats2.com/thinkplot.html}.  \index{{\tt thinkplot.py}}
 
 To plot the same histogram with {\tt thinkplot.py}, try this:
 
@@ -1524,7 +1521,8 @@ the objects defined in {\tt thinkstats2.py}.
 \section{NSFG variables}
 
 Now let's get back to the data from the NSFG.  The code in this
-chapter is from {\tt first.py}.  For information about downloading and
+chapter is from {\tt first.py}.  
+For information about downloading and
 working with this code, see Section~\ref{code}.
 
 % TODO: apparently I can't refer to a label in the preface?
@@ -2059,8 +2057,6 @@ with a simple list.
 \begin{verbatim}
 >>> import thinkstats2
 >>> pmf = thinkstats2.Pmf([1, 2, 2, 3, 5])
->>> pmf
-<thinkstats2.Pmf object at 0xb76cf68c>
 \end{verbatim}
 
 The result is normalized so the total probability is 1.
@@ -4114,6 +4110,7 @@ distribution at a location one standard deviation from the mean.
 >>> std = math.sqrt(var)
 >>> pdf = thinkstats2.GaussianPdf(mean, std)
 >>> pdf.Density(mean + std)
+0.0333001
 \end{verbatim}
 
 The result is about 0.03, in units of probability mass per cm.
@@ -4122,6 +4119,7 @@ we plot the Pdf, we can see the shape of the distribution:
 
 \begin{verbatim}
 >>> thinkplot.Pdf(pdf, label='Gaussian')
+>>> thinkplot.Show()
 \end{verbatim}
 
 {\tt thinkplot.Pdf} plots the Pdf as a smooth function,
@@ -4317,8 +4315,8 @@ that is, their run time does not increase as the Hist gets bigger.
 and setting items, so instead of using {\tt Incr} you could write:
 
 \begin{verbatim}
-    hist = thinkstats2.Hist()
-    hist['a'] += 1
+>>> hist = thinkstats2.Hist()
+>>> hist['a'] += 1
 \end{verbatim}
 
 {\tt Hist} also provides {\tt Freq}, which looks up the frequency
@@ -4741,143 +4739,243 @@ the skewness of a distribution.
 
 \chapter{Relationships between variables}
 
-\section{Scatterplots}
+So far we have only looked at one variable at a time.  In this
+chapter we look at relationships between variables.  Two variables are
+related if knowing one gives you information about the other.  For
+example, height and weight are related; people who are taller tend to
+be heavier.  Of course, it is not a perfect relationship: there
+are short, heavy people and tall, light people.  But if you are
+trying to guess someone's weight, you will be more accurate if you
+know their height than if you don't.
+
+The code for this chapter is in {\tt scatter.py}.
+For information about downloading and
+working with this code, see Section~\ref{code}.
+
+
+\section{Scatter plots}
 \index{scatter plot}
 \index{plot!scatter}
 \index{pyplot}
 
-In this chapter we look at relationships between variables.  For
-example, you might expect that weight is related to height; people who
-are taller tend to be heavier.
-
 \begin{figure}
-% brfss_corr.py
-\centerline{\includegraphics[height=2.5in]{figs/scatter1.pdf}}
-\caption{Simple scatterplot of weight versus height for the respondents
-in the BRFSS.}
-\label{scatterplot1}
+% scatter.py
+\centerline{\includegraphics[height=3.0in]{figs/scatter1.pdf}}
+\caption{Scatter plots of weight versus height for the respondents
+in the BRFSS, unjittered (left), jittered (right).}
+\label{scatter1}
 \end{figure}
-
-\begin{figure}
-% brfss_corr.py
-\centerline{\includegraphics[height=2.5in]{figs/scatter2.pdf}}
-\caption{Scatterplot with jittered data.}
-\label{scatterplot2}
-\end{figure}
-
-\begin{figure}
-% brfss_corr.py
-\centerline{\includegraphics[height=2.5in]{figs/scatter3.pdf}}
-\caption{Scatterplot with jittering and transparency.}
-\label{scatterplot3}
-\end{figure}
-
-\begin{figure}
-% brfss_corr.py
-\centerline{\includegraphics[height=2.5in]{figs/scatter4.pdf}}
-\caption{Scatterplot with binned data using {\tt pyplot.hexbin}.}
-\label{scatterplot4}
-\end{figure}
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
 
 The simplest way to check for a relationship between two variables
-is a scatterplot, but making a good scatterplot is not always easy.
+is a {\bf scatter plot}, but making a good scatter plot is not always easy.
 As an example, I'll plot weight versus height for the respondents
-in the BRFSS (see Section~\ref{lognormal}).  {\tt pyplot} provides
-a function named {\tt scatter} that makes scatterplots:
-%
+in the BRFSS (see Section~\ref{lognormal}).
+
+Here's the code that reads the data file and extracts height and
+weight:
+
 \begin{verbatim}
-import matplotlib.pyplot as pyplot
-pyplot.scatter(heights, weights)
+    df = brfss.ReadBrfss(nrows=None)
+    sample = SampleRows(df, 5000)
+    heights, weights = sample.htm3, sample.wtkg2
 \end{verbatim}
 
-Figure~\ref{scatterplot1} shows the result.  Not surprisingly, taller
-people tend to be heavier.  But this is not the best representation of
+{\tt SampleRows} chooses a random subset of the data:
+
+\begin{verbatim}
+def SampleRows(df, nrows, replace=False):
+    indices = df.index
+    sample_indices = np.random.choice(indices, nrows, replace=replace)
+    sample = df.loc[sample_indices]
+    return sample
+\end{verbatim}
+
+{\tt df} is the DataFrame, {\tt nrows} is the number of rows to choose,
+and {\tt replace} is a boolean indicating whether sampling should be
+done with replacement; in other words, whether the same row could be
+chosen more than one.
+
+{\tt thinkplot} provides {\tt Scatter}, which makes scatter plots:
+%
+\begin{verbatim}
+    thinkplot.Scatter(heights, weights)
+    thinkplot.Show(xlabel='Height (cm)',
+                   ylabel='Weight (kg)',
+                   axis=[140, 210, 20, 200])
+\end{verbatim}
+
+The result, in Figure~\ref{scatter1} (left), shows the shape of
+the relationship.  As we expected, taller
+people tend to be heavier.  
+
+\begin{figure}
+% scatter.py
+\centerline{\includegraphics[height=3.0in]{figs/scatter2.pdf}}
+\caption{Scatter plot with jittering and transparency (left),
+hexbin plot (right).}
+\label{scatter2}
+\end{figure}
+
+But this is not the best representation of
 the data, because the data are packed into columns.  The problem is
-that the heights were rounded to the nearest inch, converted to
+that the heights are rounded to the nearest inch, converted to
 centimeters, and then rounded again.  Some information is lost in
 translation.  \index{height} \index{weight} \index{jitter}
 
 We can't get that information back, but we can minimize the effect on
-the scatterplot by {\bf jittering} the data, which means adding random
+the scatter plot by {\bf jittering} the data, which means adding random
 noise to reverse the effect of rounding off.  Since these measurements
 were rounded to the nearest inch, they might be off by up to 0.5 inches or
-1.3 cm.  So I added uniform noise in the range -1.3 to 1.3 cm:
+1.3 cm.  Similarly, the weights might be off by 0.5 kg.
 \index{uniform distribution}
 \index{distribution!uniform}
 \index{noise}
 %
 \begin{verbatim}
-jitter = 1.3
-heights = [h + random.uniform(-jitter, jitter) for h in heights]
+    heights = thinkstats2.Jitter(heights, 1.3)
+    weights = thinkstats2.Jitter(weights, 0.5)
 \end{verbatim}
 
-Figure~\ref{scatterplot2} shows the result.  Jittering the data makes
-the shape of the relationship clearer.  In general you should only jitter
-data for purposes of visualization and avoid using jittered data
-for analysis.
+Here's the implementation of {\tt Jitter}:
+
+\begin{verbatim}
+def Jitter(values, jitter=0.5):
+    n = len(values)
+    return np.random.uniform(-jitter, +jitter, n) + values
+\end{verbatim}
+
+The values can be any sequence; the result is a NumPy array.
+
+Figure~\ref{scatter1} (right) shows the result.  Jittering reduces the
+visual effect of rounding and makes the shape of the relationship
+clearer.  But in general you should only jitter data for purposes of
+visualization and avoid using jittered data for analysis.
 
 Even with jittering, this is not the best way to represent the data.
 There are many overlapping points, which hides data
 in the dense parts of the figure and gives disproportionate emphasis
-to outliers.
+to outliers.  This effect is called {\bf saturation}.
 \index{outlier}
 
 We can solve this problem with the {\tt alpha} parameter, which makes
 the points partly transparent:
 %
 \begin{verbatim}
-pyplot.scatter(heights, weights, alpha=0.2)
+    thinkplot.Scatter(heights, weights, alpha=0.2)
 \end{verbatim}
 %
-Figure~\ref{scatterplot3} shows the result.  Overlapping data
+Figure~\ref{scatter2} (left) shows the result.  Overlapping data
 points look darker, so darkness is proportional to density.  In this
-version of the plot we can see an apparent artifact: a horizontal line
-near 90 kg or 200 pounds.  Since this data is based on self-reports in
-pounds, the most likely explanation is that some responses were rounded off
-(possibly down).
+version of the plot we can two details that were not apparent before:
+vertical clusters at several heights and a horizontal line near 90 kg
+or 200 pounds.  Since this data is based on self-reports in pounds,
+the most likely explanation is that some respondents reported
+rounded values.
 
 Using transparency works well for moderate-sized datasets, but this
-figure only shows the first 1000 records in the BRFSS, out of a total
-of 414509.
+figure only shows the first 5000 records in the BRFSS, out of a total
+of 414 509.
 \index{hexbin plot}
 \index{plot!hexbin}
 
-To handle larger datasets, one option is a hexbin plot, which divides
-the graph into hexagonal bins and colors each bin according to how many
-data points fall in it.  {\tt pyplot} provides a function called 
-{\tt hexbin}:
+To handle larger datasets, another option is a hexbin plot, which
+divides the graph into hexagonal bins and colors each bin according to
+how many data points fall in it.  {\tt thinkplot} provides 
+{\tt HexBin}:
 %
 \begin{verbatim}
-pyplot.hexbin(heights, weights, cmap=matplotlib.cm.Blues)
+    thinkplot.HexBin(heights, weights)
 \end{verbatim}
 %
-Figure~\ref{scatterplot4} shows the result with a blue colormap.
-An advantage of a hexbin is that it shows the shape of the relationship
-well, and it is efficient for large datasets.  A drawback is that
-it makes the outliers invisible.
-\index{colormap}
-\index{grayscale}
+Figure~\ref{scatter2} (right) shows the result.  An advantage of a
+hexbin is that it shows the shape of the relationship well, and it is
+efficient for large datasets, but in time and in the size of the file
+it generates.  A drawback is that it makes the outliers invisible.
 
 The moral of this story is that it is
-not easy to make a scatterplot that shows the relationship clearly
+not easy to make a scatter plot that shows relationships clearly
 without introducing misleading artifacts.
-You can download the code for these figures from
-\url{http://thinkstats2.com/brfss_scatter.py}.
-\index{{\tt brfss\_scatter.py}}
+
+
+\section{Characterizing relationships}
+
+Scatter plots provide a general impression of the relationship
+between variables, but there are other visualizations that provide
+more insight into the nature of the relationship.  One option is
+to use one variable to bin the data and plot percentiles of the
+other variable.
+
+NumPy and pandas provide functions for binning data:
+
+\begin{verbatim}
+    df = df.dropna(subset=['htm3', 'wtkg2'])
+    bins = np.arange(135, 210, 5)
+    indices = np.digitize(df.htm3, bins)
+    groups = df.groupby(indices)
+\end{verbatim}
+
+{\tt dropna} drops rows with {\tt nan} in any of the columns
+listed in {\tt subset}.
+
+{\tt arange} makes a NumPy array of bins from 135 to, but not including,
+210, in increments of 5.
+
+{\tt digitize} computes the index of the bin that contains each value
+in {\tt df.htm3}.  The result is a NumPy array of integer indices.
+Values that fall below the lowest bin are mapped to index 0.  Values
+above the highest bin are mapped to {\tt len(bins)}.  So
+{\tt indices} is one element longer than {\tt bins}.
+
+\begin{figure}
+% scatter.py
+\centerline{\includegraphics[height=2.5in]{figs/scatter3.pdf}}
+\caption{Percentiles of weight for a range of height bins.}
+\label{scatter3}
+\end{figure}
+
+{\tt groupby} is a pandas method that divides a DataFrame into groups.
+The result is an object that iterates over the groups.  So, for example,
+we can print the number of rows in each group:
+
+\begin{verbatim}
+for i, group in groups:
+    print(i, len(group))
+\end{verbatim}
+
+Now for each group we can compute the mean height and the CDF
+of weight:
+
+\begin{verbatim}
+    heights = [group.htm3.mean() for i, group in groups][1:-1]
+    cdfs = [thinkstats2.Cdf(group.wtkg2) for i, group in groups][1:-1]
+\end{verbatim}
+
+The slice operators omit the first and last groups, which contain
+the values that fall outside the range of bins.  Finally, we can
+plot percentiles of weight versus height:
+
+\begin{verbatim}
+    for percent in [75, 50, 25]:
+        weights = [cdf.Percentile(percent) for cdf in cdfs]
+        label = '%dth' % percent
+        thinkplot.Plot(heights, weights, label=label)
+\end{verbatim}
+
+Figure~\ref{scatter3} shows the result.  Between 140 and 200 cm
+the relationship between these variables is linear.  This range
+includes more than 99\% of the data, so we don't have to worry
+too much about the extremes.
 
 
 \section{Correlation}
 
-If the relationship between variables is linear, you can measure
-the strength of the relationship by computing one of several
-correlation statistics.
+A {\bf correlation} is a statistic intended to quantify the strength
+of the relationship between two variables.
+\index{correlation}
 
-A challenge in measuring correlation is that the variables we want
-to compare might not be expressed in the same units.  For example, height
-might be in centimeters and weight in kilograms.  And even if they are
-in the same units, they come from different distributions.
+A challenge in measuring correlation is that the variables we want to
+compare are often not expressed in the same units.  And even if they
+are in the same units, they come from different distributions.
 \index{units}
 
 There are two common solutions to these problems:
@@ -4885,14 +4983,14 @@ There are two common solutions to these problems:
 \begin{enumerate}
 
 \item Transform all values to {\bf standard scores}.  This leads to
-the Pearson coefficient of correlation.
+the ``Pearson product-moment correlation coefficient.''
 \index{standard scores}
 \index{Pearson coefficient of correlation}
 \index{Spearman coefficient of correlation}
 \index{coefficient!correlation}
 
 \item Transform all values to their percentile ranks.  This
-leads to the Spearman coefficient.
+leads to the ``Spearman rank correlation coefficient.''
 \index{rank}
 \index{percentile rank}
 
@@ -4905,10 +5003,10 @@ $z_i = (x_i - \mu) / \sigma$.
 \index{standard deviation}
 
 The numerator is a deviation: the distance from the mean.  Dividing by
-$\sigma$ {\bf normalizes} the deviation, so the values of $Z$ are
+$\sigma$ {\bf standardizes} the deviation, so the values of $Z$ are
 dimensionless (no units) and their distribution has mean 0 and
 variance 1.
-\index{normalize}
+\index{standardize}
 \index{deviation}
 \index{normal distribution}
 \index{distribution!normal}
@@ -4916,7 +5014,7 @@ variance 1.
 \index{distribution!Gaussian}
 
 If $X$ is normally distributed, so is $Z$; but if $X$ is skewed or has
-outliers, so does $Z$.  In those cases it is more robust to use
+outliers, so does $Z$.  In that case it is more robust to use
 percentile ranks.  If we compute a new variable, $R$, so that $r_i$ is
 the percentile rank of $x_i$, the distribution of $R$ is uniform
 between 0 and 100, regardless of the distribution of $X$.
@@ -4931,11 +5029,11 @@ between 0 and 100, regardless of the distribution of $X$.
 {\bf Covariance} is a measure of the tendency of two variables
 to vary together.  If we have two series, $X$ and $Y$, their
 deviations from the mean are
-
+%
 \[ dx_i = x_i - \xbar \]
-
+%
 \[ dy_i = y_i - \ybar \]
-
+%
 where $\xbar$ is the sample mean of $X$ and $\ybar$ is the sample mean
 of $Y$.  If $X$ and $Y$ vary together, their deviations tend to have
 the same sign.
@@ -4952,31 +5050,49 @@ Covariance is the mean of these products:
 where $n$ is the length of the two series (they have to be the same
 length).
 
-\begin{exercise}
-Write a function called {\tt Cov} that takes two lists
-and computes their covariance.  To test your function, compute
-the covariance of a list with itself and confirm that
-$Cov(X, X) = Var(X)$.
+If you have studied linear algebra, you might recognize that
+{\tt Cov} is the dot product of the deviations, divided
+by their length.  So the covariance is maximized if the two vectors
+are identical, 0 if they are othogonal, and negative if they
+point in opposite directions.  {\tt thinkstats2} uses {\tt np.dot} to
+implement {\tt Cov} efficiently:
 
-You can download a solution from
-\url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
+\begin{verbatim}
+def Cov(xs, ys, meanx=None, meany=None):
+    if meanx is None:
+        meanx = np.mean(xs)
+    if meany is None:
+        meany = np.mean(ys)
 
-\end{exercise}
+    cov = np.dot(np.asarray(xs)-meanx, np.asarray(ys)-meany) / len(xs)
+    return cov
+\end{verbatim}
+
+By default {\tt Cov} computes deviations from the sample means,
+or you can provide known values.  If {\tt xs} and {\tt ys} are
+Python sequences, {\tt np.asarray} converts them to NumPy arrays.
+If they are already NumPy arrays, {\tt np.asarray} does nothing.
+
+This implementation of covariance is meant to be simple for purposes
+of explanation.  NumPy and pandas also provide implementations of
+covariance, but both of them apply a correction for small sample sizes
+that we have not covered yet, and {\tt np.cov} returns a covariance
+matrix, which is more than we need for now.
 
 
 \section{Pearson's correlation}
 \index{correlation}
 \index{standard score}
 
-Covariance is useful in some computations, but
-it is seldom reported as a summary statistic because it is hard to
-interpret.  Among other problems, its units are the product of the
-units of $X$ and $Y$.  So the covariance of weight and height might be
-in units of kilogram-meters, which doesn't mean much.
+Covariance is useful in some computations, but it is seldom reported
+as a summary statistic because it is hard to interpret.  Among other
+problems, its units are the product of the units of $X$ and $Y$.  For
+example, the covariance of weight and height in the BRFSS dataset is
+113 kilogram-centimeters, whatever that means.
 
-One solution to this problem is to divide the deviations by $\sigma$,
-which yields standard scores, and compute the product of standard scores:
+One solution to this problem is to divide the deviations by the standard
+deviation, which yields standard scores, and compute the product of
+standard scores:
 %
 \[ p_i = \frac{(x_i - \xbar)}{S_X} \frac{(y_i - \ybar)}{S_Y} \]
 %
@@ -4997,6 +5113,23 @@ interpret.  Because standard scores are dimensionless, so is $\rho$.
 \index{Pearson coefficient of correlation}
 \index{coefficient!correlation}
 
+Here is the implementation in {\tt thinkstats2}:
+
+\begin{verbatim}
+def Corr(xs, ys):
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+
+    meanx, varx = MeanVar(xs)
+    meany, vary = MeanVar(ys)
+
+    corr = Cov(xs, ys, meanx, meany) / math.sqrt(varx * vary)
+    return corr
+\end{verbatim}
+
+{\tt MeanVar} computes mean and variance slightly more efficiently
+than separate calls to {\tt np.mean} and {\tt np.var}.
+
 Pearson's correlation is always between -1 and +1 (including both).
 If $\rho$ is positive, we say that the correlation is positive,
 which means that when one variable is high, the other tends to be
@@ -5009,16 +5142,19 @@ that if you know one, you can make a perfect prediction about the
 other.  \index{prediction}
 
 Most correlation in the real world is not perfect, but it
-is still useful.  For example, if you know someone's height, you might
-be able to guess their weight.  You might not get it exactly right, but
-your guess will be better than if you didn't know the height.
-Correlation is a measure of how much better.
+is still useful.  The correlation of height and weight is 0.51, which
+is a strong correlation compared to similar human-related variables.
+% TODO: forward reference to discussion of strength
 
-So if $\rho = 0$, does that mean there is no
-relationship between the variables?  Unfortunately, no.  Pearson's
-correlation only measures {\em linear} relationships.  If there's a
-nonlinear relationship, $\rho$ understates its strength.
-\index{linear relationship}
+
+
+\section{Non-linear relationships}
+
+If Pearson's correlation is near 0, it is tempting to conclude
+that there is no relationship between the variables, but that
+conclusion is not valid.  Pearson's correlation only measures {\em
+  linear} relationships.  If there's a nonlinear relationship, $\rho$
+understates its strength.  \index{linear relationship}
 
 \begin{figure}
 \centerline{\includegraphics[height=2.5in]{figs/Correlation_examples.png}}
@@ -5028,7 +5164,7 @@ nonlinear relationship, $\rho$ understates its strength.
 
 Figure~\ref{corr_examples} is from
 \url{http://wikipedia.org/wiki/Correlation_and_dependence}.  It shows
-scatterplots and correlation coefficients for several
+scatter plots and correlation coefficients for several
 carefully-constructed datasets.
 \index{coefficient!correlation}
 \index{scatter plot}
@@ -5042,24 +5178,9 @@ slope (we'll talk about estimating slope soon).  The third row shows
 variables that are clearly related, but because the relationship is
 non-linear, the correlation coefficient is 0.
 
-The moral of this story is that you should always look at a scatterplot of
-your data before blindly computing a correlation coefficient.
-\index{correlation coefficient}
-\index{coefficient!correlation}
-
-\begin{exercise}
-Write a function called {\tt Corr} that takes two lists and
-computes their correlation.  Hint: use {\tt thinkstats.Var} and
-the {\tt Cov} function you wrote in the previous exercise.
-\index{variance}
-\index{covariance}
-
-To test your function, compute the covariance of a list with itself
-and confirm that $\Corr(X, X)$ is 1.  You can download a solution
-from \url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
-
-\end{exercise}
+The moral of this story is that you should always look at a scatter
+plot of your data before blindly computing a correlation coefficient.
+\index{correlation coefficient} \index{coefficient!correlation}
 
 
 \section{Spearman's rank correlation}
@@ -5090,342 +5211,74 @@ index in the sorted sample.  For example, in the sample {\tt [1, 2, 5, 7]}
 the rank of the value 5 is 3, because it appears third in the sorted
 list.  Then we compute Pearson's correlation for the ranks.
 
-An alternative way to quantify correlation is to apply a transform
-that makes the data more nearly normal, then compute Pearson's
-correlation for the transformed data.  For example, if the data are
-approximately lognormal, you could take the log of each value and
-compute the correlation of the logs.  \index{lognormal distribution}
-\index{distribution!lognormal}
+{\tt thinkstats2} provides a function that computes Spearman's rank
+correlation:
 
-\begin{exercise}
-Write a function that takes a sequence and returns a list that
-contains the rank for each element.  For example, if the sequence is
-{\tt [7, 1, 2, 5]}, the result should be {\tt [4, 1, 2, 3]}.
+\begin{verbatim}
+def SpearmanCorr(xs, ys):
+    xranks = pandas.Series(xs).rank()
+    yranks = pandas.Series(ys).rank()
+    return Corr(xranks, yranks)
+\end{verbatim}
 
-If the same value appears more than once, the strictly correct
-solution is to assign each of them the average of their ranks.  But if
-you ignore that and assign them ranks in arbitrary order, the error is
-usually small.
+I convert the arguments to pandas Series objects so I can use
+{\tt rank}, which computes the rank for each value and returns
+a Series.  Then I use {\tt Corr} to compute the 
 
-Write a function that takes two sequences (with the same length) and
-computes their Spearman rank coefficient.  You can download a solution
-from \url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
-\index{Spearman coefficient of correlation}
-\index{coefficient!correlation}
+Or I could use {\tt Series.corr} directly and specify
+Spearman's method:
 
-\end{exercise}
+\begin{verbatim}
+def SpearmanCorr(xs, ys):
+    xranks = pandas.Series(xs)
+    yranks = pandas.Series(ys)
+    return xs.corr(ys, method='spearman')
+\end{verbatim}
 
-
-\begin{exercise}
-Download \url{http://thinkstats2.com/brfss.py} and
-\url{http://thinkstats2.com/brfss_scatter.py}.  Run them and confirm that you
-can read the BRFSS data and generate scatterplots.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss.py}}
-\index{{\tt brfss\_scatter.py}}
-
-Comparing the scatterplots to Figure~\ref{corr_examples}, what value
-do you expect for Pearson's correlation?  What value do you get?
-\index{weight!adult}
-\index{adult weight}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{outlier}
-
-Because the distribution of adult weight is lognormal, there are
-outliers that affect the correlation.  Try plotting
-log(weight) versus height, and compute Pearson's
-correlation for the transformed variable.
-
-Finally, compute Spearman's rank correlation for weight and height.
-Which coefficient do you think is the best measure of the strength of
-the relationship?  You can download a solution from
-\url{http://thinkstats2.com/brfss_corr.py}.
-\index{{\tt brfss\_corr.py}}
-
-\end{exercise}
-
-
-\section{Least squares fit}
-
-Correlation coefficients measure the strength and sign of a
-relationship, but not the slope.  There are several ways to estimate
-the slope; the most common is a {\bf linear least squares fit}.  A
-``linear fit'' is a line intended to model the relationship between
-variables.  A ``least squares'' fit is one that minimizes the mean
-squared error (MSE) between the line and the data\footnote{See
-  \url{http://wikipedia.org/wiki/Simple_linear_regression}.}.
-\index{least squares fit}
-\index{linear least squares}
-\index{coefficient!correlation}
-\index{linear regression}
-
-Suppose we have a sequence of points, $Y$, that we want to express as a
-function of another sequence $X$.  If there is a linear relationship
-between $X$ and $Y$ with intercept $\alpha$ and slope $\beta$, we
-expect each $y_i$ to be roughly $\alpha + \beta x_i$.
-\index{residual}
-
-But unless the correlation is perfect, this prediction is only
-approximate.  The deviation, or {\bf residual}, is 
-
-\[ \eps_i = (\alpha + \beta x_i) - y_i \]
-
-The residual might be due to random factors like measurement error,
-or non-random factors that are unknown.  For example, if we are
-trying to predict weight as a function of height, unknown factors
-might include diet, exercise, and body type.
-\index{slope}
-\index{intercept}
-
-If we get the parameters $\alpha$ and $\beta$ wrong, the residuals
-get bigger, so it makes intuitive sense that the parameters we want
-are the ones that minimize the residuals.
-
-As usual, we could minimize the absolute value of the
-residuals, or their squares, or their cubes, etc.  The most common
-choice is to minimize the sum of squared residuals
-%
-\[ \min_{\inter, \slope} \sum \eps_i^2 \]
-%
-Why?  There are three good reasons and one bad one:
+The Spearman rank correlation for the BRFSS data is 0.54, a little
+higher than the Pearson correlation, 0.51.  There are several possible
+reasons for the difference, including:
 
 \begin{itemize}
 
-\item Squaring has the obvious feature of treating positive and
-negative residuals the same, which is usually what we want.
+\item If the relationship is
+nonlinear, Pearson's correlation tends to underestimate the strength
+of the relationship, and 
 
-\item Squaring gives more weight to large residuals, but not
-so much weight that the largest residual always dominates.
-
-\item If the residuals are independent of $x$, random, and normally
-  distributed with $\mu = 0$ and constant (but unknown) $\sigma$, then
-  the least squares fit is also the maximum likelihood estimator of
-  $\alpha$ and $\beta$.\footnote{See Press et al., {\em Numerical Recipes in C},
-    Chapter 15 at \url{http://www.nrbook.com/a/bookcpdf/c15-1.pdf}.}
-\index{MLE}
-\index{maximum likelihood estimator}
-
-\item The values of $\hat{\inter}$ and $\hat{\slope}$ that minimize
-  the squared residuals can be computed efficiently.
+\item Pearson's correlation can affected (in either direction)
+if one of the distributions is skewed or contains outliers.  Spearman's
+rank correlation is immune to these effects.
 
 \end{itemize}
 
-That last reason made sense when computational efficiency was more
-important than choosing the method most appropriate to the problem
-at hand.  That's no longer the case, so it is worth considering
-whether squared residuals are the right thing to minimize.
-\index{computation}
+In the BRFSS example, we know that the distribution of weights is
+roughly lognormal, so we could eliminate the effect of skewness
+by computing Pearson's
+correlation between height and the log of weight.
+\index{lognormal distribution}
+\index{distribution!lognormal}
 
-For example, if you are using values of $X$ to predict values of $Y$,
-guessing too high might be better (or worse) than guessing too low.
-In that case you might want to compute some cost function,
-cost(\_i), and minimize total cost.
-\index{cost function}
+\begin{verbatim}
+    thinkstats2.Corr(df.htm3, np.log(df.wtkg2)))
+\end{verbatim}
 
-However, computing a least squares fit is quick, easy and often good
-enough, so here's how:
-
-\begin{enumerate}
-
-\item Compute the sample means, $\xbar$ and $\ybar$, the variance
-of $X$, and the covariance of $X$ and $Y$.
-
-\item The estimated slope is
-%
-\[ \hat{\slope} = \frac{Cov(X,Y)}{Var(X)} \]
-%
-\item And the intercept is
-%
-\[ \hat{\inter} = \ybar - \hat{\slope} \xbar \]
-%
-\end{enumerate}
-
-To see how this is derived, you can read
-\url{http://wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
+The result is 0.53, close to the rank correlation, 0.54.  So that
+suggests that skewness in the distribution of weight explains most of
+the difference between Pearson's and Spearman's correlation.
 
 
-\begin{exercise}
-Write a function named {\tt LeastSquares} that takes $X$ and $Y$ and
-computes $\hat{\inter}$ and $\hat{\slope}$.  You can download a
-solution from \url{http://thinkstats2.com/correlation.py}.  \index{{\tt
-    correlation.py}}
-
-\end{exercise}
-
-\begin{exercise}
-Using the data from the BRFSS again, compute the linear least squares
-fit for log(weight) versus height.  You can download a
-solution from \url{http://thinkstats2.com/brfss_corr.py}.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss\_corr.py}}
-
-\end{exercise}
-
-
-\begin{exercise}
-The distribution of wind speeds in a given location determines the
-wind power density, which is an upper bound on the average power that
-a wind turbine at that location can generate.  According to some
-sources, empirical distributions of wind speed are well modeled by a
-Weibull distribution (see
-\url{http://wikipedia.org/wiki/Wind_power#Distribution_of_wind_speed}).
-\index{wind speed}
-\index{wind power density}
-\index{turbine}
-\index{Weibull distribution}
-\index{distribution!Weibull}
-
-To evaluate whether a location is a viable site for a wind turbine,
-you can set up an anemometer to measure wind speed for a period of
-time.  But it is hard to measure the tail of the wind speed distribution
-accurately because, by definition, events in the tail don't happen
-very often.
-\index{tail}
-
-One way to address this problem is to use measurements to estimate the
-parameters of a Weibull distribution, then integrate over the
-analytic PDF to compute wind power density.
-\index{PDF}
-
-To estimate the parameters of a Weibull distribution, we can use the
-transformation from Exercise~\ref{weibull} and then use a linear fit
-to find the slope and intercept of the transformed data.
-
-Write a function that takes a sample from a Weibull distribution and
-estimates its parameters.
-
-Now write a function that takes the parameters of a Weibull distribution
-of wind speed and computes average wind power density (you might have
-to do some research for this part).
-
-\end{exercise}
-
-
-\section{Goodness of fit}
-\index{goodness of fit}
-\index{fit, goodness}
-
-Having fit a linear model to the data, we might want to know how good
-it is.  Well, that depends on what it's for.  One way to evaluate a
-model is its predictive power.
-
-In the context of prediction, the quantity we are trying to guess is
-called a {\bf dependent variable} and the quantity we are using to
-make the guess is called an {\bf explanatory} or {\bf independent
-  variable}.
-\index{dependent variable}
-\index{explanatory variable}
-\index{independent variable}
-\index{coefficient!determination}
-
-To measure the predictive power of a model, we can compute the {\bf
-  coefficient of determination}, more commonly known as ``R-squared'':
-%
-\[ R^2 = 1 - \frac{Var(\eps)}{Var(Y)}\]
-%
-To understand what $R^{2}$ means, suppose (again) that you are trying
-to guess someone's weight.  If you didn't know anything about them,
-your best strategy would be to guess $\ybar$; in
-that case the MSE of your guesses would be $Var(Y)$:
-%
-\[ MSE = \frac{1}{n} \sum (\ybar - y_i)^2 = Var(Y) \]
-%
-But if I told you their height, you would guess $\hat{\inter} +
-\hat{\slope} x_i$; in that case your MSE would be $Var(\eps)$.
-%
-\[ MSE = 
-\frac{1}{n} \sum (\hat{\inter} + \hat{\slope} x_i - y_i)^2 =
-Var(\eps) \]
-%
-So the term $Var(\eps)/Var(Y)$ is the ratio of mean squared error with
-and without the explanatory variable, which is the fraction of
-variability left unexplained by the model.  The complement, $R^{2}$,
-is the fraction of variability explained by the model.
-\index{variability}
-
-If a model yields $R^{2} = 0.64$, you could say that the model explains
-64\% of the variability, or it might be more precise to say that it
-reduces the MSE of your predictions by 64\%.
-
-In the context of a linear least squares model, it turns out that
-there is a simple relationship between the coefficient of
-determination and Pearson's correlation coefficient, $\rho$:
-
-\[ R^{2} = \rho^{2}\]
-
-See \url{http://wikipedia.org/wiki/Howzzat}!
-\index{howzzat}
-
-\begin{exercise}
-The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
-of intelligence; scores are calibrated so that the mean and standard
-deviation in the general population are 100 and 15.
-\index{Adult Intelligence Scale}
-\index{WAIS}
-\index{IQ}
-\index{intelligence}
-
-Suppose that you wanted to predict someone's WAIS score based on their
-SAT scores.  According to one study, there is a Pearson correlation of
-0.72 between total SAT scores and WAIS scores.
-
-If you applied your predictor to a large sample, what would you expect to
-be the mean squared error (MSE) of your predictions?
-
-Hint: What is the MSE if you always guess 100?
-\end{exercise}
-
-
-\begin{exercise}
-Write a function named {\tt Residuals} that takes X, Y, $\hat{\inter}$
-and $\hat{\slope}$ and returns a list of $\eps_i$.
-\index{residual}
-
-Write a function named {\tt CoefDetermination} that takes the 
-$\eps_i$ and Y and returns $R^{2}$.  To test your functions, 
-confirm that $R^{2} = \rho^{2}$.  You can download a solution
-from \url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
-
-\end{exercise}
-
-\begin{exercise}
-Using the height and weight data from the BRFSS (one more time),
-compute $\hat{\inter}$, $\hat{\slope}$ and $R^{2}$.  If you were trying to guess
-someone's weight, how much would it help to know their height?
-You can download a solution from
-\url{http://thinkstats2.com/brfss_corr.py}.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss\_corr.py}}
-
-\end{exercise}
-
-
-\section{Correlation and Causation}
+\section{Correlation and causation}
 \index{correlation}
 \index{causation}
-\index{xkcd}
-\index{comic}
-\index{Munroe, Randall}
 
-The web comic {\tt xkcd} demonstrates the difficulty of inferring
-causation:
+If variables A and B are related, there are three possible
+explanations: A causes B, or B causes A, or some other set of factors
+causes both A and B.  These explanations are called ``causal
+relationships''.
 
-\begin{figure}
-\centerline{\includegraphics[width=4.0in]{figs/correlation.png}}
-\caption{From {\tt xkcd.com} by Randall Munroe.}
-\end{figure}
-
-In general, a relationship between two variables does not tell you
-whether one causes the other, or the other way around, or both, or
-whether they might both be caused by something else altogether.
-
-This rule can be summarized with the phrase ``Correlation
+Correlation alone does not distinguish between these explanations,
+so it does not tell you which ones are true.
+This rule is often summarized with the phrase ``Correlation
 does not imply causation,'' which is so pithy it has its own
 Wikipedia page: \url{http://wikipedia.org/wiki/Correlation_does_not_imply_causation}.
 
@@ -5439,14 +5292,12 @@ So what can you do to provide evidence of causation?
   of causation, but it does not preclude the possibility that something
   else causes both A and B.
 
-\item Use randomness.  If you divide a large population into two
+\item Use randomness.  If you divide a large sample into two
   groups at random and compute the means of almost any variable, you
-  expect the difference to be small.  This is a consequence of the
-  Central Limit Theorem (so it is subject to the same requirements).
-
+  expect the difference to be small.
   If the groups are nearly identical in all variable but one, you
   can eliminate spurious relationships.
-\index{spurious relationship}
+  \index{spurious relationship}
 
   This works even if you don't know what the relevant variables
   are, but it works even better if you do, because you can check that
@@ -5456,7 +5307,7 @@ So what can you do to provide evidence of causation?
 
 These ideas are the motivation for the {\bf randomized controlled
 trial}, in which subjects are assigned randomly to two (or more)
-groups: a {\bf treatment} group that receives some kind of intervention,
+groups: a {\bf treatment group} that receives some kind of intervention,
 like a new medicine, and a {\bf control group} that receives
 no intervention, or another treatment whose effects are known.
 \index{randomized controlled trial}
@@ -5474,7 +5325,7 @@ sciences, medicine, and a few other disciplines.  In the social sciences,
 controlled experiments are rare, usually because they are impossible
 or unethical.
 
-One alternative is to look for a {\bf natural experiment}, where
+An alternative is to look for a {\bf natural experiment}, where
 different ``treatments'' are applied to groups that are otherwise
 similar.  One danger of natural experiments is that the groups might
 differ in ways that are not apparent.  You can read more about this
@@ -5482,60 +5333,20 @@ topic at \url{http://wikipedia.org/wiki/Natural_experiment}.
 \index{natural experiment}
 
 In some cases it is possible to infer causal relationships using {\bf
-  regression analysis}.  A linear least squares fit
-is a simple form of regression that explains a dependent
-variable using one explanatory variable.  There are similar
-techniques that work with arbitrary numbers of independent variables.
+  regression analysis}, which is the topic of Chapter~\ref{regression}.
 \index{regression analysis}
 
-I won't cover those techniques here, but there are also simple ways to
-control for spurious relationships.  For example, in the NSFG, we saw
-that first babies tend to be lighter than others (see
-Section~\ref{birth_weights}).  But birth weight is also correlated
-with the mother's age, and mothers of first babies tend to be younger
-than mothers of other babies.
-\index{birth weight}
-\index{weight!birth}
-\index{National Survey of Family Growth}
-\index{NSFG}
 
-So it may be that first babies are lighter because their mothers are
-younger.  To control for the effect of age, we could divide the mothers
-into age groups and compare birth weights for first babies and others
-in each age group.
-\index{pooled data}
-
-If the difference between first babies and others is the same in
-each age group as it was in the pooled data, we conclude
-that the difference is not related to age.  If there is no difference,
-we conclude that the effect is entirely due to age.  Or,
-if the difference is smaller, we can quantify how much of the effect
-is due to age.
+\section{Exercises}
 
 \begin{exercise}
-The NSFG data includes a variable named {\tt agepreg} that records
-the age of the mother at the time of birth.
-Make a scatterplot of mother's age and baby's weight for each live
-birth.  Can you see a relationship?
+Using data from the NSFG, make a scatter plot of birth weight
+versus mother's age.  Plot percentiles of birth weight
+versus mother's age.  Compute Pearson's and Spearman's correlations.
+How would you characterize the relationship
+between these variables?
 
-Compute a linear least-squares fit for these variables.  What are the
-units of the estimated parameters $\hat{\inter}$ and $\hat{\slope}$?
-How would you summarize these results in a sentence or two?
-
-Compute the average age for mothers of first babies and the average
-age of other mothers.  Based on the difference in ages between the
-groups, how much difference do you expect in the mean birth weights?
-What fraction of the actual difference in birth weights is explained
-by the difference in ages?
-
-You can download a solution to this problem from
-\url{http://thinkstats2.com/agemodel.py}.  If you are curious about
-multivariate regression, you can run \url{http://thinkstats2.com/age_lm.py}
-which shows how to use the R statistical computing package from
-Python.  But that's a whole other book.
-\index{{\tt agemodel.py}}
-\index{{\tt age\_lm.py}}
-
+A solution to this exercise is in \verb"chap07ex_soln.py".
 \end{exercise}
 
 
@@ -5543,48 +5354,44 @@ Python.  But that's a whole other book.
 
 \begin{itemize}
 
-\item correlation: a description of the dependence between variables.
+\item scatter plot: A visualization of the relationship between
+two variables, showing one point for each row of data.
+\index{scatter plot}
+
+\item jitter: Random noise added to data for purposes of
+visualization.
+\index{jitter}
+
+\item saturation: Loss of information when multiple points are
+plotted on top of each other. 
+\index{saturation}
+
+\item correlation: A statistic that measures the strength of the
+relationship between two variables.
 \index{correlation}
 
-\item normalize: To transform a set of values so that their mean is 0 and
+\item standardize: To transform a set of values so that their mean is 0 and
 their variance is 1.
-\index{normalize}
+\index{standardize}
 
-\item standard score: A value that has been normalized.
+\item standard score: A value that has been standardized so it expressed
+in terms of standard deviations from the mean.
 \index{standard score}
 
-\item covariance: a measure of the tendency of two variables
+\item covariance: A measure of the tendency of two variables
 to vary together.
 \index{covariance}
 
 \item rank: The index where an element appears in a sorted list.
 \index{rank}
 
-\item least squares fit: A model of a dataset that minimizes the
-sum of squares of the residuals.
-\index{least squares fit}
-
-\item residual: A measure of the deviation of an actual value from a model.
-\index{residual}
-
-\item dependent variable: A variable we are trying to predict or explain.
-\index{dependent variable}
-
-\item independent variable: A variable we are using to predict a dependent
-variable, also called an explanatory variable.
-\index{independent variable}
-
-\item coefficient of determination: A measure of the goodness of fit
-of a linear model.
-\index{coefficient!determination}
-
 \item randomized controlled trial: An experimental design in which subject
 are divided into groups at random, and different groups are given different
 treatments.
 \index{randomized controlled trial}
 
-\item treatment: An change or intervention applied to one group in a
-controlled trial.
+\item treatment group: A group in a controlled trial that receives
+some kind of interventions.
 \index{treatment group}
 
 \item control group: A group in a controlled trial that receives no
@@ -5604,6 +5411,10 @@ approximately random.
 \chapter{Estimation}
 \label{estimation}
 \index{estimation}
+
+The code for this chapter is in {\tt estimation.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
 
 \section{The estimation game}
 
@@ -5664,9 +5475,9 @@ compute the error $\xbar - \mu$, the sample mean minimizes
 %
 \[ MSE = \frac{1}{m} \sum (\xbar - \mu)^2 \]
 %
-Where $m$ is the number of times you play the estimation game (not to
-be confused with $n$, which is the size of the sample used to compute
-$\xbar$).
+Where $m$ is the number of times you play the estimation game, not
+to be confused with $n$, which is the size of the sample used to
+compute $\xbar$.
 
 Here is a function that simulates the estimation game and computes
 the root mean squared error (RMSE), which is the square root of
@@ -5681,8 +5492,8 @@ def Estimate1(n=7, m=1000):
     medians = []
     for _ in range(m):
         xs = [random.gauss(mu, sigma) for i in range(n)]
-        xbar = numpy.mean(xs)
-        median = thinkstats2.Median(xs)
+        xbar = np.mean(xs)
+        median = np.median(xs)
         means.append(xbar)
         medians.append(median)
 
@@ -5699,7 +5510,7 @@ Here's the function that computes RMSE:
 \begin{verbatim}
 def RMSE(estimates, actual):
     e2 = [(estimate-actual)**2 for estimate in estimates]
-    mse = numpy.mean(e2)
+    mse = np.mean(e2)
     return math.sqrt(mse)
 \end{verbatim}
 
@@ -5769,14 +5580,14 @@ estimator of $\sigma^2$:
 %
 \[ S_{n-1}^2 = \frac{1}{n-1} \sum (x_i - \xbar)^2 \] 
 %
+For an explanation of why $S^2$ is biased, and a proof that
+$S_{n-1}^2$ is unbiased, see
+\url{http://wikipedia.org/wiki/Bias_of_an_estimator}.
+
 The biggest problem with this estimator is that its name and symbol
 are used inconsistently.  The name ``sample variance'' can refer to
 either $S^2$ or $S_{n-1}^2$, and the symbol $S^2$ is used
 for either or both.
-
-For an explanation of why $S^2$ is biased, and a proof that
-$S_{n-1}^2$ is unbiased, see
-\url{http://wikipedia.org/wiki/Bias_of_an_estimator}.
 
 Here is a function that simulates the estimation game and tests
 the performance of $S^2$ and $S_{n-1}^2$:
@@ -5790,8 +5601,8 @@ def Estimate2(n=7, m=1000):
     estimates2 = []
     for _ in range(m):
         xs = [random.gauss(mu, sigma) for i in range(n)]
-        biased = numpy.var(xs)
-        unbiased = numpy.var(xs, ddof=1)
+        biased = np.var(xs)
+        unbiased = np.var(xs, ddof=1)
         estimates1.append(biased)
         estimates2.append(unbiased)
 
@@ -5800,10 +5611,10 @@ def Estimate2(n=7, m=1000):
 \end{verbatim}
 
 Again, {\tt n} is the sample size and {\tt m} is the number of times
-we play the game.  {\tt numpy.var} to computes $S^2$ by default and
-$S_{n-1}^2$ if you provide the parameter {\tt ddof=1}, which stands for
-``delta degrees of freedom.''  I won't explain that now, but if you
-can't stand suspense, you can read
+we play the game.  {\tt np.var} computes $S^2$ by default and
+$S_{n-1}^2$ if you provide the argument {\tt ddof=1}, which stands for
+``delta degrees of freedom.''  I won't explain that now, but you can read
+about it at
 \url{http://en.wikipedia.org/wiki/Degrees_of_freedom_(statistics)}.
 
 {\tt MeanError} computes the mean difference between the estimates
@@ -5812,7 +5623,7 @@ and the actual value:
 \begin{verbatim}
 def MeanError(estimates, actual):
     errors = [estimate-actual for estimate in estimates]
-    return numpy.mean(errors)
+    return np.mean(errors)
 \end{verbatim}
 
 When I ran this code, the mean error for $S^2$ was -0.13.  As
@@ -5835,27 +5646,10 @@ generate an estimate, the next step is to characterize the
 uncertainty of the estimate, which is the topic of the next
 section.
 
-% You can download code for these experiments from \url{}.
-
-\begin{exercise}
-
-So far we have used $\xbar$ and median to estimate $\mu$, and
-found that $\xbar$  yields lower MSE.
-
-As we used $S^2$ and $S_{n-1}^2$ to estimate $\sigma$, and found that
-$S^2$ is biased and $S_{n-1}^2$ unbiased.
-
-Run similar experiments to see if $\xbar$ and median are biased estimates
-of $\mu$.
-
-Also check whether $S^2$ or $S_{n-1}^2$ yields a lower MSE.
-
-\end{exercise}
-
 
 \section{Sampling distributions}
 
-Suppose you are a primatologist studying gorillas in a wildlife
+Suppose you are a scientist studying gorillas in a wildlife
 preserve.  You want to know the average weight of the adult
 female gorillas in the preserve.  To weigh them, you have
 to tranquilize them, which is dangerous, expensive, and possibly
@@ -5878,7 +5672,7 @@ and choose the 9 heaviest gorillas (or the 9 lightest ones) just by
 chance.  Variation in the estimate caused by random selection is
 called {\bf sampling error}.
 
-To quantify the size of the sampling error, we can simulate the
+To quantify sampling error, we can simulate the
 sampling process with hypothetical values of $\mu$ and $\sigma$, and
 see how much $\xbar$ varies.
 
@@ -5894,14 +5688,15 @@ The following function answers that question:
 
 \begin{verbatim}
 def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
-    
     means = []
     for j in range(m):
-        xs = [random.gauss(mu, sigma) for i in range(n)]
-        xbar = numpy.mean(xs)
+        xs = np.random.normal(mu, sigma, n)
+        xbar = np.mean(xs)
         means.append(xbar)
 
     cdf = thinkstats2.MakeCdfFromList(means)
+    ci = cdf.Percentile(5), cdf.Percentile(95)
+    stderr = RMSE(means, mu)
 \end{verbatim}
 
 {\tt mu} and {\tt sigma} are the {\em hypothetical} values of
@@ -5910,17 +5705,17 @@ gorillas we measured.  {\tt m} is the number of times we run
 the simulation.
 
 \begin{figure}
-% estimate.py
-\centerline{\includegraphics[height=2.5in]{figs/estimate1.pdf}}
-\caption{Sampling distribution of $\xbar$.}
-\label{fig.sampling}
+% estimation.py
+\centerline{\includegraphics[height=2.5in]{figs/estimation1.pdf}}
+\caption{Sampling distribution of $\xbar$, with confidence interval.}
+\label{estimation1}
 \end{figure}
 
-For each simulation, we choose {\tt n} values from a Gaussian
+In each iteration, we choose {\tt n} values from a normal
 distribution with the given parameters, and compute the sample mean,
 {\tt xbar}.  We run 1000 simulations and then compute the
 distribution, {\tt cdf}, of the estimates.  The result is shown in
-Figure~\ref{fig.sampling}.  This distribution is called the {\bf
+Figure~\ref{estimation1}.  This distribution is called the {\bf
   sampling distribution} of the estimator.  It shows how much the
 estimates would vary if we ran the experiment over and over.
 
@@ -5928,38 +5723,53 @@ The mean of the sampling distribution is pretty close
 to the hypothetical value of $\mu$, which means that the experiment
 yields the right answer, on average.  After 1000 tries, the lowest
 result is 82 kg, and the highest is 98 kg.  This range suggests that
-the estimate might be off by 8 kg.  
+the estimate might be off by as much as 8 kg.
 
-But there are other ways to summarize the sampling distribution.
-For each simulated experiment, we can compute the error, $\xbar - \mu$,
-and then compute the root mean squared error (RMSE).
+There are two common ways to summarize the sampling distribution:
 
-The RMSE of the sampling distribution is called the {\bf standard
-  error} of the estimate.  In this example, it is roughly 2.5 kg,
-which means that we expect the estimate to be off by 2.5 kg on
-average.
+\begin{itemize}
 
-Another way to summarize the sampling error is by reporting
-percentiles of the sampling distribution.  In this example, the 5th
-percentile is 86 kg and the 95th percentile is 94 kg.  If we run the
-experiment many times, we expect the estimate to fall in this range
-about 90\% of the time.  This range is called a 90\%
-{\bf confidence interval}.
+\item {\bf Standard error} (SE) is a measure of how far we expect the
+  estimate to be off, on average.  For each simulated experiment, we
+  compute the error, $\xbar - \mu$, and then compute the root mean
+  squared error (RMSE).  In this example, it is roughly 2.5 kg.
 
-People get confused about confidence intervals; they often think
-that there is a 90\% probability that the actual parameter, $\mu$,
-falls in the 90\% confidence interval.  Sadly, that is not true.
-If you want to make a claim like that, you have to use Bayesian
-methods (see my book, {\it Think Bayes}).
+\item A {\bf confidence interval} (CI) is a range that includes a
+  given fraction of the sampling distribution.  For example, the 90\%
+  confidence interval is the range from the 5th to the 95th
+  percentile.  In this example, the 90\% CI is $(86, 94)$ kg.
+
+\end{itemize}
+
+Standard errors and confidence intervals are the source of much confusion:
+
+\begin{itemize}
+
+\item People often confuse standard error and standard deviation.
+  Remember that standard deviation describes variability in a measured
+  quantity; in this example, the standard deviation of gorilla weight
+  is 7.5 kg.  Standard error describes variability in an estimate.  In
+  this example, the standard error of the mean, based on a sample of 9
+  measurements, is 2.5 kg.
+
+One way to remember the difference is that, as sample size increases,
+standard error gets smaller; standard deviation does not.
+
+\item People often think that there is a 90\% probability that the
+  actual parameter, $\mu$, falls in the 90\% confidence interval.
+  Sadly, that is not true.  If you want to make a claim like that, you
+  have to use Bayesian methods (see my book, {\it Think Bayes}).
+
+\end{itemize}
 
 The sampling distribution answers a different question:
 it gives you a sense of how reliable an estimate
 is by telling you how much it would vary if you ran the experiment
 again.
 
-It is important to remember that the confidence interval
-(and the standard error) only quantify sampling error; that is,
-error caused because you sampled only part of the population.
+It is important to remember that confidence intervals
+and standard errors only quantify sampling error; that is,
+error due to measuring only part of the population.
 The sampling distribution does not account for other
 sources of error, notably sampling bias and measurement error, 
 which are the topics of the next section.
@@ -5969,7 +5779,7 @@ which are the topics of the next section.
 
 Suppose that instead of the weight of gorillas in a nature preserve,
 you want to know the average weight of women in the city where you
-live.  It is unlikely, to say that least, that you would be allowed
+live.  It is unlikely that you would be allowed
 to choose a representative sample of women and
 weigh them.
 
@@ -5978,15 +5788,14 @@ A simple alternative would be
 you could choose random numbers from the phone book, call and ask to
 speak to an adult woman, and ask how much she weighs.
 
-Telephone sampling has obvious limitations.  For example, the
-sample is limited to people whose telephone numbers are listed, so
-it eliminates people without phones (who might be poorer than average)
-and people with unlisted numbers (who might be richer).
-Also, if you
+Telephone sampling has obvious limitations.  For example, the sample
+is limited to people whose telephone numbers are listed, so it
+eliminates people without phones (who might be poorer than average)
+and people with unlisted numbers (who might be richer).  Also, if you
 call home telephones during the day, you are less likely to sample
-people with jobs.  And if you only sample the person who answers
-the phone, you are less likely to sample people who share a phone
-number with other women.
+people with jobs.  And if you only sample the person who answers the
+phone, you are less likely to sample people who share a phone number
+with other women.
 
 If factors like income, employment, and household size are related
 to weight (and it is plausible that they are), the results of your
@@ -5994,19 +5803,18 @@ survey will be affected one way or another.  This problem is
 called {\bf sampling bias} because it is a property of the sampling
 process.
 
-This sampling process is also vulnerable to 
-self-selection, which is a kind of sampling bias.  Some
-people will refuse to answer the question, and if the tendency
-to refuse is related to weight, that will affect the results.
+This sampling process is also vulnerable to self-selection, which is a
+kind of sampling bias.  Some people will refuse to answer the
+question, and if the tendency to refuse is related to weight, that
+will affect the results.
 
 Finally, if you ask people how much they weigh, rather than weighing
-them, the results might not be accurate.
-Even helpful respondents might round up or down if they are
-uncomfortable with their actual weight.  And not all respondents are
-helpful.  These inaccuracies are examples of {\bf measurement
-error}.
+them, the results might not be accurate.  Even helpful respondents
+might round up or down if they are uncomfortable with their actual
+weight.  And not all respondents are helpful.  These inaccuracies are
+examples of {\bf measurement error}.
 
-When you report an estimated quantity, it is important to report
+When you report an estimated quantity, it is useful to report
 standard error, or a confidence interval, or both, in order to
 quantify sampling error.  But it is also important to remember that
 sampling error is only one source of error, and often it is not the
@@ -6037,7 +5845,7 @@ so working backwards, we might choose
 %
 $\lamhat$ is an
 estimator of $\lambda$.  And not just any estimator; it is also the
-MLE estimator\footnote{See
+maximum likelihood estimator\footnote{See
 \url{http://wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}.}.
 So if you want to maximize your chance of guessing $\lambda$ exactly,
 $\lamhat$ is the way to go.
@@ -6049,8 +5857,8 @@ we expect $\lamhat$ to have the same problem.
 \index{robust}
 \index{outlier}
 
-We can find an alternative based on the sample median.
-The median of an exponential distribution is $ln(2) / \lambda$,
+We can choose an alternative based on the sample median.
+The median of an exponential distribution is $\ln(2) / \lambda$,
 so working backwards again, we can define an estimator
 %
 \[ \lamhatmed = \ln(2) / m \]
@@ -6068,8 +5876,8 @@ def Estimate3(n=7, m=1000):
     means = []
     medians = []
     for _ in range(m):
-        xs = [random.expovariate(lam) for i in range(n)]
-        L = 1 / numpy.mean(xs)
+        xs = np.random.exponential(1.0/lam, n)
+        L = 1 / np.mean(xs)
         Lm = math.log(2) / thinkstats2.Median(xs)
         means.append(L)
         medians.append(Lm)
@@ -6091,26 +5899,62 @@ as {\tt m} increases.
 
 It turns out that $\xbar$ is an unbiased estimator of the mean
 of the distribution, $1 / \lambda$, but $L$ is not an unbiased
-estimator of $\lambda$.  Later we will see how to derive results
-like this mathematically.
+estimator of $\lambda$.
+
+
+\section{Exercises}
+
+For the following exercises, you might want to start with
+{\tt estimation.py}.  
 
 \begin{exercise}
 
-Run an experiment to test whether $\xbar$ is an unbiased estimator of
-the mean of the distribution, $1 / \lambda$.
+In this chapter we used $\xbar$ and median to estimate $\mu$, and
+found that $\xbar$  yields lower MSE.
+Also, we used $S^2$ and $S_{n-1}^2$ to estimate $\sigma$, and found that
+$S^2$ is biased and $S_{n-1}^2$ unbiased.
+
+Run similar experiments to see if $\xbar$ and median are biased estimates
+of $\mu$.
+Also check whether $S^2$ or $S_{n-1}^2$ yields a lower MSE.
 
 \end{exercise}
+
 
 \begin{exercise}
 
 Suppose you draw a sample with size $n=10$ from a population 
-with an exponential disrtribution with $\lambda=2$.  Simulate
+with an exponential distribution with $\lambda=2$.  Simulate
 this experiment 1000 times and plot the sampling distribution of
 the estimate $\lamhat$.  Compute the standard error of the estimate
 and the 90\% confidence interval.
 
 Repeat the experiment with a few different values of $n$ and make
 a plot of standard error versus $n$.
+
+\end{exercise}
+
+
+\begin{exercise}
+
+In games like hockey and soccer, the time between goals is
+roughly exponential.  So you could estimate a team's goal-scoring rate
+by observing the number of goals they score in a game.  This
+estimation process is a little different from sampling the time
+between goals, so let's see how it works.
+
+Write a function that takes a goal-scoring rate, {\tt lam}, in goals
+per game, and simulates a game by generating the time between goals
+until the total time exceeds 1 game, then returns the number of goals
+scored.
+
+Write another function that simulates many games, stores the
+estimates of {\tt lam}, then computes their mean error and RMSE.
+
+Is this way of making an estimate biased?  Plot the sampling
+distribution of the estimates and the 90\% confidence interval.  What
+is the standard error?  What happens to sampling error for increasing
+values of {\tt lam}?
 
 \end{exercise}
 
@@ -6135,14 +5979,17 @@ a more meaningful representation of typical error magnitude.
 \index{mean squared error}
 \index{MSE}
 
-\item maximum likelihood estimator: An estimator that computes the
-point estimate with the highest likelihood.
+\item maximum likelihood estimator (MLE): An estimator that computes the
+point estimate most likely to be correct.
 \index{MLE}
 \index{maximum likelihood estimator}
 
 \item bias (of an estimator): The tendency of an estimator to be above or
   below the actual value of the parameter, when averaged over repeated
-  samples.  \index{biased estimator}
+  experiments.  \index{biased estimator}
+
+\item sampling error: Error in an estimate due to the limited
+  size of the sample and variation due to chance. \index{point estimation}
 
 \item sampling bias: Error in an estimate due to a sampling process
   that is not representative of the population. \index{sampling bias}
@@ -6150,19 +5997,16 @@ point estimate with the highest likelihood.
 \item measurement error: Error in an estimate due to errors collecting
   or recording data. \index{measurement error}
 
-\item sampling error: Error in an estimate due to the limited
-  size of the sample and variation due to chance. \index{point estimation}
-
 \item sampling distribution: The distribution of a statistic if an
-experiment is repeated many times.
-\index{sampling distribution}
+  experiment is repeated many times.  \index{sampling distribution}
 
-\item standard error: The standard deviation of the sampling distribution,
-which quantifies the variability in an estimate due to sampling error.
+\item standard error: The RMSE of an estimate,
+which quantifies variability due to sampling error (but not
+other sources of error).
 \index{standard error}
 
 \item confidence interval: An interval that represents the expected
-  spread of an estimator if an experiment is repeated many times.
+  range of an estimator if an experiment is repeated many times.
   \index{confidence interval} \index{interval!confidence}
 
 \end{itemize}
@@ -6489,7 +6333,7 @@ code I used to answer this question is available from
 \begin{figure}
 % correlate1.py
 \centerline{\includegraphics[height=2.5in]{figs/correlate1.pdf}}
-\caption{Scatterplot of birth weight and mother's age for 13593 live
+\caption{Scatter plot of birth weight and mother's age for 13593 live
 births.}
 \label{correlate1}
 \end{figure}
@@ -6511,7 +6355,7 @@ def ReadData(data_dir='.'):
     return zip(*res)
 \end{verbatim}
 
-And here's the code that makes a scatterplot of the data:
+And here's the code that makes a scatter plot of the data:
 
 \begin{verbatim}
     xs, ys = ReadData(data_dir)
@@ -6522,7 +6366,7 @@ And here's the code that makes a scatterplot of the data:
 \end{verbatim}
 
 I chose {\tt alpha=0.05} to compromise between showing the densest
-parts of the scatterplot without saturation and making the outliers
+parts of the scatter plot without saturation and making the outliers
 visible.  Figure~\ref{correlate1} shows the result.  Visually, it looks like
 there might be a weak positive correlation, but it is hard to tell for sure.
 
@@ -6980,7 +6824,347 @@ if it is false.
 
 \chapter{Multiple regression}
 
+\section{Least squares fit}
+
+Correlation coefficients measure the strength and sign of a
+relationship, but not the slope.  There are several ways to estimate
+the slope; the most common is a {\bf linear least squares fit}.  A
+``linear fit'' is a line intended to model the relationship between
+variables.  A ``least squares'' fit is one that minimizes the mean
+squared error (MSE) between the line and the data\footnote{See
+  \url{http://wikipedia.org/wiki/Simple_linear_regression}.}.
+\index{least squares fit}
+\index{linear least squares}
+\index{coefficient!correlation}
+\index{linear regression}
+
+Suppose we have a sequence of points, $Y$, that we want to express as a
+function of another sequence $X$.  If there is a linear relationship
+between $X$ and $Y$ with intercept $\alpha$ and slope $\beta$, we
+expect each $y_i$ to be roughly $\alpha + \beta x_i$.
+\index{residual}
+
+But unless the correlation is perfect, this prediction is only
+approximate.  The deviation, or {\bf residual}, is 
+
+\[ \eps_i = (\alpha + \beta x_i) - y_i \]
+
+The residual might be due to random factors like measurement error,
+or non-random factors that are unknown.  For example, if we are
+trying to predict weight as a function of height, unknown factors
+might include diet, exercise, and body type.
+\index{slope}
+\index{intercept}
+
+If we get the parameters $\alpha$ and $\beta$ wrong, the residuals
+get bigger, so it makes intuitive sense that the parameters we want
+are the ones that minimize the residuals.
+
+As usual, we could minimize the absolute value of the
+residuals, or their squares, or their cubes, etc.  The most common
+choice is to minimize the sum of squared residuals
+%
+\[ \min_{\inter, \slope} \sum \eps_i^2 \]
+%
+Why?  There are three good reasons and one bad one:
+
+\begin{itemize}
+
+\item Squaring has the obvious feature of treating positive and
+negative residuals the same, which is usually what we want.
+
+\item Squaring gives more weight to large residuals, but not
+so much weight that the largest residual always dominates.
+
+\item If the residuals are independent of $x$, random, and normally
+  distributed with $\mu = 0$ and constant (but unknown) $\sigma$, then
+  the least squares fit is also the maximum likelihood estimator of
+  $\alpha$ and $\beta$.\footnote{See Press et al., {\em Numerical Recipes in C},
+    Chapter 15 at \url{http://www.nrbook.com/a/bookcpdf/c15-1.pdf}.}
+\index{MLE}
+\index{maximum likelihood estimator}
+
+\item The values of $\hat{\inter}$ and $\hat{\slope}$ that minimize
+  the squared residuals can be computed efficiently.
+
+\end{itemize}
+
+That last reason made sense when computational efficiency was more
+important than choosing the method most appropriate to the problem
+at hand.  That's no longer the case, so it is worth considering
+whether squared residuals are the right thing to minimize.
+\index{computation}
+
+For example, if you are using values of $X$ to predict values of $Y$,
+guessing too high might be better (or worse) than guessing too low.
+In that case you might want to compute some cost function,
+cost(\_i), and minimize total cost.
+\index{cost function}
+
+However, computing a least squares fit is quick, easy and often good
+enough, so here's how:
+
+\begin{enumerate}
+
+\item Compute the sample means, $\xbar$ and $\ybar$, the variance
+of $X$, and the covariance of $X$ and $Y$.
+
+\item The estimated slope is
+%
+\[ \hat{\slope} = \frac{Cov(X,Y)}{Var(X)} \]
+%
+\item And the intercept is
+%
+\[ \hat{\inter} = \ybar - \hat{\slope} \xbar \]
+%
+\end{enumerate}
+
+To see how this is derived, you can read
+\url{http://wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
+
+
+\begin{exercise}
+Write a function named {\tt LeastSquares} that takes $X$ and $Y$ and
+computes $\hat{\inter}$ and $\hat{\slope}$.  You can download a
+solution from \url{http://thinkstats2.com/correlation.py}.  \index{{\tt
+    correlation.py}}
+
+\end{exercise}
+
+\begin{exercise}
+Using the data from the BRFSS again, compute the linear least squares
+fit for log(weight) versus height.  You can download a
+solution from \url{http://thinkstats2.com/brfss_corr.py}.
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+\index{{\tt brfss\_corr.py}}
+
+\end{exercise}
+
+
+\begin{exercise}
+The distribution of wind speeds in a given location determines the
+wind power density, which is an upper bound on the average power that
+a wind turbine at that location can generate.  According to some
+sources, empirical distributions of wind speed are well modeled by a
+Weibull distribution (see
+\url{http://wikipedia.org/wiki/Wind_power#Distribution_of_wind_speed}).
+\index{wind speed}
+\index{wind power density}
+\index{turbine}
+\index{Weibull distribution}
+\index{distribution!Weibull}
+
+To evaluate whether a location is a viable site for a wind turbine,
+you can set up an anemometer to measure wind speed for a period of
+time.  But it is hard to measure the tail of the wind speed distribution
+accurately because, by definition, events in the tail don't happen
+very often.
+\index{tail}
+
+One way to address this problem is to use measurements to estimate the
+parameters of a Weibull distribution, then integrate over the
+analytic PDF to compute wind power density.
+\index{PDF}
+
+To estimate the parameters of a Weibull distribution, we can use the
+transformation from Exercise~\ref{weibull} and then use a linear fit
+to find the slope and intercept of the transformed data.
+
+Write a function that takes a sample from a Weibull distribution and
+estimates its parameters.
+
+Now write a function that takes the parameters of a Weibull distribution
+of wind speed and computes average wind power density (you might have
+to do some research for this part).
+
+\end{exercise}
+
+
+\section{Goodness of fit}
+\index{goodness of fit}
+\index{fit, goodness}
+
+Having fit a linear model to the data, we might want to know how good
+it is.  Well, that depends on what it's for.  One way to evaluate a
+model is its predictive power.
+
+In the context of prediction, the quantity we are trying to guess is
+called a {\bf dependent variable} and the quantity we are using to
+make the guess is called an {\bf explanatory} or {\bf independent
+  variable}.
+\index{dependent variable}
+\index{explanatory variable}
+\index{independent variable}
+\index{coefficient!determination}
+
+To measure the predictive power of a model, we can compute the {\bf
+  coefficient of determination}, more commonly known as ``R-squared'':
+%
+\[ R^2 = 1 - \frac{Var(\eps)}{Var(Y)}\]
+%
+To understand what $R^{2}$ means, suppose (again) that you are trying
+to guess someone's weight.  If you didn't know anything about them,
+your best strategy would be to guess $\ybar$; in
+that case the MSE of your guesses would be $Var(Y)$:
+%
+\[ MSE = \frac{1}{n} \sum (\ybar - y_i)^2 = Var(Y) \]
+%
+But if I told you their height, you would guess $\hat{\inter} +
+\hat{\slope} x_i$; in that case your MSE would be $Var(\eps)$.
+%
+\[ MSE = 
+\frac{1}{n} \sum (\hat{\inter} + \hat{\slope} x_i - y_i)^2 =
+Var(\eps) \]
+%
+So the term $Var(\eps)/Var(Y)$ is the ratio of mean squared error with
+and without the explanatory variable, which is the fraction of
+variability left unexplained by the model.  The complement, $R^{2}$,
+is the fraction of variability explained by the model.
+\index{variability}
+
+If a model yields $R^{2} = 0.64$, you could say that the model explains
+64\% of the variability, or it might be more precise to say that it
+reduces the MSE of your predictions by 64\%.
+
+In the context of a linear least squares model, it turns out that
+there is a simple relationship between the coefficient of
+determination and Pearson's correlation coefficient, $\rho$:
+
+\[ R^{2} = \rho^{2}\]
+
+See \url{http://wikipedia.org/wiki/Howzzat}!
+\index{howzzat}
+
+
+\section{Multiple regression}
+
+I won't cover those techniques here, but there are also simple ways to
+control for spurious relationships.  For example, in the NSFG, we saw
+that first babies tend to be lighter than others (see
+Section~\ref{birth_weights}).  But birth weight is also correlated
+with the mother's age, and mothers of first babies tend to be younger
+than mothers of other babies.
+\index{birth weight}
+\index{weight!birth}
+\index{National Survey of Family Growth}
+\index{NSFG}
+
+So it may be that first babies are lighter because their mothers are
+younger.  To control for the effect of age, we could divide the mothers
+into age groups and compare birth weights for first babies and others
+in each age group.
+\index{pooled data}
+
+If the difference between first babies and others is the same in
+each age group as it was in the pooled data, we conclude
+that the difference is not related to age.  If there is no difference,
+we conclude that the effect is entirely due to age.  Or,
+if the difference is smaller, we can quantify how much of the effect
+is due to age.
+
+\begin{exercise}
+The NSFG data includes a variable named {\tt agepreg} that records
+the age of the mother at the time of birth.
+Make a scatter plot of mother's age and baby's weight for each live
+birth.  Can you see a relationship?
+
+Compute a linear least-squares fit for these variables.  What are the
+units of the estimated parameters $\hat{\inter}$ and $\hat{\slope}$?
+How would you summarize these results in a sentence or two?
+
+Compute the average age for mothers of first babies and the average
+age of other mothers.  Based on the difference in ages between the
+groups, how much difference do you expect in the mean birth weights?
+What fraction of the actual difference in birth weights is explained
+by the difference in ages?
+
+You can download a solution to this problem from
+\url{http://thinkstats2.com/agemodel.py}.  If you are curious about
+multivariate regression, you can run \url{http://thinkstats2.com/age_lm.py}
+which shows how to use the R statistical computing package from
+Python.  But that's a whole other book.
+\index{{\tt agemodel.py}}
+\index{{\tt age\_lm.py}}
+
+\end{exercise}
+
+
+\section{Exercises}
+
+\begin{exercise}
+The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
+of intelligence; scores are calibrated so that the mean and standard
+deviation in the general population are 100 and 15.
+\index{Adult Intelligence Scale}
+\index{WAIS}
+\index{IQ}
+\index{intelligence}
+
+Suppose that you wanted to predict someone's WAIS score based on their
+SAT scores.  According to one study, there is a Pearson correlation of
+0.72 between total SAT scores and WAIS scores.
+
+If you applied your predictor to a large sample, what would you expect to
+be the mean squared error (MSE) of your predictions?
+
+Hint: What is the MSE if you always guess 100?
+\end{exercise}
+
+
+\begin{exercise}
+Write a function named {\tt Residuals} that takes X, Y, $\hat{\inter}$
+and $\hat{\slope}$ and returns a list of $\eps_i$.
+\index{residual}
+
+Write a function named {\tt CoefDetermination} that takes the 
+$\eps_i$ and Y and returns $R^{2}$.  To test your functions, 
+confirm that $R^{2} = \rho^{2}$.  You can download a solution
+from \url{http://thinkstats2.com/correlation.py}.
+\index{{\tt correlation.py}}
+
+\end{exercise}
+
+\begin{exercise}
+Using the height and weight data from the BRFSS (one more time),
+compute $\hat{\inter}$, $\hat{\slope}$ and $R^{2}$.  If you were trying to guess
+someone's weight, how much would it help to know their height?
+You can download a solution from
+\url{http://thinkstats2.com/brfss_corr.py}.
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+\index{{\tt brfss\_corr.py}}
+
+\end{exercise}
+
+
 \section{Weighted resampling}
+
+
+\section{Glossary}
+
+\begin{itemize}
+
+\item least squares fit: A model of a dataset that minimizes the
+sum of squares of the residuals.
+\index{least squares fit}
+
+\item residual: A measure of the deviation of an actual value from a model.
+\index{residual}
+
+\item dependent variable: A variable we are trying to predict or explain.
+\index{dependent variable}
+
+\item independent variable: A variable we are using to predict a dependent
+variable, also called an explanatory variable.
+\index{independent variable}
+
+\item coefficient of determination: A measure of the goodness of fit
+of a linear model.
+\index{coefficient!determination}
+
+\end{itemize}
+
 
 
 \chapter{Logistic regression}
