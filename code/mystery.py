@@ -10,6 +10,8 @@ import numpy
 import scipy.stats
 
 def write_sample(sample, filename):
+    """Write a sequence of floats to a file.
+    """
     fp = open(filename, 'w')
     for x in sample:
         fp.write('%f\n' % x)

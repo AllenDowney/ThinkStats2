@@ -7,58 +7,41 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function
 
-import numpy as np
 import sys
+from operator import itemgetter
 
-import nsfg
 import first
 import thinkstats2
-import thinkplot
 
 
-def Mode(pmf):
-    """Returns the value with the highest frequency or probability.
+def Mode(hist):
+    """Returns the value with the highest frequency.
 
-    pmf: Pmf or Hist
+    hist: Hist object
 
-    returns: value from Pmf
+    returns: value from Hist
     """
-    p, x = max([(p, x) for x, p in pmf.Items()])
+    p, x = max([(p, x) for x, p in hist.Items()])
     return x
 
 
-def PmfMean(pmf):
-    """Computes the mean of a PMF.
+def AllModes(hist):
+    """Returns value-freq pairs in decreasing order of frequency.
 
-    Returns:
-        float mean
+    hist: Hist object
+
+    returns: iterator of value-freq pairs
     """
-    mean = 0.0
-    for x, p in pmf.d.items():
-        mean += p * x
-    return mean
-
-
-def PmfVar(pmf, mu=None):
-    """Computes the variance of a PMF.
-
-    Args:
-        mu: the point around which the variance is computed;
-            if omitted, computes the mean
-
-    Returns:
-        float variance
-    """
-    if mu is None:
-        mu = pmf.Mean()
-
-    var = 0.0
-    for x, p in pmf.d.items():
-        var += p * (x - mu) ** 2
-    return var
+    return sorted(hist.Items(), key=itemgetter(1), reverse=True)
 
 
 def WeightDifference(live, firsts, others):
+    """Explore the difference in weight between first babies and others.
+
+    live: DataFrame of all live births
+    firsts: DataFrame of first babies
+    others: DataFrame of others
+    """
     mean0 = live.totalwgt_lb.mean()
     mean1 = firsts.totalwgt_lb.mean()
     mean2 = others.totalwgt_lb.mean()
@@ -84,54 +67,24 @@ def WeightDifference(live, firsts, others):
     print('Cohen d', d)
 
 
-def Diffs(t):
-    """List of differences between the first elements and others.
-
-    t: list of numbers
-    
-    returns: list of numbers
-    """
-    first = t[0]
-    rest = t[1:]
-    diffs = [first - x for x in rest]
-    return diffs
-
-
-def PairWiseDifferences(live):
-    """Summarize pairwise differences for children of the same mother.
-
-    live: DataFrame of pregnancy records for live births
-    """
-    live = live[live.prglngth >= 37]
-    preg_map = nsfg.MakePregMap(live)
-
-    diffs = []
-    for caseid, indices in preg_map.items():
-        lengths = live.loc[indices].prglngth.values
-        if len(lengths) >= 2:
-            diffs.extend(Diffs(lengths))
-
-    mean = thinkstats2.Mean(diffs)
-    print('Mean difference between pairs', mean)
-
-    pmf = thinkstats2.MakePmfFromList(diffs)
-    thinkplot.Hist(pmf, align='center')
-    thinkplot.Show(xlabel='Difference in weeks',
-                   ylabel='PMF')
-
-
 def main(script):
     """Tests the functions in this module.
 
     script: string script name
     """
-    # test Mode
-    mode = Mode(live.prglngth)
+    live, firsts, others = first.MakeFrames()
+    hist = thinkstats2.Hist(live.prglngth)
+
+    # explore the weight difference between first babies and others
+    WeightDifference(live, firsts, others)
+
+    # test Mode    
+    mode = Mode(hist)
     print('Mode of preg length', mode)
     assert(mode == 39)
 
     # test AllModes
-    mode = AllMode(live.prglngth)
+    mode = AllModes(live.prglngth)
 
     # test PmfMean and PmfVar
     prglngth = live.prglngth
@@ -142,13 +95,11 @@ def main(script):
     assert(mean == pmf.Mean())
     assert(var == pmf.Var())
     print('mean/var preg length', mean, var)
+    modes = AllModes(hist)
+    assert(modes[0][1] == 4693)
 
-    WeightDifference(live, firsts, others)
-
-    preg = nsfg.ReadFemPreg()
-    live, firsts, others = first.MakeFrames()
-    PairWiseDifferences(live)
-    return
+    for value, freq in modes[:5]:
+        print(value, freq)
 
     print('%s: All tests passed.' % script)
 

@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.1}
+\newcommand{\theversion}{2.0.5}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -73,7 +73,8 @@
 \newcommand{\Corr}{\mathrm{Corr}}
 \newcommand{\normal}{\mathcal{N}}
 \newcommand{\given}{|}
-\newcommand{\goodchi}{\protect\raisebox{2pt}{$\chi$}}
+%\newcommand{\goodchi}{\protect\raisebox{2pt}{$\chi$}}
+\newcommand{\goodchi}{\chi}
 
 \ifplastex
     \usepackage{localdef}
@@ -98,7 +99,7 @@
   {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
   {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
   {}% name of font to use in the body of the theorem
-  {0pt}% measure of space to indent
+  {}% measure of space to indent
   {\bfseries}% name of head font
   {}% punctuation between head and body
   { }% space after theorem head; " " = normal interword space
@@ -284,7 +285,7 @@ intact.
 
 \item Multivariate analysis: If there are apparent relationships
   between variables, I use multiple regression to add control variables
-  investigate more complex relationships.
+  and investigate more complex relationships.
 
 \item Estimation and hypothesis testing: When reporting statistical
   results, it is important to answer three questions: How big is
@@ -751,7 +752,8 @@ user's guide for the NSFG data are available from
 \section{Importing the data}
 
 The code and data used in this book are available from
-\url{https://github.com/AllenDowney/ThinkStats2}.  For information
+\url{https://github.com/AllenDowney/ThinkStats2}.
+  For information
 about downloading and working with this code, see Section~\ref{code}.
 
 Once you download the code, you should have a file called {\tt
@@ -804,9 +806,10 @@ information from the dictionary file and provides {\tt
 
 
 \section{DataFrames}
+\label{dataframe}
 
 The result of {\tt ReadFixedWidth} is a DataFrame, which is the
-fundamental data structure provided by Pandas.  A DataFrame contains a
+fundamental data structure provided by pandas.  A DataFrame contains a
 row for each record, in this case one row per pregnancy, and a column
 for each variable.
 
@@ -834,7 +837,7 @@ names:
 Index([u'caseid', u'pregordr', u'howpreg_n', u'howpreg_p', ... ])
 \end{verbatim}
 
-The result is an Index, which is another Pandas data structure.  
+The result is an Index, which is another pandas data structure.  
 We'll learn more about Index later, but for
 now we'll treat it like a list:
 
@@ -852,7 +855,7 @@ name as a key:
 <class 'pandas.core.series.Series'>
 \end{verbatim}
 
-The result is a Series, yet another Pandas data structure.
+The result is a Series, yet another pandas data structure.
 A Series is like a Python list with some additional features.
 When you print a Series, you get the indices and the
 corresponding values:
@@ -1007,7 +1010,7 @@ operations return {\tt nan} if either argument is {\tt nan}:
 \end{verbatim}
 
 So computations with {\tt nan} tend to do the right thing.  Most
-Pandas functions handle {\tt nan} appropriately, at least for most
+pandas functions handle {\tt nan} appropriately, at least for most
 applications.  But dealing with missing data will be a recurring
 issue.
 
@@ -1348,6 +1351,7 @@ logic applied to raw data.
 \chapter{Distributions}
 \label{descriptive}
 
+
 \section{Histograms}
 \label{histograms}
 
@@ -1395,9 +1399,9 @@ chapter.
 
 The Python module that accompanies this book, {\tt thinkstats2.py},
 provides a class named Hist, which represents a histogram.  You can
-read the documentation at {\tt thinkstats2.com/thinkstats2.html}.
+read the documentation at {\tt http://thinkstats2.com/thinkstats2.html}.
 
-The {\tt Hist} constructor can take a sequence, dictionary, Pandas
+The {\tt Hist} constructor can take a sequence, dictionary, pandas
 Series, or another Hist.  You can test it in Python's interactive
 mode:
 %
@@ -1435,7 +1439,7 @@ To loop through the values in order, you can use the built-in function
 %
 \begin{verbatim}
 for val in sorted(hist.Values()):
-    print val, hist.Freq(val)
+    print(val, hist.Freq(val))
 \end{verbatim}
 
 If you are planning to look up all of the frequencies, it is more
@@ -1444,7 +1448,7 @@ value-frequency pairs:
 %
 \begin{verbatim}
 for val, freq in hist.Items():
-     print val, freq
+     print(val, freq)
 \end{verbatim}
 
 
@@ -1494,14 +1498,14 @@ The code that accompanies this book includes
 {\tt thinkplot.py}, which provides functions
 for plotting histograms and other objects we will see soon.
 You can read the documentation at {\tt
-  thinkstats2.com/thinkplot.html}. 
+  http://thinkstats2.com/thinkplot.html}. 
 \index{{\tt thinkplot.py}}
 
 To plot the same histogram with {\tt thinkplot.py}, try this:
 
 \begin{verbatim}
 >>> import thinkplot
->>> thinkplot.Hist(hist, color='blue', alpha=0.5)
+>>> thinkplot.Hist(hist)
 >>> thinkplot.Show(xlabel='value', ylabel='frequency')
 \end{verbatim}
 
@@ -1523,12 +1527,14 @@ Now let's get back to the data from the NSFG.  The code in this
 chapter is from {\tt first.py}.  For information about downloading and
 working with this code, see Section~\ref{code}.
 
+% TODO: apparently I can't refer to a label in the preface?
+
 When you start working with a new dataset, I suggest you explore
 the variables you are planning to use one at a time, and a good
 way to start is by looking at histograms.
 \index{histograms}
 
-In Section~\ref{cleaning} we cleaned transformed {\tt agepreg}
+In Section~\ref{cleaning} we transformed {\tt agepreg}
 from centiyears to years, and combined \verb"birthwgt_lb" and
 \verb"birthwgt_oz" into a single quantity, \verb"totalwgt_lb".
 In this section I'll use these variables to demonstrate some
@@ -1557,12 +1563,19 @@ Next I'll generate and plot the histogram of
 \begin{verbatim}
     hist = thinkstats2.Hist(live.birthwgt_lb, label='birthwgt_lb')
     thinkplot.Hist(hist)
-    thinkplot.Show()
+    thinkplot.Show(xlabel='weeks', ylabel='frequency')
 \end{verbatim}
 
 When the argument passed to {\tt Hist} is a pandas Series, any
 {\tt NaN} values are dropped.  {\tt label} is a string that appears
 in the legend when the Hist is plotted.
+
+\begin{figure}
+% first.py
+\centerline{\includegraphics[height=2.5in]{figs/first_prglngth_hist.pdf}}
+\caption{Histogram of pregnancy length in weeks.}
+\label{first_prglngth_hist}
+\end{figure}
 
 Figure~\ref{first_wgt_lb_hist} shows the result.  The most common
 value, called the {\bf mode}, is 7 pounds.  The distribution is
@@ -1579,7 +1592,7 @@ the other values, and 1 and 15 are less common, probably because
 respondents round off birth weights that are close to an integer
 value.
 
-Figure~\ref{first_wgt_oz_hist} shows the histogram of \verb"agepreg",
+Figure~\ref{first_agepreg_hist} shows the histogram of \verb"agepreg",
 the mother's age at the end of pregnancy.  The mode is 21 years.  The
 distribution is very roughly bell-shaped, but in this case the tail
 extends farther to the right than left, because of biological limits.
@@ -1594,15 +1607,25 @@ go past 43 weeks, and doctors often intervene if they do.
 \section{Outliers}
 
 Looking at histograms, it is easy to identify the most common
-values
+values and the shape of the distribution, but rare values are
+not always visible.
 
-Before going any farther, it is always a good idea to validate
-the data by checking for {\bf outliers}.  Outliers are extreme
-values that might be caused my errors in measurement and recording,
-or might be accurate measurements of rate events.
+Before going on, it is a good idea to check for {\bf
+  outliers}, which are extreme values that might be errors in
+measurement and recording, or might be accurate measurements of rare
+events.
+
+Hist provides method {\tt Largest} and {\tt Smallest}, which take
+an integer {\tt n} and return the {\tt n} largest or smallest
+values from the histogram with their frequencies:
+
+\begin{verbatim}
+    for weeks, freq in hist.Smallest(10):
+        print(weeks, freq)
+\end{verbatim}
 
 In the list of pregnancy lengths for live births, the 10 lowest values
-are \{0, 4, 9, 13, 17, 17, 18, 19, 20, 21\}.  Values below 10 weeks
+are {\tt [0, 4, 9, 13, 17, 18, 19, 20, 21, 22]}.  Values below 10 weeks
 are certainly errors; the most likely explanation is that the outcome
 was not coded correctly.  Values higher than 30 weeks are probably
 legitimate.  Between 10 and 30 weeks, it is hard to be sure; some
@@ -1625,7 +1648,7 @@ Most doctors recommend induced labor if a pregnancy exceeds 42 weeks,
 so some of the longer values are surprising.  In particular, 50 weeks
 seems medically unlikely.
 
-The best way to handle outliers depends on {\bf domain knowledge};
+The best way to handle outliers depends on ``domain knowledge'';
 that is, information about where the data come from and what they
 mean.  And it depends on what analysis you are planning to perform.
 
@@ -1637,55 +1660,51 @@ I will focus on pregnancies longer than 27 weeks.
 
 \section{First babies}
 
-To compare pregnancy lengths for first babies and others, I plotted
-their histograms on the same axis.  Here's the code from {\tt first.py}:
+Now we can compare the distribution of pregnancy lengths for first
+babies and others.  I divided the DataFrame of live births using
+{\tt birthord}, and computed their histograms:
 
 \begin{verbatim}
-    first_hist = thinkstats2.MakeHistFromList(firsts.prglngth)
-    other_hist = thinkstats2.MakeHistFromList(others.prglngth)
+    firsts = live[live.birthord == 1]
+    others = live[live.birthord != 1]
 
-    width = 0.4
-    first_options = dict(label='first', width=-width)
-    other_options = dict(label='other', width=width)
-
-    # plot the histograms
-    thinkplot.PrePlot(2)
-    thinkplot.Hist(first_hist, **first_options)
-    thinkplot.Hist(other_hist, **other_options)
-
-    axis = [27, 46, 0, 2700]
-    thinkplot.Save(root='nsfg_hist', 
-                   title='Histogram',
-                   xlabel='weeks',
-                   ylabel='frequency',
-                   axis=axis)
+    first_hist = thinkstats2.Hist(firsts.prglngth)
+    other_hist = thinkstats2.Hist(others.prglngth)
 \end{verbatim}
 
-\verb"first_hist" and \verb"other_hist" are histograms of
-pregnancy length for first babies and others.
+Then I plotted their histograms on the same axis:
+
+\begin{verbatim}
+    width = 0.45
+    thinkplot.PrePlot(2)
+    thinkplot.Hist(first_hist, align='right', width=width)
+    thinkplot.Hist(other_hist, align='left', width=width)
+    thinkplot.Show(xlabel='weeks', ylabel='frequency')
+\end{verbatim}
 
 {\tt thinkplot.PrePlot} takes as an argument the number of histograms
 we are planning to plot; it uses this information to choose
 an appropriate collection of colors.
 
-{\tt thinkplot.Hist} takes a dictionary of options that control the
-appearance of the histograms.  I chose a width that leaves some
-space between each pair of bars.  By default, the left edge of the
-bar lines up with the given value on the x-axis.  By giving one
-of the histograms {\tt width=-width}, I lined it up with the right
-edge.
-
-Finally, I adjusted the axis to show only data between 27 and 46 weeks.
-Figure~\ref{nsfg_hist} shows the result.
-\index{pregnancy length}
-\index{length!pregnancy}
-
 \begin{figure}
 % first.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_hist.pdf}}
+\centerline{\includegraphics[height=2.5in]{figs/first_nsfg_hist.pdf}}
 \caption{Histogram of pregnancy lengths.}
-\label{nsfg_hist}
+\label{first_nsfg_hist}
 \end{figure}
+
+{\tt thinkplot.Hist} normally uses {\tt align='center'} so that
+each bar is centered over its value.  For this figure, I use
+{\tt align='right'} and {\tt align='left'} to place
+corresponding bars on either side of the value.
+
+With {\tt width=0.45}, the total width of the two bars is 0.9,
+leaving some space between each pair.
+
+Finally, I adjusted the axis to show only data between 27 and 46 weeks.
+Figure~\ref{first_nsfg_hist} shows the result.
+\index{pregnancy length}
+\index{length!pregnancy}
 
 Histograms are useful because they make the most frequent values
 immediately apparent.  But they are not the best choice for comparing
@@ -1788,43 +1807,52 @@ with exponent 2.  The square root of variance, $S$, is the
 {\bf standard deviation}.  \index{deviation} \index{standard
   deviation}
 
-By itself, variance is hard to interpret.  One problem is that the
-units are strange; in this case the measurements are in pounds, so the
-variance is in pounds squared.  Standard deviation is more meaningful;
-in this example the units are pounds.
-
 If you have prior experience, you might have seen a formula for
 variance with $n-1$ in the denominator, rather than {\tt n}.  This
 statistic is used to estimate the variance in a population using a
 sample.  We will come back to this in Chapter~\ref{estimation}.
 \index{sample variance}
 
+Pandas data structures provides methods to compute mean, variance and
+standard deviation:
+
+\begin{verbatim}
+    mean = live.prglngth.mean()
+    var = live.prglngth.var()
+    std = live.prglngth.std()
+\end{verbatim}
+
+For all live births, the mean pregnancy length is 38.6 weeks, the
+standard deviation is 2.7 weeks, which means we should expect
+deviations of 2-3 weeks to be common.
+
+Variance is 7.3, which is hard to interpret, especially since the
+units are weeks$^2$, or ``square weeks,'' whatever that means.
+Variance is useful in some calculations we'll see later, but it is not
+a good summary statistic.
+
 
 \section{Effect size}
 \index{effect size}
 
-An {\bf effect size} is a summary statistic intended describe, well,
-the size of an effect.  For example, to describe the difference
-between two groups, one obvious choice is the difference in the
-means.
-\index{effect size}
+An {\bf effect size} is a summary statistic intended describe (wait
+for it) the size of an effect.  For example, to describe the
+difference between two groups, one obvious choice is the difference in
+the means.  \index{effect size}
 
-For example, the mean pregnancy length for first babies is 38.6;
-for other babies it is 38.5.  The difference is 0.078 weeks, which
-works out to 13 hours.
+For example, the mean pregnancy length for first babies is 38.601; for
+other babies it is 38.523.  The difference is 0.078 weeks, which works
+out to 13 hours.  As a fraction of the typical pregnancy length, this
+difference is about 0.2\%.
 
-If we assume that this estimate is accurate, the difference in
-pregnancy length would have no practical consequences.  Without
+If we assume that this estimate is accurate, such a difference
+would have no practical consequences.  In fact, without
 observing a large number of pregnancies, it is unlikely that anyone
-would notice a difference this small.
-
-As a fraction of the typical pregnancy length, this difference is
-about 0.2\%.
+would notice this difference at all.
 
 Another way to convey the size of the effect is to compare the
-difference between groups to the variability withing groups.
-Cohen's $d$ is a statistic intended to do that; it is defined
-as
+difference between groups to the variability within groups.
+Cohen's $d$ is a statistic intended to do that; it is defined:
 %
 \[ d = \frac{\bar{x_1} - \bar{x_2}}{s}  \]
 %
@@ -1838,7 +1866,7 @@ def CohenEffectSize(group1, group2):
     diff = group1.mean() - group2.mean()
 
     var1 = group1.var()
-    var2 = group1.var()
+    var2 = group2.var()
     n1, n2 = len(group1), len(group2)
 
     pooled_var = (n1 * var1 + n2 * var2) / (n1 + n2)
@@ -1846,7 +1874,7 @@ def CohenEffectSize(group1, group2):
     return d
 \end{verbatim}
 
-In this example, the difference in means is 0.028 standard deviations.
+In this example, the difference in means is 0.029 standard deviations.
 To put that in perspective, the difference in height between men and
 women is about 1.7 standard deviations (see
 \url{https://en.wikipedia.org/wiki/Effect_size}).
@@ -1899,10 +1927,17 @@ precisely, and honestly.
 
 \end{exercise}
 
+\begin{exercise}
+In the repository you downloaded, you should find a file named
+\verb"chap02ex.ipynb"; open it.  Some cells are already filled in, and
+you should execute them.  Other cells give you instructions for
+exercises you should try.
 
-For the exercises in this chapter, create a file named
-{\tt chap02ex.py}.  You can find a solution in
-\verb"chap02ex_soln.py".
+A solution to this exercise is in \verb"chap02ex_soln.ipynb"
+\end{exercise}
+
+For the following exercises, create a file named {\tt chap02ex.py}.
+You can find a solution in \verb"chap02ex_soln.py".
 
 \begin{exercise}
 The mode of a distribution is the most frequent value (see
@@ -1910,17 +1945,17 @@ The mode of a distribution is the most frequent value (see
 called {\tt Mode} that takes a Hist and returns the most
 frequent value.\index{mode}
 
-As a more challenging version, write a function called {\tt AllModes}
+As a more challenging exercise, write a function called {\tt AllModes}
 that returns a list of value-frequency pairs in descending order of
 frequency.
 \end{exercise}
 
-
 \begin{exercise}
-Make a histogram for some other variables ???
+Use the variable \verb"totalwgt_lb", investigate whether first
+babies are lighter or heavier than others.  Compute Cohen's $d$
+to quantify the difference between the groups.  How does it
+compare to the difference in pregnancy length ($d = 0.028$)?
 \end{exercise}
-
-
 
 
 \section{Glossary}
@@ -1928,7 +1963,7 @@ Make a histogram for some other variables ???
 \begin{itemize}
 
 \item distribution: A summary of the values that appear in a sample
-and the frequency, or probability, of each.
+and the frequency of each.
 \index{distribution}
 
 \item histogram: A mapping from values to frequencies, or a graph
@@ -1938,20 +1973,36 @@ that shows this mapping.
 \item frequency: The number of times a value appears in a sample.
 \index{frequency}
 
-\item outlier: A value far from the central tendency.
-\index{outlier}
-
 \item mode: The most frequent value in a sample, or one of the
 most frequent values.
 \index{mode}
+
+\item Gaussian distribution: An idealization of a bell-shaped distribution;
+also known as a normal distribution. 
+\index{Gaussian distribution}
+\index{normal distribution}
+
+\item uniform distribution: A distribution in which all values have
+the same frequency.
+\index{uniform distribution}
+
+\item tail: The part of a distribution at the high and low extremes.
+\index{outlier}
 
 \item central tendency: A characteristic of a sample or population;
 intuitively, it is the most average value. 
 \index{central tendency}
 
-\item spread: A characteristic of a sample or population;
-intuitively, it describes how much variability there is.
+\item outlier: A value far from the central tendency.
+\index{outlier}
+
+\item spread: A measure of how spread out the values in a distribution
+are.
 \index{spread}
+
+\item summary statistic: A statistic that quantifies some aspect
+of a distribution, like central tendency or spread.
+\index{summary statistic}
 
 \item variance: A summary statistic often used to quantify spread.
 \index{variance}
@@ -1959,6 +2010,10 @@ intuitively, it describes how much variability there is.
 \item standard deviation: The square root of variance, also used
 as a measure of spread.
 \index{standard deviation}
+
+\item effect size: A summary statistic intended to quantify the size
+of an effect like a difference between groups.
+\index{effect size}
 
 \item clinically significant: A result, like a difference between groups,
 that is relevant in practice.
@@ -1997,18 +2052,27 @@ for x, freq in hist.Items():
 \end{verbatim}
 %
 Or we can use the {\tt Pmf} class provided by {\tt thinkstats2.py}.
-To create a Pmf object, use {\tt MakePmfFromList}, which takes a list
-of values:
+Like {\tt Hist}, the {\tt Pmf} constructor can take a list, pandas
+Series, dictionary, Hist, or another Pmf object.  Here's an example
+with a simple list.
 %
 \begin{verbatim}
 >>> import thinkstats2
->>> pmf = thinkstats2.MakePmfFromList([1, 2, 2, 3, 5])
->>> print pmf
+>>> pmf = thinkstats2.Pmf([1, 2, 2, 3, 5])
+>>> pmf
 <thinkstats2.Pmf object at 0xb76cf68c>
 \end{verbatim}
 
-Pmf and Hist objects are similar in many ways.  The methods {\tt
-  Values} and {\tt Items} work the same way for both types.  The
+The result is normalized so the total probability is 1.
+
+\begin{verbatim}
+>>> pmf.Total()
+1.0
+\end{verbatim}
+
+Pmf and Hist objects are similar in many ways; in fact, they inherit
+many of their methods from a common parent class.  For example, the
+methods {\tt Values} and {\tt Items} work the same way for both.  The
 biggest difference is that a Hist maps from values to integer
 counters; a Pmf maps from values to floating-point probabilities.
 
@@ -2069,77 +2133,134 @@ There are two common ways to plot Pmfs:
 
 \begin{itemize}
 
-\item To plot a Pmf as a bar graph, you can use {\tt pyplot.bar}
-or {\tt thinkplot.Hist}.  Bar graphs are most useful if the number
+\item To plot a Pmf as a bar graph, you can use 
+{\tt thinkplot.Hist}.  Bar graphs are most useful if the number
 of values in the Pmf is small.
 \index{bar plot}
 \index{plot!bar}
 
-\item To plot a Pmf as a line, you can use {\tt pyplot.plot}
-or {\tt thinkplot.Pmf}.  Line plots are most useful if there are
-a large number of values and the Pmf is smooth.
+\item To plot a Pmf as a step function, you can use
+{\tt thinkplot.Pmf}.  This option is most useful if there are
+a large number of values and the Pmf is smooth.  This function
+also works with Hist objects.
 \index{line plot}
 \index{plot!line}
 
 \end{itemize}
 
 \begin{figure}
-% first.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_pmf.pdf}}
-\caption{PMF of pregnancy lengths.}
-\label{nsfg_pmf}
+% probability.py
+\centerline{\includegraphics[height=3.0in]{figs/probability_nsfg_pmf.pdf}}
+\caption{PMF of pregnancy lengths for first babies and others, using
+  bar graphs and step functions.}
+\label{probability_nsfg_pmf}
 \end{figure}
 \index{pregnancy length}
 \index{length!pregnancy}
 
-Figure~\ref{nsfg_pmf} shows PMFs of pregnancy length for first babies
-and others as bar graphs.  Using the PMF, we can see more clearly
-where the distributions differ.  First babies seem to be less likely
-than others to arrive on time (week 39) and more likely to be a late
-(weeks 41 and 42).
+Figure~\ref{probability_nsfg_pmf} shows PMFs of pregnancy length for
+first babies and others using bar graphs (left) and step functions
+(right).
 
-The code that generates this figure is in {\tt first.py}.
+By plotting the PMF instead of the histogram, we can compare the two
+distributions without distortion caused by the difference in sample
+size.  Based on this figure, first babies seem to be less likely than
+others to arrive on time (week 39) and more likely to be a late (weeks
+41 and 42).
+
+Whether you plot PMFs as bar graphs or step functions, I'll leave
+that up to you.
+The code that generates this figure is in {\tt probability.py}.
 Note: {\tt pyplot} provides a function called {\tt hist} that
 takes a sequence of values, computes the histogram and plots it.
 Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
 
+The code that generates Figure~\ref{probability_nsfg_pmf} is in
+{\tt probability.py}:
+
+\begin{verbatim}
+    thinkplot.PrePlot(2, cols=2)
+    thinkplot.Hist(first_pmf, align='right', width=width)
+    thinkplot.Hist(other_pmf, align='left', width=width)
+    thinkplot.Config(xlabel='weeks',
+                     ylabel='probability',
+                     axis=[27, 46, 0, 0.6])
+
+    thinkplot.PrePlot(2)
+    thinkplot.SubPlot(2)
+    thinkplot.Pmfs([first_pmf, other_pmf])
+    thinkplot.Show(xlabel='weeks',
+                   axis=[27, 46, 0, 0.6])
+\end{verbatim}
+
+{\tt PrePlot} takes optional parameters {\tt rows} and {\tt cols}
+to make a grid of figures, in this case 1 row of 2 figures.
+The first figure (on the left) displays the Pmfs using {\tt Hist},
+as we have seen before.
+
+The second call to {\tt PrePlot} resets the color generator.  Then
+{\tt SubPlot} switches to the second figure (on the right) and
+displays the Pmfs using {\tt Pmf}.  I used the {\tt axis} option
+to ensure that the two figures are on the same axes, which is
+generally a good idea if you intend to compare two figures.
 
 
 \section{Other visualizations}
-\index{visualization}
-\index{exploratory data analysis}
+\label{visualization}
 
 Histograms and PMFs are useful while you are exploring data and
 trying to identify patterns and relationships.
-
 Once you have an idea what is going on, a good next step is to
 design a visualization that makes the patterns your have identified
-clear and visible.
+as clear as possible.
+\index{exploratory data analysis}
+\index{visualization}
 
 In the NSFG data, the biggest differences in the distributions are
 near the mode.  So it makes sense to zoom in on that part of the
-graph, and to transform the data to emphasize differences.
+graph, and to transform the data to emphasize differences:
 \index{National Survey of Family Growth}
 \index{NSFG}
 
-Figure~\ref{nsfg_diffs} shows the difference between the PMFs for
-weeks 35--45.  I multiplied the probabilities by 100 to express the
-differences in percentage points.
+\begin{verbatim}
+    weeks = range(35, 46)
+    diffs = []
+    for week in weeks:
+        p1 = first_pmf.Prob(week)
+        p2 = other_pmf.Prob(week)
+        diff = 100 * (p1 - p2)
+        diffs.append(diff)
+
+    thinkplot.Bar(weeks, diffs)
+\end{verbatim}
+
+In this code, {\tt weeks} is the range of weeks; {\tt diffs} is the
+difference between the two PMFs in percentage points.
+Figure~\ref{probability_nsfg_diffs} shows the result.  This figure
+makes the pattern clearer: first babies are less likely to be born in
+week 39, and somewhat more likely to be born in weeks 41 and 42.
 
 \begin{figure}
-% first.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_diffs.pdf}}
+% probability.py
+\centerline{\includegraphics[height=2.5in]{figs/probability_nsfg_diffs.pdf}}
 \caption{Difference, in percentage points, by week.}
-\label{nsfg_diffs}
+\label{probability_nsfg_diffs}
 \end{figure}
 
-This figure makes the pattern clearer: first babies are
-less likely to be born in week 39, and somewhat more likely
-to be born in weeks 41 and 42.
+For now we should hold this conclusion only tentatively.
+We used the same dataset to identify an
+apparent difference and then chose a visualization that makes the
+difference apparent.  We can't be sure this effect is real;
+it might be due to random variation.  We'll address this concern
+later.
 
 
 \section{The class size paradox}
 \index{class size}
+
+Before we go on, I want to look at an example that demonstrates
+one kind of computation you can do with Pmf objects: I call
+this example the ``class size paradox.''
 
 At many American colleges and universities, the student-to-faculty
 ratio is about 10:1.  But students are often surprised to discover
@@ -2157,7 +2278,7 @@ but the number of students in a large class is (ahem!) large.
 \end{itemize}
 
 The first effect is obvious (at least once it is pointed out);
-the second is more subtle.  So let's look at an example.  Suppose
+the second is more subtle.  Let's look at an example.  Suppose
 that a college offers 65 classes in a given semester, with the
 following distribution of sizes:
 %
@@ -2176,98 +2297,98 @@ following distribution of sizes:
 
 If you ask the Dean for the average class size, he would
 construct a PMF, compute the mean, and report that the
-average class size is 24.
+average class size is 23.7.  Here's the code:
+
+\begin{verbatim}
+    d = { 7: 8, 12: 8, 17: 14, 22: 4, 
+          27: 6, 32: 12, 37: 8, 42: 3, 47: 2 }
+
+    pmf = thinkstats2.Pmf(d, label='actual')
+    print('mean', pmf.Mean())
+\end{verbatim}
 
 But if you survey a group of students, ask them how many
 students are in their classes, and compute the mean, you would
-think that the average class size was higher.
+think the average class was bigger.  Let's see how
+much bigger.
 
-\begin{exercise}
-Build a PMF of these data and compute the mean as perceived by the
-Dean.  Since the data have been grouped in bins, you can use the
-mid-point of each bin.
-\index{PMF}
+First, I'll compute the
+distribution as observed by students, where the probability
+associated with each class size is ``biased'' by the number
+of students in the class.
 
-Now find the distribution of class sizes as perceived by students
-and compute its mean.  
+\begin{verbatim}
+def BiasPmf(pmf, label):
+    new_pmf = pmf.Copy(label=label)
 
-Suppose you want to find the distribution of class sizes at a
-college, but you can't get reliable data from the Dean.
-An alternative is to choose a random sample of students and ask them
-the number of students in each of their classes.  Then you could compute
-the PMF of their responses.
-\index{bias!oversampling}
-\index{oversampling}
+    for x, p in pmf.Items():
+        new_pmf.Mult(x, x)
+        
+    new_pmf.Normalize()
+    return new_pmf
+\end{verbatim}
 
-The result would be biased because large classes
-would be oversampled, but you could estimate the actual
-distribution of class sizes by applying an appropriate transformation
-to the observed distribution.
+For each class size, {\tt x}, we multiply the probability by
+{\tt x}, the number of students who observe that class size.
+The result is a new Pmf that represents the biased distribution.
 
-Write a function called \verb"UnbiasPmf" that takes the PMF of the
-observed values and returns a new Pmf object that estimates the
-distribution of class sizes.
+Now we can plot the actual and observed distributions:
 
-You can download a solution to this problem from
-\url{http://thinkstats2.com/class_size.py}.
-\index{{\tt class\_size.py}}
-
-\end{exercise}
-
-
-
-\section{The limits of PMFs}
-\index{PMF}
-
-PMFs work well if the number of values is small.  But as the
-number of values increases, the probability associated with each value
-gets smaller and the effect of random noise increases.
-
-For example, we might be interested in the distribution of birth
-weights.  In the NSFG data, the variable \verb"totalwgt_oz" records
-weight at birth in ounces.  Figure~\ref{nsfg_birthwgt_pmf} shows the
-PMF of these values for first babies and others.
-\index{National Survey of Family Growth}
-\index{NSFG}
-\index{birth weight}
-\index{weight!birth}
+\begin{verbatim}
+    biased_pmf = BiasPmf(pmf, label='observed')
+    thinkplot.PrePlot(2)
+    thinkplot.Pmfs([pmf, biased_pmf])
+    thinkplot.Show(xlabel='class size', ylabel='PMF')
+\end{verbatim}
 
 \begin{figure}
-% cumulative.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_pmf.pdf}}
-\caption{PMF of birth weights.  This figure shows a limitation
-of PMFs: they are hard to compare.}
-\label{nsfg_birthwgt_pmf}
+% probability.py
+\centerline{\includegraphics[height=3.0in]{figs/class_size1.pdf}}
+\caption{Distribution of class sizes, actual and as observed by students.}
+\label{class_size1}
 \end{figure}
 
-Overall, these distributions resemble the familiar ``bell curve,'' with
-many values near the mean and a few values much higher and lower.
+Figure~\ref{class_size1} shows the result.  In the biased distribution
+there are fewer small classes and more large ones.
+The mean of the biased distribution is 29.1, almost 25\% higher
+than the actual mean.
 
-But parts of this figure are hard to interpret.  There are many spikes
-and valleys, and some apparent differences between the distributions.
-It is hard to tell which of these features are significant.  Also, it
-is hard to see overall patterns; for example, which distribution do
-you think has the higher mean?
-\index{binning}
+It is also possible to invert this operation.  Suppose you want to
+find the distribution of class sizes at a college, but you can't get
+reliable data from the Dean.  An alternative is to choose a random
+sample of students and how many students are in their
+classes.  \index{bias!oversampling} \index{oversampling}
 
-These problems can be mitigated by binning the data;
-that is, dividing the domain into non-overlapping intervals and counting
-the number of values in each bin.  Binning can be useful, but it is
-tricky to get the size of the bins right.  If they are big enough to
-smooth out noise, they might also smooth out useful information.
+The result would be biased for the reasons we've just seen, but you
+can use it to estimate the actual distribution.  Here's the function
+that unbiases a Pmf:
 
-An alternative that avoids these problems is the cumulative
-distribution function, which is the subject of
-the next chapter.
+\begin{verbatim}
+def UnbiasPmf(pmf, label):
+    new_pmf = pmf.Copy(label=label)
+
+    for x, p in pmf.Items():
+        new_pmf.Mult(x, 1.0/x)
+        
+    new_pmf.Normalize()
+    return new_pmf
+\end{verbatim}
+
+It's similar to {\tt BiasPmf}; the only difference is that it
+divides each probability by {\tt x} instead of multiplying.
+
+The code for this example is in \url{chap03.py}.  It confirms that
+if we start with the actual distribution, apply {\tt BiasPmf}
+and apply {\tt UnbiasPmf} to the result, we get the original
+distribution back.
 
 
 \section{DataFrame indexing}
 
-There are a lot of ways to select rows and columns from a DataFrame.
-In the previous chapter we looked at column selection.  Now let's
-look at row selection.
-
-First, I'll create a simple DataFrame of random numbers:
+In Section~\ref{dataframe} we read a pandas DataFrame and used it to
+select and modify data columns.  Now let's look at row selection.
+To start, I'll create a numpy array of random numbers and use it
+to initialize a DataFrame:
 
 \begin{verbatim}
 >>> import numpy as np
@@ -2281,8 +2402,8 @@ First, I'll create a simple DataFrame of random numbers:
 3 -1.369968  0.545897
 \end{verbatim}
 
-By default, the rows and columns are numbered starting at zero.
-But you can provide column names:
+By default, the rows and columns are numbered starting at zero, but
+you can provide column names:
 
 \begin{verbatim}
 >>> columns = ['A', 'B']
@@ -2295,7 +2416,7 @@ But you can provide column names:
 \end{verbatim}
 
 You can also provide row names.  The set of row names is called the
-index, but the row names themselves are called labels.
+index; the row names themselves are called labels.
 
 \begin{verbatim}
 >>> index = ['a', 'b', 'c', 'd']
@@ -2329,9 +2450,8 @@ B    0.61605
 Name: a, dtype: float64
 \end{verbatim}
 
-If you know the integer position of a row, rather than its
-label, you can use
-the {\tt iloc} attribute, which also returns a Series.
+If you know the integer position of a row, rather than its label, you
+can use the {\tt iloc} attribute, which also returns a Series.
 
 \begin{verbatim}
 >>> df.iloc[0]
@@ -2351,8 +2471,7 @@ a -0.14351  0.616050
 c -0.07435  0.039621
 \end{verbatim}
 
-Finally, you can use a slice to select a range of rows
-by label:
+Finally, you can use a slice to select a range of rows by label:
 
 \begin{verbatim}
 >>> df['a':'c']
@@ -2371,16 +2490,37 @@ a -0.143510  0.616050
 b -1.489647  0.300774
 \end{verbatim}
 
-The result in either case is a DataFrame, but notice that the
-first result includes the end of the slice; the second doesn't.
+The result in either case is a DataFrame, but notice that the first
+result includes the end of the slice; the second doesn't.
 
-My advice: if your rows have labels that are not simple
-integers, use the labels consistently and avoid
-using integer positions.
+My advice: if your rows have labels that are not simple integers, use
+the labels consistently and avoid using integer positions.
 
 
 
 \section{Exercises}
+
+\begin{exercise}
+Something like the class size paradox appears if you survey children
+and ask how many children are in their family.  Families with many
+children are more likely to appear in your sample, and
+families with no children have no chance to be in the sample.
+
+Use the NSFG respondent variable \verb"NUMKDHH" to construct the actual
+distribution for the number of children under 18 in the household.
+
+Now compute the biased distribution we would see if we surveyed the
+children and asked them how many children under 18 (including themselves)
+are in their household.  
+
+Plot the actual and biased distributions, and compute their means.
+As a starting place, you can use \verb"chap03ex.ipynb"
+You can find a solution in \verb"chap03ex_soln.ipynb".
+\end{exercise}
+
+
+For the following exercises, create a file named {\tt chap03ex.py}.
+You can find a solution in \verb"chap03ex_soln.py".
 
 \begin{exercise}
 %
@@ -2423,12 +2563,6 @@ Hint: use {\tt nsfg.MakePregMap}.
 
 
 \begin{exercise}
-Use the variable \verb"totalwgt_lb", investigate whether first
-babies lighter or heavier than others.
-\end{exercise}
-
-
-\begin{exercise}
 \label{relay}
 
 In most foot races, everyone starts at the same time.  If you are a
@@ -2448,7 +2582,8 @@ At first I thought that the distribution of speeds might be bimodal;
 that is, there were many slow runners and many fast runners, but few
 at my speed.
 
-Then I realized that I was the victim of selection bias.  The race
+Then I realized that I was the victim a bias similar to the
+effect of class size.  The race
 was unusual in two ways: it used a staggered start, so teams started
 at different times; also, many teams included runners at different
 levels of ability. \index{bias!selection} \index{selection bias}
@@ -2465,53 +2600,29 @@ If another runner is going at the same speed as me, neither of us will
 overtake the other.  If someone is going so fast that they cover the
 entire course while I am running, they are certain to overtake me.
 
-Write a function called {\tt BiasPmf} that takes a Pmf representing
+Write a function called {\tt ObservedPmf} that takes a Pmf representing
 the actual distribution of runners' speeds, and the speed of a running
 observer, and returns a new Pmf representing the distribution of
 runners' speeds as seen by the observer.
 
-To test your function, get the distribution of speeds from a
-normal road race (not a relay).  I wrote a program that reads the
+To test your function, you can use {\tt relay.py}, which  reads the
 results from the James Joyce Ramble 10K in Dedham MA and converts the
-pace of each runner to MPH.  Download it from
-\url{http://thinkstats2.com/relay.py}.  Run it and look at the PMF of
-speeds.
-\index{{\tt relay.py}}
-\index{{\tt relay\_soln.py}}
+pace of each runner to mph.
 
-Now compute the distribution of speeds you would observe if you ran a
-relay race at 7.5 MPH with this group of runners.  You can download a
-solution from \url{http://thinkstats2.com/relay_soln.py}
-
+Compute the distribution of speeds you would observe if you ran a
+relay race at 7.5 mph with this group of runners.  A solution to this
+exercise is in \url{http://thinkstats2.com/relay_soln.py}
 \end{exercise}
-
 
 
 \section{Glossary}
 
 \begin{itemize}
 
-\item central tendency: A characteristic of a sample or population;
-intuitively, it is the most average value. 
-\index{central tendency}
-
-\item spread: A characteristic of a sample or population;
-intuitively, it describes how much variability there is.
-\index{spread}
-
-\item variance: A summary statistic often used to quantify spread.
-\index{variance}
-
-\item standard deviation: The square root of variance, also used
-as a measure of spread.
-\index{standard deviation}
-
-\item frequency: The number of times a value appears in a sample.
-\index{frequency}
-
-\item histogram: A mapping from values to frequencies, or a graph
-that shows this mapping.
-\index{histogram}
+\item Probability mass function (PMF): a representation of a distribution
+as a function that maps from values to probabilities.
+\index{PMF}
+\index{probability mass function}
 
 \item probability: A frequency expressed as a fraction of the sample
 size.
@@ -2521,43 +2632,55 @@ size.
 size to get a probability.
 \index{normalization}
 
-\item distribution: A summary of the values that appear in a sample
-and the frequency, or probability, of each.
-\index{distribution}
-
-\item PMF: Probability mass function: a representation of a distribution
-as a function that maps from values to probabilities.
-\index{PMF}
-
-\item mode: The most frequent value in a sample.
-\index{mode}
-
-\item outlier: A value far from the central tendency.
-\index{outlier}
-
-\item trim: To remove outliers from a dataset.
-\index{trim}
-
-\item bin: A range used to group nearby values.
-\index{bin}
-
-\item relative risk: A ratio of two probabilities, often used to measure
-a difference between distributions.
-\index{relative risk}
-
-\item conditional probability: A probability computed under the assumption
-that some condition holds.
-\index{conditional probability}
-
-\item clinically significant: A result, like a difference between groups,
-that is relevant in practice.
-\index{clinically significant}
-
 \end{itemize}
 
 
 \chapter{Cumulative distribution functions}
 \label{cumulative}
+
+
+\section{The limits of PMFs}
+\index{PMF}
+
+PMFs work well if the number of values is small.  But as the number of
+values increases, the probability associated with each value gets
+smaller and the effect of random noise increases.
+
+For example, we might be interested in the distribution of birth
+weights.  In the NSFG data, the variable \verb"totalwgt_lb" records
+weight at birth in pounds.  Figure~\ref{nsfg_birthwgt_pmf} shows
+the PMF of these values for first babies and others.  \index{National
+  Survey of Family Growth} \index{NSFG} \index{birth weight}
+\index{weight!birth}
+
+\begin{figure}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_pmf.pdf}}
+\caption{PMF of birth weights.  This figure shows a limitation
+of PMFs: they are hard to compare.}
+\label{nsfg_birthwgt_pmf}
+\end{figure}
+
+Overall, these distributions resemble the bell shape of a Gaussian
+distribution, with many values near the mean and a few values much
+higher and lower.
+
+But parts of this figure are hard to interpret.  There are many spikes
+and valleys, and some apparent differences between the distributions.
+It is hard to tell which of these features are meaningful.  Also, it
+is hard to see overall patterns; for example, which distribution do
+you think has the higher mean?
+\index{binning}
+
+These problems can be mitigated by binning the data; that is, dividing
+the range of values into non-overlapping intervals and counting the
+number of values in each bin.  Binning can be useful, but it is tricky
+to get the size of the bins right.  If they are big enough to smooth
+out noise, they might also smooth out useful information.
+
+An alternative that avoids these problems is the cumulative
+distribution function (CDF), which is the subject of this chapter.
+But before I can explain CDFs, I have to explain percentiles.
 
 
 \section{Percentiles}
@@ -2584,12 +2707,10 @@ def PercentileRank(scores, your_score):
     percentile_rank = 100.0 * count / len(scores)
     return percentile_rank
 \end{verbatim}
-%
-% see score_example.py
-%
-For example, if the scores in the sequence were 55, 66, 77, 88 and 99,
-and you got the 88, then your percentile rank would be {\tt 100 * 4 / 5}
-which is 80.
+
+The code in this section is in {\tt chap04.py}.  As an example, if the
+scores in the sequence were 55, 66, 77, 88 and 99, and you got the 88,
+then your percentile rank would be {\tt 100 * 4 / 5} which is 80.
 
 If you are given a value, it is easy to find its percentile rank; going
 the other way is slightly harder.  If you are given a percentile rank
@@ -2609,198 +2730,22 @@ the 50th percentile is the value with percentile rank 50.  In the
 distribution of exam scores, the 50th percentile is 77.
 \index{percentile}
 
-\begin{exercise}
 This implementation of {\tt Percentile} is not very efficient.  A
 better approach is to use the percentile rank to compute the index of
-the corresponding percentile.  Write a version of {\tt Percentile} that
-uses this algorithm.
+the corresponding percentile:
 
-You can download a solution from \url{http://thinkstats2.com/score_example.py}.
-\index{{\tt score\_example.py}}
-
-\end{exercise}
-
-\begin{exercise}
-Optional: If you only want to compute one percentile, it is not
-efficient to sort the scores.  A better option is the selection
-algorithm, which you can read about at
-\url{http://wikipedia.org/wiki/Selection_algorithm}.
-\index{selection algorithm}
-
-Write (or find) an implementation of the selection algorithm and use
-it to write an efficient version of {\tt Percentile}.
-
-\end{exercise}
-
-
-\section{Cumulative distribution functions}
-\index{cumulative distribution function}
-\index{CDF}
-
-Now that we understand percentiles, we are ready to tackle the
-cumulative distribution function (CDF).  The CDF is the function that
-maps values to their percentile rank in a distribution.
-
-The CDF is a function of $x$, where $x$ is any value that might appear
-in the distribution.  To evaluate $\CDF(x)$ for a particular value of
-$x$, we compute the fraction of the values in the sample less than (or
-equal to) $x$.
-
-Here's what that looks like as a function that takes a sample,
-{\tt t}, and a value, {\tt x}:
-%
 \begin{verbatim}
-def Cdf(t, x):
-    count = 0.0
-    for value in t:
-        if value <= x:
-            count += 1.0
-
-    prob = count / len(t)
-    return prob
+def Percentile2(scores, percentile_rank):
+    scores.sort()
+    index = percentile_rank * (len(scores)-1) / 100
+    return scores[index]
 \end{verbatim}
 
-This function should look familiar; it is almost identical to {\tt
-  PercentileRank}, except that the result is in a probability in the
-range 0--1 rather than a percentile rank in the range 0--100.
-
-As an example, suppose a sample has the values \{1, 2, 2, 3, 5\}.
-Here are some values from its CDF:
-
-\[ CDF(0) = 0 \]
-
-\[ CDF(1) = 0.2\]
-
-\[ CDF(2) = 0.6\]
-
-\[ CDF(3) = 0.8\]
-
-\[ CDF(4) = 0.8\]
-
-\[ CDF(5) = 1\]
-
-We can evaluate the CDF for any value of $x$, not just
-values that appear in the sample.
-If $x$ is less than the smallest value in the sample, $\CDF(x)$ is 0.
-If $x$ is greater than the largest value, $\CDF(x)$ is 1.
-
-\begin{figure}
-% cumulative.py
-\centerline{\includegraphics[height=2.5in]{figs/example_cdf.pdf}}
-\caption{Example of a CDF.}
-\label{example_cdf}
-\end{figure}
-
-Figure~\ref{example_cdf} is a graphical representation of this CDF.
-The CDF of a sample is a step function.  In the next chapter we
-will see distributions whose CDFs are analytic functions.
-
-
-\section{Representing CDFs}
-\index{{\tt cdf.py}@{\tt Cdf.py}}
-\index{Cdf object}
-
-I have written a module called {\tt Cdf} that provides a class named
-{\tt Cdf} that represents CDFs.  You can read the documentation of
-this module at \url{http://thinkstats2.com/Cdf.html} and you can download it
-from \url{http://thinkstats2.com/Cdf.py}.
-
-Cdfs are implemented with two sorted lists: {\tt xs}, which contains
-the values, and {\tt ps}, which contains the probabilities.  The
-most important methods Cdfs provide are:
-
-\begin{itemize}
-
-\item {\tt Prob(x)}: Given a value $x$, computes the probability $p = \CDF(x)$.
-
-\item {\tt Value(p)}: Given a probability $p$, computes the
-corresponding value, $x$; that is, the inverse CDF of $p$.
-
-\end{itemize}
-
-Because {\tt xs} and {\tt ps} are sorted, these operations can use the
-bisection algorithm, which is efficient.  The run time is proportional
-to the logarithm of the number of values; see
-\url{http://wikipedia.org/wiki/Time_complexity}.
-\index{bisection algorithm}
-
-Cdfs also provide {\tt Render}, which returns two lists, {\tt xs} and
-{\tt ps}, suitable for plotting the CDF.  Because the CDF is a
-step function, these lists have two elements for each unique
-value in the distribution.
-
-The Cdf module provides several functions for making Cdfs, including
-{\tt MakeCdfFromList}, which takes a sequence of values
-and returns their Cdf.
-
-Finally, {\tt thinkplot.py} provides functions named {\tt Cdf} and
-{\tt Cdfs} that plot Cdfs as lines.
-\index{{\tt thinkplot.py}}
-
-\begin{exercise}
-Download {\tt Cdf.py} and \verb"relay.py" (see
-Exercise~\ref{relay}) and generate a plot that shows the CDF of
-running speeds.  Which gives you a better sense of the shape of the
-distribution, the PMF or the CDF?  You can download a solution
-from \url{http://thinkstats2.com/relay_cdf.py}.
-\index{{\tt cdf.py}@{\tt Cdf.py}}
-\index{{\tt relay\_cdf.py}}
-
-\end{exercise}
-
-
-\section{Back to the survey data}
-\label{birth_weights}
-\index{National Survey of Family Growth}
-\index{NSFG}
-\index{birth weight}
-\index{weight!birth}
-
-Figure~\ref{nsfg_birthwgt_cdf} shows the CDFs of birth weight for
-first babies and others in the NSFG dataset.
-
-\begin{figure}
-% cumulative.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_cdf.pdf}}
-\caption{CDF of birth weights.}
-\label{nsfg_birthwgt_cdf}
-\end{figure}
-
-This figure makes the shape of the distributions, and the differences
-between them, much clearer.  We can see that first babies are slightly
-lighter throughout the distribution, with a larger discrepancy above 
-the mean.
-\index{shape}
-
-%\begin{exercise}
-
-%In the figure above, you might notice
-%a sequence of equally-spaced values with higher frequency than
-%their neighbors.  See if you can figure out what is going on.
-%Hint: look at the PMF of \verb"birthwgt_oz".
-
-%\end{exercise}
-
-\begin{exercise}
-How much did you weigh at birth?  If you don't know, call your mother
-or someone else who knows.  Using the pooled data (all live births),
-compute the distribution of birth weights and use it to find your
-percentile rank.  If you were a first baby, find your percentile rank
-in the distribution for first babies.  Otherwise use the distribution
-for others.  If you are in the 90th percentile or higher, call your
-mother back and apologize.
-
-\end{exercise}
-
-\begin{exercise}
-Suppose you and your classmates compute the percentile rank of your
-birth weights and then compute the CDF of the percentile ranks.  What do
-you expect it to look like?  Hint: what fraction of the class do you
-expect to be above the median?
-\index{birth weight}
-\index{weight!birth}
-
-\end{exercise}
+The difference between ``percentile'' and ``percentile rank'' can
+be confusing, and people do not always use the terms precisely.
+To summarize, {\tt PercentileRank} takes a score and computes
+its percentile rank in a set of scores; {\tt Percentile} takes
+a percentile rank and computes the corresponding score.
 
 
 \section{Conditional distributions}
@@ -2808,7 +2753,7 @@ expect to be above the median?
 \index{distribution!conditional}
 
 A {\bf conditional distribution} is the distribution of a subset of
-the data which is selected according to a condition.
+the data, selected according to some condition.
 
 For example, if you are above average in weight, but way above average
 in height, then you might be relatively light for your height.  Here's
@@ -2826,116 +2771,222 @@ some range).
 
 \end{enumerate}
 
-Percentile ranks are useful for comparing measurements from
-different tests, or tests applied to different groups.
-\index{percentile rank}
-\index{rank!percentile}
+Percentile ranks are useful for comparing measurements across
+different groups.  For example, people who compete in foot races are
+usually grouped by age and gender.  To compare people in different
+age groups, you can convert race times to percentile ranks.
+\index{percentile rank} \index{rank!percentile}
 
-For example, people who compete in foot races are usually grouped by
-age and gender.  To compare people in different groups, you can convert
-race times to percentile ranks.
-
-\begin{exercise}
-I recently ran the James Joyce Ramble 10K
-in Dedham MA.  The results are available from
+A few years ago I ran the James Joyce Ramble 10K in
+Dedham MA; the results are available from
 \url{http://coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
-Go to that page and find my results.  I came in 97th in a field
-of 1633, so what is my percentile rank in the field?
-\index{James Joyce Ramble}
-\index{race time}
+I finished in 42:44, which was 97th in a field of 1633.  I beat or
+tied 1537 runners out of 1633, so my percentile rank in the field is
+94\%.  \index{James Joyce Ramble} \index{race time}
 
-In my division (M4049 means ``male between 40 and 49 years of age'')
-I came in 26th out of 256.  What is my percentile rank in my division?
+More generally, given position and field size, we can compute
+percentile rank:
+
+\begin{verbatim}
+def PositionToPercentile(position, field_size):
+    beat = field_size - position + 1
+    percentile = 100.0 * beat / field_size
+    return percentile
+\end{verbatim}
+
+In my age group, denoted M4049 for ``male between 40 and 49 years of
+age'', I came in 26th out of 256.  So my percentile rank in my age
+group was 90\%.
 
 If I am still running in 10 years (and I hope I am), I will be in
 the M5059 division.  Assuming that my percentile rank in my division
 is the same, how much slower should I expect to be?
 
+I can answer that question by converting my percentile rank in M4049
+to a position in M5059.  Here's the code:
+
+\begin{verbatim}
+def PercentileToPosition(percentile, field_size):
+    beat = percentile * field_size / 100.0
+    position = field_size - beat + 1
+    return position
+\end{verbatim}
+
+There were 171 people in M5059, so I would have to come in between
+17th and 18th place to have the same percentile rank.  The finishing
+time of the 17th runner in M5059 was 46:05, so in the next 10 years I
+should expect to slow down by 3--4 minutes.
+
 I maintain a friendly rivalry with a student who is in the
 F2039 division.  How fast does she have to run her next 10K to
 ``beat'' me in terms of percentile ranks?
 
-\end{exercise}
+
+\section{Cumulative distribution functions}
+\index{cumulative distribution function}
+\index{CDF}
+
+Now that we understand percentiles and percentile ranks,
+we are ready to tackle the {\bf cumulative distribution function}
+(CDF).  The CDF is the function that maps from a value to its
+percentile rank in a distribution.
+
+The CDF is a function of $x$, where $x$ is any value that might appear
+in the distribution.  To evaluate $\CDF(x)$ for a particular value of
+$x$, we compute the fraction of values in the distribution less
+than or equal to $x$.
+
+Here's what that looks like as a function that takes a sample,
+{\tt t}, and a value, {\tt x}:
+%
+\begin{verbatim}
+def EvalCdf(t, x):
+    count = 0.0
+    for value in t:
+        if value <= x:
+            count += 1
+
+    prob = count / len(t)
+    return prob
+\end{verbatim}
+
+This function should look familiar; it is almost identical to {\tt
+  PercentileRank}, except that the result is in a probability in the
+range 0--1 rather than a percentile rank in the range 0--100.
+
+As an example, suppose a sample has the values {\tt [1, 2, 2, 3, 5]}.
+Here are some values from its CDF:
+%
+\[ CDF(0) = 0 \]
+%
+\[ CDF(1) = 0.2\]
+%
+\[ CDF(2) = 0.6\]
+%
+\[ CDF(3) = 0.8\]
+%
+\[ CDF(4) = 0.8\]
+%
+\[ CDF(5) = 1\]
+%
+We can evaluate the CDF for any value of $x$, not just
+values that appear in the sample.
+If $x$ is less than the smallest value in the sample, $\CDF(x)$ is 0.
+If $x$ is greater than the largest value, $\CDF(x)$ is 1.
+
+\begin{figure}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{figs/cumulative_example_cdf.pdf}}
+\caption{Example of a CDF.}
+\label{example_cdf}
+\end{figure}
+
+Figure~\ref{example_cdf} is a graphical representation of this CDF.
+The CDF of a sample is a step function.
 
 
-\section{Random numbers}
-\label{random}
-\index{random number}
+\section{Representing CDFs}
+\index{{\tt cdf.py}@{\tt Cdf.py}}
+\index{Cdf object}
 
-CDFs are useful for generating random numbers with a given
-distribution.  Here's how:
+{\tt thinkstats2} provides a class named
+{\tt Cdf} that represents CDFs.
+Cdfs are implemented with two sorted lists: {\tt xs}, which contains
+the values, and {\tt ps}, which contains the probabilities.  The
+fundamental methods {\tt Cdf} provides are:
 
 \begin{itemize}
 
-\item Choose a random probability in the range 0--1.
+\item {\tt Prob(x)}: Given a value {\tt x}, computes the probability
+  $p = \CDF(x)$.
 
-\item Use {\tt Cdf.Value} to find the value in the distribution
-that corresponds to the probability you chose.
+\item {\tt Value(p)}: Given a probability {\tt p}, computes the
+corresponding value, {\tt x}; that is, the {\bf inverse CDF} of {\tt p}.
 
 \end{itemize}
 
-It might not be obvious why this works, but since it is easier
-to implement than to explain, let's try it out.
+Because {\tt xs} and {\tt ps} are sorted, these operations use the
+bisection algorithm, which is efficient; the run time is proportional
+to the logarithm of the number of values; see
+\url{http://wikipedia.org/wiki/Time_complexity}.
+\index{bisection algorithm}
 
-\begin{exercise}
-Write a function called {\tt Sample}, that takes a Cdf and
-an integer, n, and returns a list of {\tt n} values chosen at
-random from the Cdf.  Hint: use {\tt random.random}.
-You will find a solution to this exercise in {\tt Cdf.py}.
-\index{inverse CDF algorithm}
-\index{{\tt cdf.py}@{\tt Cdf.py}}
+\begin{figure}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{figs/cumulative_prglngth_cdf.pdf}}
+\caption{CDF of birth weights.}
+\label{cumulative_prglngth_cdf}
+\end{figure}
 
-Using the distribution of birth weights from the NSFG, generate a
-random sample with 1000 elements.  Compute the CDF of the sample.
-Make a plot that shows the original CDF and the CDF of the random
-sample.  For large values of n, the distributions should be
-the same.
-\index{birth weight}
-\index{weight!birth}
+The Cdf constructor can take as an argument a list of values,
+a pandas Series, a Hist, Pmf, or another Cdf.
+
+{\tt thinkplot.py} provides functions named {\tt Cdf} and
+{\tt Cdfs} that plot Cdfs as lines.
+\index{{\tt thinkplot.py}}
+For example, here's the code to make and plot the CDF of pregnancy
+length for all live births.
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    cdf = thinkstats2.Cdf(live.prglngth, label='prglngth')
+    thinkplot.Cdf(cdf)
+    thinkplot.Show(xlabel='weeks', ylabel='CDF')
+\end{verbatim}
+
+This code is in {\tt cumulative.py}.
+Figure~\ref{cumulative_prglngth_cdf} shows the result.  One way to
+read a CDF is to look up percentiles.  For example, it looks like
+about 10\% of pregnancies are shorter than 36 weeks, and about 90\%
+are shorter than 41 weeks.  The CDF also provides a visual
+representation of the shape of the distribution.  Common values appear
+as steep or vertical sections of the CDF; in this example, the mode at
+39 weeks is apparent.  There are very few values below 30 weeks, so
+the CDF in this range is flat.
+
+It takes some time to get used to CDFs, but once you
+do, I think you will find that they show more information, more
+clearly, than PMFs.
+
+
+\section{Comparing CDFs}
+\label{birth_weights}
 \index{National Survey of Family Growth}
 \index{NSFG}
+\index{birth weight}
+\index{weight!birth}
 
-\end{exercise}
+CDFs are especially useful for comparing distributions.  For
+example, here is the code that plots the CDF of birth
+weight for first babies and others.
 
-This process, generating a random sample based on a measured sample,
-is called {\bf resampling}.
-\index{resampling}
-\index{sampling}
-\index{replacement, sampling}
+\begin{verbatim}
+    first_cdf = thinkstats2.Cdf(firsts.totalwgt_lb, label='first')
+    other_cdf = thinkstats2.Cdf(others.totalwgt_lb, label='other')
 
-There are two ways to draw a sample from a population: with and
-without replacement.  If you imagine drawing marbles from an
-urn,\footnote{The marbles-in-an-urn scenario is a standard model for
-  random sampling processes (see
-  \url{http://wikipedia.org/wiki/Urn_problem}).} ``replacement'' means
-putting the marbles back as you go (and stirring), so the population
-is the same for every draw.  ``Without replacement,'' means that each
-marble can only be drawn once, so the remaining population is
-different after each draw.
+    thinkplot.PrePlot(2)
+    thinkplot.Cdfs([first_cdf, other_cdf])
+    thinkplot.Show(xlabel='weight (pounds)', ylabel='CDF')
+\end{verbatim}
 
-In Python, sampling with replacement can be implemented with
-{\tt random.random} to choose a percentile rank, or {\tt random.choice}
-to choose an element from a sequence.  Sampling without replacement
-is provided by {\tt random.sample}.
-\index{random module}
+\begin{figure}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{figs/cumulative_birthwgt_cdf.pdf}}
+\caption{CDF of birth weights for first babies and others.}
+\label{cumulative_birthwgt_cdf}
+\end{figure}
 
-\begin{exercise}
-The numbers generated by {\tt random.random} are supposed to be
-uniform between 0 and 1; that is, every value in the range
-should have the same probability.
-
-Generate 1000 numbers from {\tt random.random} and plot their
-PMF and CDF.  Can you tell whether they are uniform?
-
-You can read about the uniform distribution at
-\url{http://wikipedia.org/wiki/Uniform_distribution_(discrete)}.
-\index{uniform distribution}
-\index{distribution!uniform}
-
-\end{exercise}
+Figure~\ref{cumulative_birthwgt_cdf} shows the result.
+This figure makes the shape of the distributions, and the differences
+between them, much clearer.  We can see that first babies are slightly
+lighter throughout the distribution, with a larger discrepancy above 
+the mean.
+\index{shape}
 
 
-\section{Summary statistics revisited}
+
+
+\section{Percentile-based statistics}
 \index{summary statistic}
 \index{interquartile range}
 \index{quartile}
@@ -2944,25 +2995,169 @@ You can read about the uniform distribution at
 \index{central tendency}
 \index{spread}
 
-Once you have computed a CDF, it is easy to compute other summary
-statistics.  The median is just the 50th percentile.\footnote{You might
-see other definitions of the median.  They all have pros and cons.}
-The 25th and 75th percentiles are often used to check whether
-a distribution is symmetric, and their difference, which is called
-the {\bf interquartile range}, measures the spread.
+Once you have computed a CDF, it is easy to compute percentiles
+and percentile ranks.  {\tt Cdf} provides these two methods:
+
+\begin{itemize}
+
+\item {\tt PercentileRank(x)}: Given a value {\tt x}, computes its
+  percentile rank, $100 \CDF(x)$.
+
+\item {\tt Percentile(p)}: Given a percentile rank {\tt rank},
+  computes the corresponding value, {\tt x}.  Equivalent to {\tt
+    Value(p/100)}.
+
+\end{itemize}
+
+{\tt Percentile} can be used to compute percentile-based summary
+statistics.  For example, the 50th percentile is the value that
+divides the distribution in half, also known as the {\bf median}.
+Like the mean, the median is a measure of the central tendency
+of a distribution.
+
+Actually, there are several definitions of ``median,'' each with
+different properties.  But {\tt Percentile(50)} is simple and
+efficient to compute.
+
+Another percentile-based statistic is the {\bf interquartile range} (IQR),
+which is a measure of the spread of a distribution.  The IQR
+is the difference between the 75th and 25th percentiles.
+
+More generally, percentiles are often used to summarize the shape
+of a distribution.  For example, the distribution of income is
+often reported in ``quintiles''; that is, it is split at the
+the 20th, 40th, 60th and 80th percentiles.  Other distributions
+are divided into ten ``deciles''.  Statistics like these that represent
+equally-spaced points in a CDF are called {\bf quantiles}.
+For more, see \url{https://en.wikipedia.org/wiki/Quantile}.
+
+
+\section{Random numbers}
+\label{random}
+\index{random number}
+
+Suppose we choose a random sample from the population of live
+births and look up the percentile rank of their birth weights.
+Now suppose we compute the CDF of the percentile ranks.  What do
+you think the distribution will look like?
+
+Here's the code to compute it:
+
+\begin{verbatim}
+    weights = live.totalwgt_lb
+    cdf = thinkstats2.Cdf(weights, label='totalwgt_lb')
+
+    sample = np.random.choice(weights, 100, replace=True)
+    ranks = [cdf.PercentileRank(x) for x in sample]
+
+    rank_cdf = thinkstats2.Cdf(ranks)
+    thinkplot.Cdf(rank_cdf)
+    thinkplot.Show(xlabel='percentile rank', ylabel='CDF')
+\end{verbatim}
+
+{\tt cdf} is the distribution of all birthweights.  {\tt sample}
+is a random sample of 100 birthweights, chosen with replacement;
+that is, the same value could be chosen more than once.
+
+\begin{figure}
+% cumulative.py
+\centerline{\includegraphics[height=2.5in]{figs/cumulative_random.pdf}}
+\caption{CDF of percentile ranks for a random sample of birth weights.}
+\label{cumulative_random}
+\end{figure}
+
+{\tt ranks} is a list of percentile ranks for the 100 values
+in the sample.  \verb"rank_cdf" is the CDF of those ranks.
+Figure~\ref{cumulative_random} shows the result.  The CDF is
+approximately a straight line, which means that the distribution
+is uniform.
+
+That result might be non-obvious, but it is a consequence of
+the way the CDF is defined.  What this figure shows is that 10\%
+of the sample is below the 10th percentile, 20\% are below the
+20th percentile, and so on, exactly as we should expect.
+
+So, regardless of the shape of the CDF, the distribution of
+percentile ranks is uniform.  This property is useful, because it
+is the basis of a simple and efficient algorithm for generating
+random numbers with a given CDF.  Here's how:
+\index{inverse CDF algorithm}
+
+\begin{itemize}
+
+\item Choose a percentile rank uniformly from the range 0--100.
+
+\item Use {\tt Cdf.Percentile} to find the value in the distribution
+that corresponds to the percentile rank you chose.
+
+\end{itemize}
+
+{\tt Cdf} provides an implementation of this algorithm, called
+{\tt Random}:
+
+\begin{verbatim}
+# class Cdf:
+    def Random(self):
+        return self.Percentile(random.uniform(0, 100))
+\end{verbatim}
+
+{\tt Cdf} also provides {\tt Sample}, which takes an integer,
+{\tt n}, and returns a list of {\tt n} values chosen at random
+from the Cdf.
+
+If {\tt Sample} works correctly, the distribution of the sample
+should match the original distribution.  Here's how we can check:
+
+\begin{verbatim}
+    weights = live.totalwgt_lb
+    cdf = thinkstats2.Cdf(weights, label='totalwgt_lb')
+
+    sample = cdf.Sample(1000)
+    sample_cdf = thinkstats2.Cdf(sample, label='sample')
+    thinkplot.Cdfs([cdf, sample_cdf])
+    thinkplot.Show(xlabel='weight (pounds)',
+                   ylabel='CDF')
+\end{verbatim}
+
+Again, {\tt cdf} is the distribution of birth weights for live
+births.  {\tt sample} is a random sample drawn from {\tt cdf},
+and \verb"sample_cdf" is its Cdf.
+
+This code is in {\tt cumulative.py}; you can run it to confirm
+that {\tt Cdf.Sample} works.
+
+
+
+\section{Exercises}
+
+For the following exercises, you can start with \verb"chap04ex.ipynb".
+My solution is in \verb"chap04ex_soln.ipynb".
 
 \begin{exercise}
-Write a function called {\tt Median} that takes a Cdf and computes the
-median, and one called {\tt Interquartile} that computes
-the interquartile range.
+How much did you weigh at birth?  If you don't know, call your mother
+or someone else who knows.  Using the NSFG data (all live births),
+compute the distribution of birth weights and use it to find your
+percentile rank.  If you were a first baby, find your percentile rank
+in the distribution for first babies.  Otherwise use the distribution
+for others.  If you are in the 90th percentile or higher, call your
+mother back and apologize.
+\end{exercise}
 
-Compute the 25th, 50th, and 75th percentiles of the birth weight
-CDF.  Do these values suggest that the distribution is symmetric?
-\index{symmetric}
-\index{birth weight}
-\index{weight!birth}
+\begin{exercise}
+The numbers generated by {\tt random.random} are supposed to be
+uniform between 0 and 1; that is, every value in the range
+should have the same probability.
+
+Generate 1000 numbers from {\tt random.random} and plot their
+PMF and CDF.  Is the distribution uniform?
+
+You can read about the uniform distribution at
+\url{http://wikipedia.org/wiki/Uniform_distribution_(discrete)}.
+\index{uniform distribution}
+\index{distribution!uniform}
 
 \end{exercise}
+
 
 
 \section{Glossary}
@@ -2973,29 +3168,30 @@ CDF.  Do these values suggest that the distribution is symmetric?
 less than or equal to a given value.
 \index{percentile rank}
 
-\item CDF: Cumulative distribution function, a function that maps
-  from values to their percentile ranks.
-\index{CDF}
-
 \item percentile: The value associated with a given percentile rank.
 \index{percentile}
 
-\item conditional distribution: A distribution computed under the assumption
-that some condition holds.
+\item conditional distribution: The distribution of a subset of
+the data, selected according to some condition.
 \index{conditional distribution}
 
-\item resampling: The process of generating a random sample from a
-distribution that was computed from a sample.
-\index{resampling}
+\item Cumulative distribution function (CDF): a function that maps
+  from values to their cumulative probabilities.  $\CDF(x)$ is the
+  fraction of the sample less than or equal to $x$.  \index{CDF}
 
-\item replacement: During a sampling process, ``replacement'' indicates
-that the population is the same for every sample.  ``Without replacement''
-indicates that each element can be selected only once.
-\index{replacement}
+\item Inverse CDF: a function that maps from a probability, $p$, to
+  the corresponding value.
+
+\item median: The 50th percentile, often used as a measure of central
+  tendency.  \index{median}
 
 \item interquartile range: A measure of spread, the difference between
 the 75th and 25th percentiles.
 \index{interquartile range}
+
+\item quantile: A sequence of values that correspond to equally-spaced
+percentile ranks; for example, quartiles are
+the 25th, 50th and 75th percentiles.
 
 \end{itemize}
 
@@ -3007,69 +3203,103 @@ the 75th and 25th percentiles.
 \index{empirical distribution}
 \index{distribution!empirical}
 
-The distributions we have used so far are called {\bf
-  empirical distributions} because they are based on empirical
-observations, which are necessarily finite samples.
+The distributions we have used so far are called {\bf empirical
+  distributions} because they are based on empirical observations,
+which are necessarily finite samples.
 
 The alternative is an {\bf analytic distribution}, which is
-characterized by a CDF that is a analytic function (as opposed to a
-step function).  Many real world phenomena can be approximated by
-analytic distributions.
+characterized by a CDF that is an analytic function (as opposed to a
+step function).
+
+Analytic distributions can be used to model empirical distributions.
+In this context, a {\bf model} is a simplification that leaves out
+unneeded details.  This chapter presents common analytic distributions
+and uses them to model data from a variety of sources.
+
+The code for this chapter is in {\tt analytic.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
 
 
 \section{The exponential distribution}
+\label{exponential}
 \index{exponential distribution}
 \index{distribution!exponential}
 
 \begin{figure}
 % analytic.py
-\centerline{\includegraphics[height=2.5in]{figs/expo_cdf.pdf}}
-\caption{CDF of exponential distribution.}
-\label{expo_cdf}
+\centerline{\includegraphics[height=2.5in]{figs/analytic_expo_cdf.pdf}}
+\caption{CDFs of exponential distributions with various parameters.}
+\label{analytic_expo_cdf}
 \end{figure}
 
-I'll start with the exponential distribution because it is
-easy to work with.  In the real world, exponential distributions
+I'll start with the {\bf exponential distribution} because it is
+relatively simple.  The CDF of the exponential distribution is an
+analytic function:
+%
+\[ \CDF(x) = 1 - e^{-\lambda x} \]
+%
+The parameter, $\lambda$, determines the shape of the distribution.
+Figure~\ref{analytic_expo_cdf} shows what this CDF looks like with
+$\lambda = 0.5, 1, 2$.
+  \index{parameter}
+
+In the real world, exponential distributions
 come up when we look at a series of events and measure the
-times between events, which are called {\bf interarrival times}.
+times between events, called {\bf interarrival times}.
 If the events are equally likely to occur at any time, the distribution
 of interarrival times tends to look like an exponential distribution.
 \index{interarrival time}
 
-The CDF of the exponential distribution is:
-%
-\[ CDF(x) = 1 - e^{-\lambda x} \]
-%
-The parameter, $\lambda$, determines the shape of the
-distribution.  Figure~\ref{expo_cdf} shows what this CDF looks like with
-$\lambda = 2$.
-\index{parameter}
-
-The mean of an exponential distribution is $1/\lambda$, so
-the mean of this distribution is 0.5.  The median is $ln(2)/\lambda$,
-which is roughly 0.35.  \index{mean} \index{median} \index{Australia}
-\index{Brisbane}
-
-To see an example of a distribution that is approximately exponential,
-we will look at the interarrival time of babies.
+As an example, we will look at the interarrival time of births.
 On December 18, 1997, 44 babies were born in a hospital in Brisbane,
 Australia.\footnote{This example is based on information and data from
   Dunn, ``A Simple Dataset for Demonstrating Common Distributions,''
-  Journal of Statistics Education v.7, n.3 (1999).}  The times of
-birth for all 44 babies were reported in the local paper; you can
-download the data from \url{http://thinkstats2.com/babyboom.dat}.
+  Journal of Statistics Education v.7, n.3 (1999).}  The time of
+birth for all 44 babies was reported in the local paper; the
+complete dataset is in a file called {\tt babyboom.dat}, in the
+{\tt ThinkStats2} repository.
 \index{birth time}
+\index{Australia} \index{Brisbane}
 
-Figure~\ref{interarrival_cdf} shows the CDF of the interarrival times
-in minutes.  It seems to have the general shape of an exponential
-distribution, but how can we tell?
-\index{complementary CDF}
-\index{CDF!complementary}
-\index{CCDF}
+\begin{verbatim}
+    df = ReadBabyBoom()
+    diffs = df.minutes.diff()
+    cdf = thinkstats2.Cdf(diffs, label='actual')
 
-One way is to plot the complementary CDF, $1 - CDF(x)$, on a
-log-y scale.  For data from an exponential distribution, the result
-is a straight line.  Let's see why that works.
+    thinkplot.Cdf(cdf)
+    thinkplot.Show(xlabel='minutes', ylabel='CDF')
+\end{verbatim}
+
+{\tt ReadBabyBoom} reads the data file and returns a DataFrame
+with columns {\tt time}, {\tt sex}, \verb"weight_g", and {\tt minutes},
+where {\tt minutes} is time of birth converted to minutes since
+midnight.
+
+\begin{figure}
+% analytic.py
+\centerline{\includegraphics[height=2.5in]{figs/analytic_interarrivals.pdf}}
+\caption{CDF of interarrival times (left) and CCDF on a log-y scale (right).}
+\label{analytic_interarrival_cdf}
+\end{figure}
+
+%\begin{figure}
+% analytic.py
+%\centerline{\includegraphics[height=2.5in]{figs/analytic_interarrivals_logy.pdf}}
+%\caption{CCDF of interarrival times.}
+%\label{analytic_interarrival_ccdf}
+%\end{figure}
+
+{\tt diffs} is the difference between consecutive birth times, and
+{\tt cdf} is the distribution of these interarrival times.
+Figure~\ref{analytic_interarrival_cdf} shows the CDF (left).  It seems
+to have the general shape of an exponential distribution, but how can
+we tell?
+
+One way is to plot the {\bf complementary CDF}, which is $1 - \CDF(x)$,
+on a log-y scale.  For data from an exponential distribution, the
+result is a straight line.  Let's see why that works.
+\index{complementary CDF} \index{CDF!complementary} \index{CCDF}
 
 If you plot the complementary CDF (CCDF) of a dataset that you think is
 exponential, you expect to see a function like:
@@ -3081,67 +3311,339 @@ Taking the log of both sides yields:
 \[ \log y \approx -\lambda x\]
 %
 So on a log-y scale the CCDF is a straight line
-with slope $-\lambda$.
+with slope $-\lambda$.  Here's how we can generate a plot like that:
 \index{logarithmic scale}
 \index{complementary CDF}
 \index{CDF!complementary}
 \index{CCDF}
 
+
+\begin{verbatim}
+    thinkplot.Cdf(cdf, complement=True)
+    thinkplot.Show(xlabel='minutes',
+                   ylabel='CCDF',
+                   yscale='log')
+\end{verbatim}
+
+With the argument {\tt complement=True}, {\tt thinkplot.Cdf} computes
+the complementary CDF before plotting.  And with {\tt yscale='log'},
+{\tt thinkplot.Show} sets the {\tt y} axis to a logarithmic scale.
+
+Figure~\ref{analytic_interarrival_cdf} shows the result (right).  It is not
+exactly straight, which indicates that the exponential distribution is
+not a perfect model for this data.  Most likely the underlying
+assumption---that a birth is equally likely at any time of day---is
+not exactly true.  Nevertheless, it might be reasonable to model this
+dataset with an exponential distribution.  In that case we can
+summarize the distribution with a single parameter.
+
+The parameter, $\lambda$, can be interpreted as a rate; that is, the
+number of events that occur, on average, in a unit of time.  In this
+example, 44 babies are born in 24 hours, so the rate is $\lambda =
+1.83$ births per hour.  The mean of an exponential distribution is
+$1/\lambda$, so the mean time between births is 0.55 hours.
+
+
+\section{The normal distribution}
+\label{normal}
+
+The {\bf normal distribution}, also called Gaussian, is commonly
+used because it describes so many phenomena, at least approximately.
+It turns out that there is a good reason for its ubiquity, which we
+will get to in Section~\ref{CLT}.
+\index{CDF}
+\index{parameter}
+\index{mean}
+\index{standard deviation}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+%
+%\[ \CDF(z) = \frac{1}{\sqrt{2 \pi}} \int_{-\infty}^z e^{-t^2/2} dt \]
+%
+
 \begin{figure}
-% babyboom.py
-\centerline{\includegraphics[height=2.5in]{figs/interarrivals.pdf}}
-\caption{CDF of interarrival times}
-\label{interarrival_cdf}
+% analytic.py
+\centerline{\includegraphics[height=2.5in]{figs/analytic_gaussian_cdf.pdf}}
+\caption{CDF of normal distributions with a range of parameters.}
+\label{analytic_gaussian_cdf}
 \end{figure}
 
-Figure~\ref{interarrival_ccdf} shows the CCDF of the interarrivals on
-a log-y scale.  It is not exactly straight, which suggests that the
-exponential distribution is only an approximation.  Most likely the
-underlying assumption---that a birth is equally likely at any time of
-day---is not exactly true.  But for most purposes the exponential
-distribution would be a reasonable model of this data.  And if we
-think this simplification is reasonable, we can summarize the distribution
-with a single parameter, $\lambda$.
+The normal distribution is characterized by two parameters: the mean,
+$\mu$, and standard deviation $\sigma$.  The normal distribution with
+$\mu=0$ and $\sigma=1$ is called the {\bf standard normal
+  distribution}.  Its CDF is defined by an integral that does not have
+a closed form solution, but there are algorithms that evaluate it
+efficiently.  One of them is provided by SciPy: {\tt scipy.stats.norm}
+is an object that represents a normal distribution; it provides a
+method, {\tt cdf}, that evaluates the standard normal CDF:
 
-\begin{exercise}
-For small values of n, we don't expect an empirical distribution
-to fit a analytic distribution exactly.  One way to evaluate
-the quality of fit is to generate a sample from a analytic
-distribution and see how well it matches the data.
-\index{empirical distribution}
-\index{distribution!empirical}
-\index{random module}
+\begin{verbatim}
+>>> import scipy.stats
+>>> scipy.stats.norm.cdf(0)
+0.5
+\end{verbatim}
 
-The function {\tt expovariate} in the {\tt random} module generates
-random values from an exponential distribution with a given value of
-$\lambda$.  Use it to generate 44 values from an exponential
-distribution with mean 32.6.  Plot the CCDF on a log-y scale and
-compare it to Figure~\ref{interarrival_ccdf}.
-\index{pyplot}
+This result is correct: the median of the standard normal distribution
+is 0 (the same as the mean), and half of the values fall below the
+median, so $\CDF(0)$ is 0.5.
 
-Hint: You can use the function {\tt pyplot.yscale} to plot the $y$ axis
-on a log scale.
+{\tt norm.cdf} takes optional parameters: {\tt loc}, which
+specifies the mean, and {\tt scale}, which specifies the
+standard deviation.
 
-\end{exercise}
+{\tt thinkstats2} makes this function a little easier to use
+by providing {\tt GaussianCdf}, which takes parameters {\tt mu}
+and {\tt sigma} and evaluates the CDF at {\tt x}:
 
-\begin{exercise}
-Collect the birthdays of the students in your class, sort them, and
-compute the interarrival times in days.  Plot the CDF of the interarrival
-times and the CCDF on a log-y scale.  Does it look like
-an exponential distribution?
+\begin{verbatim}
+def EvalGaussianCdf(x, mu=0, sigma=1):
+    return scipy.stats.norm.cdf(x, loc=mu, scale=sigma)
+\end{verbatim}
+
+Figure~\ref{analytic_gaussian_cdf} shows CDFs for normal
+distributions with a range of parameters.  The sigmoid shape of these
+curves is a recognizable characteristic of a normal distribution.
+
+In the previous chapter we looked at the distribution of birth
+weights in the NSFG.  Figure~\ref{analytic_birthwgt_model} shows the
+empirical CDF of weights for all live births and the CDF of
+a normal distribution with the same mean and variance.
+\index{National Survey of Family Growth}
+\index{NSFG}
+\index{birth weight}
+\index{weight!birth}
+
+\begin{figure}
+% analytic.py
+\centerline{\includegraphics[height=2.5in]{figs/analytic_birthwgt_model.pdf}}
+\caption{CDF of birth weights with a normal model.}
+\label{analytic_birthwgt_model}
+\end{figure}
+
+The normal distribution is a good model for this dataset, so
+we can summarize the distribution with the parameters
+$\mu = 7.28$ and $\sigma = 1.24$, and the resulting error
+(difference between the model and the data) is small.
+\index{model}
+\index{percentile}
+
+Below the 10th percentile there is a discrepancy between the data
+and the model; there are more light babies than we would expect in
+a normal distribution.  If we are interested in studying preterm
+babies, it would be important to get this part of the distribution
+right, so it might not be appropriate to use the normal
+model.
+
+
+\section{Normal probability plot}
+\index{normal probability plot}
+\index{plot!normal probability}
 \index{exponential distribution}
 \index{distribution!exponential}
-\index{birthday}
+\index{Weibull distribution}
+\index{distribution!Weibull}
+\index{Pareto distribution}
+\index{distribution!Pareto}
 
-\end{exercise}
+For the exponential distribution, and a few others, there are
+simple transformations we can use to test whether an analytic
+distribution is a good model of a dataset.
+\index{model}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
+For the normal distribution there is no such transformation, but there
+is an alternative called a {\bf normal probability plot}.  There
+are two ways to generate a normal probability plot: the hard way
+and the easy way.  If you are interested in the hard way, you can
+read about it at \url{https://en.wikipedia.org/wiki/Normal_probability_plot}.
+Here's the easy way:
+
+\begin{enumerate}
+
+\item Sort the values in the sample.
+
+\item From a standard normal distribution ($\mu=0$ and $\sigma=1$),
+generate a sample with the same size as the sample, and sort it.
+
+\item Plot the sorted values from the sample versus the random values.
+
+\end{enumerate}
+
+If the distribution of the sample is approximately normal, the result
+is a straight line with intercept {\tt mu} and slope {\tt sigma}.
+{\tt thinkstats2} provides {\tt NormalProbability}, which takes a
+sample and returns two NumPy arrays:
+
+\begin{verbatim}
+xs, ys = thinkstats2.NormalProbability(sample)
+\end{verbatim}
 
 \begin{figure}
-% babyboom.py
-\centerline{\includegraphics[height=2.5in]{figs/interarrivals_logy.pdf}}
-\caption{CCDF of interarrival times.}
-\label{interarrival_ccdf}
+% analytic.py
+\centerline{\includegraphics[height=2.5in]{figs/analytic_normal_prob_example.pdf}}
+\caption{Normal probability plot of birth weights.}
+\label{analytic_normal_prob_example}
 \end{figure}
+
+{\tt ys} contains the sorted values from {\tt sample}; {\tt xs}
+contains the random values from the standard normal distribution.
+
+To test {\tt NormalProbability} I generated some fake samples that
+were actually drawn from normal distributions with various parameters.
+Figure~\ref{analytic_normal_prob_example} shows the results.
+The lines are approximately straight, with values in the tails
+deviating more than values near the mean.
+
+Now let's try it with real data.  Here's code to generate
+a normal probability plot for the birth weight data from the
+previous section.  It plots a gray line that represents the model
+and a blue line that represents the data.
+
+\begin{verbatim}
+    mean = weights.mean()
+    std = weights.std()
+
+    xs = [-4, 4]
+    xs, ys = thinkstats2.FitLine(xs, inter=mean, slope=std)
+    thinkplot.Plot(xs, ys, color='gray', label='model')
+
+    xs, ys = thinkstats2.NormalProbability(weights)
+    thinkplot.Plot(xs, ys, label='birth weights')
+\end{verbatim}
+
+{\tt weights} is a pandas Series of birth weights;
+{\tt mean} and {\tt std} are the mean and standard deviation.
+
+{\tt FitLine} takes a sequence of {\tt xs}, an intercept, and a
+slope; it returns {\tt xs} and {\tt ys} that represent a line
+with the given parameters, evaluated at the values in {\tt xs}.
+
+{\tt NormalProbability} returns {\tt xs} and {\tt ys} that
+contain values from the standard normal distribution and values
+from {\tt weights}.  If the distribution of weights is normal,
+the data should match the model.
+
+\begin{figure}
+% analytic.py
+\centerline{\includegraphics[height=2.5in]{figs/analytic_birthwgt_normal.pdf}}
+\caption{Normal probability plot of birth weights.}
+\label{analytic_birthwgt_normal}
+\end{figure}
+
+Figure~\ref{analytic_birthwgt_normal} shows the results for
+all live births, and also for full term births (pregnancy length greater
+than 36 weeks).  Both curves match the model near the mean and
+deviate in the tails.  The heaviest babies are heavier than what
+the model expects, and the lightest babies are heavier.
+
+When we select only full term births, we remove some of the lightest
+weights, which reduces the deviation in the lower tail of the
+distribution.
+
+This plot suggests that the normal model describes the distribution
+well within a few standard deviations from the mean, but not in the
+tails.  Whether it is good enough for practical purposes depends
+on the purposes.
+\index{model}
+\index{birth weight}
+\index{weight!birth}
+
+
+\section{The lognormal distribution}
+\label{brfss}
+\label{lognormal}
+
+If the logarithms of a set of values have a normal distribution, the
+values have a {\bf lognormal distribution}.  The CDF of the lognormal
+distribution is the same as the CDF of the normal distribution,
+with $\log x$ substituted for $x$.
+%
+\[ CDF_{lognormal}(x) = CDF_{normal}(\log x)\]
+%
+The parameters of the lognormal distribution are usually denoted
+$\mu$ and $\sigma$.  But remember that these parameters are {\em not}
+the mean and standard deviation; the mean of a lognormal distribution
+is $\exp(\mu +\sigma^2/2)$ and the standard deviation is
+ugly (see \url{http://wikipedia.org/wiki/Log-normal_distribution}).
+\index{parameter} \index{weight!adult} \index{adult weight}
+\index{lognormal distribution}
+\index{distribution!lognormal}
+\index{CDF}
+
+\begin{figure}
+% brfss.py
+\centerline{
+\includegraphics[height=2.5in]{figs/brfss_weight.pdf}}
+\caption{CDF of adult weights on a linear scale (left) and
+log scale (right).}
+\label{brfss_weight}
+\end{figure}
+
+If a sample is approximately lognormal and you plot its CDF on a
+log-x scale, it will have the characteristic shape of a normal
+distribution.  To test how well the sample fits a lognormal model, you
+can make a normal probability plot using the log of the values
+in the sample.
+
+As an example, let's look at the distribution of adult weights, which
+is approximately lognormal.\footnote{I was tipped off to this
+  possibility by a comment (without citation) at
+  \url{http://mathworld.wolfram.com/LogNormalDistribution.html}.
+  Subsequently I found a paper that proposes the log transform and
+  suggests a cause: Penman and Johnson, ``The Changing Shape of the
+  Body Mass Index Distribution Curve in the Population,'' Preventing
+  Chronic Disease, 2006 July; 3(3): A74.  Online at
+  \url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC1636707}.}
+
+The National Center for Chronic Disease
+Prevention and Health Promotion conducts an annual survey as part of
+the Behavioral Risk Factor Surveillance System
+(BRFSS).\footnote{Centers for Disease Control and Prevention
+  (CDC). Behavioral Risk Factor Surveillance System Survey
+  Data. Atlanta, Georgia: U.S. Department of Health and Human
+  Services, Centers for Disease Control and Prevention, 2008.}  In
+2008, they interviewed 414,509 respondents and asked about their
+demographics, health and health risks.
+Among the data they collected are the weights in kilograms of
+398,484 respondents.
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
+The repository for this book contains {\tt CDBRFS08.ASC.gz},
+a fixed-width ASCII file that contains data from the BRFSS,
+and {\tt brfss.py}, which reads the file and analyses the data.
+
+\begin{figure}
+% brfss.py
+\centerline{
+\includegraphics[height=2.5in]{figs/brfss_weight_normal.pdf}}
+\caption{Normal probability plots for adult weight on a linear scale
+  (left) and log scale (right).}
+\label{brfss_weight_normal}
+\end{figure}
+
+Figure~\ref{brfss_weight} shows the distribution of adult weights on a
+linear scale, with a normal model, and on a log scale, with a
+lognormal model.  The lognormal model is a better fit, but this
+representation of the data does not make the difference particularly
+dramatic.  \index{respondent} \index{model}
+
+Figure~\ref{brfss_weight_normal} shows normal probability plots
+for adult weights, $w$, and for their logarithms, $\log_{10} w$.
+Now it is apparent that the data deviate substantially from the
+normal model.  The lognormal model is a good match for the data
+within a few standard deviations of the mean, but it deviates in
+the tails.  I would conclude that the lognormal distribution is
+a good model for this data.
+\index{normal distribution} \index{distribution!normal}
+\index{Gaussian distribution} \index{distribution!Gaussian}
+\index{lognormal distribution} \index{distribution!lognormal}
 
 
 \section{The Pareto distribution}
@@ -3149,42 +3651,35 @@ an exponential distribution?
 \index{distribution!Pareto}
 \index{Pareto, Vilfredo}
 
-The Pareto distribution is named after the economist Vilfredo Pareto,
+The {\bf Pareto distribution} is named after the economist Vilfredo Pareto,
 who used it to describe the distribution of wealth (see
-\url{http://wikipedia.org/wiki/Pareto_distribution}).  Since then, it has
-been used to describe phenomena in the natural and social
-sciences including sizes of cities and towns, sand particles and
-meteorites, forest fires and earthquakes.
-\index{CDF}
+\url{http://wikipedia.org/wiki/Pareto_distribution}).  Since then, it
+has been used to describe phenomena in the natural and social sciences
+including sizes of cities and towns, sand particles and meteorites,
+forest fires and earthquakes.  \index{CDF}
 
 The CDF of the Pareto distribution is:
 %
 \[ CDF(x) = 1 - \left( \frac{x}{x_m} \right) ^{-\alpha} \]
 %
-The parameters $x_{m}$ and $\alpha$ determine the location and shape of
-the distribution. $x_{m}$ is the minimum possible value.
-Figure~\ref{pareto_cdf} shows the CDF of a Pareto distribution with
-parameters $x_{m} = 0.5$ and $\alpha = 1$.
+The parameters $x_{m}$ and $\alpha$ determine the location and shape
+of the distribution. $x_{m}$ is the minimum possible value.
+Figure~\ref{analytic_pareto_cdf} shows CDFs of Pareto
+distributions with $x_{m} = 0.5$ and different values
+of $\alpha$.
 \index{parameter}
 
 \begin{figure}
 % analytic.py
-\centerline{\includegraphics[height=2.5in]{figs/pareto_cdf.pdf}}
-\caption{CDF of a Pareto distribution.}
-\label{pareto_cdf}
+\centerline{\includegraphics[height=2.5in]{figs/analytic_pareto_cdf.pdf}}
+\caption{CDFs of Pareto distributions with different parameters.}
+\label{analytic_pareto_cdf}
 \end{figure}
-
-The median of a Pareto distribution is $x_m 2^{1/\alpha}$, so the
-median of this distribution 1.  But the tail of the distribution is
-skewed to the right; the 95th percentile is 10.  By contrast, the
-exponential distribution with median 1 has 95th percentile of only
-1.5.  \index{exponential distribution}
-\index{distribution!exponential} \index{median} \index{logarithmic
-  scale}
 
 There is a simple visual test that indicates whether an empirical
 distribution fits a Pareto distribution: on a log-log scale, the CCDF
-looks like a straight line.
+looks like a straight line.  Let's see why that works.
+
 If you plot the CCDF of a sample from a Pareto distribution on a
 linear scale, you expect to see a function like:
 %
@@ -3198,69 +3693,188 @@ So if you plot $\log y$ versus $\log x$, it should look like a straight
 line with slope $-\alpha$ and intercept
 $\alpha \log x_{m}$.
 
-\begin{exercise}
-The {\tt random} module provides {\tt paretovariate},
-which generates random values from a Pareto distribution.  It takes
-a parameter for $\alpha$, but not $x_{m}$.  The
-default value for $x_{m}$ is 1; you can generate a distribution
-with a different parameter by multiplying by $x_{m}$.
-\index{random module}
+As an example, let's look at the sizes of cities and towns in the
+United States.  The U.S.~Census Bureau publishes data on the
+population of every incorporated city and town in the United States.
+\index{Pareto distribution} \index{distribution!Pareto}
+\index{U.S.~Census Bureau} \index{population} \index{city size}
+
+\begin{figure}
+% populations.py
+\centerline{\includegraphics[height=2.5in]{figs/populations_pareto.pdf}}
+\caption{CCDFs of city and town populations, on a log-log scale.}
+\label{populations_pareto}
+\end{figure}
+
+I downloaded their data from
+\url{http://www.census.gov/popest/data/cities/totals/2012/SUB-EST2012-3.html};
+it is in the repository for this book in a file named
+\verb"PEP_2012_PEPANNRES_with_ann.csv".  The repository also
+contains {\tt populations.py}, which reads the data file and plots
+the distribution of populations.
+
+Figure~\ref{populations_pareto} shows the CCDF of populations on a
+log-log scale.  The largest 1\% of cities and towns, below $10^{-2}$,
+fall along a straight line.  So we could
+conclude, as some researchers have, that the tail of this distribution
+fits a Pareto model.
+
+On the other hand, a lognormal distribution also models the data well.
+Figure~\ref{populations_normal} shows the CDF of populations and a
+lognormal model (left), and a normal probability plot (right).  Both
+plots show good agreement between the data and the model.
+
+Neither model is perfect.
+The Pareto model only applies to the largest 1\% of cities, but it
+is a better fit for that part of the distribution.  The lognormal
+model is a better fit for the other 99\%.
+Which model is appropriate depends on which part of the distribution
+you is relevant.
+
+\begin{figure}
+% populations.py
+\centerline{\includegraphics[height=2.5in]{figs/populations_normal.pdf}}
+\caption{CDF of city and town populations on a log-x scale (left), and
+normal probability plot of log-transformed populations (right).}
+\label{populations_normal}
+\end{figure}
+
+
+\section{Generating random numbers}
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{random number}
+\index{CDF}
+\index{inverse CDF algorithm}
+\index{uniform distribution}
+\index{distribution!uniform}
+
+Analytic CDFs can be used to generate random numbers with a given
+distribution function, $p = \CDF(x)$.  If there is an efficient way to
+compute the inverse CDF, we can generate random values
+with the appropriate distribution by choosing $p$ from a uniform
+distribution from 0 to 1, then choosing
+$x = ICDF(p)$.
+
+For example, the CDF of the exponential distribution is
+%
+\[ p = 1 - e^{-\lambda x} \]
+%
+Solving for $x$ yields:
+%
+\[ x = -\log (1 - p) / \lambda \]
+%
+So in Python we can write
+%
+\begin{verbatim}
+def expovariate(lam):
+    p = random.random()
+    x = -math.log(1-p) / lam
+    return x
+\end{verbatim}
+
+{\tt expovariate} takes {\tt lam} and returns a random value chosen
+from the exponential distribution with parameter {\tt lam}.
+
+Two notes about this implementation:
+I called the parameter \verb"lam" because \verb"lambda" is a Python
+keyword.  Also, since $\log 0$ is undefined, we have to
+be a little careful.  Most implementations of {\tt random.random}
+can return 0 but not 1, so $1 - p$ can be 1 but not 0, 
+so that works out well.  \index{random module}
+
+
+\section{Why model?}
+\index{model}
+
+At the beginning of this chapter I said that many real world phenomena
+can be modeled with analytic distributions.  ``So,'' you might ask,
+``what?''  \index{abstraction}
+
+Like all models, analytic distributions are abstractions, which
+means they leave out details that are considered irrelevant.
+For example, an observed distribution might have measurement errors
+or quirks that are specific to the sample; analytic models smooth
+out these idiosyncrasies.
+\index{smoothing}
+
+Analytic models are also a form of data compression.  When a model
+fits a dataset well, a small set of parameters can summarize a
+large amount of data.
+\index{parameter}
+\index{compression}
+
+It is sometimes surprising when data from a natural phenomenon fit an
+analytic distribution, but these observations can provide insight
+into physical systems.  Sometimes we can explain why an observed
+distribution has a particular form.  For example, Pareto distributions
+are often the result of generative processes with positive feedback
+(so-called preferential attachment processes: see
+\url{http://wikipedia.org/wiki/Preferential_attachment}.).
+\index{preferential attachment}
+\index{generative process}
 \index{Pareto distribution}
 \index{distribution!Pareto}
+\index{analysis}
 
-Write a wrapper function named {\tt paretovariate} that takes
-$\alpha$ and $x_{m}$ as parameters and uses {\tt
-  random.paretovariate} to generate values from a two-parameter Pareto
-distribution.
-\index{parameter}
+Also, analytic distributions lend themselves to mathematical
+analysis, as we will see in Chapter~\ref{operations}.
 
-Use your function to generate a sample from a Pareto distribution.
-Compute the CCDF and plot it on a log-log scale.  Is it a straight
-line?  What is the slope?
-\index{complementary CDF}
-\index{CDF!complementary}
-\index{CCDF}
+But it is important to remember that all models are imperfect.
+Data from the real world never fit an analytic distribution perfectly.
+People sometimes talk as if data are generated by models; for example,
+they might say that the distribution of human heights is normal,
+or the distribution of income is lognormal.  Taken literally, these
+claims cannot be true; there are always differences between the
+real world and mathematical models.
+
+Models are useful if they capture the relevant aspects of the
+real world and leave out unneeded details.  But what is ``relevant''
+or ``unneeded'' depends on what you are planning to use the model
+for.
+
+
+\section{Exercises}
+
+For the following exercises, you can start with \verb"chap05ex.ipynb".
+My solution is in \verb"chap05ex_soln.ipynb".
+
+\begin{exercise}
+In the BRFSS (see Section~\ref{lognormal}), the distribution of
+heights is roughly normal with parameters $\mu = 178$ cm and
+$\sigma = 7.7$ cm for men, and $\mu = 163$ cm and $\sigma = 7.3$ cm for
+women.
+\index{normal distribution}
+\index{distribution!normal}
+\index{height}
+\index{Blue Man Group}
+\index{Group, Blue Man}
+
+In order to join Blue Man Group, you have to be male between 5'10''
+and 6'1'' (see \url{http://bluemancasting.com}).  What percentage of
+the U.S. male population is in this range?  Hint: use {\tt
+  scipy.stats.norm.cdf}.
 
 \end{exercise}
+
 
 \begin{exercise}
 To get a feel for the Pareto distribution, imagine what the world
 would be like if the distribution of human height were Pareto.
-Choosing the parameters $x_{m} = 100$ cm and $\alpha = 1.7$, we
-get a distribution with a reasonable minimum, 100 cm,
-and median, 150 cm.
+Choosing the parameters $x_{m} = 1$ m and $\alpha = 1.7$, we
+get a distribution with a reasonable minimum, 1 m,
+and median, 1.5 m.
 \index{height}
 
-Generate 6 billion random values from this distribution.  What is the
-mean of this sample?  What fraction of the population is shorter than
-the mean?  How tall is the tallest person in Pareto World?
+What is the mean human height in Pareto world?  What is the mean of
+this sample?  What fraction of the population is shorter than the
+mean?  If there are 7 billion people in Pareto world, how many do we
+expect to be taller than 1 km?  How tall do we expect the tallest
+person to be?
 \index{Pareto World}
 
 \end{exercise}
 
-\begin{exercise}
-Zipf's law is an observation about how often different words are used.
-The most common words have very high frequencies, but there are many
-unusual words, like ``hapaxlegomenon,'' that appear only a few times.
-Zipf's law predicts that in a body of text, called a ``corpus,'' the
-distribution of word frequencies is roughly Pareto.
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{Zipf's law}
-\index{hapaxlegomenon}
-\index{corpus}
-\index{frequency}
-\index{word frequency}
-
-Find a large corpus, in any language, in electronic
-format.  Count how many times each word appears.  Find the CCDF of the
-word counts and plot it on a log-log scale.  Does Zipf's law hold?
-What is the value of $\alpha$, approximately?
-\index{complementary CDF}
-\index{CDF!complementary}
-\index{CCDF}
-
-\end{exercise}
 
 \begin{exercise}
 \label{weibull}
@@ -3286,531 +3900,75 @@ Weibull distribution and use it to test your transformation.
 \end{exercise}
 
 
-\section{The normal distribution}
-\label{normal}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-\newcommand{\erf}{\mathrm{erf}}
-
-The normal distribution, also called Gaussian, is the most commonly
-used because it describes so many phenomena, at least approximately.
-It turns out that there is a good reason for its ubiquity, which we
-will get to in Section~\ref{CLT}.
-\index{error function}
-\index{CDF}
-
-The normal distribution has many properties that make it amenable for
-analysis, but the CDF is not one of them.  Unlike the
-other distributions we have looked at, there is no closed-form
-expression for the normal CDF; the most common alternative is to write
-it in terms of the {\bf error function}, which is a special function
-written $\erf(x)$:
-%
-\[ CDF(x) = \frac{1}{2} \left[ 1 +
-  \erf \left( \frac{x - \mu}{\sigma \sqrt{2}} \right) \right] \]
-%
-\[ \erf(x) = \frac{2}{\sqrt{\pi}} \int_{0}^x e^{-t^2} dt \]
-%
-The parameters $\mu$ and $\sigma$ determine the mean and standard
-deviation of the distribution.
-\index{parameter}
-\index{{\tt erf.py}}
-
-If these formulas make your eyes hurt, don't worry; they are easy to
-implement in Python: {\tt erf} is available in the {\tt math} module,
-and {\tt thinkstats2} provides {\tt GaussianCdf(x, mu=0, sigma=1)},
-which evaluates a Gaussian CDF at $x$, with the given parameters.
-
-Figure~\ref{normal_cdf} shows the CDF of the normal distribution
-with parameters $\mu$ = 2.0 and $\sigma$ = 0.5.  The sigmoid shape of
-this curve is a recognizable characteristic of a normal distribution.
-
-\begin{figure}
-% analytic.py
-\centerline{\includegraphics[height=2.5in]{figs/normal_cdf.pdf}}
-\caption{CDF of a normal distribution.}
-\label{normal_cdf}
-\end{figure}
-
-In the previous chapter we looked at the distribution of birth
-weights in the NSFG.  Figure~\ref{nsfg_birthwgt_model} shows the
-empirical CDF of weights for all live births and the CDF of
-a normal distribution with the same mean and variance.
-\index{National Survey of Family Growth}
-\index{NSFG}
-\index{birth weight}
-\index{weight!birth}
-
-\begin{figure}
-% analytic.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_model.pdf}}
-\caption{CDF of birth weights with a normal model.}
-\label{nsfg_birthwgt_model}
-\end{figure}
-
-The normal distribution is a good model for this dataset, so
-we can summarize the distribution with the parameters
-$\mu$ = 116.5 and $\sigma$ = 19.9, and the resulting error
-(difference between the model and the data) is small.
-\index{model}
-\index{percentile}
-
-Below the 10th percentile there is a discrepancy between the data
-and the model; there are more light babies than we would expect in
-a normal distribution.  If we are interested in studying preterm
-babies, it would be important to get this part of the distribution
-right, so it might not be appropriate to use the normal
-model.
-
 \begin{exercise}
-In the BRFSS (see Section~\ref{lognormal}), the distribution of
-heights is roughly normal with parameters $\mu$ = 178 cm and
-$\sigma^2 = 59.4$ cm for men, and $\mu$ = 163 cm and $\sigma^2 = 52.8$ cm for
-women.
-\index{normal distribution}
-\index{distribution!normal}
-\index{height}
-\index{Blue Man Group}
-\index{Group, Blue Man}
-
-In order to join Blue Man Group, you have to be male between 5'10''
-and 6'1'' (see \url{http://bluemancasting.com}).  What percentage of the
-U.S. male population is in this range?
-\end{exercise}
-
-\begin{exercise}
-The Wechsler Adult Intelligence Scale is a test that is intended
-to measure intelligence.\footnote{Whether it does or not is a
-fascinating controversy that I invite you to investigate at your
-leisure.}  Results are transformed so that the distribution of scores
-in the general population is normal with $\mu$ = 100 and $\sigma$ = 15.
-\index{Wechsler Adult Intelligence Scale}
-\index{Adult Intelligence Scale}
-\index{WAIS}
-\index{IQ}
-\index{intelligence}
-
-Use {\tt thinkstats2.GaussianCdf} to investigate the frequency of rare
-events in a normal distribution.  What fraction of the population has
-an IQ greater than the mean?  What fraction is over 115?  130?  145?
-
-A ``six-sigma'' event is a value that exceeds the mean by 6 standard
-deviations, so a six-sigma IQ is 190.  In a world of 6 billion people,
-how many do we expect to have an IQ of 190 or more?\footnote{On this
-  topic, you might be interested to read
-  \url{http://wikipedia.org/wiki/Christopher_Langan}.}
-\index{Langan, Christopher}
-\index{six-sigma event}
-
-\end{exercise}
-
-
-\begin{exercise}
-Plot the CDF of pregnancy lengths for all live births.  Does it
-look like a normal distribution?
-\index{pregnancy length}
-\index{length!pregnancy}
-
-Compute the mean and standard deviation of the sample and plot the
-normal distribution with the same parameters.  Is the normal
-distribution a good model for this data?  If you had to summarize this
-distribution with two statistics, what statistics would you choose?
-
-\end{exercise}
-
-
-\section{Normal probability plot}
-\index{normal probability plot}
-\index{plot!normal probability}
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Weibull distribution}
-\index{distribution!Weibull}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-
-For the exponential, Pareto and Weibull distributions, there are
-simple transformations we can use to test whether a analytic
-distribution is a good model of a dataset.
-\index{model}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-For the normal distribution there is no such transformation, but there
-is an alternative called a {\bf normal probability plot}.  It is based
-on {\bf rankits}: if you generate $n$ values from a normal
-distribution and sort them, the $k$th rankit is the mean of the
-distribution for the $k$th value.
-\index{rankit}
-
-\begin{exercise}
-Write a function called {\tt Sample} that generates 6 samples from a
-normal distribution with $\mu$ = 0 and $\sigma$ = 1.  Sort and return
-the values.
-
-Write a function called {\tt Samples} that calls {\tt Sample} 1000
-times and returns a list of 1000 lists.
-
-If you apply {\tt zip} to this list of lists, the result is 6 lists
-with 1000 values in each.  Compute the mean of each of these lists
-and print the results.  I predict that you will get something like
-this:
-
-\{-1.2672,   -0.6418,   -0.2016,   0.2016,   0.6418,   1.2672\}
-
-If you increase the number of times you call {\tt Sample}, the
-results should converge on these values.
-
-\end{exercise}
-
-% Algorithms for exact and approximate normal rank stats
-% http://download.osgeo.org/grass/grass6_progman/as177_8c_source.html
-
-Computing rankits exactly is moderately difficult, but there are
-numerical methods for approximating them.
-
-But you don't need rankits to generate a normal probability plot;
-there is a quick-and-dirty method that is even easier to implement:
-
-\begin{enumerate}
-
-\item From a normal distribution with $\mu$ = 0 and $\sigma$ = 1,
-generate a sample with the same size as your dataset and sort it.
-
-\item Sort the values in the dataset.
-
-\item Plot the sorted values from your dataset versus the random values.
-
-\end{enumerate}
-
-For large datasets, this method works well.
-For smaller datasets, you can improve it by generating $m (n+1) - 1$
-values from a normal distribution, where $n$ is the size of the
-dataset and $m$ is a multiplier.  Then select every $m$th element,
-starting with the $m$th.  
-
-%Hint: use the Python slice operator.
-
-This method works with other distributions as well, as long as
-you know how to generate a random sample.
-
-Figure~\ref{nsfg_birthwgt_normal} is a quick-and-dirty normal
-probability plot for the birth weight data.
-\index{birth weight}
-\index{weight!birth}
-
-\begin{figure}
-% analytic.py
-\centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_normal.pdf}}
-\caption{Normal probability plot of birth weights.}
-\label{nsfg_birthwgt_normal}
-\end{figure}
-
-The curvature in this plot suggests that there are
-deviations from a normal distribution; nevertheless, it is a
-good (enough) model for many purposes.
-\index{model}
-
-% TODO: add a line to this plot and use the slope and intercept
-% to estimate parameters
-
-\begin{exercise}
-Write a function called {\tt NormalPlot} that takes a sequence of
-values and generates a normal probability plot.  You can download
-a solution from \url{http://thinkstats2.com/rankit.py}.
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-\index{{\tt rankit.py}}
-\index{{\tt relay.py}}
-\index{{\tt relay\_normal.py}}
-\index{relay race}
-\index{race!relay}
-
-Use the running speeds from {\tt relay.py} to generate a normal
-probability plot.  Is the normal distribution a good model for this
-data?  You can download a solution from
-\url{http://thinkstats2.com/relay_normal.py}.
-
-\end{exercise}
-
-
-\section{The lognormal distribution}
-\label{lognormal}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{CDF}
-
-If the logarithms of a set of values have a normal distribution, the
-values have a {\bf lognormal} distribution.  The CDF of the lognormal
-distribution is the same as the CDF of the normal distribution,
-with $\log x$ substituted for $x$.
-%
-\[ CDF_{lognormal}(x) = CDF_{normal}(\log x)\]
-%
-The parameters of the lognormal distribution are usually denoted
-$\mu$ and $\sigma$.  But remember that these parameters are {\em not}
-the mean and standard deviation; the mean of a lognormal distribution
-is $\exp(\mu +\sigma^2/2)$ and the standard deviation is
-ugly (see \url{http://wikipedia.org/wiki/Log-normal_distribution}).
-\index{parameter} \index{weight!adult} \index{adult weight}
-
-It turns out that the distribution of weights for adults is
-approximately lognormal.\footnote{I was tipped off to this possibility by a
-  comment (without citation) at
-  \url{http://mathworld.wolfram.com/LogNormalDistribution.html}.
-  Subsequently I found a paper that proposes the log transform and
-  suggests a cause: Penman and Johnson, ``The Changing Shape of the
-  Body Mass Index Distribution Curve in the Population,'' Preventing
-  Chronic Disease, 2006 July; 3(3): A74.  Online
-  at \url{http://www.ncbi.nlm.nih.gov/pmc/articles/PMC1636707}.}
-
-The National Center for Chronic Disease
-Prevention and Health Promotion conducts an annual survey as part of
-the Behavioral Risk Factor Surveillance System
-(BRFSS).\footnote{Centers for Disease Control and Prevention
-  (CDC). Behavioral Risk Factor Surveillance System Survey
-  Data. Atlanta, Georgia: U.S. Department of Health and Human
-  Services, Centers for Disease Control and Prevention, 2008.}  In
-2008, they interviewed 414,509 respondents and asked about their
-demographics, health and health risks.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-
-
-\begin{figure}
-% cumulative.py
-\centerline{
-\includegraphics[height=2.5in]{figs/brfss_weight_log.pdf}
-}
-\caption{CDF of adult weights (log
-  transform).}
-\label{brfss_weight_log}
-\end{figure}
-
-Among the data they collected are the weights in kilograms of
-398,484 respondents.
-Figure~\ref{brfss_weight_log} shows the distribution
-of $\log w$, where $w$ is weight in kilograms, along with a normal
-model.
-\index{respondent}
-\index{model}
-
-The normal model is a good fit for the data, although the highest
-weights exceed what we expect from the normal model even after the log
-transform.  Since the distribution of $\log w$ fits a normal
-distribution, we conclude that $w$ fits a lognormal distribution.
-\index{normal distribution} \index{distribution!normal}
-\index{Gaussian distribution} \index{distribution!Gaussian}
-\index{lognormal distribution} \index{distribution!lognormal}
-
-
-%Figure~\ref{brfss_weight_model} shows the
-%distribution of these weights and a normal model with the same mean
-%and variance.
-
-%\begin{figure}
-%\centerline{\includegraphics[height=2.5in]{figs/brfss_weight_model.pdf}}
-%\caption{CDF of adult weights from the BRFSS.}
-%\label{brfss_weight_model}
-%\end{figure}
-
-%The agreement between the data and the model might be good enough
-%for some purposes, but there are clear discrepancies below the 10th
-%and above the 90th percentile.
-
-%\begin{figure}
-%\centerline{
-%\begin{tabular}{cc}
-%\includegraphics[height=2.3in]{figs/brfss_weight_log.pdf}
-%\includegraphics[height=2.3in]{figs/brfss_weight_lognormal.pdf}
-%\end{tabular}
-%}
-%\caption{CDF and normal probability plot for adult weights (log
-%  transform).}
-%\label{brfss_weight_log}
-%\end{figure}
-
-\begin{exercise}
-Download the BRFSS data from 
-\url{http://thinkstats2.com/CDBRFS08.ASC.gz}, and my code for reading it
-from
-\url{http://thinkstats2.com/brfss.py}.  Run {\tt brfss.py} and confirm that
-it prints summary statistics for a few of the variables.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss.py}}
-\index{{\tt brfss\_figs.py}}
-\index{weight!adult}
-\index{adult weight}
-
-Write a program that reads adult weights from the BRFSS and
-generates normal probability plots for $w$ and $\log w$.  You can
-download a solution from \url{http://thinkstats2.com/brfss_figs.py}.
-
-\end{exercise}
-
-\begin{exercise}
-The distribution of populations for cities and towns has been proposed
-as an example of a real-world phenomenon that can be described
-with a Pareto distribution.
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{U.S.~Census Bureau}
-\index{population}
-\index{city size}
-
-The U.S.~Census Bureau publishes data on the population of every
-incorporated city and town in the United States.  I have written a
-small program that downloads this data and stores it in a file.  You
-can download it from \url{http://thinkstats2.com/populations.py}.
-\index{{\tt populations.py}}
-
-\begin{enumerate}
-
-\item Read over the program to make sure you know what it does; then
-  run it to download and process the data.
-
-\item Write a program that computes and plots the distribution of
-  populations for the 14,593 cities and towns in the dataset.
-
-\item Plot the CDF on linear and log-x scales so you can get a sense
-  of the shape of the distribution.  Then plot the CCDF on a log-log
-  scale to see if it has the characteristic shape of a Pareto
-  distribution.
-\index{complementary CDF}
-\index{CDF!complementary}
-\index{CCDF}
-
-\item Try out the other transformations and plots in this chapter to
-  see if there is a better model for this data.
-
-\end{enumerate}
-
-What conclusion do you draw about the distribution of sizes
-for cities and towns?  You can download a solution from
-\url{http://thinkstats2.com/populations_cdf.py}.
-\index{{\tt populations\_cdf.py}}
-
-\end{exercise}
-
-
-\begin{exercise}
-\label{irs}
-
-The Internal Revenue Service of the United States (IRS) provides data
-about income taxes at \url{http://irs.gov/taxstats}.
-\index{Internal Revenue Service}
-\index{IRS}
-\index{income}
-\index{taxes}
-
-One of their files, containing information about individual incomes
-for 2008, is available from \url{http://thinkstats2.com/08in11si.csv}.  I
-converted it to a text format called CSV, which stands for
-``comma-separated values;'' you can read it using the {\tt csv}
-module.
-
-Extract the distribution of incomes from this dataset.  Are any of
-the analytic distributions in this chapter a good model of
-the data?  You can download a solution from \url{http://thinkstats2.com/irs.py}.
-\index{{\tt irs.py}}
-
-\end{exercise}
-
-
-\section{Why model?}
-\index{model}
-
-At the beginning of this chapter I said that many real world phenomena
-can be modeled with analytic distributions.  ``So,'' you might ask,
-``what?''
-\index{abstraction}
-
-Like all models, analytic distributions are abstractions, which
-means they leave out details that are considered irrelevant.
-For example, an observed distribution might have measurement errors
-or quirks that are specific to the sample; analytic models smooth
-out these idiosyncrasies.
-\index{smoothing}
-
-Analytic models are also a form of data compression.  When a model
-fits a dataset well, a small set of parameters can summarize a
-large amount of data.
-\index{parameter}
-\index{compression}
-
-It is sometimes surprising when data from a natural phenomenon fit a
-analytic distribution, but these observations can lead to insight
-into physical systems.  Sometimes we can explain why an observed
-distribution has a particular form.  For example, Pareto distributions
-are often the result of generative processes with positive feedback
-(so-called preferential attachment processes: see
-\url{http://wikipedia.org/wiki/Preferential_attachment}.).
-\index{preferential attachment}
-\index{generative process}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{analysis}
-
-Finally, analytic distributions lend themselves to mathematical
-analysis, as we will see in Chapter~\ref{operations}.
-
-
-\section{Generating random numbers}
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{random number}
-\index{CDF}
-\index{inverse CDF algorithm}
-\index{uniform distribution}
-\index{distribution!uniform}
-
-Analytic CDFs are also useful for generating random numbers.
-If there is an efficient way to compute the inverse CDF, $ICDF(p)$,
-we can generate random values with the appropriate distribution
-by choosing from a uniform distribution from 0 to 1, then choosing
-%
-\[ x = ICDF(p)\]
-%
-For example, the CDF of the exponential distribution is
-%
-\[ p = 1 - e^{-\lambda x} \]
-%
-Solving for $x$ yields:
-%
-\[ x = -\log (1 - p) / \lambda \]
-%
-So in Python we can write
-%
-\begin{verbatim}
-def expovariate(lam):
-    p = random.random()
-    x = -math.log(1-p) / lam
-    return x
-\end{verbatim}
-
-I called the parameter \verb"lam" because \verb"lambda" is a Python
-keyword.  Most implementations of {\tt random.random} can return 0 but
-not 1, so $1 - p$ can be 1 but not 0, which is good, because $\log 0$ is
-undefined.
+For small values of $n$, we don't expect an empirical distribution
+to fit an analytic distribution exactly.  One way to evaluate
+the quality of fit is to generate a sample from an analytic
+distribution and see how well it matches the data.
+\index{empirical distribution}
+\index{distribution!empirical}
 \index{random module}
 
-\begin{exercise}
-Write a function named \verb"weibullvariate" that takes
-\verb"lam" and \verb"k" and returns a random value from the Weibull
-distribution with those parameters.
-\index{Weibull distribution}
-\index{distribution!Weibull}
-\index{parameter}
+For example, in Section~\ref{exponential} we plotted the distribution
+of time between births and saw that it is approximately exponential.
+But the distribution is based on only 44 data points.  To see whether
+the data might have come from an exponential distribution, generate 44
+values from an exponential distribution with the same mean as the
+data, about 33 minutes between births.
+
+Plot the distribution of the random values and compare it to the
+actual distribution.  You can use {\tt random.expovariate} 
+to generate the values.  A solution to this problem is in
+\verb"chap05ex_soln.py".
 
 \end{exercise}
+
+
+\begin{exercise}
+In the repository for this book, you'll find a set of data files
+called {\tt mystery0.dat}, {\tt mystery1.dat}, and so on.  Each
+contains a sequence of random numbers generated from different
+distributions.
+
+You will also find \verb"test_models.py", a script that reads
+data from a file and plots the CDF under a variety of transforms.
+You can run it like this:
+
+\begin{verbatim}
+$ python test_models.py mystery0.dat
+\end{verbatim}
+
+Based on these plots, you should be able to infer what kind of
+distribution generated each file.  If you are stumped, you can
+look in {\tt mystery.py}, which contains the code that generated
+the files.
+
+\end{exercise}
+
+
+\begin{exercise}
+\label{income}
+
+The distributions of wealth and income are sometimes modeled using
+lognormal and Pareto distributions.  To see which is better, let's
+look at some data.
+
+The Current Population Survey (CPS) is joint effort of the Bureau
+of Labor Statistics and the Census Bureau to study income and related
+variables.  Data collected in 2013 is available from
+\url{http://www.census.gov/hhes/www/cpstables/032013/hhinc/toc.htm}.
+I downloaded {\tt hinc06.xls}, which is an Excel spreadsheet with
+information about household income, and converted it to {\tt hinc06.csv},
+a CSV file you will find in the repository for this book.  You
+will also find {\tt hinc.py}, which reads this file.
+
+Extract the distribution of incomes from this dataset.  Are any of the
+analytic distributions in this chapter a good model of the data?  A
+solution to this exercise is in \url{hinc_soln.py}.
+
+\end{exercise}
+
+
 
 
 \section{Glossary}
@@ -3818,47 +3976,41 @@ distribution with those parameters.
 \begin{itemize}
 
 \item empirical distribution: The distribution of values in a sample.
-\index{empirical distribution}
-\index{distribution!empirical}
+  \index{empirical distribution} \index{distribution!empirical}
 
-\item analytic distribution: A distribution described by a analytic
+\item analytic distribution: A distribution whose CDF is an analytic
 function.
 \index{analytic distribution}
 \index{distribution!analytic}
-
-\item interarrival time: The elapsed time between two events.
-\index{interarrival time}
-
-\item error function: A special mathematical function, so-named
-  because it comes up in the study of measurement errors.
-\index{error function}
-
-\item normal probability plot: A plot of the sorted values in a sample
-versus the expected value for each if their distribution is normal.
-\index{normal probability plot}
-\index{plot!normal probability}
-
-\item rankit: The expected value of an element in a sorted list of
-values from a normal distribution.
-\index{rankit}
 
 \item model: A useful simplification.  Analytic distributions are
 often good models of more complex empirical distributions.
 \index{model}
 
-\item corpus: A body of text used as a sample of a language.
-\index{corpus}
+\item interarrival time: The elapsed time between two events.
+\index{interarrival time}
 
-\item hapaxlegomenon: A word that appears only once in a corpus.
-It appears twice in this book, so far.
-\index{hapaxlegomenon}
+\item complementary CDF: A function that maps from a value, $x$,
+to the fraction of values that exceed $x$, which is $1 - \CDF(x)$.
+\index{complementary CDF}
+
+\item standard normal distribution: The normal distribution with
+mean 0 and standard deviation 1.
+\index{standard normal distribution}
+
+\item normal probability plot: A plot of the values in a sample versus
+random values from a standard normal distribution.
+\index{normal probability plot}
+\index{plot!normal probability}
+
+\item model: A useful simplification.  Analytic distributions are
+often good models of more complex empirical distributions.
+\index{model}
 
 \end{itemize}
 
 
-\chapter{Probability Density}
-
-\section{PDFs}
+\chapter{Probability density functions}
 \label{density}
 \index{PDF}
 \index{probability density function}
@@ -3870,6 +4022,12 @@ It appears twice in this book, so far.
 \index{distribution!Gaussian}
 \index{CDF}
 \index{derivative}
+
+The code for this chapter is in {\tt density.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+
+\section{PDFs}
 
 The derivative of a CDF is called a {\bf probability density function},
 or PDF.  For example, the PDF of an exponential distribution is
@@ -3891,7 +4049,7 @@ In physics, density is mass per unit of
 volume; in order to get a mass, you have to multiply by volume or,
 if the density is not constant, you have to integrate over volume.
 
-Similarly, probability density measures probability per unit of $x$.
+Similarly, {\bf probability density} measures probability per unit of $x$.
 In order to get a probability mass, you have to integrate over $x$.
 
 {\tt thinkstats2} provides a class called {\tt Pdf} that represents
@@ -3903,49 +4061,90 @@ following methods:
 \item {\tt Density}, which takes a value, {\tt x}, and returns the
   density of the distribution at {\tt x}.
 
-\item {\tt MakePmf}, which evaluates the density at a discrete set of
-  values and returns a Pmf that approximates the Pdf.  The parameter
-  of {\tt MakePmf} is a sequence of {\tt x} values.
+\item {\tt Render}, which evaluates the density at a discrete set of
+  values and returns a pair of sequences, {\tt xs} and {\tt ps}.
+
+\item {\tt MakePmf}, which uses {\tt Render} to evaluate the density
+  at a discrete set of values and returns a normalized Pmf that
+  approximates the Pdf.
+
+\item {\tt GetLinspace}, which returns the default set of points used 
+  by {\tt Render} and {\tt MakePmf}.
 
 \end{itemize}  
 
 {\tt Pdf} is an abstract parent class, which means you should not
-instantiate it; that is, you cannot create a Pdf object.
-Instead, you should define a child class that inherits from {\tt Pdf}
-and provides the appropriate definition of {\tt Density}.  For
-example, {\tt thinkstats2} provides a class named {\tt GaussianPdf}
-that evaluates the Gaussian density function.
+instantiate it; that is, you cannot create a Pdf object.  Instead, you
+should define a child class that inherits from {\tt Pdf} and provides
+definitions of {\tt Density} and {\tt GetLinspace}.  {\tt Pdf} provides
+{\tt Render} and {\tt MakePmf}.
+
+For example, {\tt thinkstats2} provides a class named {\tt
+  GaussianPdf} that evaluates the Gaussian density function.
+
+\begin{verbatim}
+class GaussianPdf(Pdf):
+
+    def __init__(self, mu=0, sigma=1, label=''):
+        self.mu = mu
+        self.sigma = sigma
+        self.label = label
+
+    def Density(self, xs):
+        return scipy.stats.norm.pdf(xs, self.mu, self.sigma)
+
+    def GetLinspace(self):
+        low, high = self.mu-3*self.sigma, self.mu+3*self.sigma
+        return np.linspace(low, high, 101)
+\end{verbatim}
+
+The GaussianPdf object contains the parameters {\tt mu} and
+{\tt sigma}.  {\tt Density} uses
+{\tt scipy.stats.norm}, which is an object that represents a Gaussian
+distribution and provides {\tt cdf} and {\tt pdf}, among other
+methods (see Section~\ref{normal}).
 
 The following example creates a GaussianPdf with the mean and variance
-of adult female heights, in cm, from the BRFSS.  Then it computes the
-density of the distribution at a location one standard deviation from
-the mean.
+of adult female heights, in cm, from the BRFSS (see
+Section~\ref{brfss}).  Then it computes the density of the
+distribution at a location one standard deviation from the mean.
 
 \begin{verbatim}
-    mean, var = 163, 52.8
-    sigma = math.sqrt(var)
-    pdf = thinkstats2.GaussianPdf(mean, sigma)
-    print pdf.Density(mean + sigma)
+>>> mean, var = 163, 52.8
+>>> std = math.sqrt(var)
+>>> pdf = thinkstats2.GaussianPdf(mean, std)
+>>> pdf.Density(mean + std)
 \end{verbatim}
 
-The result is about 0.09, in units of probability mass per cm.
+The result is about 0.03, in units of probability mass per cm.
 Again, a probability density doesn't mean much by itself.  But if
-we make a Pmf, we can plot it and see the shape of the distribution:
+we plot the Pdf, we can see the shape of the distribution:
 
 \begin{verbatim}
-    xs = numpy.linspace(mean - 3*sigma, mean + 3*sigma, 100)
-    pmf = pdf.MakePmf(xs)
-    thinkplot.Pmf(pmf, label='Gaussian')
+>>> thinkplot.Pdf(pdf, label='Gaussian')
 \end{verbatim}
 
-{\tt numpy.linspace} returns a Numpy array with 100 values, equally
-spaced from three standard deviations below the mean to three standard
-deviations above.
+{\tt thinkplot.Pdf} plots the Pdf as a smooth function,
+as contrasted with {\tt thinkplot.Pmf}, which renders a Pmf as a
+step function.  Figure~\ref{pdf_example} shows the result, as well
+as a PDF estimated from a sample, which we'll see in the next
+section.
+
+You can use {\tt MakePmf} to approximate the Pdf:
+
+\begin{verbatim}
+>>> pmf = pdf.MakePmf()
+\end{verbatim}
+
+By default, the resulting Pmf contains 101 points equally spaced from
+{\tt mu - 3*sigma} to {\tt mu + 3*sigma}.  Optionally, {\tt MakePmf}
+and {\tt Render} can take keyword arguments {\tt low}, {\tt high},
+and {\tt n}.
 
 \begin{figure}
 % pdf_example.py
 \centerline{\includegraphics[height=2.2in]{figs/pdf_example.pdf}}
-\caption{A Gaussian PDF that models adult human height in the U.S.,
+\caption{A Gaussian PDF that models adult female height in the U.S.,
 and the kernel density estimate of a sample with $n=1000$.}
 \label{pdf_example}
 \end{figure}
@@ -3953,7 +4152,7 @@ and the kernel density estimate of a sample with $n=1000$.}
 
 \section{Kernel density estimation} 
 
-Kernel density estimation (KDE) is an algorithm that takes
+{\bf Kernel density estimation} (KDE) is an algorithm that takes
 a sample and finds an appropriately smooth PDF that fits 
 the data.  You can read details at
 \url{http://en.wikipedia.org/wiki/Kernel_density_estimation}.
@@ -3971,8 +4170,8 @@ class EstimatedPdf(Pdf):
     def __init__(self, sample):
         self.kde = scipy.stats.gaussian_kde(sample)
 
-    def Density(self, x):
-        return self.kde.evaluate(x)
+    def Density(self, xs):
+        return self.kde.evaluate(xs)
 \end{verbatim}
 
 \verb"__init__" takes a sample
@@ -3985,368 +4184,268 @@ and returns the resulting density.
 \index{density}
 
 Here's an example that generates a sample from a Gaussian
-distribution and generates an EstimatedPdf to fit it:
+distribution and then makes an EstimatedPdf to fit it:
 \index{numpy}
 
 \begin{verbatim}
-    sample = [random.gauss(mean, sigma) for i in range(1000)]
-    sample_pdf = thinkstats2.EstimatedPdf(sample)
-    sample_pmf = sample_pdf.MakePmf(xs)
-    thinkplot.Pmf(pmf, label='KDE')
+>>> sample = [random.gauss(mean, std) for i in range(100)]
+>>> sample_pdf = thinkstats2.EstimatedPdf(sample)
+>>> thinkplot.Pdf(pdf, label='sample KDE')
 \end{verbatim}
 
-\verb"sample" is a list of 1000 random heights.
+\verb"sample" is a list of 100 random heights.
 \verb"sample_pdf" is a {\tt Pdf} object that containts the estimated
 KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
 evaluating the density at a sequence of equally spaced values.
 
-Figure~\ref{pdf_example} shows the Gaussian density function (actually
-a discrete approximation of it) and a KDE based on a sample of 1000
-random heights.  The estimate is a good match for the original
-distribution.
+Figure~\ref{pdf_example} shows the Gaussian density function and a KDE
+based on a sample of 1000 random heights.  The estimate is a good
+match for the original distribution.
+
+Estimating a density function with KDE is useful for several purposes:
+
+\begin{description}
+
+\item[Visualization]: During the exploration phase of a project, CDFs
+  are usually the best visualization of a distribution.  After you
+  look at a CDF, you can decide whether an estimated PDF is an
+  appropriate model of the distribution.  If so, it can be a better
+  choice for presenting the distribution to an audience that is
+  unfamiliar with CDFs.
+
+\item[Interpolation]: An estimated PDF is a way to get from a sample
+  to a model of the population.  If you have reason to believe that
+  the population distribution smooth, you can use KDE to interpolate
+  the density for values that don't appear in the sample.
+
+\item[Simulation]: If your sample is an input to a simulation, it
+  might be appropriate to smooth the sample distribution using KDE.
+  That might allow the simulation to explore more possible outcomes,
+  rather than replicating the observed data.
+
+\end{description}
 
 
+\section{The distribution framework}
+\index{distribution framework}
+\index{framework, distributions}
 
-\section{Random Variables}
-\index{random variable}
-\index{variable!random}
+\begin{figure}
+\centerline{\includegraphics[height=2.2in]{figs/distribution_functions.pdf}}
+\caption{A framework that relates representations of distribution
+functions.}
+\label{dist_framework}
+\end{figure}
 
-A {\bf random variable} represents a process that generates a random
-number.  Random variables are usually written with a capital letter,
-like $X$.  You can think of a random variable as a random number
-generator.
-\index{cumulative distribution function}
-\index{CDF}
+At this point we have seen PMFs, CDFs and PDFs; let's take a minute
+to review.  Figure~\ref{dist_framework} shows how these functions relate
+to each other.
+\index{PMF}
 
-For example, here is a definition for a class that represents
-random variables:
-%
-\begin{verbatim}
-class RandomVariable(object):
-    """Parent class for all random variables."""
-\end{verbatim}
+We started with PMFs, which represent the probabilities for a discrete
+set of values.  To get from a PMF to a CDF, you can compute a cumulative
+sum.  To be more strictly correct, a discrete CDF should be called a
+cumulative mass function (CMF), but as far as I can tell no one uses
+that term.  \index{CDF}
+To get from a CDF to a PMF, you can compute differences in cumulative
+probabilities.
 
-And here is a random variable with an exponential distribution:
+Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
+a CDF is the integral of a PDF.  But remember that a PDF maps from
+values to probability densities; to get a probability, you have to
+integrate.
+\index{discrete}
+\index{analytic}
+
+To get from a discrete to a continuous distribution, you can perform
+various kinds of smoothing.  One form of smoothing is to assume that
+the data come from an analytic continuous distribution
+(like exponential or normal) and to estimate the parameters of that
+distribution.  Another option is kernel density estimation.
 \index{exponential distribution}
 \index{distribution!exponential}
-%
-\begin{verbatim}
-class Exponential(RandomVariable):
-    def __init__(self, lam):
-        self.lam = lam
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
-    def Generate(self):
-        return random.expovariate(self.lam)
+The opposite of smoothing is {\bf discretizing}, or quantizing.  If you
+evaluate a PDF at discrete points, you can generate a PMF that is an
+approximation of the PDF.  You can get a better approximation using
+numerical integration.  \index{discretize}
+\index{quantize}
+\index{bin}
+
+
+\section{Hist implementation}
+
+At this point you should know how to use the basic types provided
+by {\tt thinkstats2}: Hist, Pmf, Cdf, and Pdf.  The next few sections
+provide details about how they are implemented.
+
+Hist and Pmf inherit from a parent class called \verb"_DictWrapper".
+The leading underscore indicates that this class is ``internal;'' that
+is, it should not be used by code in other modules.  The name
+indicates what it is: a dictionary wrapper.  Its primary attribute is
+{\tt d}, the dictionary that maps from values to their frequencies.
+
+The values can be any hashable type.  The frequencies should be integers,
+but can be any numeric type.
+
+\verb"_DictWrapper" contains the methods appropriate for both
+{\tt Hist} and {\tt Pmf}, including the constructor, {\tt Values},
+{\tt Items} and {\tt Render}.  It also provides the modifier
+methods {\tt Set}, {\tt Incr}, {\tt Mult}, and {\tt Remove}.  These
+methods are all implemented with dictionary operations.  For example:
+
+\begin{verbatim}
+    def Incr(self, x, term=1):
+        self.d[x] = self.d.get(x, 0) + term
+
+    def Mult(self, x, factor):
+        self.d[x] = self.d.get(x, 0) * factor
+
+    def Remove(self, x):
+        del self.d[x]
 \end{verbatim}
 
-The \verb"__init__" method takes the parameter, $\lambda$, and stores it as
-an attribute.  The {\tt Generate} method returns a random value
-from the exponential distribution with that parameter.
-\index{init method}
-\index{method!init}
+Because {\tt Hist} operators and methods are based on dictionaries,
+you should expect getting and setting items to be constant time operations;
+that is, their run time does not increase as the Hist gets bigger.
 
-Each time you invoke {\tt Generate}, you get a different value.  The
-value you get is called a {\bf random variate}, which is why many
-function names in the {\tt random} module include the word ``variate.''
-\index{random variate}
-\index{variate!random}
+\verb"_DictWrapper" also provides special methods to support getting
+and setting items, so instead of using {\tt Incr} you could write:
 
-If I were just generating exponential variates, I would not bother to
-define a new class; I would use {\tt random.expovariate}.  But for
-other distributions it might be useful to use RandomVariable objects.
-For example, the Erlang distribution is an analytic distribution with
-parameters $\lambda$ and $k$ (see
-\url{http://wikipedia.org/wiki/Erlang_distribution}).
-\index{Erlang distribution}
-\index{distribution!Erlang}
-
-One way to generate values from an Erlang distribution is to add
-$k$ values from an exponential distribution with the same $\lambda$.
-Here's an implementation:
-%
 \begin{verbatim}
-class Erlang(RandomVariable):
-    def __init__(self, lam, k):
-        self.lam = lam
-        self.k = k
-        self.expo = Exponential(lam)
+    hist = thinkstats2.Hist()
+    hist['a'] += 1
+\end{verbatim}
 
-    def Generate(self):
-        total = 0
-        for i in range(self.k):
-            total += self.expo.Generate()
+{\tt Hist} also provides {\tt Freq}, which looks up the frequency
+of a given value.
+
+
+\section{Pmf implementation}
+
+{\tt Pmf} and {\tt Hist} are almost the same thing, except that a Pmf
+maps values to floating-point probabilities, rather than integer
+frequencies.  If the sum of the probabilities is 1, the Pmf is said to
+be normalized.
+
+{\tt Pmf} provides {\tt Normalize}, which computes the sum of the
+probabilities and divides through by a factor:
+
+\begin{verbatim}
+    def Normalize(self, fraction=1.0):
+        total = self.Total()
+        if total == 0.0:
+            raise ValueError('Normalize: total probability is zero.')
+
+        factor = float(fraction) / total
+        for x in self.d:
+            self.d[x] *= factor
+
         return total
 \end{verbatim}
 
-The \verb"__init__" method creates an Exponential object with the
-given parameter; then {\tt Generate} uses it.  In general,
-\verb"__init__" can take any set of parameters and the {\tt
-  Generate} function can implement any random process.
+{\tt fraction} determines the sum of the probabilities after normalizing;
+the default value is 1.
+If the total probability is 0, the Pmf cannot be normalized, so
+{\tt Normalize} raises and error.
 
-\begin{exercise}
-Write a definition for a class that represents a random variable
-with a Gumbel distribution (see \url{http://wikipedia.org/wiki/Gumbel_distribution}).
-\index{Gumbel distribution}
-\index{distribution!Gumbel}
+{\tt Hist} and {\tt Pmf} have the same constructor.  It can take
+as an argument a Python {\tt dict}, a Hist, Pmf or Cdf, a pandas
+Series, a list of (value, frequency) pairs, or a sequence of values.
 
-\end{exercise}
+If you instantiate a Pmf, the result is normalized.  If you
+instantiate a Hist, it is not.  To construct an unnormalized Pmf,
+you can create an empty Pmf and modify it.  The Pmf modifiers do
+not renormalize the Pmf.
 
 
-\section{Functions of random variables}
-\index{random variables}
-\index{CDF}
+\section{Cdf implementation}
 
-Suppose we have two random variables, $X$ and $Y$, represented
-by RandomVariable objects.
-How can we compute the distribution of the sum $Z = X + Y$?
-\index{random variable}
-\index{variable!random}
-\index{sum}
+A CDF is a map from values to their cumulative probabilities, so
+it would be reasonable to implement {\tt Cdf} as a \verb"_DictWrapper".
+But the values in a CDF are ordered and the values in a \verb"_DictWrapper"
+are not.  Also, it is often useful to compute the inverse CDF; that
+is, the mapping from cumulative probability to value.  So the
+implementaion I chose is two sorted lists.  That way I can use
+bisection to do a forward or inverse mapping in logarithmic time.
 
-One option is to write a RandomVariable object that generates
-the sum:
-%
+The {\tt Cdf} constructor can take as a parameter a sequence of values
+or a pandas Series, a dictionary that maps from values to
+probabilities, a sequence of (value, probability) pairs, a Hist, Pmf,
+or Cdf.  Or if it is given two parameters, it treats them as a sorted
+sequence of values and the sequence of corresponding cumulative
+probabilities.
+
+Given a sequence, pandas Series, or dictionary, the constructor makes
+a Hist.  Then it uses the Hist to initialize the attributes:
+
 \begin{verbatim}
-class Sum(RandomVariable):
-    def __init__(X, Y):
-        self.X = X
-        self.Y = Y
-
-    def Generate():
-        return X.Generate() + Y.Generate()
+        self.xs, freqs = zip(*sorted(dw.Items()))
+        self.ps = np.cumsum(freqs, dtype=np.float)
+        self.ps /= self.ps[-1]
 \end{verbatim}
 
-Given any RandomVariables, $X$ and $Y$, we can create a Sum
-object that represents $Z$.  Then we can use a sample from $Z$ to
-approximate $\CDF_{Z}$.
+{\tt xs} is the sorted list of values; {\tt freqs} is the list
+of corresponding frequencies.  {\tt np.cumsum} computes
+the cumulative sum of the frequencies.  Dividing through by the
+total frequency yields cumulative probabilities.
 
-This approach is simple and versatile, but not very efficient; we
-have to generate a large sample to estimate $\CDF_{Z}$ accurately, and
-even then it is not exact.
+Here is the implementation of {\tt Prob}, which takes a value
+and returns its cumulative probability: 
 
-
-\begin{exercise}
-Suppose I draw two values from a distribution; what is the distribution
-of the larger value?  Write a RandomVariable class called {\tt Max}
-that generates values from $Z = max(X, Y)$.
-\index{max}
-
-As the number of values increases, the distribution of the maximum
-converges on one of the extreme value distributions; see
-\url{http://wikipedia.org/wiki/Gumbel_distribution}.
-\index{Gumbel distribution}
-\index{distribution!Gumbel}
-
-\end{exercise}
-
-\begin{exercise}
-If you are given Pmf objects, you can compute the distribution of
-the sum by enumerating all pairs of values:
-\index{Pmf object}
-%
 \begin{verbatim}
-for x in pmf_x.Values():
-    for y in pmf_y.Values():
-        z = x + y
+    def Prob(self, x):
+        if x < self.xs[0]:
+            return 0.0
+        index = bisect.bisect(self.xs, x)
+        p = self.ps[index - 1]
+        return p
 \end{verbatim}
 
-Write a function that takes $PMF_{X}$ and
-$PMF_{Y}$ and returns a new Pmf that represents the distribution of
-the sum $Z = X + Y$.
+And here is the implementation of {\tt Value}, which takes a cumulative
+probability and returns the corresponding value:
 
-Write a similar function that computes the PMF of $Z = max(X, Y)$.
+\begin{verbatim}
+    def Value(self, p):
+        if p < 0 or p > 1:
+            raise ValueError('Probability p must be in range [0, 1]')
 
-\end{exercise}
+        if p == 0: 
+            return self.xs[0]
+        if p == 1: 
+            return self.xs[-1]
+        index = bisect.bisect(self.ps, p)
+        if p == self.ps[index - 1]:
+            return self.xs[index - 1]
+        else:
+            return self.xs[index]
+\end{verbatim}
 
+Given a Cdf, we can compute the Pmf by computing differences between
+consecutive cumulative probabilities.  If you call the Cdf constructor
+and pass a Pmf, it computes differences by calling {\tt Cdf.Items}:
+\index{Pmf}
 
+\begin{verbatim}
+    def Items(self):
+        a = self.ps
+        b = np.roll(a, 1)
+        b[0] = 0
+        return zip(self.xs, a-b)
+\end{verbatim}
 
-\section{Why normal?}
-\label{why_normal}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
+{\tt np.roll} shift the elements of {\tt a} to the right, and ``rolls''
+the last one back to the beginning.  We replace the first element of
+{\tt b} with 0 and then compute the difference {\tt a-b}.  The result
+is a NumPy array of probabilities.
 
-I said earlier that normal distributions are amenable to analysis,
-but I didn't say why.  One reason is that they are
-closed under linear transformation and convolution.  To explain what
-that means, it will help to introduce some notation.
-\index{analysis}
-\index{random variable}
-\index{variable!random}
-
-If the distribution of a random variable, X, is
-normal with parameters $\mu$ and $\sigma$, you can write
-%
-\[ X \sim \normal (\mu, \sigma^{2})\]
-%
-where the symbol $\sim$ means ``is distributed'' and the script letter
-$\normal$ stands for ``normal.''
-
-%The other analytic distributions in this chapter are sometimes
-%written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
-%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
-%\sigma^2)$.
-
-A linear transformation of $X$ is something like $X' = a X + b$, where
-$a$ and $b$ are real numbers.\index{linear transformation}
-A family of distributions is closed under
-linear transformation if $X'$ is in the same family as $X$.  The normal
-distribution has this property; if $X \sim \normal (\mu,
-\sigma^2)$,
-
-\[ X' \sim \normal (a \mu + b, a^{2} \sigma^2)\]
-
-Normal distributions are also closed under addition.  
-If $Z = X + Y$ and
-$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
-$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$ then
-%
-\[ Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
-%
-The other distributions we have looked at do not have these
-properties.
-\index{convolution}
-
-\begin{exercise}
-If 
-$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
-$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$, what 
-is the distribution of Z = aX + bY?
-
-\end{exercise}
-
-\begin{exercise}
-Let's see what happens when we add values from
-other distributions.  Choose a pair of distributions (any two of
-exponential, normal, lognormal, and Pareto) and choose parameters
-that make their mean and variance similar.
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{sum}
-
-Generate random numbers from these distributions and compute the
-distribution of their sums.  Use the tests from
-Chapter~\ref{analytic} to see if the sum can be modeled by an
-analytic distribution.
-
-\end{exercise}
-
-
-
-\section{Central limit theorem}
-\label{CLT}
-\index{Central Limit Theorem}
-
-So far we have seen:
-
-\begin{itemize}
-
-\item If we add values drawn from normal distributions, the distribution
-of the sum is normal.
-\index{sum}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-\item If we add values drawn from other distributions, the sum does not
-generally have one of the analytic distributions we have seen.
-
-\end{itemize}
-
-But it turns out that if we add up a large number of values from
-almost any distribution, the distribution of the sum converges to
-normal.
-
-More specifically, if the distribution of the values has mean and
-standard deviation $\mu$ and $\sigma$, the distribution of the sum is
-approximately $\normal(n \mu, n \sigma^2)$.
-
-This is called the {\bf Central Limit Theorem}.  It is one of the
-most useful tools for statistical analysis, but it comes with
-caveats:
-
-\begin{itemize}
-
-\item The values have to be drawn independently.
-\index{independent}
-
-\item The values have to come from the same distribution (although
-  this requirement can be relaxed).
-\index{identical}
-
-\item The values have to be drawn
-  from a distribution with finite mean and variance, so most Pareto
-  distributions are out.
-\index{mean}
-\index{variance}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{exponential distribution}
-\index{distribution!exponential}
-
-\item The number of values you need before you see convergence depends
-  on the skewness of the distribution.  Sums from an exponential
-  distribution converge for small sample sizes.  Sums from a
-  lognormal distribution do not.
-\index{lognormal distribution}
-\index{distribution!lognormal}
-
-\end{itemize}
-
-The Central Limit Theorem explains, at least in part, the prevalence
-of normal distributions in the natural world.  Most characteristics of
-animals and other life forms are affected by a large number of genetic
-and environmental factors whose effect is additive.  The characteristics
-we measure are the sum of a large number of small effects, so their
-distribution tends to be normal.
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-\begin{exercise}
-If I draw a sample, $x_{1} .. x_{n}$, independently from a
-distribution with finite mean $\mu$ and variance $\sigma^2$, what is
-the distribution of the sample mean:
-%
-\[ \xbar = \frac{1}{n} \sum x_i \]
-%
-As $n$ increases, what happens to the variance of the sample mean?
-Hint: review Section~\ref{why_normal}.
-
-\end{exercise}
-
-\begin{exercise}
-Choose a distribution (one of exponential, lognormal or Pareto) and
-choose values for the parameter(s).  Generate samples with sizes
-2, 4, 8, etc., and compute the distribution of their sums.  Use
-a normal probability plot to see if the distribution is approximately
-normal.  How many terms do you have to add to see convergence?
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{convergence}
-
-\end{exercise}
-
-
-\begin{exercise}
-Instead of the distribution of sums, compute the distribution of
-products; what happens as the number of terms increases?
-Hint: look at the distribution of the log of the products.
-\index{logarithm}
-\index{product}
-
-\end{exercise}
+{\tt Cdf} provides {\tt Shift} and {\tt Scale}, which modify the
+values in the Cdf, but the probabilities should be treated as
+immutable.
 
 
 \section{Moments}
@@ -4365,14 +4464,14 @@ Or if you prefer Python notation:
 
 \begin{verbatim}
 def RawMoment(xs, k):
-    return sum(x**k for x in xs) / float(len(xs))
+    return sum(x**k for x in xs) / len(xs)
 \end{verbatim}
 
 When $k=1$ the result is the sample mean, $\xbar$.  The other
 raw moments don't mean much by themselves, but they are used
 in some computations.
 
-Some of the {\bf central moments} are more useful.  The
+The {\bf central moments} are more useful.  The
 $k$th central moment is:
 %
 \[ m_k = \frac{1}{n} \sum_i (x_i - \xbar)^k \]
@@ -4385,23 +4484,24 @@ def CentralMoment(xs, k):
     return sum((x - xbar)**k for x in xs) / len(xs)
 \end{verbatim}
 
-When $k=2$ the result is the second central moment, also known
-as the variance.  The definition of variance gives a hint about
-why these statistics are called moments.  If we place a mass
-along a number line at each value, $x_i$, and then spin the
-number line around the mean, the moment of inertia of the spinning
-masses is the variance of the values.
-\index{moment of intertia}.
+When $k=2$ the result is the second central moment, which you might
+recognize as variance.  The definition of variance gives a hint about
+why these statistics are called moments.  If we place a mass along a
+number line at each value, $x_i$, and then spin the number line around
+the mean, the moment of inertia of the spinning masses is the variance
+of the values.  If you are not familiar with moment of intertia, see
+\url{http://en.wikipedia.org/wiki/Moment_of_inertia}.  \index{moment
+  of intertia}.
 
 When you report moment-based statistics, it is important to think
 about the units.  For example, if the values $x_i$ are in cm, the
 first raw moment is also in cm.  But the second moment is in
 cm$^2$, the third moment is in cm$^3$, and so on.
 
-Because of these units, moments are hard to interpret by themselves.  
-For the second moment, we solve the problem by computing the
-square root of variance, known
-as the standard deviation, which is in the same units as $x_i$.
+Because of these units, moments are hard to interpret by themselves.
+For the second moment, we solve the problem by computing the square
+root of variance, known as the standard deviation, which is in the
+same units as $x_i$.
 
 
 \section{Skewness}
@@ -4412,8 +4512,8 @@ If the distribution is symmetric around its central tendency, it is
 unskewed.  If the values extend farther to the right, it is ``right
 skewed'' and if the values extend left, it is ``left skewed.''
 
-This use of ``skewed'' should not be confused with the common sense
-of ``biased.''  Skewness only describes the shape of the distribution;
+This use of ``skewed'' does not have the usual connotation of
+``biased.''  Skewness only describes the shape of the distribution;
 it says nothing about whether the sampling process might have been
 biased.
 
@@ -4424,8 +4524,8 @@ distribution.  Given a sequence of values, $x_i$, the {\bf sample
 \begin{verbatim}
 def StandardizedMoment(xs, k):
     var = CentralMoment(xs, 2)
-    sigma = math.sqrt(var)
-    return CentralMoment(xs, k) / sigma**k
+    std = math.sqrt(var)
+    return CentralMoment(xs, k) / std**k
 
 def Skewness(xs):
     return StandardizedMoment(xs, 3)
@@ -4449,13 +4549,14 @@ Another way to evaluate the asymmetry of a distribution is to look
 at the relationship between the mean and median.
 Extreme values have more effect on the mean than the median, so
 in a distribution that skews left, the mean is less than the median.
+In a distribution that skews right, the mean is greater.
 \index{symmetry}
 \index{Pearson's median skewness coefficient}
 \index{coefficient!skewness}
 
 {\bf Pearson's median skewness coefficient} is an alternative measure
 of skewness that explicitly captures the relationship between the
-sample mean and the median:
+sample mean and median:
 %
 \[ g_p = 3 (\xbar - m) / S \]
 %
@@ -4480,176 +4581,159 @@ This statistic is {\bf robust}, which means that it is less vulnerable
 to the effect of outliers.
 \index{robust}
 
-\begin{exercise}
-Compute the skewness for the distributions of pregnancy length and
-birth weight.  Are the results consistent with the shape of the
-distributions?  How does $g_p$ compare to $g_1$?
-\index{birth weight}
-\index{weight!birth}
-\index{pregnancy length}
-\index{length!pregnancy}
-
-\end{exercise}
-
-
-\begin{exercise}
-The ``Lake Wobegon effect'' is an amusing nickname\footnote{If you
-  don't get it, see \url{http://wikipedia.org/wiki/Lake_Wobegon}.} for {\bf
-  illusory superiority}, which is the tendency for people to
-overestimate their abilities relative to others.  For example, in some
-surveys, more than 80\% of respondents believe that they are better
-than the average driver (see
-  \url{http://wikipedia.org/wiki/Illusory_superiority}).
-\index{average}
-\index{Lake Wobegon effect}
-\index{illusory superiority}
-\index{fallacy!illusory superiority}
-
-If we interpret ``average'' to mean median, then this result is
-logically impossible, but if ``average'' is the mean, this result is
-possible, although unlikely.
-
-What percentage of the population has more than the average number
-of legs?
-
-\end{exercise}
-
-
-\begin{exercise}
-The Internal Revenue Service of the United States (IRS) provides data
-about income taxes, and other statistics, at \url{http://irs.gov/taxstats}.
-If you did Exercise~\ref{irs}, you have already worked with this data;
-otherwise, follow the instructions there to extract the distribution
-of incomes from this dataset.
-\index{Internal Revenue Service}
-\index{IRS}
-\index{income}
-\index{taxes}
-
-What fraction of the population reports a taxable income below the
-mean?
-
-Compute the median, mean, skewness and Pearson's skewness of the income
-data.  Because the data has been binned, you will have to make
-some approximations.
-\index{Gini coefficient}
-\index{coefficient!Gini}
-
-The Gini coefficient is a measure of income inequality.
-Read about it at \url{http://wikipedia.org/wiki/Gini_coefficient} and write a
-function called {\tt Gini} that computes it for the income
-distribution.
-\index{relative mean difference}
-
-Hint: use the PMF to compute the relative mean difference
-(see \url{http://wikipedia.org/wiki/Mean_difference}).
-\index{{\tt gini.py}}
-
-You can download a solution to this exercise from \url{http://thinkstats2.com/gini.py}.
-
-\end{exercise}
-
-
-\section{The distribution framework}
-\index{distribution framework}
-\index{framework, distributions}
-
 \begin{figure}
-\centerline{\includegraphics[height=2.2in]{figs/distribution_functions.pdf}}
-\caption{A framework that relates representations of distribution
-functions.}
-\label{dist_framework}
+\centerline{\includegraphics[height=2.2in]{figs/density_totalwgt_kde.pdf}}
+\caption{Estimated PDF of birthweight data from the NSFG.}
+\label{density_totalwgt_kde}
 \end{figure}
 
-At this point we have seen PMFs, CDFs and PDFs; let's take a minute
-to review.  Figure~\ref{dist_framework} shows how these functions relate
-to each other.
-\index{PMF}
+As an example, let's look at the skewness of birthweights in the
+NSFG pregnancy data.  Here's the code to estimate and plot the PDF:
 
-We started with PMFs, which represent the probabilities for a discrete
-set of values.  To get from a PMF to a CDF, we computed a cumulative sum.
-To be more consistent, a discrete CDF should be called a cumulative mass
-function (CMF), but as far as I can tell no one uses that term.
-\index{CDF}
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    data = live.totalwgt_lb.dropna()
+    pdf = thinkstats2.EstimatedPdf(data)
+    thinkplot.Pdf(pdf, label='birth weight')
+\end{verbatim}
 
-To get from a CDF to a PMF, you can compute differences in cumulative
-probabilities.
-\index{PDF}
+Figure~\ref{density_totalwgt_kde} shows the result.  The left tail appears
+longer than the right, so we suspect the distribution is skewed left.
+The mean, 7.27 lbs, is a bit less than
+the median, 7.38 lbs, so that is consistent with left skew.
+And both skewness coefficients are negative:
+sample skewness is -0.59;
+Pearson's median skewness is -0.23.
 
-Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
-a CDF is the integral of a PDF.  But remember that a PDF maps from
-values to probability densities; to get a probability, you have to
-integrate.
-\index{discrete}
-\index{analytic}
+\begin{figure}
+\centerline{\includegraphics[height=2.2in]{figs/density_wtkg2_kde.pdf}}
+\caption{Estimated PDF of adult weight data from the BRFSS.}
+\label{density_wtkg2_kde}
+\end{figure}
 
-To get from a discrete to a continuous distribution, you can perform
-various kinds of smoothing.  One form of smoothing is to assume that
-the data come from an analytic continuous distribution
-(like exponential or normal) and to estimate the parameters of that
-distribution.  Another option is kernel density estimation.
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-\index{bin}
+Now let's compare this distribution to the distribution of adult
+weight in the BRFSS.  Again, here's the code:
 
-The opposite of smoothing is discretizing, or quantizing.  If you
-evaluate a PDF at discrete points, you can generate a PMF that is at
-least an approximation of the PDF.  You can get a better approximation
-using numerical integration.
-\index{Bayesian estimation}
-\index{estimation!Bayesian}
+\begin{verbatim}
+    df = brfss.ReadBrfss(nrows=None)
+    data = df.wtkg2.dropna()
+    pdf = thinkstats2.EstimatedPdf(data)
+    thinkplot.Pdf(pdf, label='adult weight')
+\end{verbatim}
+
+Figure~\ref{density_wtkg2_kde} shows the result.  The distribution
+appears skewed to the right.  Sure enough, the mean, 79.0, is bigger
+than the median, 77.3.  The sample skewness is 1.1 and Pearson's
+median skewness is 0.26.
+
+The sign of the skewness coefficient indicates whether the distribution
+skews left or right, but other than that, they are hard to interpret.
+Sample skewness is less robust; that is, it is more
+susceptible to outliers.  As a result it is less reliable
+when applied to skewed distributions, exactly when it would be most
+relevant.
+
+Pearson's median skewness is based on a computed mean and variance,
+so it is also susceptible to outliers, but since it does not depend
+on a third moment, it is somewhat more robust.
 
 
+\section{Exercises}
+
+\begin{exercise}
+
+The distribution of income is famously skewed to the right.  In this
+exercise, we'll measure how strong that skew is.
+
+The Current Population Survey (CPS) is joint effort of the Bureau
+of Labor Statistics and the Census Bureau to study income and related
+variables.  Data collected in 2013 is available from
+\url{http://www.census.gov/hhes/www/cpstables/032013/hhinc/toc.htm}.
+I downloaded {\tt hinc06.xls}, which is an Excel spreadsheet with
+information about household income, and converted it to {\tt hinc06.csv},
+a CSV file you will find in the repository for this book.  You
+will also find {\tt hinc2.py}, which reads this file and transforms
+the data.
+
+The dataset is in the form of a series of income ranges and the number
+of respondents who fell in each range.  The lowest range includes
+respondents who reported annual household income ``Under \$5000.''
+The highest range includes respondents who made ``\$250,0000 or
+more.''
+
+To estimate mean and other statistics from these data, we have to
+make some assumptions about the lower and upper bounds, and how
+the values are distributed in each range.  {\tt hinc2.py} provides
+{\tt InterpolateSample}, which shows one way to model
+this data.  It takes a DataFrame with a column, {\tt income}, that
+contains the upper bound of each range, and {\tt freq}, which contains
+the number of respondents in each frame.
+
+It also takes \verb"log_upper", which is an assumed upper bound
+on the highest range, expressed in {\tt log10} dollars.  
+The default value, \verb"log_upper=6.0" represents the assumption
+that the largest income among the respondents is
+$10^6$, or one million dollars.
+
+{\tt InterpolateSample} generates a pseudo-sample; that is, a sample
+of household incomes that yields the same number of respondents
+in each range as the actual data.  It assumes that incomes in
+each range are equally spaced on a log10 scale.
+
+Compute the median, mean, skewness and Pearson's skewness of the
+resulting sample.  What fraction of households reports a taxable
+income below the mean?  How do the results depend on the assumed
+upper bound?
+
+A solution to this exercise is in \verb"hinc2_soln.py".
+\end{exercise}
 
 
 \section{Glossary}
 
 \begin{itemize}
 
+\item Probability density function (PDF): The derivative of a continuous CDF,
+a function that maps a value to its probability density.
+\index{PDF}
+\index{probability density function}
+
+\item Probability density: A quantity that can be integrated over a
+  range of values to yield a probability.  If the values are in units
+  of cm, for example, probability density is in units of probability
+  per cm.
+\index{probability density}
+
+\item Kernel density estimation (KDE): An algorithm that estimates a PDF
+based on a sample.
+\index{kernel density estimation}
+\index{KDE}
+
+\item discretize: To approximate a continuous function or distribution
+with a discrete function.  The opposite of smoothing.
+\index{discretize}
+
+\item raw moment: A statistic based on the sum of data raised to a power.
+
+\item central moment: A statistic based on deviation from the mean,
+raised to a power.
+
+\item standardized moment: A ratio of moments that has no units.
+
 \item skewness: A characteristic of a distribution; intuitively, it
 is a measure of how asymmetric the distribution is.
 \index{skewness}
 
+\item sample skewness: A moment-based statistic intended to quantify
+the skewness of a distribution.
+\index{sample skewness}
+
+\item Pearson's median skewness coefficient: A statistic intended to
+  quantify the skewness of a distribution.  \index{Pearson's skewness}
+
 \item robust: A statistic is robust if it is relatively immune to the
   effect of outliers.
 \index{robust}
-
-\item illusory superiority: The tendency of people to imagine that
-they are better than average.
-\index{illusory superiority}
-\index{fallacy!illusory superiority}
-
-\item random variable: An object that represents a random process.
-\index{random variable}
-\index{variable!random}
-
-\item random variate: A value generated by a random process.
-\index{random variate}
-\index{variate!random}
-
-\item PDF: Probability density function, the derivative of a continuous CDF.
-\index{PDF}
-\index{probability density function}
-
-\item convolution: An operation that computes the distribution of the
-sum of values from two distributions. 
-\index{convolution}
-
-%\item Chi-squared distribution: The distribution of the sum of squared
-%values from a normal distribution.
-
-%\item Degrees of freedom: The number of values in a sample that are
-%free to vary.
-
-\item Central Limit Theorem: ``The supreme law of Unreason,'' according
-to Sir Francis Galton, an early statistician.
-\index{Central Limit Theorem}
-\index{Galton, Francis}
-\index{unreason, supreme law}
 
 \end{itemize}
 
@@ -5002,7 +5086,7 @@ outlier.  You can read more about it at
 Spearman's rank correlation is an alternative that mitigates the
 effect of outliers and skewed distributions.  To compute Spearman's
 correlation, we have to compute the {\bf rank} of each value, which is its
-index in the sorted sample.  For example, in the sample \{1, 2, 5, 7\}
+index in the sorted sample.  For example, in the sample {\tt [1, 2, 5, 7]}
 the rank of the value 5 is 3, because it appears third in the sorted
 list.  Then we compute Pearson's correlation for the ranks.
 
@@ -5016,7 +5100,7 @@ compute the correlation of the logs.  \index{lognormal distribution}
 \begin{exercise}
 Write a function that takes a sequence and returns a list that
 contains the rank for each element.  For example, if the sequence is
-\{7, 1, 2, 5\}, the result should be \{ 4, 1, 2, 3\}.
+{\tt [7, 1, 2, 5]}, the result should be {\tt [4, 1, 2, 3]}.
 
 If the same value appears more than once, the strictly correct
 solution is to assign each of them the average of their ranks.  But if
@@ -5531,7 +5615,7 @@ normal distribution, and here's a random sample drawn from it:
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-\{-0.441, 1.774, -0.101, -1.138, 2.975, -2.138\}
+{\tt [-0.441, 1.774, -0.101, -1.138, 2.975, -2.138]}
 
 What do you think is the mean parameter, $\mu$, of this distribution?
 \index{mean}
@@ -5556,7 +5640,7 @@ introducing outliers.
 here's a sample that was collected by an unreliable surveyor who
 occasionally puts the decimal point in the wrong place.
 
-\{-0.441, 1.774, -0.101, -1.138, 2.975, -213.8\}
+{\tt [-0.441, 1.774, -0.101, -1.138, 2.975, -213.8]}
 
 Now what's your estimate of $\mu$?  If you use the sample mean, your
 guess is -35.12.  Is that the best choice?  What are the alternatives?
@@ -5602,8 +5686,8 @@ def Estimate1(n=7, m=1000):
         means.append(xbar)
         medians.append(median)
 
-    print 'rmse xbar', RMSE(means, mu)
-    print 'rmse median', RMSE(medians, mu)
+    print('rmse xbar', RMSE(means, mu))
+    print('rmse median', RMSE(medians, mu))
 \end{verbatim}
 
 Again, {\tt n} is the size of the sample, and {\tt m} is the
@@ -5661,7 +5745,7 @@ in 8, and that's the best you can do.  \index{MLE} \index{maximum
 {\em I'm thinking of a distribution.}  It's a normal distribution, and 
 here's a (familiar) sample:
 
-\{-0.441, 1.774, -0.101, -1.138, 2.975, -2.138\}
+{\tt [-0.441, 1.774, -0.101, -1.138, 2.975, -2.138]}
 
 What do you think is the variance, $\sigma^2$, of my distribution?
 Again, the obvious choice is to use the sample variance, $S^2$, as an
@@ -5711,8 +5795,8 @@ def Estimate2(n=7, m=1000):
         estimates1.append(biased)
         estimates2.append(unbiased)
 
-    print 'mean error biased', MeanError(estimates1, sigma**2)
-    print 'mean error unbiased', MeanError(estimates2, sigma**2)
+    print('mean error biased', MeanError(estimates1, sigma**2))
+    print('mean error unbiased', MeanError(estimates2, sigma**2))
 \end{verbatim}
 
 Again, {\tt n} is the sample size and {\tt m} is the number of times
@@ -5937,7 +6021,7 @@ Let's play one more round of the estimation game.
 {\em I'm thinking of a distribution.}  It's an exponential distribution, and 
 here's a sample:
 
-\{5.384, 4.493, 19.198, 2.790, 6.122, 12.844\}
+{\tt [5.384, 4.493, 19.198, 2.790, 6.122, 12.844]}
 
 What do you think is the parameter, $\lambda$, of this distribution?
 \index{parameter}
@@ -5990,10 +6074,10 @@ def Estimate3(n=7, m=1000):
         means.append(L)
         medians.append(Lm)
 
-    print 'rmse L', RMSE(means, lam)
-    print 'rmse Lm', RMSE(medians, lam)
-    print 'mean error L', MeanError(means, lam)
-    print 'mean error Lm', MeanError(medians, lam)
+    print('rmse L', RMSE(means, lam))
+    print('rmse Lm', RMSE(medians, lam))
+    print('mean error L', MeanError(means, lam))
+    print('mean error Lm', MeanError(medians, lam))
 \end{verbatim}
 
 When I ran this experiment with $\lambda=2$, I found the RMSE of $L$ is 
@@ -6417,7 +6501,7 @@ variables:
 def ReadData(data_dir='.'):
     preg = survey.Pregnancies()
     preg.ReadRecords(data_dir)
-    print 'Number of pregnancies', len(preg.records)
+    print('Number of pregnancies', len(preg.records))
 
     res = []
     for p in preg.records:
@@ -6534,7 +6618,7 @@ and age:
 \begin{verbatim}
     fxs, fys = thinkstats2.FitLine(xs, inter, slope)
     i = len(fxs) / 2
-    print 'median weight, age', fxs[i], fys[i]
+    print('median weight, age', fxs[i], fys[i])
 \end{verbatim}
 
 If the mother is 24, we expect the baby to weigh 116 oz (or 7.25 pounds).
@@ -6663,7 +6747,7 @@ statistically significant with $p < 0.001$.
 
 In Section~\ref{threshold} we concluded that the apparent difference
 in mean pregnancy length for first babies and others was not
-significant.  But in Section~\ref{relative.risk}, when we computed
+significant.  But in Section~\ref{visualization}, when we computed
 relative risk, we saw that first babies are more likely to be early,
 less likely to be on time, and more likely to be late.
 \index{relative risk}
@@ -6693,7 +6777,7 @@ We proceed in five easy steps:
   (early, on time or late).
 \index{cell}
 
-I'll use the definitions from Section~\ref{relative.risk}: a baby is
+I'll use the definitions from Section~\ref{visualization}: a baby is
 early if it is born during Week 37 or earlier, on time if it is born
 during Week 38, 39 or 40, and late if it is born during Week 41 or
 later.
@@ -6912,9 +6996,357 @@ if it is false.
 \chapter{Operations on distributions}
 \label{operations}
 
-\section{Estimation}
+\section{Random Variables}
+\index{random variable}
+\index{variable!random}
 
-\section{Hypothesis testing}
+A {\bf random variable} represents a process that generates a random
+number.  Random variables are usually written with a capital letter,
+like $X$.  You can think of a random variable as a random number
+generator.
+\index{cumulative distribution function}
+\index{CDF}
+
+For example, here is a definition for a class that represents
+random variables:
+%
+\begin{verbatim}
+class RandomVariable(object):
+    """Parent class for all random variables."""
+\end{verbatim}
+
+And here is a random variable with an exponential distribution:
+\index{exponential distribution}
+\index{distribution!exponential}
+%
+\begin{verbatim}
+class Exponential(RandomVariable):
+    def __init__(self, lam):
+        self.lam = lam
+
+    def Generate(self):
+        return random.expovariate(self.lam)
+\end{verbatim}
+
+The \verb"__init__" method takes the parameter, $\lambda$, and stores
+it as an attribute.  The {\tt Generate} method returns a random value
+from the exponential distribution with that parameter.  \index{init
+  method} \index{method!init}
+
+Each time you invoke {\tt Generate}, you get a different value.  The
+value you get is called a {\bf random variate}, which is why many
+function names in the {\tt random} module include the word ``variate.''
+\index{random variate}
+\index{variate!random}
+
+If I were just generating exponential variates, I would not bother to
+define a new class; I would use {\tt random.expovariate}.  But for
+other distributions it might be useful to use RandomVariable objects.
+For example, the Erlang distribution is an analytic distribution with
+parameters $\lambda$ and $k$ (see
+\url{http://wikipedia.org/wiki/Erlang_distribution}).
+\index{Erlang distribution}
+\index{distribution!Erlang}
+
+One way to generate values from an Erlang distribution is to add
+$k$ values from an exponential distribution with the same $\lambda$.
+Here's an implementation:
+%
+\begin{verbatim}
+class Erlang(RandomVariable):
+    def __init__(self, lam, k):
+        self.lam = lam
+        self.k = k
+        self.expo = Exponential(lam)
+
+    def Generate(self):
+        total = 0
+        for i in range(self.k):
+            total += self.expo.Generate()
+        return total
+\end{verbatim}
+
+The \verb"__init__" method creates an Exponential object with the
+given parameter; then {\tt Generate} uses it.  In general,
+\verb"__init__" can take any set of parameters and the {\tt
+  Generate} function can implement any random process.
+
+
+\section{Functions of random variables}
+\index{random variables}
+\index{CDF}
+
+Suppose we have two random variables, $X$ and $Y$, represented
+by RandomVariable objects.
+How can we compute the distribution of the sum $Z = X + Y$?
+\index{random variable}
+\index{variable!random}
+\index{sum}
+
+One option is to write a RandomVariable object that generates
+the sum:
+%
+\begin{verbatim}
+class Sum(RandomVariable):
+    def __init__(X, Y):
+        self.X = X
+        self.Y = Y
+
+    def Generate():
+        return X.Generate() + Y.Generate()
+\end{verbatim}
+
+Given any RandomVariables, $X$ and $Y$, we can create a Sum
+object that represents $Z$.  Then we can use a sample from $Z$ to
+approximate $\CDF_{Z}$.
+
+This approach is simple and versatile, but not very efficient; we
+have to generate a large sample to estimate $\CDF_{Z}$ accurately, and
+even then it is not exact.
+
+
+
+\begin{exercise}
+
+%TODO: do this as an example
+If you are given Pmf objects, you can compute the distribution of
+the sum by enumerating all pairs of values:
+\index{Pmf object}
+%
+\begin{verbatim}
+for x in pmf_x.Values():
+    for y in pmf_y.Values():
+        z = x + y
+\end{verbatim}
+
+Write a function that takes $PMF_{X}$ and
+$PMF_{Y}$ and returns a new Pmf that represents the distribution of
+the sum $Z = X + Y$.
+
+Write a similar function that computes the PMF of $Z = max(X, Y)$.
+
+\end{exercise}
+
+
+
+\section{Why normal?}
+\label{why_normal}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+I said earlier that normal distributions are amenable to analysis,
+but I didn't say why.  One reason is that they are
+closed under linear transformation and convolution.  To explain what
+that means, it will help to introduce some notation.
+\index{analysis}
+\index{random variable}
+\index{variable!random}
+
+If the distribution of a random variable, X, is
+normal with parameters $\mu$ and $\sigma$, you can write
+%
+\[ X \sim \normal (\mu, \sigma^{2})\]
+%
+where the symbol $\sim$ means ``is distributed'' and the script letter
+$\normal$ stands for ``normal.''
+
+%The other analytic distributions in this chapter are sometimes
+%written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
+%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
+%\sigma^2)$.
+
+A linear transformation of $X$ is something like $X' = a X + b$, where
+$a$ and $b$ are real numbers.\index{linear transformation}
+A family of distributions is closed under
+linear transformation if $X'$ is in the same family as $X$.  The normal
+distribution has this property; if $X \sim \normal (\mu,
+\sigma^2)$,
+
+\[ X' \sim \normal (a \mu + b, a^{2} \sigma^2)\]
+
+Normal distributions are also closed under addition.  
+If $Z = X + Y$ and
+$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
+$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$ then
+%
+\[ Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
+%
+The other distributions we have looked at do not have these
+properties.
+\index{convolution}
+
+
+
+\section{Central limit theorem}
+\label{CLT}
+\index{Central Limit Theorem}
+
+So far we have seen:
+
+\begin{itemize}
+
+\item If we add values drawn from normal distributions, the distribution
+of the sum is normal.
+\index{sum}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+\item If we add values drawn from other distributions, the sum does not
+generally have one of the analytic distributions we have seen.
+
+\end{itemize}
+
+But it turns out that if we add up a large number of values from
+almost any distribution, the distribution of the sum converges to
+normal.
+
+More specifically, if the distribution of the values has mean and
+standard deviation $\mu$ and $\sigma$, the distribution of the sum is
+approximately $\normal(n \mu, n \sigma^2)$.
+
+This is called the {\bf Central Limit Theorem}.  It is one of the
+most useful tools for statistical analysis, but it comes with
+caveats:
+
+\begin{itemize}
+
+\item The values have to be drawn independently.
+\index{independent}
+
+\item The values have to come from the same distribution (although
+  this requirement can be relaxed).
+\index{identical}
+
+\item The values have to be drawn
+  from a distribution with finite mean and variance, so most Pareto
+  distributions are out.
+\index{mean}
+\index{variance}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{exponential distribution}
+\index{distribution!exponential}
+
+\item The number of values you need before you see convergence depends
+  on the skewness of the distribution.  Sums from an exponential
+  distribution converge for small sample sizes.  Sums from a
+  lognormal distribution require much larger sizes.
+\index{lognormal distribution}
+\index{distribution!lognormal}
+
+\end{itemize}
+
+The Central Limit Theorem explains, at least in part, the prevalence
+of normal distributions in the natural world.  Most characteristics of
+animals and other life forms are affected by a large number of genetic
+and environmental factors whose effect is additive.  The characteristics
+we measure are the sum of a large number of small effects, so their
+distribution tends to be normal.
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+\begin{exercise}
+If I draw a sample, $x_{1} .. x_{n}$, independently from a
+distribution with finite mean $\mu$ and variance $\sigma^2$, what is
+the distribution of the sample mean:
+%
+\[ \xbar = \frac{1}{n} \sum x_i \]
+%
+As $n$ increases, what happens to the variance of the sample mean?
+Hint: review Section~\ref{why_normal}.
+
+\end{exercise}
+
+\begin{exercise}
+
+%TODO: do this one as an example
+
+Choose a distribution (one of exponential, lognormal or Pareto) and
+choose values for the parameter(s).  Generate samples with sizes
+2, 4, 8, etc., and compute the distribution of their sums.  Use
+a normal probability plot to see if the distribution is approximately
+normal.  How many terms do you have to add to see convergence?
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{lognormal distribution}
+\index{distribution!lognormal}
+\index{convergence}
+
+\end{exercise}
+
+
+\begin{exercise}
+
+% TODO: do this one as an example
+Instead of the distribution of sums, compute the distribution of
+products; what happens as the number of terms increases?
+Hint: look at the distribution of the log of the products.
+\index{logarithm}
+\index{product}
+
+\end{exercise}
+
+\section{Exercises}
+
+\begin{exercise}
+Write a definition for a class that represents a random variable
+with a Gumbel distribution (see \url{http://wikipedia.org/wiki/Gumbel_distribution}).
+\index{Gumbel distribution}
+\index{distribution!Gumbel}
+
+\end{exercise}
+
+
+\begin{exercise}
+Suppose I draw two values from a distribution; what is the distribution
+of the larger value?  Write a RandomVariable class called {\tt Max}
+that generates values from $Z = max(X, Y)$.
+\index{max}
+
+As the number of values increases, the distribution of the maximum
+converges on one of the extreme value distributions; see
+\url{http://wikipedia.org/wiki/Gumbel_distribution}.
+\index{Gumbel distribution}
+\index{distribution!Gumbel}
+
+\end{exercise}
+
+\begin{exercise}
+If 
+$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
+$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$, what 
+is the distribution of Z = aX + bY?
+
+\end{exercise}
+
+\begin{exercise}
+Let's see what happens when we add values from
+other distributions.  Choose a pair of distributions (any two of
+exponential, normal, lognormal, and Pareto) and choose parameters
+that make their mean and variance similar.
+\index{exponential distribution}
+\index{distribution!exponential}
+\index{Pareto distribution}
+\index{distribution!Pareto}
+\index{lognormal distribution}
+\index{distribution!lognormal}
+\index{sum}
+
+Generate random numbers from these distributions and compute the
+distribution of their sums.  Use the tests from
+Chapter~\ref{analytic} to see if the sum can be modeled by an
+analytic distribution.
+
+\end{exercise}
+
 
 
 \printindex
@@ -7396,4 +7828,20 @@ being born on time and being late.  You can download a solution
 from \url{http://thinkstats2.com/risk.py}.
 
 \end{exercise}
+
+There are two ways to draw a sample from a population: with and
+without replacement.  If you imagine drawing marbles from an
+urn,\footnote{The marbles-in-an-urn scenario is a standard model for
+  random sampling processes (see
+  \url{http://wikipedia.org/wiki/Urn_problem}).} ``replacement'' means
+putting the marbles back as you go (and stirring), so the population
+is the same for every draw.  ``Without replacement,'' means that each
+marble can only be drawn once, so the remaining population is
+different after each draw.
+
+In Python, sampling with replacement can be implemented with
+{\tt random.random} to choose a percentile rank, or {\tt random.choice}
+to choose an element from a sequence.  Sampling without replacement
+is provided by {\tt random.sample}.
+\index{random module}
 
