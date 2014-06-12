@@ -5,7 +5,7 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 """This file contains class definitions for:
 
@@ -87,7 +87,7 @@ def Probability2(yes, no):
     
     yes, no: int or float odds in favor
     """
-    return float(yes) / (yes + no)
+    return yes / (yes + no)
 
 
 class Interpolator(object):
@@ -512,7 +512,7 @@ class Pmf(_DictWrapper):
             #logging.warning('Normalize: total probability is zero.')
             #return total
 
-        factor = float(fraction) / total
+        factor = fraction / total
         for x in self.d:
             self.d[x] *= factor
 
@@ -1822,7 +1822,7 @@ class Beta(object):
 
     def Mean(self):
         """Computes the mean of this distribution."""
-        return float(self.alpha) / (self.alpha + self.beta)
+        return self.alpha / (self.alpha + self.beta)
 
     def Random(self):
         """Generates a random variate from this distribution."""
@@ -2338,7 +2338,7 @@ def CorrelatedGaussianGenerator(mu, sigma, rho):
 def RawMoment(xs, k):
     """Computes the kth raw moment of xs.
     """
-    return sum(x**k for x in xs) / float(len(xs))
+    return sum(x**k for x in xs) / len(xs)
 
 
 def CentralMoment(xs, k):
@@ -2453,6 +2453,69 @@ def ReadStataDct(dct_file):
 
     dct = FixedWidthVariables(variables, index_base=1)
     return dct
+
+
+class HypothesisTest(object):
+    """Represents a hypothesis test."""
+
+    def __init__(self, data):
+        """Initializes.
+
+        data: data in whatever form is relevant
+        """
+        self.data = data
+        self.actual = self.TestStatistic(data)
+        self.MakeModel()
+        self.test_stats = None
+        self.test_cdf = None
+
+    def PValue(self, iters=1000):
+        """Computes the distribution of the test statistic and p-value.
+
+        iters: number of iterations
+
+        returns: float p-value
+        """
+        self.test_stats = [self.TestStatistic(self.RunModel()) 
+                           for _ in range(iters)]
+        self.test_cdf = Cdf(self.test_stats)
+
+        count = sum(1 for x in self.test_stats if x >= self.actual)
+        return count / iters
+
+    def MaxTestStat(self):
+        """Returns the largest test statistic seen during simulations.
+        """
+        return max(self.test_stats)
+
+    def PlotCdf(self):
+        """Draws a Cdf with vertical lines at the observed test stat.
+        """
+        def VertLine(x):
+            """Draws a vertical line at x."""
+            thinkplot.Plot([x, x], [0, 1], color='0.8')
+
+        VertLine(self.actual)
+        thinkplot.Cdf(self.test_cdf)
+
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: data in whatever form is relevant        
+        """
+        raise UnimplementedMethodException()
+
+    def MakeModel(self):
+        """Build a model of the null hypothesis.
+        """
+        pass
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        raise UnimplementedMethodException()
 
 
 def main():

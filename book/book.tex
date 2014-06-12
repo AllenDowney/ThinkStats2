@@ -411,6 +411,8 @@ Google.
 \section*{Using the code}
 \label{code}
 
+% TODO: add note about Python 2/3 and print, division
+
 The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  Git is a version
 control system that allows you to keep track of the files that
@@ -3483,7 +3485,7 @@ xs, ys = thinkstats2.NormalProbability(sample)
 \begin{figure}
 % analytic.py
 \centerline{\includegraphics[height=2.5in]{figs/analytic_normal_prob_example.pdf}}
-\caption{Normal probability plot of birth weights.}
+\caption{Normal probability plot for random samples from normal distributions.}
 \label{analytic_normal_prob_example}
 \end{figure}
 
@@ -6014,6 +6016,11 @@ other sources of error).
 
 \chapter{Hypothesis testing}
 \label{testing}
+
+The code for this chapter is in {\tt hypothesis.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+\section{Classical hypothesis testing}
 \index{hypothesis testing}
 \index{apparent effect}
 
@@ -6024,61 +6031,61 @@ finally, we put them to the test.
 \index{National Survey of Family Growth}
 \index{NSFG}
 
-The fundamental question we want to address is whether these effects
-are real.  For example, if we see a difference in the mean pregnancy
-length for first babies and others, we want to know whether that
-difference is real, or whether it occurred by chance.
-\index{pregnancy length}
-\index{length!pregnancy}
+The fundamental question we want to address is whether the effects
+we see in a sample are likely to hold for the entire population.
+For example, in the NSFG sample we see a difference in the mean pregnancy
+length for first babies and others.  We would like to know if
+that effect reflects a real difference for women
+in the U.S., or if it might appear in the sample by chance.
+\index{pregnancy length} \index{length!pregnancy}
 
-That question turns out to be hard to address directly, so we will
-proceed in two steps.  First we will test whether the effect is {\bf
-statistically significant}, then we will try to interpret the result
-  as an answer to the original question.
-\index{significant}
+There are several ways we could formulate this question, including
+Fisher null hypothesis testing, Neyman-Pearson decision theory, and
+Bayesian inference\footnote{For more about Bayesian inference, see the
+  sequel to this book, {\it Think Bayes}.}.  What I present here is a
+subset of all three that makes up most of what people use in practice,
+which I will call {\bf classical hypothesis testing}.
 
-In the context of statistics, ``significant'' has a technical
-definition that is different from its use in common language.
-An apparent effect is statistically
-significant if it is unlikely to have occurred by chance.
-\index{chance}
-
-To make this more precise, we have to answer three questions:
-
-\begin{enumerate}
-
-\item What do we mean by ``chance''?
-
-\item What do we mean by ``unlikely''?
-
-\item What do we mean by ``effect''?
-
-\end{enumerate}
-
-All three of these questions are harder than they look.  Nevertheless,
-there is a general structure that people use to test statistical
-significance:
+The goal of classical hypothesis testing is to answer the question,
+``Given a sample and an apparent effect, what is the probability of
+seeing such an effect by chance?''  Here's how we answer that question:
 
 \begin{itemize}
 
-\item Null hypothesis: The {\bf null hypothesis} is a model of the
-  system based on the assumption that the apparent effect is not real.
-\index{null hypothesis}
+\item The first step is to quantify the size of the apparent effect by
+  choosing a {\bf test statistic}.  In the NSFG example, the apparent
+  effect is a difference in pregnancy length between first babies and
+  others, so a natural choice for the test statistic is the difference
+  in means between the two groups.
+  \index{test statistic}
 
-\item p-value: The {\bf p-value} is the probability of seeing the apparent
-  effect under the null hypothesis.
-\index{p-value}
+\item The second step is to define a {\bf null hypothesis}, which is a
+  model of the system based on the assumption that the apparent effect
+  is not real.  In the NSFG example the null hypothesis is that there
+  is no difference between first babies and others; that is, that
+  pregnancy lengths for both groups have the same distribution.
+  \index{null hypothesis}
 
-\item Interpretation: Based on the p-value, we conclude that the
-  effect is either statistically significant, or not.
+\item The third step is to compute a {\bf p-value}, which is the
+  probability of seeing the apparent effect if the null hypothesis is
+  true.  In the NSFG example, we would compute the actual difference
+  in means, then compute the probability of seeing a
+  difference as big, or bigger, under the null hypothesis.
+  \index{p-value}
+
+\item The last step is to interpret the result.  If the p-value is
+  low, the effect is said to be {\bf statistically significant}, which
+  means that it is unlikely to have occurred by chance.  In that case
+  we infer that the effect is more likely to be real; that is, to
+  reflect an effect in the general population.  \index{statistically
+    significant} \index{significant}
 
 \end{itemize}
 
-This process is called {\bf hypothesis testing}.  The underlying
-logic is similar to a proof by contradiction.  To prove a mathematical
-statement, A, you assume temporarily that A is false.  If that
-assumption leads to a contradiction, you conclude that A must actually
-be true.
+The underlying logic of this process is similar to a proof by
+contradiction.  To prove a mathematical statement, A, you assume
+temporarily that A is false.  If that assumption leads to a
+contradiction, you conclude that A must actually be true.
 \index{contradiction, proof by}
 
 Similarly, to test a hypothesis like, ``This effect is real,'' we
@@ -6088,506 +6095,442 @@ effect.  That's the p-value.  If the p-value is low enough, we
 conclude that the null hypothesis is unlikely to be true.
 
 
+\section{HypothesisTest}
+\index{mean, difference in}
+
+{\tt thinkstats2} provides {\tt HypothesisTest}, a
+class that represents the structure of a classical hypothesis
+test.  Here is the definition:
+
+\begin{verbatim}
+class HypothesisTest(object):
+
+    def __init__(self, data):
+        self.data = data
+        self.actual = self.TestStatistic(data)
+        self.MakeModel()
+
+    def PValue(self, iters=1000):
+        self.test_stats = [self.TestStatistic(self.RunModel()) 
+                           for _ in range(iters)]
+
+        self.test_cdf = Cdf(self.test_stats)
+
+        count = sum(1 for x in self.test_stats if x >= self.actual)
+        return count / iters
+
+    def TestStatistic(self, data):
+        raise UnimplementedMethodException()
+
+    def MakeModel(self):
+        pass
+
+    def RunModel(self):
+        raise UnimplementedMethodException()
+\end{verbatim}
+
+{\tt HypothesisTest} is an abstract parent class.  It provides
+implementation of \verb"__init__" and {\tt PValue}.  Child
+classes inherit these methods and provide implementation for
+{\tt TestStatistic}, {\tt RunModel}, and optionally {\tt MakeModel}.
+
+\verb"__init__" takes as a parameter the data in whatever form
+is appropriate.  It passes the data to {\tt TestStatistic}, which
+computes the size of the effect in the actual sample.  It also
+calls {\tt RunModel}, which builds a representation of the null
+hypothesis.
+
+{\tt PValue} computes the probability of the apparent effect under
+the null hypothesis.  It takes as a parameter {\tt iters}, which is
+the number of times to simulate the null hypothesis.  It calls
+{\tt RunModel}, which returns the result of the simulation, which
+should be ``fake'' data in the same format as the actual data.
+
+The first line of {\tt PValue} computes the test statistic for each
+simulated dataset and stores the results: \verb"test_stats" is the
+list of simulated test statistics; \verb"test_cdf" is their CDF.  The
+p-value is just the fraction of elements in \verb"test_stats" that
+exceed or equal the observed test statistic, {\tt self.actual}.
+
+As a simple example\footnote{}, suppose we toss a coin 250 times and
+see 140 heads and 110 tails.  Based on this result, we might suspect
+that the coin is biased; that is, more likely to land heads.  To test
+this hypothesis, we will compute the probability of seeing such a big
+difference if the coin is actually fair.
+
+{\tt CoinTest} is child class of {\tt HypothesisTest} that answers
+this question:
+
+\begin{verbatim}
+class CoinTest(thinkstats2.HypothesisTest):
+
+    def TestStatistic(self, data):
+        heads, tails = data
+        test_stat = abs(heads - tails)
+        return test_stat
+
+    def RunModel(self):
+        heads, tails = self.data
+        n = heads + tails
+        sample = [random.choice('HT') for _ in range(n)]
+        hist = thinkstats2.Hist(sample)
+        data = hist['H'], hist['T']
+        return data
+\end{verbatim}
+
+For this example, I represent the data as a pair of
+integers: the number of heads and tails.  The test statistic is
+the absolute difference between them, so {\tt self.actual}
+is 30.
+
+{\tt RunModel} simulates coin tosses assuming the null hypothesis
+that the coin is actually fair.  It
+generates a sample of 250 tosses,
+uses a Hist to count the number of heads and tails, and returns
+a pair of integers.
+
+Now all we have to do is instantiate {\tt CoinTest} and call
+{\tt PValue}:
+
+\begin{verbatim}
+    ct = CoinTest((140, 110))
+    pvalue = ct.PValue()
+\end{verbatim}
+
+The result is about 0.07, which means that if the coin is actually
+fair, we expect to see a difference as big as 30 about 7\% of the
+time.
+
+How should we interpret this result?  In practice, people often
+consider 5\% to be the threshold of statistical significance.  If the
+p-value is less than 5\%, the effect is considered significant; otherwise
+it is not.
+
+But the choice of 5\% is arbitrary, and (as we will see later) the
+p-value we get depends on the choice of the test statistics and
+the model of the null hypothesis.  So p-values should not be considered
+precise measurements.
+
+Instead I recommend interpreting p-values according to their order
+of magnitude: if the p-value is less than 1\%, the effect is unlikely
+to be due to chance; if it is greater than 10\% it can plausibly
+be explained by chance.  P-values between 1\% and 10\% should be
+considered borderline.  So in this example I would conclude that
+the data do not provide strong evidence that the coin is biased
+or not.
+
+
 \section{Testing a difference in means}
 \index{mean, difference in}
 
-One of the easiest hypotheses to test is an apparent difference in mean
+One of the most common effects to test is a difference in mean
 between two groups.  In the NSFG data, we saw that the mean pregnancy
-length for first babies is slightly longer, and the mean weight at
-birth is slightly smaller.  Now we will see if those effects are
-significant.
+length for first babies is slightly longer, and the mean birth weight
+is slightly smaller.  Now we will see if those effects are
+statistically significant.
 \index{National Survey of Family Growth}
 \index{NSFG}
 \index{pregnancy length}
 \index{length!pregnancy}
 
 For these examples, the null hypothesis is that the distributions
-for the two groups are the same, and that the apparent difference is
-due to chance.
+for the two groups are the same.  One way to model the null
+hypothesis is by {\bf permutation}; that is, we can take birth
+weights for first babies and others and shuffle them, treating
+the two groups as one big group.
 \index{null hypothesis}
 
-To compute p-values, we find the pooled distribution for all live
-births (first babies and others), generate random samples that are
-the same size as the observed samples, and compute the difference
-in means.
-\index{p-value}
+Here's the code that tests a difference in means by permutation:
 
-If we generate a large number of samples, we can count how often the
-difference in means (due to chance) is as big or bigger than the
-difference we actually observed.  This fraction is the p-value.
+\begin{verbatim}
+class DiffMeansPermute(thinkstats2.HypothesisTest):
 
-For pregnancy length, we observed $n = 4413$ first babies and $m = 4735$
-others, and the difference in mean was $\delta = 0.078$ weeks.  To
-approximate the p-value of this effect, I pooled the distributions,
-generated samples with sizes $n$ and $m$ and computed the difference
-in mean.
-\index{resampling}
+    def TestStatistic(self, data):
+        group1, group2 = data
+        test_stat = abs(group1.mean() - group2.mean())
+        return test_stat
 
-This is another example of resampling, because we are drawing a
-random sample from a dataset that is, itself, a sample of the general
-population.  I computed differences for 1000 sample pairs;
-Figure~\ref{length_deltas_cdf} shows their distribution.
+    def MakeModel(self):
+        group1, group2 = self.data
+        self.n, self.m = len(group1), len(group2)
+        self.pool = np.hstack((group1, group2))
+
+    def RunModel(self):
+        np.random.shuffle(self.pool)
+        data = self.pool[:self.n], self.pool[self.n:]
+        return data
+\end{verbatim}
+
+The data are represented with a pair of sequences, one for each
+group.  The test statistic is the absolute difference in the means.
+
+{\tt MakeModel} records the sizes of the groups, {\tt n} and
+{\tt m}, and combines the data from the groups into one NumPy
+array, {\tt pool}.
+
+{\tt RunModel} simulates the null hypothesis by shuffling the
+pool of values and splitting into two groups with sizes {\tt n}
+and {\tt m}.  As always, the return value from {\tt RunModel} has
+the same format as the observed data.
+
+To test the difference in pregnancy length, we run:
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    data = firsts.prglngth.values, others.prglngth.values
+    ht = DiffMeansPermute(data)
+    p_value = ht.PValue()
+\end{verbatim}
+
+{\tt MakeFrames} reads the NSFG data and returns DataFrames
+representing all live births, first babies, and others.
+Then we extract pregnancy lengths as NumPy arrays, pass them as
+data to {\tt DiffMeansPermute}, and compute the p-value.  The
+result is about 0.17, which means that we expect to see a difference
+as big as the observed effect about 17\% of the time.  So
+this effect is not statistically significant.
 
 \begin{figure}
 % hypothesis.py
-\centerline{\includegraphics[height=2.5in]{figs/length_deltas_cdf.pdf}}
-\caption{CDF of difference in mean for resampled data.}
-\label{length_deltas_cdf}
+\centerline{\includegraphics[height=2.5in]{figs/hypothesis1.pdf}}
+\caption{CDF of difference in mean pregnancy length under the null
+hypothesis.}
+\label{hypothesis1}
 \end{figure}
 
-The mean difference is near 0, as you would expect with samples
-from the same distribution.  The vertical lines show the cutoffs where
-$x = -\delta$ or $x = \delta$.
+{\tt HypothesisTest} provides {\tt PlotCdf}, which plots the
+distribution of the test statistic, with a gray line indicating
+the observed effect size:
 
-Of 1000 sample pairs, there were 166 where the difference in means
-(positive or negative) was as big or bigger than $\delta$, so the
-p-value is approximately 0.166.  In other words, we expect to see an
-effect as big as $\delta$ about 17\% of the time, even if the actual
-distribution for the two groups is the same.
+\begin{verbatim}
+    ht.PlotCdf()
+    thinkplot.Show(xlabel='test statistic',
+                   ylabel='CDF')
+\end{verbatim}
 
-So the apparent effect is not very likely, but is it unlikely enough?
-I'll address that in the next section.
+Figure~\ref{hypothesis1} shows the result.  The gray line indicates
+the observed difference, 0.078 weeks.  The CDF intersects the gray
+line at 0.83, which is the complement of the p-value, 0.17. 
 
-\begin{exercise}
-In the NSFG dataset, the difference in mean weight for first
-births is 2.0 ounces.  Compute the p-value of this difference.
-\index{National Survey of Family Growth}
-\index{NSFG}
-
-Hint: for this kind of resampling it is important to sample
-with replacement, so you should use {\tt random.choice} rather
-than {\tt random.sample} (see Section~\ref{random}).
-\index{resampling}
-\index{random module}
-
-You can start with the code I used to generate the results in this
-section, which you can download from \url{http://thinkstats2.com/hypothesis.py}.
-\index{{\tt hypothesis.py}}
-
-\end{exercise}
+If we run the same analysis with birth weight, the computed p-value
+is 0, which means that the simulation never yielded an effect
+as big as the observed difference, 0.12 lbs.  After 1000 attempts,
+the biggest simulated difference is 0.10 lbs.  So we would
+report that the p-value is less than $1/1000$, or 0.001, and
+conclude that the difference in birth weight is statistically
+significant.
 
 
-\section{Choosing a threshold}
-\label{threshold}
-\index{threshold}
+\section{Other test statistics}
 
-In hypothesis testing we have to worry about two kinds of errors.
-\index{false positive}
-\index{false negative}
-\index{error, Type I}
-\index{error, Type II}
+Choosing the best test statistic depends on what question you are
+trying to address, and sometimes depends on
+the distribution of the data.
 
-\begin{itemize}
+For example, if the relevant question is whether pregnancy lengths
+are different, one way or the other, for first babies, then it makes
+sense to test the absolute difference in means, as we did in the
+previous section.
 
-\item A Type I error, also called a {\bf false positive}, is when we
-  accept a hypothesis that is actually false; that is, we consider an
-  effect significant when it was actually due to chance.
+If we had some previous reason to think that first babies are likely
+to be late, then we would not take the absolute value of the difference;
+instead we would use this test statistic:
 
-\item A Type II error, also called a {\bf false negative}, is when we
-  reject a hypothesis that is actually true; that is, we attribute an
-  effect to chance when it was actually real.
+\begin{verbatim}
+class DiffMeansOneSided(DiffMeansPermute):
 
-\end{itemize}
+    def TestStatistic(self, data):
+        group1, group2 = data
+        test_stat = group1.mean() - group2.mean()
+        return test_stat
+\end{verbatim}
 
-The most common approach to hypothesis testing is to choose a
-threshold\footnote{Also known as a ``Significance criterion.''},
-$\alpha$, for the p-value and to accept as significant any effect with
-a p-value less than $\alpha$.  A common choice for $\alpha$ is 5\%.
-By this criterion, the apparent difference in pregnancy length for
-first babies is not significant, but the difference in weight is.
-\index{significance criterion}
-\index{pregnancy length}
-\index{length!pregnancy}
+{\tt DiffMeansOneSided} inherits {\tt MakeModel} and {\tt RunModel}
+from {\tt DiffMeansPermute}; the only difference is that
+{\tt TestStatistic} does not take the absolute value of the
+difference.  This kind of test is called {\bf one-sided} because
+it only counts one side of the distribution of differences.  The
+previous test, using both sides, is called {\tt two-sided}.
 
-For this kind of hypothesis testing, we can compute the probability of
-a false positive explicitly: it turns out to be $\alpha$.
+For this version of the test, the p-value is 0.09.  In general
+the p-value for a one-sided test is about half the p-value for
+a two-sided test, depending on the shape of the distribution.
 
-To see why, think about the definition of false positive---the chance
-of accepting a hypothesis that is false---and the definition of a
-p-value---the chance of generating the measured effect if the
-hypothesis is false.
+The one-sided hypothesis, that first babies are born late, is
+more specific that the two-sided hypothesis, so the p-value is smaller.
+But in this example the result, even for the stronger hypothesis,
+is not statistically significant.
 
-Putting these together, we can ask: if the hypothesis is false,
-what is the chance of generating a measured effect that will be
-considered significant with threshold $\alpha$?  The answer is
-$\alpha$.
+Even if mean pregnancy length is the same for first babies and others,
+maybe the standard deviation is different.  In Section~\ref{}, we
+saw some evidence that first babies are more likely to be early or
+late, and less likely to be on time.  So we might hypothesize that
+the standard deviation is higher.  Here's how we can test that:
 
-We can decrease the chance of a false positive by decreasing the
-threshold.  For example, if the threshold is 1\%, there is only a 1\%
-chance of a false positive.
+\begin{verbatim}
+class DiffStdPermute(DiffMeansPermute):
 
-But there is a price to pay: decreasing the threshold raises the
-standard of evidence, which increases the chance of rejecting
-a valid hypothesis.
+    def TestStatistic(self, data):
+        group1, group2 = data
+        test_stat = group1.std() - group2.std()
+        return test_stat
+\end{verbatim}
 
-In general there is a tradeoff between Type I and Type II errors.
-The only way to decrease both at the same time is to increase the
-sample size (or, if possible, decrease measurement error).
-\index{sample size}
-
-\begin{exercise}
-To investigate the effect of sample size on p-value, see what happens
-if you discard half of the data from the NSFG.  Hint: use {\tt
-  random.sample}.  What if you discard three-quarters of the data, and
-so on?
-\index{National Survey of Family Growth}
-\index{NSFG}
-
-What is the smallest sample size where the difference in mean birth
-weight is still significant with $\alpha$ = 5\%?  How much
-larger does the sample size have to be with $\alpha$ = 1\%?
-
-You can start with the code I used to generate the results in this
-section, which you can download from
-\url{http://thinkstats2.com/hypothesis.py}.  \index{{\tt
-    hypothesis.py}}
-
-\end{exercise}
+This is a one-sided test because the hypothesis under test is
+that the standard deviation for first babies is higher, not just
+different.  The p-value is 0.09, again not statistically
+significant. 
 
 
-\section{Defining the effect}
+\section{Other models}
 
-When something unusual happens, people often say something like,
-``Wow!  What were the chances of {\em that}?''  This question makes
-sense because we have an intuitive sense that some things are more
-likely than others.  But this intuition doesn't always hold up to
-scrutiny.
-\index{chance}
-\index{coin}
+In the previous section we simulated the null hypothesis by
+permutation; that is, we treated the observed values as if they
+represented the entire population, and randomly assigned the
+members of the population to the two groups.
 
-For example, suppose I toss a coin 10 times, and after each toss I
-write down H for heads and T for tails.  If the result was a sequence
-like THHTHTTTHH, you wouldn't be too surprised.  But if the result was
-HHHHHHHHHH, you would say something like, ``Wow!  What were the
-chances of {\em that}?''
+An alternative is to compute the distribution of the observed
+values and then draw a random sample from that distribution.
+This process is called {\bf resampling}.  Here's how you could
+test a difference in means using resampling:
 
-But in this example, the probability of the two sequences is the
-same: one in 1024.  And the same is true for any other sequence.
-So when we ask, ``What were the chances of {\em that},'' we have
-to be careful about what we mean by ``that.''
+\begin{verbatim}
+class DiffMeansResample(DiffMeansPermute):
 
-For the NSFG data, I defined the effect as ``a difference in mean
-(positive or negative) as big or bigger than $\delta$.''  By making
-this choice, I decided to evaluate the magnitude of the difference,
-ignoring the sign.
-\index{National Survey of Family Growth}
-\index{NSFG}
+    def RunModel(self):
+        group1 = np.random.choice(self.pool, self.n, replace=True)
+        group2 = np.random.choice(self.pool, self.m, replace=True)
+        return group1, group2
+\end{verbatim}
 
-A test like that is called {\bf two-sided}, because we consider both
-sides (positive and negative) of the distribution shown in
-Figure~\ref{length_deltas_cdf}.  By using a two-sided test we are
-testing the hypothesis that there is a significant difference between
-the distributions, without specifying the sign of the difference.
-\index{one-sided test}
-\index{two-sided test}
-\index{test!one-sided}
-\index{test!two-sided}
+This version inherits {\tt TestStatistic} and {\tt MakeModel} 
+from {\tt DiffMeansPermute}.  The only difference is in {\tt RunModel},
+which draws random samples from the observed values with replacement.
 
-The alternative is to use a {\bf one-sided} test, which asks whether
-the mean for first babies is significantly {\em higher} than
-the mean for others.  Because the hypothesis is more specific, the
-p-value is lower---in this case it is roughly half.
+Because the same value might be selected more than once, resampling is
+less constrained than permutation, so we expect more variability in
+the test statistic and a higher p-value.  But the difference is small:
+the p-value for the difference in pregnancy lengths is 0.17 by
+resampling, compared to 0.16 by permutation.
 
+The two models are based on slightly difference assumptions, and in
+this example there is no compelling reason to choose one or the other.
+But in general p-values depend on the choice of the null hypothesis;
+different models can yield very different results.
 
-\section{Interpreting the result}
-
-At the beginning of this chapter I said that the question we want to
-address is whether an apparent effect is real.  We started by defining
-the null hypothesis, denoted $H_{0}$, which is the hypothesis that
-the effect is not real.  Then we defined the p-value, which is
-$\Prob(E|H_{0})$, where $E$ is an effect as big as or bigger
-than the apparent effect.  Then we computed p-values and compared them
-to a threshold, $\alpha$.
-
-That's a useful step, but it doesn't answer the original question,
-which is whether the effect is real.  There are several ways to
-interpret the result of a hypothesis test:
-
-\begin{itemize}
-
-\item Classical: In classical hypothesis testing, if a p-value
-  is less than $\alpha$, you can say that the effect is statistically
-  significant, but you can't conclude that it's real.  This
-  formulation is careful to avoid leaping to conclusions, but it is
-  unsatisfying because it provides no guidance for practical
-  decision making.
-
-\item Practical: In practice, people are not so formal.  In most
-  science journals, researchers report p-values without apology, and
-  readers interpret them as evidence that the apparent effect is real.
-  The lower the p-value, the higher their confidence in this
-  conclusion.
-
-\end{itemize}
 
 
 \section{Testing a correlation}
 
-The NSFG data we saw in Section~\ref{nsfg} includes records for
-xx pregnancies.  For each pregnancy, we have the mother's age
-and the baby's weight at birth, and we might wonder whether they
-are correlated.  Do older mothers have heavier babies?  The
-code I used to answer this question is available from
-\url{}.
+We can use the {\tt HypothesisTest} framework to test whether
+an observed correlation is statistically significant.
 
-\begin{figure}
-% correlate1.py
-\centerline{\includegraphics[height=2.5in]{figs/correlate1.pdf}}
-\caption{Scatter plot of birth weight and mother's age for 13593 live
-births.}
-\label{correlate1}
-\end{figure}
+For example, in the NSFG data set, the correlation between
+birth weight and mother's age is xxx.  Apparently older mothers
+tend to have heavier babies.  But could this effect be due to
+chance?
 
-Here's the code that reads the data and extracts the relevant
-variables:
+To answer that question, we have to choose a test statistic.
+If we had reason to believe that the correlation was positive,
+we would do a one-sided test using correlation as the test
+statistic.  But if we had not background knowledge, we would
+probably do a two-sided test using the absolute value of
+correlation.
 
-\begin{verbatim}
-def ReadData(data_dir='.'):
-    preg = survey.Pregnancies()
-    preg.ReadRecords(data_dir)
-    print('Number of pregnancies', len(preg.records))
+The null hypothesis is that there is no correlation between mother's
+age and birth weight.  By shuffling the observed values, we can
+simulate an alternate universe where the distributions of age and
+birth weight are the same, but where the variables are unrelated.
 
-    res = []
-    for p in preg.records:
-        if p.outcome == 1 and p.totalwgt_oz != 'NA':
-            res.append((p.agepreg, p.totalwgt_oz))
-    
-    return zip(*res)
-\end{verbatim}
-
-And here's the code that makes a scatter plot of the data:
+Here's the code:
 
 \begin{verbatim}
-    xs, ys = ReadData(data_dir)
+class CorrelationPermute(thinkstats2.HypothesisTest):
 
-    thinkplot.Scatter(xs, ys, alpha=0.05)
-    thinkplot.Show(xlabel='Age (years)',
-                   ylabel='Birth weight (oz)')
+    def TestStatistic(self, data):
+        xs, ys = data
+        test_stat = abs(thinkstats2.Corr(xs, ys))
+        return test_stat
+
+    def RunModel(self):
+        xs, ys = self.data
+        xs = np.random.permutation(xs)
+        return xs, ys
 \end{verbatim}
 
-I chose {\tt alpha=0.05} to compromise between showing the densest
-parts of the scatter plot without saturation and making the outliers
-visible.  Figure~\ref{correlate1} shows the result.  Visually, it looks like
-there might be a weak positive correlation, but it is hard to tell for sure.
+{\tt data} is a tuple of sequences.  The test statistic is the
+absolute value of Pearson's correlation.  {\tt RunModel}
+uses the NumPy function {\tt permutation}, rather than {\tt shuffle},
+because it returns a new array without modifying the data.
 
-For this dataset, Pearson's and Spearman's correlation coefficients
-are 0.07 and 0.09.  Those numbers indicate weak correlations, so we
-should wonder whether they might be due to chance.  As always, the question
-we'll answer is, ``If there is no relationship between these variables,
-what would be the chance of seeing a correlation as high as 0.07?''
-
-There are several ways we could model the null hypothesis, but one of the
-simplest is to shuffle the values of $x$ and $y$, like this:
+Here's the code that reads the data and runs the test:
 
 \begin{verbatim}
-def SimulateNull(xs, ys):
-    random.shuffle(xs)
-    random.shuffle(ys)
-    return thinkstats2.Corr(xs, ys)
+    live, firsts, others = first.MakeFrames()
+    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    data = live.agepreg.values, live.totalwgt_lb.values
+    ht = CorrelationPermute(data)
+    p_value = ht.PValue()
 \end{verbatim}
 
-This shuffle preserves the distribution of $x$ and $y$, but simulates
-a hypothetical world where there is no relationship between them.
-If we simulate this world 1000 times, we can see how often the null
-hypothesis yields a correlation that exceeds what we actually saw:
+In this case we use {\tt dropna} to drop any rows that are
+missing either of the variables we need.
 
-\begin{verbatim}
-def PValue(xs, ys, n=1000):
-    actual = thinkstats2.Corr(xs, ys)
+The computed p-value is 0;
+after 1000 iterations the largest simulated correlation is 0.04,
+which is less than the actual correlation, 0.07.  So although
+the observed correlation is small, it is statistically significant.
 
-    xs_copy = list(xs)
-    ys_copy = list(ys)
-
-    corrs = []
-    for i in range(n):
-        corr = SimulateNull(xs_copy, ys_copy)
-        corrs.append(corr)
-
-    hits = [corr for corr in corrs if abs(corr) >= abs(actual)]
-    p = len(hits) / float(n)
-    return p
-\end{verbatim}
-
-{\tt actual} is the correlation between $x$ and $y$ before shuffling.
-{\tt corrs} is the list of simulated correlations.  {\tt hits} is
-the number of simulated correlations that exceed {\tt actual}.
-And {\tt p} is the resulting p-value.
-
-In this case, I compare the absolute value of {\tt corr} and {\tt
-  actual}, so this is a two-sided test.  That's an appropriate choice
-in this case because the hypothesis I am testing is whether there is
-any relationship between these variables, positive or negative.  If I
-suspected (before looking at the data) that there was a positive
-relationship, I would use a one-sided test for that hypothesis.
-
-The result in this case is 0, which means that after 1000 attempts,
-the null hypothesis never yielded a correlation as high as 0.06.
-The p-value is not actually 0.  If we keep trying, we will get a hit
-eventually.  But the p-value is probably less than
-1 in 1000, so I would report $p < 0.001$.
-
-If we repeat the test with Spearman's correlation, the results are
-similar.
-
-This way of computing p-values is called a {\bf permutation test} because
-when we shuffle {\tt xs} and {\tt ys} we get a permutation of the
-original data.  Actually, shuffling either list is sufficient; shuffling
-both doesn't make it any more random.
-
-
-\section{Testing a linear regression}
-
-With the same data from the previous section, we can use linear
-least squares to estimate the slope and intercept of the relationship
-between birth weight and mother's age.  Here's the code:
-
-\begin{verbatim}
-    xs, ys = ReadData(data_dir)
-    inter, slope = thinkstats2.LeastSquares(xs, ys)
-\end{verbatim}
-
-The estimated value of {\tt inter} is 109 oz; the value of
-{\tt slope} is 0.28 oz/year.  It is important to present estimates
-like this in terms people can comprehend, so I would report
-slope as 2.8 ounces per decade, or say, ``If the mother is
-10 years older, we expect the baby to be 2.8 oz heavier.''
-
-Interpreted literally, the intercept is the expected weight of
-a baby if the mother is 0 years old.  Obviously, that doesn't
-mean anything, so I would suggest reporting the value of the
-fitted line for the mean or median age.  Here's the code that
-computes the fitted line and prints the median birth weight
-and age:
-
-\begin{verbatim}
-    fxs, fys = thinkstats2.FitLine(xs, inter, slope)
-    i = len(fxs) / 2
-    print('median weight, age', fxs[i], fys[i])
-\end{verbatim}
-
-If the mother is 24, we expect the baby to weigh 116 oz (or 7.25 pounds).
-
-Now that we have presented the results in human-comprehensible terms,
-let's get back to hypothesis testing.  As always, we would like to
-know whether the apparent relationship between these variables might
-be due to chance.
-
-One option is to use $R^2$ as a test statistic.  
-
-\begin{verbatim}
-    res = thinkstats2.Residuals(xs, ys, inter, slope)
-    R2 = thinkstats2.CoefDetermination(ys, res)
-\end{verbatim}
-
-The result is $R^2 = 0.0047$.  So, the p-value we
-want is the probability of seeing $R^2$ as big as that by chance.
-
-As it happens, we have already computed this p-value.  Recall that
-$R^2 = \rho^2$, so if $R^2$ exceeds 0.0047, the magnitude of $\rho$
-must exceed $0.07$, which is the correlation we saw in the previous
-section.  So a one-sided test of $R^2$ corresponds to a two-sided
-test of $\rho$.  Based on the results of the previous section, we
-conclude that the observed $R^2$ is statistically significant with
-$p < 0.001$.
-
-In addition, with linear regression we have the option of testing
-each estimated parameter.  For example, we might like answer either
-or both of these questions:
-
-\begin{itemize}
-
-\item If the actual intercept were 0, what would be the chance of
-seeing an intercept as big as 109 oz?
-
-\item If the actual slope were 0, what would be the chance of seeing
-a slope as big as 0.28 oz/year?
-
-\end{itemize}
-
-The second question is often relevant in practice.  The first question
-is not always relevant, unless we there is a theoretical reason to
-expect the intercept to be 0.
-
-To answer these questions, we model a null hypothesis
-and compute the probability that the estimated parameter exceeds
-the observed parameter under the null hypothesis.  For example,
-if we are testing whether the slope is significant, the null hypothesis
-is that the slope is actually 0.
-
-If the slope is 0, the line that minimizes squared error is
-$y = \ybar$; in this example, $\ybar$ is the mean birth weight.
-Here's the code that computes the resulting residuals:
-
-\begin{verbatim}
-    xs, ys = ReadData(data_dir)
-    inter = thinkstats2.Mean(ys)
-    slope = 0
-    fxs, fys = thinkstats2.FitLine(xs, inter, slope)
-    res = thinkstats2.Residuals(xs, ys, inter, slope)
-\end{verbatim}
-
-Using the fitted line and the residuals, we can generate a simulation
-of the null hypothesis by permutation:
-
-\begin{verbatim}
-def Permute(fxs, fys, res):
-    random.shuffle(res)
-    inter, slope = thinkstats2.LeastSquares(fxs, fys + res)
-    return inter, slope
-\end{verbatim}
-
-{\tt Permute} takes the fitted values, {\tt fxs} and {\tt fys} and the
-residuals, {\tt res}.  It shuffles the residuals, adds the shuffled
-residuals to the fitted {\tt fys} and then computes a least squares
-fit to the resulting simulated data.
-
-\begin{figure}
-% regress1.py
-\centerline{\includegraphics[height=2.5in]{figs/regress1.pdf}}
-\caption{Sampling distribution of the estimated slope.}
-\label{regress1}
-\end{figure}
-
-Each time we call {\tt Permute}, we get the result of another simulated
-experiment.  If we call it 1000 times, we can estimate the sampling
-distribution of {\tt slope} and {\tt intercept} under the null
-hypothesis:
-
-\begin{verbatim}
-def SamplingDistributions(fxs, fys, res, n=10):
-    res_copy = list(res)
-
-    t = []
-    for i in range(n):
-        estimates = Permute(fxs, fys, res)
-        t.append(estimates)
-
-    inters, slopes = zip(*t)
-    inter_cdf = thinkstats2.MakeCdfFromList(inters)
-    slope_cdf = thinkstats2.MakeCdfFromList(slopes)
-
-    return inter_cdf, slope_cdf
-\end{verbatim}
-
-{\tt SamplingDistributions} takes the fitted values, {\tt fxs} and {\tt fys},
-the residuals, {\tt res}, and the number of iterations, {\tt n}.
-It runs {\tt Permute} {\tt n} times and returns the accumulated
-sampling distributions of {\tt inter} and {\tt slope}.
-
-Figure~\ref{regress1} shows the sampling CDF of {\tt slope}.  The
-upper bound, after 1000 tries, is about 0.12 oz/year.  So the
-probability of seeing an estimated slope that exceeds the observed
-value, 0.28 oz/year, is less than 1 in 1000.  We conclude that the
-slope is statistically significant with $p < 0.001$.
-
-To test the intercept, we find the line with {\tt inter=0} that
-minimizes MSE, and use permutation to estimate the sampling
-distribution of {\tt inter}.  In this example, the intercept is also
-statistically significant with $p < 0.001$.
+This example is a reminder that ``statistically
+significant'' does not always mean that an effect is important,
+or significant in practice.  With a large enough data set, almost
+any correlation, or difference between groups, will be statistically
+significant.  But it's the size of the effect, not the p-value,
+that indicates whether the effect is important.
 
 
 \section{Testing proportions}
 \index{Chi-square test}
+
+Suppose you run a casino and you suspect that a customer has
+replaced a die provided by the casino with a ``crooked die;'' that
+is, one that has been tampered with to make one of the faces more
+likely to come up than the others.  You apprehend the alleged
+cheater and confiscate the die, but now you have to prove that it
+is crooked.
+\index{casino}
+\index{dice}
+\index{crooked die}
+
+You roll the die 60 times and get the following results:
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|c|c|}
+\hline
+Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
+\hline
+\hline
+Frequency &  8  &  9  &  19  &  6  &  8  &  10  \\
+\hline
+\end{tabular}
+\end{center}
+
+On average you expect each value to appear 10 times.  In this
+dataset, the value 3 appears more often than expected, and 4
+appears less often.  But are these differences statistically
+significant?
+
+To test this hypothesis, we can compute the expected frequency for
+each value, the difference between the expected and observed
+frequencies, and then add up the absolute differences.  In this
+example, the differences are -2, -1, 9, -4, -2, and 0, so the total
+absolute difference is 18.
+
+\begin{verbatim}
+
+\end{verbatim}
+
+
 
 In Section~\ref{threshold} we concluded that the apparent difference
 in mean pregnancy length for first babies and others was not
@@ -6680,36 +6623,6 @@ You can download the code I used in this section from
 % See \url{http://en.wiktionary.org/wiki/voila}!
 
 
-\begin{exercise}
-Suppose you run a casino and you suspect that a customer has
-replaced a die provided by the casino with a ``crooked die;'' that
-is, one that has been tampered with to make one of the faces more
-likely to come up than the others.  You apprehend the alleged
-cheater and confiscate the die, but now you have to prove that it
-is crooked.
-\index{casino}
-\index{dice}
-\index{crooked die}
-
-You roll the die 60 times and get the following results:
-
-\begin{center}
-\begin{tabular}{|l|c|c|c|c|c|c|}
-\hline
-Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
-\hline
-\hline
-Frequency &  8  &  9  &  19  &  6  &  8  &  10  \\
-\hline
-\end{tabular}
-\end{center}
-
-What is the chi-squared statistic for these values?  What is the
-probability of seeing a chi-squared value as large by chance?
-
-\end{exercise}
-
-
 \section{Power}
 \index{power}
 
@@ -6760,6 +6673,28 @@ as $x$, this test would reject the null hypothesis with probability $p$.''
 %2) Holm-Bonferroni method
 
 %3) publish everything and wait for consensus
+
+
+\section{Exercises}
+
+\begin{exercise}
+To investigate the effect of sample size on p-value, see what happens
+if you discard half of the data from the NSFG.  Hint: use {\tt
+  random.sample}.  What if you discard three-quarters of the data, and
+so on?
+\index{National Survey of Family Growth}
+\index{NSFG}
+
+What is the smallest sample size where the difference in mean birth
+weight is still significant with $\alpha$ = 5\%?  How much
+larger does the sample size have to be with $\alpha$ = 1\%?
+
+You can start with the code I used to generate the results in this
+section, which you can download from
+\url{http://thinkstats2.com/hypothesis.py}.  \index{{\tt
+    hypothesis.py}}
+
+\end{exercise}
 
 
 \section{Glossary}
@@ -6822,7 +6757,7 @@ if it is false.
 
 
 
-\chapter{Multiple regression}
+\chapter{Linear regression}
 
 \section{Least squares fit}
 
@@ -7035,6 +6970,157 @@ determination and Pearson's correlation coefficient, $\rho$:
 
 See \url{http://wikipedia.org/wiki/Howzzat}!
 \index{howzzat}
+
+
+\section{Testing a linear regression}
+
+With the same data from the previous section, we can use linear
+least squares to estimate the slope and intercept of the relationship
+between birth weight and mother's age.  Here's the code:
+
+\begin{verbatim}
+    xs, ys = ReadData(data_dir)
+    inter, slope = thinkstats2.LeastSquares(xs, ys)
+\end{verbatim}
+
+The estimated value of {\tt inter} is 109 oz; the value of
+{\tt slope} is 0.28 oz/year.  It is important to present estimates
+like this in terms people can comprehend, so I would report
+slope as 2.8 ounces per decade, or say, ``If the mother is
+10 years older, we expect the baby to be 2.8 oz heavier.''
+
+Interpreted literally, the intercept is the expected weight of
+a baby if the mother is 0 years old.  Obviously, that doesn't
+mean anything, so I would suggest reporting the value of the
+fitted line for the mean or median age.  Here's the code that
+computes the fitted line and prints the median birth weight
+and age:
+
+\begin{verbatim}
+    fxs, fys = thinkstats2.FitLine(xs, inter, slope)
+    i = len(fxs) / 2
+    print('median weight, age', fxs[i], fys[i])
+\end{verbatim}
+
+If the mother is 24, we expect the baby to weigh 116 oz (or 7.25 pounds).
+
+Now that we have presented the results in human-comprehensible terms,
+let's get back to hypothesis testing.  As always, we would like to
+know whether the apparent relationship between these variables might
+be due to chance.
+
+One option is to use $R^2$ as a test statistic.  
+
+\begin{verbatim}
+    res = thinkstats2.Residuals(xs, ys, inter, slope)
+    R2 = thinkstats2.CoefDetermination(ys, res)
+\end{verbatim}
+
+The result is $R^2 = 0.0047$.  So, the p-value we
+want is the probability of seeing $R^2$ as big as that by chance.
+
+As it happens, we have already computed this p-value.  Recall that
+$R^2 = \rho^2$, so if $R^2$ exceeds 0.0047, the magnitude of $\rho$
+must exceed $0.07$, which is the correlation we saw in the previous
+section.  So a one-sided test of $R^2$ corresponds to a two-sided
+test of $\rho$.  Based on the results of the previous section, we
+conclude that the observed $R^2$ is statistically significant with
+$p < 0.001$.
+
+In addition, with linear regression we have the option of testing
+each estimated parameter.  For example, we might like answer either
+or both of these questions:
+
+\begin{itemize}
+
+\item If the actual intercept were 0, what would be the chance of
+seeing an intercept as big as 109 oz?
+
+\item If the actual slope were 0, what would be the chance of seeing
+a slope as big as 0.28 oz/year?
+
+\end{itemize}
+
+The second question is often relevant in practice.  The first question
+is not always relevant, unless we there is a theoretical reason to
+expect the intercept to be 0.
+
+To answer these questions, we model a null hypothesis
+and compute the probability that the estimated parameter exceeds
+the observed parameter under the null hypothesis.  For example,
+if we are testing whether the slope is significant, the null hypothesis
+is that the slope is actually 0.
+
+If the slope is 0, the line that minimizes squared error is
+$y = \ybar$; in this example, $\ybar$ is the mean birth weight.
+Here's the code that computes the resulting residuals:
+
+\begin{verbatim}
+    xs, ys = ReadData(data_dir)
+    inter = thinkstats2.Mean(ys)
+    slope = 0
+    fxs, fys = thinkstats2.FitLine(xs, inter, slope)
+    res = thinkstats2.Residuals(xs, ys, inter, slope)
+\end{verbatim}
+
+Using the fitted line and the residuals, we can generate a simulation
+of the null hypothesis by permutation:
+
+\begin{verbatim}
+def Permute(fxs, fys, res):
+    random.shuffle(res)
+    inter, slope = thinkstats2.LeastSquares(fxs, fys + res)
+    return inter, slope
+\end{verbatim}
+
+{\tt Permute} takes the fitted values, {\tt fxs} and {\tt fys} and the
+residuals, {\tt res}.  It shuffles the residuals, adds the shuffled
+residuals to the fitted {\tt fys} and then computes a least squares
+fit to the resulting simulated data.
+
+\begin{figure}
+% regress1.py
+\centerline{\includegraphics[height=2.5in]{figs/regress1.pdf}}
+\caption{Sampling distribution of the estimated slope.}
+\label{regress1}
+\end{figure}
+
+Each time we call {\tt Permute}, we get the result of another simulated
+experiment.  If we call it 1000 times, we can estimate the sampling
+distribution of {\tt slope} and {\tt intercept} under the null
+hypothesis:
+
+\begin{verbatim}
+def SamplingDistributions(fxs, fys, res, n=10):
+    res_copy = list(res)
+
+    t = []
+    for i in range(n):
+        estimates = Permute(fxs, fys, res)
+        t.append(estimates)
+
+    inters, slopes = zip(*t)
+    inter_cdf = thinkstats2.MakeCdfFromList(inters)
+    slope_cdf = thinkstats2.MakeCdfFromList(slopes)
+
+    return inter_cdf, slope_cdf
+\end{verbatim}
+
+{\tt SamplingDistributions} takes the fitted values, {\tt fxs} and {\tt fys},
+the residuals, {\tt res}, and the number of iterations, {\tt n}.
+It runs {\tt Permute} {\tt n} times and returns the accumulated
+sampling distributions of {\tt inter} and {\tt slope}.
+
+Figure~\ref{regress1} shows the sampling CDF of {\tt slope}.  The
+upper bound, after 1000 tries, is about 0.12 oz/year.  So the
+probability of seeing an estimated slope that exceeds the observed
+value, 0.28 oz/year, is less than 1 in 1000.  We conclude that the
+slope is statistically significant with $p < 0.001$.
+
+To test the intercept, we find the line with {\tt inter=0} that
+minimizes MSE, and use permutation to estimate the sampling
+distribution of {\tt inter}.  In this example, the intercept is also
+statistically significant with $p < 0.001$.
 
 
 \section{Multiple regression}

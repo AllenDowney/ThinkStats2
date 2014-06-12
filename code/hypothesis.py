@@ -5,87 +5,44 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import first
 
 import thinkstats2
 import thinkplot
 
+import copy
 import random
 import numpy as np
 import matplotlib.pyplot as pyplot
 
 
-class HypothesisTest(object):
-    """Represents a hypothesis test."""
-
-    def __init__(self, data):
-        """Initializes.
-
-        data: data in whatever form is relevant
-        """
-        self.data = data
-        self.actual = self.TestStatistic(data)
-        self.MakeModel()
-        self.sample_stats = None
-        self.sample_cdf = None
-
-    def PValue(self, iters=1000):
-        """Computes the sample distribution of the test statistic and p-value.
-
-        iters: number of iterations
-
-        returns: Cdf object, float p-value
-        """
-        self.sample_stats = [self.TestStatistic(self.RunModel()) 
-                             for i in range(iters)]
-        self.sample_cdf = thinkstats2.MakeCdfFromList(self.sample_stats)
-
-        p_value = 1 - self.sample_cdf.Prob(self.actual)
-        return p_value
-
-    def MaxTestStat(self):
-        """Returns the largest test statistic seen during simulations.
-        """
-        return max(self.sample_stats)
-
-    def PlotCdf(self):
-        """Draws a Cdf with vertical lines at the observed test stat.
-        """
-        def VertLine(x):
-            """Draws a vertical line at x."""
-            xs = [x, x]
-            ys = [0, 1]
-            thinkplot.Plot(xs, ys, color='0.7')
-
-        VertLine(self.actual)
-
-        thinkplot.PrePlot(1)
-        thinkplot.Cdf(self.sample_cdf)
+class CoinTest(thinkstats2.HypothesisTest):
 
     def TestStatistic(self, data):
         """Computes the test statistic.
 
         data: data in whatever form is relevant        
         """
-        raise thinkstats2.UnimplementedMethodException()
-
-    def MakeModel(self):
-        """Build a model of the null hypothesis.
-        """
-        # default behavior is nothing
-        pass
+        heads, tails = data
+        test_stat = abs(heads - tails)
+        return test_stat
 
     def RunModel(self):
         """Run the model of the null hypothesis.
 
         returns: simulated data
         """
-        raise thinkstats2.UnimplementedMethodException()
+        heads, tails = self.data
+        n = heads + tails
+        sample = [random.choice('HT') for _ in range(n)]
+        hist = thinkstats2.Hist(sample)
+        data = hist['H'], hist['T']
+        return data
 
 
-class DiffMeansPermute(HypothesisTest):
+class DiffMeansPermute(thinkstats2.HypothesisTest):
 
     def TestStatistic(self, data):
         """Computes the test statistic.
@@ -113,6 +70,18 @@ class DiffMeansPermute(HypothesisTest):
         return data
 
 
+class DiffMeansOneSided(DiffMeansPermute):
+
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: data in whatever form is relevant        
+        """
+        group1, group2 = data
+        test_stat = group1.mean() - group2.mean()
+        return test_stat
+
+
 class DiffStdPermute(DiffMeansPermute):
 
     def TestStatistic(self, data):
@@ -121,7 +90,7 @@ class DiffStdPermute(DiffMeansPermute):
         data: data in whatever form is relevant        
         """
         group1, group2 = data
-        test_stat = abs(group1.std() - group2.std())
+        test_stat = group1.std() - group2.std()
         return test_stat
 
 
@@ -137,19 +106,77 @@ class DiffMeansResample(DiffMeansPermute):
         return group1, group2
 
 
-def main():
-    thinkstats2.RandomSeed(17)
+class CorrelationPermute(thinkstats2.HypothesisTest):
+    """Tests correlations by permutation."""
 
-    # get the data
-    live, firsts, others = first.MakeFrames()
-    mean_var = thinkstats2.MeanVar(live.prglngth)
-    print('(Mean, Var) of prglength for live births', mean_var)
-    data = firsts.prglngth.values, others.prglngth.values
+    def TestStatistic(self, data):
+        """Computes the test statistic.
 
+        data: tuple of xs and ys
+        """
+        xs, ys = data
+        test_stat = abs(thinkstats2.Corr(xs, ys))
+        return test_stat
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        xs, ys = self.data
+        xs = np.random.permutation(xs)
+        return xs, ys
+
+
+class DiceTest(thinkstats2.HypothesisTest):
+    """Tests correlations by permutation."""
+
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: tuple of xs and ys
+        """
+        observed = data
+        n = sum(self.data)
+        expected = np.ones(6) * n / 6
+        test_stat = sum(abs(observed - expected))
+        return test_stat
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        n = sum(self.data)
+        rolls = [random.randint(1,6) for _ in range(n)]
+        hist = thinkstats2.Hist(rolls)
+        xs, freqs = hist.Render()
+        return freqs
+
+
+class DiceChiTest(DiceTest):
+    """Tests correlations by permutation."""
+
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: tuple of xs and ys
+        """
+        observed = data
+        n = sum(self.data)
+        expected = np.ones(6) * n / 6
+        test_stat = sum((observed - expected)**2 / expected)
+        return test_stat
+
+
+def RunTests(data, iters=10000):
     # test the difference in means
     ht = DiffMeansPermute(data)
-    p_value = ht.PValue(iters=1000)
+    p_value = ht.PValue(iters=iters)
+    print('means permute two-sided')
     print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
 
     ht.PlotCdf()
     thinkplot.Save(root='hypothesis1',
@@ -160,8 +187,11 @@ def main():
     
     # test the difference in std
     ht = DiffStdPermute(data)
-    p_value = ht.PValue(iters=1000)
+    p_value = ht.PValue(iters=iters)
+    print('std permute one-sided')
     print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
 
     ht.PlotCdf()
     thinkplot.Save(root='hypothesis2',
@@ -171,9 +201,12 @@ def main():
                    legend=False) 
     
     # test the difference in means by resampling
-    ht = DiffStdPermute(data)
-    p_value = ht.PValue(iters=1000)
+    ht = DiffMeansResample(data)
+    p_value = ht.PValue(iters=iters)
+    print('means resample two-sided')
     print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
 
     ht.PlotCdf()
     thinkplot.Save(root='hypothesis3',
@@ -182,6 +215,55 @@ def main():
                    ylabel='CDF',
                    legend=False) 
     
+    # test the difference in means
+    ht = DiffMeansOneSided(data)
+    p_value = ht.PValue(iters=iters)
+    print('means permute one-sided')
+    print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
+
+
+def main():
+    thinkstats2.RandomSeed(19)
+
+    data = [8, 9, 19, 6, 8, 10]
+    dt = DiceTest(data)
+    print('dice test', dt.PValue())
+    dt = DiceChiTest(data)
+    print('dice test', dt.PValue())
+    dt.PlotCdf()
+    thinkplot.Show()
+    return
+
+    live, firsts, others = first.MakeFrames()
+    mean_var = thinkstats2.MeanVar(live.prglngth)
+
+    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    data = live.agepreg.values, live.totalwgt_lb.values
+    ht = CorrelationPermute(data)
+    p_value = ht.PValue()
+    print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
+    return
+
+    # compare birth weights
+    print('agepreg')
+    data = (firsts.totalwgt_lb.dropna().values,
+            others.totalwgt_lb.dropna().values)
+    RunTests(data)
+
+    # compare pregnancy lengths
+    print('prglngth')
+    data = firsts.prglngth.values, others.prglngth.values
+    RunTests(data)
+
+    # run the coin test
+    ct = CoinTest((140, 110))
+    pvalue = ct.PValue()
+    print('coin test p-value', pvalue)
+
 
 if __name__ == "__main__":
     main()
