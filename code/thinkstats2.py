@@ -978,6 +978,10 @@ class Cdf(object):
         p = self.ps[index - 1]
         return p
 
+    def Probs(self, xs):
+        """Gets probabilities for a sequence of values."""
+        return [self.Prob(x) for x in xs]
+
     def Value(self, p):
         """Returns InverseCDF(p), the value that corresponds to probability p.
 
@@ -2464,8 +2468,8 @@ class HypothesisTest(object):
         data: data in whatever form is relevant
         """
         self.data = data
-        self.actual = self.TestStatistic(data)
         self.MakeModel()
+        self.actual = self.TestStatistic(data)
         self.test_stats = None
         self.test_cdf = None
 

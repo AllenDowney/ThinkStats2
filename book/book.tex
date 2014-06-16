@@ -6107,8 +6107,8 @@ class HypothesisTest(object):
 
     def __init__(self, data):
         self.data = data
-        self.actual = self.TestStatistic(data)
         self.MakeModel()
+        self.actual = self.TestStatistic(data)
 
     def PValue(self, iters=1000):
         self.test_stats = [self.TestStatistic(self.RunModel()) 
@@ -6510,25 +6510,97 @@ You roll the die 60 times and get the following results:
 Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
 \hline
 \hline
-Frequency &  8  &  9  &  19  &  6  &  8  &  10  \\
+Frequency &  8  &  9  &  19  &  5  &  8  &  11  \\
 \hline
 \end{tabular}
 \end{center}
 
 On average you expect each value to appear 10 times.  In this
-dataset, the value 3 appears more often than expected, and 4
+dataset, the value 3 appears more often than expected, and the value 4
 appears less often.  But are these differences statistically
 significant?
 
 To test this hypothesis, we can compute the expected frequency for
 each value, the difference between the expected and observed
 frequencies, and then add up the absolute differences.  In this
-example, the differences are -2, -1, 9, -4, -2, and 0, so the total
-absolute difference is 18.
+example, the differences are -2, -1, 9, -5, -2, and 1, so the total
+absolute difference is 20.  How often would we expect to see
+a difference as big as that by chance?
+
+Here's a version of {\tt HypothesisTest} that answers that question:
 
 \begin{verbatim}
+class DiceTest(thinkstats2.HypothesisTest):
 
+    def TestStatistic(self, data):
+        observed = data
+        n = sum(observed)
+        expected = np.ones(6) * n / 6
+        test_stat = sum(abs(observed - expected))
+        return test_stat
+
+    def RunModel(self):
+        n = sum(self.data)
+        values = [1,2,3,4,5,6]
+        rolls = np.random.choice(values, n, replace=True)
+        hist = thinkstats2.Hist(rolls)
+        freqs = hist.Freqs(values)
+        return freqs
 \end{verbatim}
+
+The data are represented as a list of frequencies, so the observed
+values are {\tt [8, 9, 19, 5, 8, 11]} and the expected frequencies
+are all 10.  The test statistic is the sum of the absolute differences.
+
+The null hypothesis is that the die is fair, so we simulate
+that by drawing random samples from {\tt values}.
+{\tt RunModel} uses a Hist to compute and return the list of frequencies
+corresponding to {\tt values}.
+
+The p-value for this data is 0.13, which means that if the die is
+fair we expect to see the observed total deviation, or more, about
+13\% of the time.  So the apparent effect is not statistically
+significant.
+
+
+\section{Chi-squared tests}
+
+In the previous section we used total deviation as the test statistic.
+But for testing proportions it is more common to use the chi-squared
+statistic:
+%
+\[ \goodchi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
+%
+%% TODO: Consider using upper case chi, which is more strictly correct,
+%% but harder to distinguish from X.
+% 
+Where $O_i$ are the observed frequencies and $E_i$ are the expected
+frequencies.  Here's the Python code:
+
+\begin{verbatim}
+class DiceChiTest(DiceTest):
+
+    def TestStatistic(self, data):
+        observed = data
+        n = sum(observed)
+        expected = np.ones(6) * n / 6
+        test_stat = sum((observed - expected)**2 / expected)
+        return test_stat
+\end{verbatim}
+
+Squaring the deviations (rather than taking absolute value) gives
+more weight to large deviations.  Dividing through by {\tt expected}
+standardizes the deviations, although in this case it has no effect
+because the expected frequencies are all equal.
+
+Using a different test statistic yields different results.  In this
+example, the p-value using the chi-squared statistic is 0.04,
+substantially smaller than what we got with total deviations, 0.12.
+If we take the 5\% threshold seriously, we would consider this effect
+statistically significant.  But considering the two tests togther, I
+would say that the results are borderline.  I would not rule out the
+possibility that the die is crooked, but I would not convict the
+accused cheater.
 
 
 
@@ -6588,11 +6660,6 @@ early, etc.
 \item We compute some measure of the total deviation; this quantity
 is called the {\bf test statistic}.  The most common
 choice is the chi-square statistic:
-%
-\[ \goodchi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
-%
-%% Consider using upper case chi, which is more strictly correct,
-%% but harder to distinguish from X.
 
 \item We can use a Monte Carlo simulation to compute the p-value,
   which is the probability of seeing a chi-square statistic as high
@@ -6622,40 +6689,173 @@ You can download the code I used in this section from
 
 % See \url{http://en.wiktionary.org/wiki/voila}!
 
+\section{Errors}
+\index{errors}
+
+In classical hypothesis testing, an effect is considered statistically
+significant if the p-value is below some threshold, commonly 5\%.
+Naturally this procedure raises two question:
+
+\begin{itemize}
+
+\item If the effect is actually due to chance, what is the probability
+that we will wrongly consider it significant?  This
+probability is the {\bf false positive rate}.
+
+\item If the effect is real, what is the chance that the hypothesis
+test will fail?  This probability is the {\bf false negative rate}.
+
+\end{itemize}
+
+The false positive rate is relatively easy to compute: if the
+threshold is 5\%, the false positive rate is 5\%.  Here's why:
+
+\begin{itemize}
+
+\item If there is no real effect, the null hypothesis is true,
+  so we can compute the
+  distribution of the test statistic by simulating the null
+  hypothesis.  Suppose we store that distribution in a Cdf called
+  \verb"test_cdf".
+
+\item Each time we run an experiment, we get a test statistic, {\tt
+  stat}, which is drawn from \verb"test_cdf".  Then we compute a
+  p-value.  The p-value is the probability that a random value from
+  \verb"test_cdf" exceeds {\tt t}, which is \verb"1 - test_cdf[t]".
+
+\item The p-value is less than 5\% if \verb"test_cdf[t]" is greater
+  than 95\%; that is, if {\tt t} exceeds the 95th percentile.
+
+\item And how often does a value chosen from \verb"test_cdf" exceed
+  the 95th percentile?  5\% of the time.
+
+\end{itemize}
+
+So if you perform one hypothesis test with a 5\% threshold, you expect
+a false positive 1 time in 20.
+
+The false negative rate is harder to compute because it depends on
+the actual effect size, and normally we don't know that.  But the
+false negative rate can be used to interpret a negative test result.
 
 \section{Power}
-\index{power}
+\label{power}
 
-When the result of a hypothesis test is negative (that is, the effect is
-not statistically significant), can we conclude that the effect is not
-real?  That depends on the power of the test.
+For example, in Section~\ref{???} we found that the apparent difference
+in mean pregnancy length is not statistically significant.  Does that
+mean there is no difference at all?  Not necessarily.  The actual
+effect might be smaller, or we might have been unlucky.  To interpret
+this result, it is helpful to know the false negative rate,
+conditioned on a hypothetical effect size.
 
-Statistical {\bf power} is the probability that the test will be
-positive if the null hypothesis is false.  In general, the power of a
-test depends on the sample size, the magnitude of the effect, and the
-threshold $\alpha$.
+One way to do that is to use the observed samples as a model of the
+population and run simulated experiments by resampling.
+Here's the code:
 
-% TODO: replace this with the calculation
+\begin{verbatim}
+def FalseNegRate(data, num_runs=100):
+    group1, group2 = data
+    count = 0
 
-\begin{exercise}
-What is the power of the test in Section~\ref{threshold}, using
-$\alpha$ = 0.05 and assuming that the actual difference between the
-means is 0.078 weeks?
+    for i in range(num_runs):
+        sample1 = np.random.choice(group1, len(group1), replace=True)
+        sample2 = np.random.choice(group2, len(group2), replace=True)
+        ht = DiffMeansPermute((sample1, sample2))
+        p_value = ht.PValue(iters=101)
+        if p_value > 0.05:
+            count += 1
 
-You can estimate power by generating random samples from distributions
-with the given difference in the mean, testing the observed difference
-in the mean, and counting the number of positive tests.
+    return count / num_runs
+\end{verbatim}
 
-What is the power of the test with $\alpha$ = 0.10?
+{\tt FalseNegRate} takes data in the form of two sequences, one for
+each group.  Each time through the loop, it simulates an experiment by
+drawing a random sample from each group and running a hypothesis test.
+Then it checks the result and counts the number of false negatives.
 
-\end{exercise}
+Here's the code that tests pregnancy lengths:
 
-One way to report the power of a test, along with a negative result,
-is to say something like, ``If the apparent effect were as large
-as $x$, this test would reject the null hypothesis with probability $p$.''
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    data = firsts.prglngth.values, others.prglngth.values
+    neg_rate = FalseNegRate(data)
+\end{verbatim}
+
+The result is about 68\%, which means that if the estimated difference
+is correct and the actual difference in mean pregnancy length is 0.78
+weeks, we expect an experiment with this sample size to yield a
+negative test 68\% of the time.
+
+This result is often presented the other way around: if the actual
+difference is 0.78 weeks, we should expect a positive test only 32\%
+of the time.  This ``correct positive rate'' is called the {\bf power}
+of the test, or sometimes ``sensitivity''.  It reflects the ability of
+the test to detect an effect of a given size.
+
+In this example, the test had only a 32\% chance of yielding a
+positive result (again, assuming that the difference is 0.78 weeks).
+As a rule of thumb, a power of 80\% is considered acceptable, so
+we could say that this test was ``underpowered.''
+
+Thus the negative result does not imply that there is no difference
+between the groups; the strongest conclusion we can draw is that if
+there is actually a difference, it is probably too small to detect
+with this sample size.
 
 
-%\section{Discussion}
+
+\section{Discussion}
+
+Hypothesis testing is one of the most problematic areas of statistics.
+It is poorly understood, often done wrong, and more often interpreted
+incorrectly.  It is the topic of endless debates, some based on
+mistakes, others based on philosophical disagreements.  I won't try to
+catalog everything that can go wrong, but here are some common
+problems:
+
+\begin{itemize}
+
+\item Multiple tests: If you run one hypothesis test, the chance of a
+  false positive is about 1 in 20.  If you run 20 tests, you should
+  expect at least one false positive, most of the time.  If you ignore
+  the negative results and publish the positive ones, most of what you
+  publish will be wrong.
+
+\item Exploring and testing with the same data: Ideally you should
+  decide what to test, and how, before looking at the data.  If you
+  explore a large dataset, find a surprising effect, and then test
+  whether it is significant, you have a good chance of generating a
+  false negative.
+
+\item Treating the p-value as the result: For practical purposes the
+  size of the effect is more important than the p-value.  For example,
+  if you are comparing two groups, there is almost always some
+  difference between them.  If the sample size is large enough, the
+  difference will be statistically significant, even if it has no
+  practical effect.
+
+\end{itemize}
+
+Most of these problems are easy to address once you are aware of them.
+For example, if you run multiple tests, you can adjust the p-value
+threshold to compensate.  For details, see
+\url{https://en.wikipedia.org/wiki/Holm-Bonferroni_method}.
+
+To avoid exploring and testing with the same data, you can partition
+data into two parts, then use one for exploration and the other for
+testing.  Although this approach is not widely used, a related
+practice is: replication of previous results.  Informally, many
+scientists consider the first paper to report a new result to be
+exploratory.  Subsequent papers that replicate the result with new
+data are considered confirmatory.
+
+As it happens, we have an opportunity to confirm the results in this
+chapter.  The first edition of this book is based on Cycle 6 of the
+NSFG, which was released in 2002.  In October 2011, CDC released
+additional data based on interviews conducted from 2006--2010.
+
+
+
 
 %Pitfalls:
 

@@ -134,10 +134,10 @@ class DiceTest(thinkstats2.HypothesisTest):
     def TestStatistic(self, data):
         """Computes the test statistic.
 
-        data: tuple of xs and ys
+        data: list of frequencies
         """
         observed = data
-        n = sum(self.data)
+        n = sum(observed)
         expected = np.ones(6) * n / 6
         test_stat = sum(abs(observed - expected))
         return test_stat
@@ -148,9 +148,10 @@ class DiceTest(thinkstats2.HypothesisTest):
         returns: simulated data
         """
         n = sum(self.data)
-        rolls = [random.randint(1,6) for _ in range(n)]
+        values = [1,2,3,4,5,6]
+        rolls = np.random.choice(values, n, replace=True)
         hist = thinkstats2.Hist(rolls)
-        xs, freqs = hist.Render()
+        freqs = hist.Freqs(values)
         return freqs
 
 
@@ -160,13 +161,59 @@ class DiceChiTest(DiceTest):
     def TestStatistic(self, data):
         """Computes the test statistic.
 
-        data: tuple of xs and ys
+        data: list of frequencies
         """
         observed = data
-        n = sum(self.data)
+        n = sum(observed)
         expected = np.ones(6) * n / 6
         test_stat = sum((observed - expected)**2 / expected)
         return test_stat
+
+
+class PregLengthTest(thinkstats2.HypothesisTest):
+    """Tests correlations by permutation."""
+
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: pair of lists of pregnancy lengths
+        """
+        firsts, others = data
+        stat = self.ChiSquared(firsts) + self.ChiSquared(others)
+        return stat
+
+    def ChiSquared(self, lengths):
+        """Computes the chi-squared statistic.
+        
+        lengths: sequence of lengths
+
+        returns: float
+        """
+        hist = thinkstats2.Hist(lengths)
+        observed = np.array(hist.Freqs(self.values))
+        expected = self.expected_probs * hist.Total()
+        stat = sum((observed - expected)**2 / expected)
+        return stat
+
+    def MakeModel(self):
+        """Build a model of the null hypothesis.
+        """
+        firsts, others = self.data
+        self.n = len(firsts)
+        self.pool = np.hstack((firsts, others))
+
+        pmf = thinkstats2.Pmf(self.pool)
+        self.values = range(35, 46)
+        self.expected_probs = np.array(pmf.Probs(self.values))
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        np.random.shuffle(self.pool)
+        data = self.pool[:self.n], self.pool[self.n:]
+        return data
 
 
 def RunTests(data, iters=10000):
@@ -224,21 +271,57 @@ def RunTests(data, iters=10000):
     print('ts max =', ht.MaxTestStat())
 
 
-def main():
-    thinkstats2.RandomSeed(19)
-
-    data = [8, 9, 19, 6, 8, 10]
+def RunDiceTest():
+    data = [8, 9, 19, 5, 8, 11]
     dt = DiceTest(data)
-    print('dice test', dt.PValue())
+    print('dice test', dt.PValue(iters=10000))
     dt = DiceChiTest(data)
-    print('dice test', dt.PValue())
+    print('dice test', dt.PValue(iters=10000))
     dt.PlotCdf()
     thinkplot.Show()
-    return
+
+
+def FalseNegRate(data, num_runs=100):
+    """Compute the chance of a false negative based on resampling.
+
+    data: pair of sequences
+    num_runs: how many experiments to simulate
+
+    returns: float false negative rate
+    """
+    group1, group2 = data
+    count = 0
+
+    for i in range(num_runs):
+        sample1 = np.random.choice(group1, len(group1), replace=True)
+        sample2 = np.random.choice(group2, len(group2), replace=True)
+        ht = DiffMeansPermute((sample1, sample2))
+        p_value = ht.PValue(iters=101)
+        print('actual, p', ht.actual, p_value)
+        if p_value > 0.05:
+            count += 1
+
+    return count / num_runs
+
+
+def main():
+    thinkstats2.RandomSeed(17)
 
     live, firsts, others = first.MakeFrames()
-    mean_var = thinkstats2.MeanVar(live.prglngth)
+    data = firsts.prglngth.values, others.prglngth.values
+    neg_rate = FalseNegRate(data)
+    print('neg_rate', neg_rate)
+    return
 
+    # compare pregnancy lengths (chi-squared)
+    ht = PregLengthTest(data)
+    p_value = ht.PValue()
+    print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
+    return
+
+    # test correlation
     live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
     data = live.agepreg.values, live.totalwgt_lb.values
     ht = CorrelationPermute(data)
@@ -246,7 +329,6 @@ def main():
     print('p-value =', p_value)
     print('actual =', ht.actual)
     print('ts max =', ht.MaxTestStat())
-    return
 
     # compare birth weights
     print('agepreg')
@@ -256,13 +338,15 @@ def main():
 
     # compare pregnancy lengths
     print('prglngth')
-    data = firsts.prglngth.values, others.prglngth.values
     RunTests(data)
 
     # run the coin test
     ct = CoinTest((140, 110))
     pvalue = ct.PValue()
     print('coin test p-value', pvalue)
+
+    # run the dice test
+    RunDiceTest()
 
 
 if __name__ == "__main__":
