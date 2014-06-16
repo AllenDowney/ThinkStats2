@@ -7,6 +7,8 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function, division
 
+import nsfg
+import nsfg2
 import first
 
 import thinkstats2
@@ -191,7 +193,7 @@ class PregLengthTest(thinkstats2.HypothesisTest):
         """
         hist = thinkstats2.Hist(lengths)
         observed = np.array(hist.Freqs(self.values))
-        expected = self.expected_probs * hist.Total()
+        expected = self.expected_probs * len(lengths)
         stat = sum((observed - expected)**2 / expected)
         return stat
 
@@ -203,7 +205,7 @@ class PregLengthTest(thinkstats2.HypothesisTest):
         self.pool = np.hstack((firsts, others))
 
         pmf = thinkstats2.Pmf(self.pool)
-        self.values = range(35, 46)
+        self.values = range(35, 44)
         self.expected_probs = np.array(pmf.Probs(self.values))
 
     def RunModel(self):
@@ -216,69 +218,16 @@ class PregLengthTest(thinkstats2.HypothesisTest):
         return data
 
 
-def RunTests(data, iters=10000):
-    # test the difference in means
-    ht = DiffMeansPermute(data)
-    p_value = ht.PValue(iters=iters)
-    print('means permute two-sided')
-    print('p-value =', p_value)
-    print('actual =', ht.actual)
-    print('ts max =', ht.MaxTestStat())
-
-    ht.PlotCdf()
-    thinkplot.Save(root='hypothesis1',
-                   title='Permutation test',
-                   xlabel='difference in means (weeks)',
-                   ylabel='CDF',
-                   legend=False) 
-    
-    # test the difference in std
-    ht = DiffStdPermute(data)
-    p_value = ht.PValue(iters=iters)
-    print('std permute one-sided')
-    print('p-value =', p_value)
-    print('actual =', ht.actual)
-    print('ts max =', ht.MaxTestStat())
-
-    ht.PlotCdf()
-    thinkplot.Save(root='hypothesis2',
-                   title='Permutation test',
-                   xlabel='difference in std (weeks)',
-                   ylabel='CDF',
-                   legend=False) 
-    
-    # test the difference in means by resampling
-    ht = DiffMeansResample(data)
-    p_value = ht.PValue(iters=iters)
-    print('means resample two-sided')
-    print('p-value =', p_value)
-    print('actual =', ht.actual)
-    print('ts max =', ht.MaxTestStat())
-
-    ht.PlotCdf()
-    thinkplot.Save(root='hypothesis3',
-                   title='Resampling test',
-                   xlabel='difference in means (weeks)',
-                   ylabel='CDF',
-                   legend=False) 
-    
-    # test the difference in means
-    ht = DiffMeansOneSided(data)
-    p_value = ht.PValue(iters=iters)
-    print('means permute one-sided')
-    print('p-value =', p_value)
-    print('actual =', ht.actual)
-    print('ts max =', ht.MaxTestStat())
-
-
 def RunDiceTest():
+    """
+    """
     data = [8, 9, 19, 5, 8, 11]
     dt = DiceTest(data)
     print('dice test', dt.PValue(iters=10000))
     dt = DiceChiTest(data)
-    print('dice test', dt.PValue(iters=10000))
-    dt.PlotCdf()
-    thinkplot.Show()
+    print('dice chi test', dt.PValue(iters=10000))
+    #dt.PlotCdf()
+    #thinkplot.Show()
 
 
 def FalseNegRate(data, num_runs=100):
@@ -297,56 +246,155 @@ def FalseNegRate(data, num_runs=100):
         sample2 = np.random.choice(group2, len(group2), replace=True)
         ht = DiffMeansPermute((sample1, sample2))
         p_value = ht.PValue(iters=101)
-        print('actual, p', ht.actual, p_value)
         if p_value > 0.05:
             count += 1
 
     return count / num_runs
 
 
-def main():
-    thinkstats2.RandomSeed(17)
-
-    live, firsts, others = first.MakeFrames()
-    data = firsts.prglngth.values, others.prglngth.values
-    neg_rate = FalseNegRate(data)
-    print('neg_rate', neg_rate)
-    return
-
-    # compare pregnancy lengths (chi-squared)
-    ht = PregLengthTest(data)
-    p_value = ht.PValue()
-    print('p-value =', p_value)
-    print('actual =', ht.actual)
-    print('ts max =', ht.MaxTestStat())
-    return
-
-    # test correlation
-    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
-    data = live.agepreg.values, live.totalwgt_lb.values
-    ht = CorrelationPermute(data)
-    p_value = ht.PValue()
+def PrintTest(p_value, ht):
+    """
+    """
     print('p-value =', p_value)
     print('actual =', ht.actual)
     print('ts max =', ht.MaxTestStat())
 
-    # compare birth weights
-    print('agepreg')
-    data = (firsts.totalwgt_lb.dropna().values,
-            others.totalwgt_lb.dropna().values)
-    RunTests(data)
+
+def RunTests(data, iters=1000):
+    """
+    """
+
+    # test the difference in means
+    ht = DiffMeansPermute(data)
+    p_value = ht.PValue(iters=iters)
+    print('\nmeans permute two-sided')
+    PrintTest(p_value, ht)
+
+    ht.PlotCdf()
+    thinkplot.Save(root='hypothesis1',
+                   title='Permutation test',
+                   xlabel='difference in means (weeks)',
+                   ylabel='CDF',
+                   legend=False) 
+    
+    # test the difference in means one-sided
+    ht = DiffMeansOneSided(data)
+    p_value = ht.PValue(iters=iters)
+    print('\nmeans permute one-sided')
+    PrintTest(p_value, ht)
+
+    # test the difference in std
+    ht = DiffStdPermute(data)
+    p_value = ht.PValue(iters=iters)
+    print('\nstd permute one-sided')
+    PrintTest(p_value, ht)
+
+    #ht.PlotCdf()
+    #thinkplot.Save(root='hypothesis2',
+    #               title='Permutation test',
+    #               xlabel='difference in std (weeks)',
+    #               ylabel='CDF',
+    #               legend=False) 
+    
+    # test the difference in means by resampling
+    ht = DiffMeansResample(data)
+    p_value = ht.PValue(iters=iters)
+    print('\nmeans resample two-sided')
+    PrintTest(p_value, ht)
+
+    #ht.PlotCdf()
+    #thinkplot.Save(root='hypothesis3',
+    #               title='Resampling test',
+    #               xlabel='difference in means (weeks)',
+    #               ylabel='CDF',
+    #               legend=False) 
+
+
+def ReplicateTests():    
+    """Replicates tests with the new NSFG data."""
+
+    live, firsts, others = nsfg2.MakeFrames()
 
     # compare pregnancy lengths
-    print('prglngth')
-    RunTests(data)
+    print('\nprglngth2')
+    data = firsts.prglngth.values, others.prglngth.values
+    ht = DiffMeansPermute(data)
+    p_value = ht.PValue(iters=1000)
+    print('means permute two-sided')
+    PrintTest(p_value, ht)
+
+    print('\nbirth weight 2')
+    data = (firsts.totalwgt_lb.dropna().values,
+            others.totalwgt_lb.dropna().values)
+    ht = DiffMeansPermute(data)
+    p_value = ht.PValue(iters=1000)
+    print('means permute two-sided')
+    PrintTest(p_value, ht)
+
+    # test correlation
+    live2 = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    data = live2.agepreg.values, live2.totalwgt_lb.values
+    ht = CorrelationPermute(data)
+    p_value = ht.PValue()
+    print('\nage weight correlation 2')
+    PrintTest(p_value, ht)
+
+    # compare pregnancy lengths (chi-squared)
+    data = firsts.prglngth.values, others.prglngth.values
+    ht = PregLengthTest(data)
+    p_value = ht.PValue()
+    print('\npregnancy length chi-squared 2')
+    PrintTest(p_value, ht)
+
+
+def main():
+    thinkstats2.RandomSeed(17)
 
     # run the coin test
     ct = CoinTest((140, 110))
     pvalue = ct.PValue()
     print('coin test p-value', pvalue)
 
+    # compare pregnancy lengths
+    print('\nprglngth')
+    live, firsts, others = first.MakeFrames()
+    data = firsts.prglngth.values, others.prglngth.values
+    RunTests(data)
+
+    # compare birth weights
+    print('\nbirth weight')
+    data = (firsts.totalwgt_lb.dropna().values,
+            others.totalwgt_lb.dropna().values)
+    ht = DiffMeansPermute(data)
+    p_value = ht.PValue(iters=1000)
+    print('means permute two-sided')
+    PrintTest(p_value, ht)
+
+    # test correlation
+    live2 = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    data = live2.agepreg.values, live2.totalwgt_lb.values
+    ht = CorrelationPermute(data)
+    p_value = ht.PValue()
+    print('\nage weight correlation')
+    PrintTest(p_value, ht)
+
     # run the dice test
     RunDiceTest()
+
+    # compare pregnancy lengths (chi-squared)
+    data = firsts.prglngth.values, others.prglngth.values
+    ht = PregLengthTest(data)
+    p_value = ht.PValue()
+    print('\npregnancy length chi-squared')
+    PrintTest(p_value, ht)
+
+    # compute the false negative rate for difference in pregnancy length
+    data = firsts.prglngth.values, others.prglngth.values
+    neg_rate = FalseNegRate(data)
+    print('neg_rate', neg_rate)
+
+    # run the tests with new nsfg data
+    ReplicateTests()
 
 
 if __name__ == "__main__":

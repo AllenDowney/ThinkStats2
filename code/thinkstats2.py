@@ -2441,6 +2441,7 @@ def ReadStataDct(dct_file):
             start = int(match.group(1))
             t = line.split()
             vtype, name, fstring = t[1:4]
+            name = name.lower()
             if vtype.startswith('str'):
                 vtype = str
             else:

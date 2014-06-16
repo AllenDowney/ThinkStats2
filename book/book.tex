@@ -6025,15 +6025,15 @@ about downloading and working with this code, see Section~\ref{code}.
 \index{apparent effect}
 
 Exploring the data from the NSFG, we saw several ``apparent effects,''
-including a number of differences between first babies and others.
+including differences between first babies and others.
 So far we have taken these effects at face value; in this chapter,
-finally, we put them to the test.
+we put them to the test.
 \index{National Survey of Family Growth}
 \index{NSFG}
 
 The fundamental question we want to address is whether the effects
-we see in a sample are likely to hold for the entire population.
-For example, in the NSFG sample we see a difference in the mean pregnancy
+we see in a sample are likely to appear in the larger population.
+For example, in the NSFG sample we see a difference in mean pregnancy
 length for first babies and others.  We would like to know if
 that effect reflects a real difference for women
 in the U.S., or if it might appear in the sample by chance.
@@ -6076,13 +6076,12 @@ seeing such an effect by chance?''  Here's how we answer that question:
 \item The last step is to interpret the result.  If the p-value is
   low, the effect is said to be {\bf statistically significant}, which
   means that it is unlikely to have occurred by chance.  In that case
-  we infer that the effect is more likely to be real; that is, to
-  reflect an effect in the general population.  \index{statistically
-    significant} \index{significant}
+  we infer that the effect is more likely to appear in the larger
+  population.  \index{statistically significant} \index{significant}
 
 \end{itemize}
 
-The underlying logic of this process is similar to a proof by
+The logic of this process is similar to a proof by
 contradiction.  To prove a mathematical statement, A, you assume
 temporarily that A is false.  If that assumption leads to a
 contradiction, you conclude that A must actually be true.
@@ -6114,8 +6113,6 @@ class HypothesisTest(object):
         self.test_stats = [self.TestStatistic(self.RunModel()) 
                            for _ in range(iters)]
 
-        self.test_cdf = Cdf(self.test_stats)
-
         count = sum(1 for x in self.test_stats if x >= self.actual)
         return count / iters
 
@@ -6129,37 +6126,33 @@ class HypothesisTest(object):
         raise UnimplementedMethodException()
 \end{verbatim}
 
-{\tt HypothesisTest} is an abstract parent class.  It provides
-implementation of \verb"__init__" and {\tt PValue}.  Child
-classes inherit these methods and provide implementation for
-{\tt TestStatistic}, {\tt RunModel}, and optionally {\tt MakeModel}.
+{\tt HypothesisTest} is an abstract parent class that provides
+complete definitions for some methods, and place-keepers for others.
+Child classes based on {\tt HypothesisTest} inherit \verb"__init__"
+and {\tt PValue} and provide implementations for {\tt TestStatistic},
+{\tt RunModel}, and optionally {\tt MakeModel}.
 
-\verb"__init__" takes as a parameter the data in whatever form
-is appropriate.  It passes the data to {\tt TestStatistic}, which
-computes the size of the effect in the actual sample.  It also
+\verb"__init__" takes the data in whatever form is appropriate.  It
 calls {\tt RunModel}, which builds a representation of the null
-hypothesis.
+hypothesis, then passes the data to {\tt TestStatistic}, which
+computes the size of the effect in the sample.
 
 {\tt PValue} computes the probability of the apparent effect under
 the null hypothesis.  It takes as a parameter {\tt iters}, which is
-the number of times to simulate the null hypothesis.  It calls
-{\tt RunModel}, which returns the result of the simulation, which
-should be ``fake'' data in the same format as the actual data.
-
-The first line of {\tt PValue} computes the test statistic for each
-simulated dataset and stores the results: \verb"test_stats" is the
-list of simulated test statistics; \verb"test_cdf" is their CDF.  The
-p-value is just the fraction of elements in \verb"test_stats" that
+the number of simulations to run.  The first line generates simulated
+data, computes test statistics, and stored them in
+\verb"test_stats".
+The result is
+the fraction of elements in \verb"test_stats" that
 exceed or equal the observed test statistic, {\tt self.actual}.
 
-As a simple example\footnote{}, suppose we toss a coin 250 times and
-see 140 heads and 110 tails.  Based on this result, we might suspect
-that the coin is biased; that is, more likely to land heads.  To test
-this hypothesis, we will compute the probability of seeing such a big
-difference if the coin is actually fair.
-
-{\tt CoinTest} is child class of {\tt HypothesisTest} that answers
-this question:
+As a simple example\footnote{Adapted from MacKay, {\it Information
+    Theory, Inference, and Learning Algorithms}, 2003.}, suppose we
+toss a coin 250 times and see 140 heads and 110 tails.  Based on this
+result, we might suspect that the coin is biased; that is, more likely
+to land heads.  To test this hypothesis, we compute the
+probability of seeing such a big difference if the coin is actually
+fair:
 
 \begin{verbatim}
 class CoinTest(thinkstats2.HypothesisTest):
@@ -6178,16 +6171,15 @@ class CoinTest(thinkstats2.HypothesisTest):
         return data
 \end{verbatim}
 
-For this example, I represent the data as a pair of
+The parameter, {\tt data}, is a pair
 integers: the number of heads and tails.  The test statistic is
 the absolute difference between them, so {\tt self.actual}
 is 30.
 
-{\tt RunModel} simulates coin tosses assuming the null hypothesis
-that the coin is actually fair.  It
-generates a sample of 250 tosses,
-uses a Hist to count the number of heads and tails, and returns
-a pair of integers.
+{\tt RunModel} simulates coin tosses assuming that the coin is
+actually fair.  It generates a sample of 250 tosses, uses {\tt Hist}
+to count the number of heads and tails, and returns a pair of
+integers.
 
 Now all we have to do is instantiate {\tt CoinTest} and call
 {\tt PValue}:
@@ -6197,30 +6189,30 @@ Now all we have to do is instantiate {\tt CoinTest} and call
     pvalue = ct.PValue()
 \end{verbatim}
 
-The result is about 0.07, which means that if the coin is actually
+The result is about 0.07, which means that if the coin is
 fair, we expect to see a difference as big as 30 about 7\% of the
 time.
 
-How should we interpret this result?  In practice, people often
-consider 5\% to be the threshold of statistical significance.  If the
+How should we interpret this result?  By convention,
+5\% is the threshold of statistical significance.  If the
 p-value is less than 5\%, the effect is considered significant; otherwise
 it is not.
 
 But the choice of 5\% is arbitrary, and (as we will see later) the
-p-value we get depends on the choice of the test statistics and
+p-value depends on the choice of the test statistics and
 the model of the null hypothesis.  So p-values should not be considered
 precise measurements.
 
-Instead I recommend interpreting p-values according to their order
-of magnitude: if the p-value is less than 1\%, the effect is unlikely
-to be due to chance; if it is greater than 10\% it can plausibly
+Instead I recommend interpreting p-values according to their order of
+magnitude: if the p-value is less than 1\%, the effect is unlikely to
+be due to chance; if it is greater than 10\%, the effect can plausibly
 be explained by chance.  P-values between 1\% and 10\% should be
-considered borderline.  So in this example I would conclude that
-the data do not provide strong evidence that the coin is biased
-or not.
+considered borderline.  So in this example I would conclude that the
+data do not provide strong evidence that the coin is biased or not.
 
 
 \section{Testing a difference in means}
+\label{testing}
 \index{mean, difference in}
 
 One of the most common effects to test is a difference in mean
@@ -6235,12 +6227,10 @@ statistically significant.
 
 For these examples, the null hypothesis is that the distributions
 for the two groups are the same.  One way to model the null
-hypothesis is by {\bf permutation}; that is, we can take birth
-weights for first babies and others and shuffle them, treating
-the two groups as one big group.
+hypothesis is by {\bf permutation}; that is, we can take values
+for first babies and others and shuffle them, treating
+the two groups as one big group:
 \index{null hypothesis}
-
-Here's the code that tests a difference in means by permutation:
 
 \begin{verbatim}
 class DiffMeansPermute(thinkstats2.HypothesisTest):
@@ -6261,15 +6251,15 @@ class DiffMeansPermute(thinkstats2.HypothesisTest):
         return data
 \end{verbatim}
 
-The data are represented with a pair of sequences, one for each
+The parameter, {\tt data}, is a pair of sequences, one for each
 group.  The test statistic is the absolute difference in the means.
 
 {\tt MakeModel} records the sizes of the groups, {\tt n} and
 {\tt m}, and combines the data from the groups into one NumPy
-array, {\tt pool}.
+array, {\tt self.pool}.
 
 {\tt RunModel} simulates the null hypothesis by shuffling the
-pool of values and splitting into two groups with sizes {\tt n}
+pooled values and splitting them into two groups with sizes {\tt n}
 and {\tt m}.  As always, the return value from {\tt RunModel} has
 the same format as the observed data.
 
@@ -6284,7 +6274,7 @@ To test the difference in pregnancy length, we run:
 
 {\tt MakeFrames} reads the NSFG data and returns DataFrames
 representing all live births, first babies, and others.
-Then we extract pregnancy lengths as NumPy arrays, pass them as
+We extract pregnancy lengths as NumPy arrays, pass them as
 data to {\tt DiffMeansPermute}, and compute the p-value.  The
 result is about 0.17, which means that we expect to see a difference
 as big as the observed effect about 17\% of the time.  So
@@ -6299,7 +6289,7 @@ hypothesis.}
 \end{figure}
 
 {\tt HypothesisTest} provides {\tt PlotCdf}, which plots the
-distribution of the test statistic, with a gray line indicating
+distribution of the test statistic and a gray line indicating
 the observed effect size:
 
 \begin{verbatim}
@@ -6308,15 +6298,15 @@ the observed effect size:
                    ylabel='CDF')
 \end{verbatim}
 
-Figure~\ref{hypothesis1} shows the result.  The gray line indicates
-the observed difference, 0.078 weeks.  The CDF intersects the gray
-line at 0.83, which is the complement of the p-value, 0.17. 
+Figure~\ref{hypothesis1} shows the result.  The CDF intersects the
+observed difference at 0.83, which is the complement of the p-value,
+0.17.
 
 If we run the same analysis with birth weight, the computed p-value
-is 0, which means that the simulation never yielded an effect
-as big as the observed difference, 0.12 lbs.  After 1000 attempts,
-the biggest simulated difference is 0.10 lbs.  So we would
-report that the p-value is less than $1/1000$, or 0.001, and
+is 0; after 1000 attempts,
+the simulation never yielded an effect
+as big as the observed difference, 0.12 lbs.  So we would
+report $p < 0.001$, and
 conclude that the difference in birth weight is statistically
 significant.
 
@@ -6324,15 +6314,12 @@ significant.
 \section{Other test statistics}
 
 Choosing the best test statistic depends on what question you are
-trying to address, and sometimes depends on
-the distribution of the data.
+trying to address.  For example, if the relevant question is whether
+pregnancy lengths are different for first
+babies, then it makes sense to test the absolute difference in means,
+as we did in the previous section.
 
-For example, if the relevant question is whether pregnancy lengths
-are different, one way or the other, for first babies, then it makes
-sense to test the absolute difference in means, as we did in the
-previous section.
-
-If we had some previous reason to think that first babies are likely
+If we had some reason to think that first babies are likely
 to be late, then we would not take the absolute value of the difference;
 instead we would use this test statistic:
 
@@ -6350,22 +6337,22 @@ from {\tt DiffMeansPermute}; the only difference is that
 {\tt TestStatistic} does not take the absolute value of the
 difference.  This kind of test is called {\bf one-sided} because
 it only counts one side of the distribution of differences.  The
-previous test, using both sides, is called {\tt two-sided}.
+previous test, using both sides, is {\bf two-sided}.
 
 For this version of the test, the p-value is 0.09.  In general
 the p-value for a one-sided test is about half the p-value for
 a two-sided test, depending on the shape of the distribution.
 
-The one-sided hypothesis, that first babies are born late, is
-more specific that the two-sided hypothesis, so the p-value is smaller.
-But in this example the result, even for the stronger hypothesis,
-is not statistically significant.
+The one-sided hypothesis, that first babies are born late, is more
+specific than the two-sided hypothesis, so the p-value is smaller.
+But even for the stronger hypothesis, the difference is
+not statistically significant.
 
-Even if mean pregnancy length is the same for first babies and others,
-maybe the standard deviation is different.  In Section~\ref{}, we
-saw some evidence that first babies are more likely to be early or
-late, and less likely to be on time.  So we might hypothesize that
-the standard deviation is higher.  Here's how we can test that:
+We can use the same framework to test for a difference in standard
+deviation.  In Section~\ref{visualization}, we saw some evidence that
+first babies are more likely to be early or late, and less likely to
+be on time.  So we might hypothesize that the standard deviation is
+higher.  Here's how we can test that:
 
 \begin{verbatim}
 class DiffStdPermute(DiffMeansPermute):
@@ -6376,73 +6363,28 @@ class DiffStdPermute(DiffMeansPermute):
         return test_stat
 \end{verbatim}
 
-This is a one-sided test because the hypothesis under test is
-that the standard deviation for first babies is higher, not just
-different.  The p-value is 0.09, again not statistically
-significant. 
-
-
-\section{Other models}
-
-In the previous section we simulated the null hypothesis by
-permutation; that is, we treated the observed values as if they
-represented the entire population, and randomly assigned the
-members of the population to the two groups.
-
-An alternative is to compute the distribution of the observed
-values and then draw a random sample from that distribution.
-This process is called {\bf resampling}.  Here's how you could
-test a difference in means using resampling:
-
-\begin{verbatim}
-class DiffMeansResample(DiffMeansPermute):
-
-    def RunModel(self):
-        group1 = np.random.choice(self.pool, self.n, replace=True)
-        group2 = np.random.choice(self.pool, self.m, replace=True)
-        return group1, group2
-\end{verbatim}
-
-This version inherits {\tt TestStatistic} and {\tt MakeModel} 
-from {\tt DiffMeansPermute}.  The only difference is in {\tt RunModel},
-which draws random samples from the observed values with replacement.
-
-Because the same value might be selected more than once, resampling is
-less constrained than permutation, so we expect more variability in
-the test statistic and a higher p-value.  But the difference is small:
-the p-value for the difference in pregnancy lengths is 0.17 by
-resampling, compared to 0.16 by permutation.
-
-The two models are based on slightly difference assumptions, and in
-this example there is no compelling reason to choose one or the other.
-But in general p-values depend on the choice of the null hypothesis;
-different models can yield very different results.
-
+This is a one-sided test because the hypothesis is that the standard
+deviation for first babies is higher, not just different.  The p-value
+is 0.09, which is not statistically significant.
 
 
 \section{Testing a correlation}
 
-We can use the {\tt HypothesisTest} framework to test whether
-an observed correlation is statistically significant.
+This framework can also test correlations.  For example, in the NSFG
+data set, the correlation between birth weight and mother's age is
+about 0.07.  It seems like older mothers have heavier babies.  But
+could this effect be due to chance?
 
-For example, in the NSFG data set, the correlation between
-birth weight and mother's age is xxx.  Apparently older mothers
-tend to have heavier babies.  But could this effect be due to
-chance?
-
-To answer that question, we have to choose a test statistic.
-If we had reason to believe that the correlation was positive,
-we would do a one-sided test using correlation as the test
-statistic.  But if we had not background knowledge, we would
-probably do a two-sided test using the absolute value of
-correlation.
+For the test statistic, I'll use
+Pearson's correlation, but Spearman's would work as well.
+If we had reason to expect positive correlation, we would do a
+one-sided test.  But since we have no such reason, I'll
+do a two-sided test using the absolute value of correlation.
 
 The null hypothesis is that there is no correlation between mother's
 age and birth weight.  By shuffling the observed values, we can
-simulate an alternate universe where the distributions of age and
-birth weight are the same, but where the variables are unrelated.
-
-Here's the code:
+simulate a world where the distributions of age and
+birth weight are the same, but where the variables are unrelated:
 
 \begin{verbatim}
 class CorrelationPermute(thinkstats2.HypothesisTest):
@@ -6458,10 +6400,9 @@ class CorrelationPermute(thinkstats2.HypothesisTest):
         return xs, ys
 \end{verbatim}
 
-{\tt data} is a tuple of sequences.  The test statistic is the
-absolute value of Pearson's correlation.  {\tt RunModel}
-uses the NumPy function {\tt permutation}, rather than {\tt shuffle},
-because it returns a new array without modifying the data.
+{\tt data} is a pair of sequences.  {\tt TestStatistic} computes the
+absolute value of Pearson's correlation.  {\tt RunModel} shuffles the
+{\tt xs} and returns simulated data.
 
 Here's the code that reads the data and runs the test:
 
@@ -6473,42 +6414,35 @@ Here's the code that reads the data and runs the test:
     p_value = ht.PValue()
 \end{verbatim}
 
-In this case we use {\tt dropna} to drop any rows that are
-missing either of the variables we need.
+I use {\tt dropna} with the {\tt subset} argument to drop rows
+that are missing either of the variables we need.
 
-The computed p-value is 0;
-after 1000 iterations the largest simulated correlation is 0.04,
-which is less than the actual correlation, 0.07.  So although
-the observed correlation is small, it is statistically significant.
+The actual correlation is 0.07.  The computed p-value is 0; after 1000
+iterations the largest simulated correlation is 0.04.  So although the
+observed correlation is small, it is statistically significant.
 
-This example is a reminder that ``statistically
-significant'' does not always mean that an effect is important,
-or significant in practice.  With a large enough data set, almost
-any correlation, or difference between groups, will be statistically
-significant.  But it's the size of the effect, not the p-value,
-that indicates whether the effect is important.
+This example is a reminder that ``statistically significant'' does not
+always mean that an effect is important, or significant in practice.
+It only means that it is unlikely to have occurred by chance.
 
 
 \section{Testing proportions}
 \index{Chi-square test}
 
-Suppose you run a casino and you suspect that a customer has
-replaced a die provided by the casino with a ``crooked die;'' that
-is, one that has been tampered with to make one of the faces more
-likely to come up than the others.  You apprehend the alleged
+Suppose you run a casino and you suspect that a customer is
+using a ``crooked die;'' that
+is, one that has been modified to make one of the faces more
+likely than the others.  You apprehend the alleged
 cheater and confiscate the die, but now you have to prove that it
-is crooked.
+is crooked.  You roll the die 60 times and get the following results:
 \index{casino}
 \index{dice}
 \index{crooked die}
-
-You roll the die 60 times and get the following results:
 
 \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|c|}
 \hline
 Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
-\hline
 \hline
 Frequency &  8  &  9  &  19  &  5  &  8  &  11  \\
 \hline
@@ -6522,10 +6456,11 @@ significant?
 
 To test this hypothesis, we can compute the expected frequency for
 each value, the difference between the expected and observed
-frequencies, and then add up the absolute differences.  In this
-example, the differences are -2, -1, 9, -5, -2, and 1, so the total
-absolute difference is 20.  How often would we expect to see
-a difference as big as that by chance?
+frequencies, and the total absolute difference.  In this
+example, we expect each side to come up 10 times out of 60; the
+deviations from this expectation are -2, -1, 9, -5, -2, and 1; so the
+total absolute difference is 20.  How often would we see a
+difference as big as that by chance?
 
 Here's a version of {\tt HypothesisTest} that answers that question:
 
@@ -6541,21 +6476,20 @@ class DiceTest(thinkstats2.HypothesisTest):
 
     def RunModel(self):
         n = sum(self.data)
-        values = [1,2,3,4,5,6]
+        values = [1, 2, 3, 4, 5, 6]
         rolls = np.random.choice(values, n, replace=True)
         hist = thinkstats2.Hist(rolls)
         freqs = hist.Freqs(values)
         return freqs
 \end{verbatim}
 
-The data are represented as a list of frequencies, so the observed
-values are {\tt [8, 9, 19, 5, 8, 11]} and the expected frequencies
+The data are represented as a list of frequencies: the observed
+values are {\tt [8, 9, 19, 5, 8, 11]}; the expected frequencies
 are all 10.  The test statistic is the sum of the absolute differences.
 
-The null hypothesis is that the die is fair, so we simulate
-that by drawing random samples from {\tt values}.
-{\tt RunModel} uses a Hist to compute and return the list of frequencies
-corresponding to {\tt values}.
+The null hypothesis is that the die is fair, so we simulate that by
+drawing random samples from {\tt values}.  {\tt RunModel} uses {\tt
+  Hist} to compute and return the list of frequencies.
 
 The p-value for this data is 0.13, which means that if the die is
 fair we expect to see the observed total deviation, or more, about
@@ -6588,113 +6522,110 @@ class DiceChiTest(DiceTest):
         return test_stat
 \end{verbatim}
 
-Squaring the deviations (rather than taking absolute value) gives
+Squaring the deviations (rather than taking absolute values) gives
 more weight to large deviations.  Dividing through by {\tt expected}
 standardizes the deviations, although in this case it has no effect
 because the expected frequencies are all equal.
 
-Using a different test statistic yields different results.  In this
-example, the p-value using the chi-squared statistic is 0.04,
-substantially smaller than what we got with total deviations, 0.12.
+The p-value using the chi-squared statistic is 0.04,
+substantially smaller than what we got using total deviation, 0.12.
 If we take the 5\% threshold seriously, we would consider this effect
 statistically significant.  But considering the two tests togther, I
 would say that the results are borderline.  I would not rule out the
 possibility that the die is crooked, but I would not convict the
 accused cheater.
 
+\section{First babies again}
 
+Earlier in this chapter we looked at pregnancy lengths for first
+babies and others, and concluded that the apparent differences in
+mean and standard deviation are not statistically signficant.  But in
+Section~\ref{visualization}, we saw several apparent differences
+in the distribution of pregnancy length, especially in the range from
+35 to 43 weeks.  To see whether those differences are statistically
+significant, we can use a test based on a chi-squared statistic.
 
-In Section~\ref{threshold} we concluded that the apparent difference
-in mean pregnancy length for first babies and others was not
-significant.  But in Section~\ref{visualization}, when we computed
-relative risk, we saw that first babies are more likely to be early,
-less likely to be on time, and more likely to be late.
-\index{relative risk}
-\index{pregnancy length}
-\index{length!pregnancy}
+The code combines elements from previous examples, so it is
+a bit more complex.  Here's the code that makes and runs the model:
 
-So maybe the distributions have the same mean and different variance.
-We could test the significance of the difference in variance, but
-variances are less robust than means, and hypothesis tests for
-variance often behave badly.
-\index{mean}
-\index{variance}
-\index{hypothesis}
+\begin{verbatim}
+class PregLengthTest(thinkstats2.HypothesisTest):
 
-An alternative is to test a hypothesis that more directly reflects the
-effect as it appears; that is, the hypothesis that first babies are
-more likely to be early, less likely to be on time, and more likely to
-be late.
+    def MakeModel(self):
+        firsts, others = self.data
+        self.n = len(firsts)
+        self.pool = np.hstack((firsts, others))
 
-We proceed in five easy steps:
+        pmf = thinkstats2.Pmf(self.pool)
+        self.values = range(35, 44)
+        self.expected_probs = np.array(pmf.Probs(self.values))
 
-\begin{enumerate}
+    def RunModel(self):
+        """Run the model of the null hypothesis.
 
-\item We define a set of categories, called {\bf cells}, that each
-  baby might fall into.  In this example, there are six cells because
-  there are two groups (first babies and others) and three bins
-  (early, on time or late).
-\index{cell}
+        returns: simulated data
+        """
+        np.random.shuffle(self.pool)
+        data = self.pool[:self.n], self.pool[self.n:]
+        return data
+\end{verbatim}
 
-I'll use the definitions from Section~\ref{visualization}: a baby is
-early if it is born during Week 37 or earlier, on time if it is born
-during Week 38, 39 or 40, and late if it is born during Week 41 or
-later.
+The data are represented as two lists of pregnancy lengths.  The null
+hypothesis is that both samples are drawn from the same distribution.
+{\tt MakeModel} models that distribution by pooling the two
+samples using {\tt hstack}.  Then {\tt RunModel} generates
+simulated data by shuffling the pooled sample and splitting it
+into two parts.
 
-\item We compute the number of babies we expect in each cell.  Under
-  the null hypothesis, we assume that the distributions are the same
-  for the two groups, so we can compute the pooled probabilities:
-  $\Prob(early)$, $\Prob(ontime)$ and $\Prob(late)$.
+{\tt MakeModel} also defines {\tt values}, which is the
+range of weeks we'll use, and \verb"expected_probs",
+which is the probability of each value in the pooled distribution.
 
-For first babies, we have $n = 4413$ samples, so under the null
-hypothesis we expect $n \cdot \Prob(early)$ first babies to be early,
-$n \cdot \Prob(ontime)$ to be on time, etc.  Likewise, we have $m = 4735$
-other babies, so we expect $m \cdot \Prob(early)$ other babies to be
-early, etc.
+Here's the code that computes the test statistic:
 
-\item For each cell we compute the deviation; that is, the difference
-  between the observed value, $O_i$, and the expected value, $E_i$.
-\index{test statistic}
-\index{chi-square statistic}
+\begin{verbatim}
+#class PregLengthTest:
 
-\item We compute some measure of the total deviation; this quantity
-is called the {\bf test statistic}.  The most common
-choice is the chi-square statistic:
+    def TestStatistic(self, data):
+        firsts, others = data
+        stat = self.ChiSquared(firsts) + self.ChiSquared(others)
+        return stat
 
-\item We can use a Monte Carlo simulation to compute the p-value,
-  which is the probability of seeing a chi-square statistic as high
-  as the observed value under the null hypothesis.
-\index{simulation!Monte Carlo}
-\index{Monte Carlo}
+    def ChiSquared(self, lengths):
+        hist = thinkstats2.Hist(lengths)
+        observed = np.array(hist.Freqs(self.values))
+        expected = self.expected_probs * len(lengths)
+        stat = sum((observed - expected)**2 / expected)
+        return stat
+\end{verbatim}
 
-\end{enumerate}
+{\tt TestStatistic} computes the chi-squared statistic for
+first babies and others, and adds them.
 
-When the chi-square statistic is used, this process is called a 
-{\bf chi-square test}.  One feature of the chi-square test is that
-the distribution of the test statistic can be computed analytically.
-\index{chi-square test}
-\index{analysis}
+{\tt ChiSquared} takes a sequence of pregnancy lengths, computes
+its histogram, and computes {\tt observed}, which is a list of
+frequencies corresponding to {\tt self.values}.
+To compute the list of expected frequencies, it multiplies the
+pre-computed probabilities, \verb"expected_probs", by the sample
+size.  It returns the chi-squared statistic, {\tt stat}.
 
-Using the data from the NSFG I computed $\goodchi^{2} = 91.64$, which would
-occur by chance about one time in 10,000.  I conclude that this result
-is statistically significant, with one caution: we used the
-same dataset for exploration and testing.  It would be a good idea
-to confirm this result with another dataset.
-\index{National Survey of Family Growth}
-\index{NSFG}
+For the NSFG data the total chi-squared statistic is 102, which
+doesn't mean much by itself.  But after 1000 iteration, the largest
+test statistic generated under the null hypothesis is 32.  We conclude
+that the observed chi-squared statistic is unlikely under the null
+hypothesis, so the apparent effect is statistically significant.
 
-You can download the code I used in this section from
-\url{http://thinkstats2.com/chi.py}.
-\index{{\tt chi.py}}
+This example demonstrates a limitation of chi-squared tests: they
+indicate that there is a difference between the two groups,
+but they don't say anything specific about what the difference is.
 
-% See \url{http://en.wiktionary.org/wiki/voila}!
 
 \section{Errors}
 \index{errors}
 
 In classical hypothesis testing, an effect is considered statistically
 significant if the p-value is below some threshold, commonly 5\%.
-Naturally this procedure raises two question:
+This procedure raises two question:
 
 \begin{itemize}
 
@@ -6712,21 +6643,18 @@ threshold is 5\%, the false positive rate is 5\%.  Here's why:
 
 \begin{itemize}
 
-\item If there is no real effect, the null hypothesis is true,
-  so we can compute the
-  distribution of the test statistic by simulating the null
-  hypothesis.  Suppose we store that distribution in a Cdf called
-  \verb"test_cdf".
+\item If there is no real effect, the null hypothesis is true, so we
+  can compute the distribution of the test statistic by simulating the
+  null hypothesis.  Call the distribution $T$ and its CDF $\CDF_T$.
 
-\item Each time we run an experiment, we get a test statistic, {\tt
-  stat}, which is drawn from \verb"test_cdf".  Then we compute a
-  p-value.  The p-value is the probability that a random value from
-  \verb"test_cdf" exceeds {\tt t}, which is \verb"1 - test_cdf[t]".
+\item Each time we run an experiment, we get a test statistic, $t$,
+  which is drawn from $T$.  Then we compute a p-value, which is
+  the probability that a random value from $T$ exceeds {\tt t},
+  so that's $1 - CDF_T(t)$.
 
-\item The p-value is less than 5\% if \verb"test_cdf[t]" is greater
-  than 95\%; that is, if {\tt t} exceeds the 95th percentile.
-
-\item And how often does a value chosen from \verb"test_cdf" exceed
+\item The p-value is less than 5\% if $CDF_T(t)$ is greater
+  than 95\%; that is, if $t$ exceeds the 95th percentile.
+  And how often does a value chosen from $T$ exceed
   the 95th percentile?  5\% of the time.
 
 \end{itemize}
@@ -6734,23 +6662,18 @@ threshold is 5\%, the false positive rate is 5\%.  Here's why:
 So if you perform one hypothesis test with a 5\% threshold, you expect
 a false positive 1 time in 20.
 
-The false negative rate is harder to compute because it depends on
-the actual effect size, and normally we don't know that.  But the
-false negative rate can be used to interpret a negative test result.
 
 \section{Power}
 \label{power}
 
-For example, in Section~\ref{???} we found that the apparent difference
-in mean pregnancy length is not statistically significant.  Does that
-mean there is no difference at all?  Not necessarily.  The actual
-effect might be smaller, or we might have been unlucky.  To interpret
-this result, it is helpful to know the false negative rate,
+The false negative rate is harder to compute because it depends on
+the actual effect size, and normally we don't know that.
+One option is to compute a rate
 conditioned on a hypothetical effect size.
 
-One way to do that is to use the observed samples as a model of the
-population and run simulated experiments by resampling.
-Here's the code:
+For example, if we assume that the observed difference between groups
+is accurate, we can use the observed samples as a model of the
+population and run hypothesis tests with simulated data:
 
 \begin{verbatim}
 def FalseNegRate(data, num_runs=100):
@@ -6760,6 +6683,7 @@ def FalseNegRate(data, num_runs=100):
     for i in range(num_runs):
         sample1 = np.random.choice(group1, len(group1), replace=True)
         sample2 = np.random.choice(group2, len(group2), replace=True)
+
         ht = DiffMeansPermute((sample1, sample2))
         p_value = ht.PValue(iters=101)
         if p_value > 0.05:
@@ -6781,10 +6705,9 @@ Here's the code that tests pregnancy lengths:
     neg_rate = FalseNegRate(data)
 \end{verbatim}
 
-The result is about 68\%, which means that if the estimated difference
-is correct and the actual difference in mean pregnancy length is 0.78
-weeks, we expect an experiment with this sample size to yield a
-negative test 68\% of the time.
+The result is about 68\%, which means that if the actual difference in
+mean pregnancy length is 0.78 weeks, we expect an experiment with this
+sample size to yield a negative test 68\% of the time.
 
 This result is often presented the other way around: if the actual
 difference is 0.78 weeks, we should expect a positive test only 32\%
@@ -6795,92 +6718,81 @@ the test to detect an effect of a given size.
 In this example, the test had only a 32\% chance of yielding a
 positive result (again, assuming that the difference is 0.78 weeks).
 As a rule of thumb, a power of 80\% is considered acceptable, so
-we could say that this test was ``underpowered.''
+we would say that this test was ``underpowered.''
 
-Thus the negative result does not imply that there is no difference
-between the groups; the strongest conclusion we can draw is that if
-there is actually a difference, it is probably too small to detect
-with this sample size.
-
+In general a negative hypothesis test does not imply that there is no
+difference between the groups; instead it suggests that if there is a
+difference, it is too small to detect with this sample size.
 
 
-\section{Discussion}
 
-Hypothesis testing is one of the most problematic areas of statistics.
-It is poorly understood, often done wrong, and more often interpreted
-incorrectly.  It is the topic of endless debates, some based on
-mistakes, others based on philosophical disagreements.  I won't try to
-catalog everything that can go wrong, but here are some common
-problems:
+\section{Replication}
+
+The hypothesis testing process I demonstrated in this chapter is not,
+strictly speaking, good practice.
+
+First, I performed multiple tests.  If you run one hypothesis test,
+the chance of a false positive is about 1 in 20, which might be
+acceptable.  But if you run 20 tests, you should expect at least one
+false positive, most of the time.
+
+Second, I used the same dataset for exploration and testing.  If
+you explore a large dataset, find a surprising effect, and then test
+whether it is significant, you have a good chance of generating a
+false positive.
+
+To compensate for multiple tests, you can adjust the p-value
+threshold\footnote{See
+  \url{https://en.wikipedia.org/wiki/Holm-Bonferroni_method}}.  Or you
+can address both problems by partitioning the data, using one set for
+exploration and the other for testing.
+
+In some fields these practices are required or at least encouraged.
+But it is more common to address these problems, implicitly, by
+replicating published results.  Typically the first paper to report a
+new result is considered exploratory.  Subsequent papers that
+replicate the result with new data are considered confirmatory.
+
+As it happens, we have an opportunity to replicate the results in this
+chapter.  The first edition of this book is based on Cycle 6 of the
+NSFG, which was released in 2002.  In October 2011, the CDC released
+additional data based on interviews conducted from 2006--2010.  {\tt
+  nsfg2.py} contains code to read and clean this data.  In the new
+dataset:
 
 \begin{itemize}
 
-\item Multiple tests: If you run one hypothesis test, the chance of a
-  false positive is about 1 in 20.  If you run 20 tests, you should
-  expect at least one false positive, most of the time.  If you ignore
-  the negative results and publish the positive ones, most of what you
-  publish will be wrong.
+\item The difference in mean pregnancy length is
+0.16 weeks and statistically significant with $p < 0.001$ (compared
+to 0.078 weeks in the original dataset).
 
-\item Exploring and testing with the same data: Ideally you should
-  decide what to test, and how, before looking at the data.  If you
-  explore a large dataset, find a surprising effect, and then test
-  whether it is significant, you have a good chance of generating a
-  false negative.
+\item The difference in birth weight is 0.17 pounds with $p < 0.001$
+(compared with 0.12 lbs in the original dataset).
 
-\item Treating the p-value as the result: For practical purposes the
-  size of the effect is more important than the p-value.  For example,
-  if you are comparing two groups, there is almost always some
-  difference between them.  If the sample size is large enough, the
-  difference will be statistically significant, even if it has no
-  practical effect.
+\item The correlation between birthweight and mother's age is
+0.08 with $p < 0.001$ (compared to 0.07).
+
+\item The chi-squared test is statistically significant with
+$p < 0.001$ (as it was in the original).
 
 \end{itemize}
 
-Most of these problems are easy to address once you are aware of them.
-For example, if you run multiple tests, you can adjust the p-value
-threshold to compensate.  For details, see
-\url{https://en.wikipedia.org/wiki/Holm-Bonferroni_method}.
-
-To avoid exploring and testing with the same data, you can partition
-data into two parts, then use one for exploration and the other for
-testing.  Although this approach is not widely used, a related
-practice is: replication of previous results.  Informally, many
-scientists consider the first paper to report a new result to be
-exploratory.  Subsequent papers that replicate the result with new
-data are considered confirmatory.
-
-As it happens, we have an opportunity to confirm the results in this
-chapter.  The first edition of this book is based on Cycle 6 of the
-NSFG, which was released in 2002.  In October 2011, CDC released
-additional data based on interviews conducted from 2006--2010.
-
-
-
-
-%Pitfalls:
-
-%1) Exploring and then testing
-
-%2) Multiple tests
-
-%3) Publication bias
-
-
-%Solutions:
-
-%1) two phases: exploratory and testing, on different data (possibly a subset)
-
-%2) Holm-Bonferroni method
-
-%3) publish everything and wait for consensus
+In summary, all of the effects that were statistically significant
+in the original dataset were replicated in the new dataset, and the
+difference in pregnancy length, which was not significant in the
+original, is bigger in the new dataset and significant.
 
 
 \section{Exercises}
 
+
 \begin{exercise}
 To investigate the effect of sample size on p-value, see what happens
-if you discard half of the data from the NSFG.  Hint: use {\tt
-  random.sample}.  What if you discard three-quarters of the data, and
+if you discard half of the data from the NSFG.  
+
+Hint: ???
+
+What if you discard three-quarters of the data, and
 so on?
 \index{National Survey of Family Growth}
 \index{NSFG}
@@ -6889,10 +6801,42 @@ What is the smallest sample size where the difference in mean birth
 weight is still significant with $\alpha$ = 5\%?  How much
 larger does the sample size have to be with $\alpha$ = 1\%?
 
-You can start with the code I used to generate the results in this
-section, which you can download from
-\url{http://thinkstats2.com/hypothesis.py}.  \index{{\tt
-    hypothesis.py}}
+\end{exercise}
+
+
+
+\begin{exercise}
+
+In Section~\ref{testing}, we simulated the null hypothesis by
+permutation; that is, we treated the observed values as if they
+represented the entire population, and randomly assigned the
+members of the population to the two groups.
+
+An alternative is to compute the distribution of the observed
+values and then draw a random sample from that distribution.
+This process is called {\bf resampling}.  Here's how you could
+test a difference in means using resampling:
+
+\begin{verbatim}
+class DiffMeansResample(DiffMeansPermute):
+
+    def RunModel(self):
+        group1 = np.random.choice(self.pool, self.n, replace=True)
+        group2 = np.random.choice(self.pool, self.m, replace=True)
+        return group1, group2
+\end{verbatim}
+
+This version inherits {\tt TestStatistic} and {\tt MakeModel} 
+from {\tt DiffMeansPermute}.  The only difference is in {\tt RunModel},
+which draws random samples from the observed values with replacement.
+
+The two models are based on slightly difference assumptions, and in
+this example there is no compelling reason to choose one or the other.
+But in general p-values depend on the choice of the null hypothesis;
+different models can yield very different results.
+
+Use this model to test the differences in pregnancy length and
+birth weight.  How much does the model affect the results?
 
 \end{exercise}
 
