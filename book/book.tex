@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.6}
+\newcommand{\theversion}{2.0.7}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -4900,6 +4900,7 @@ without introducing misleading artifacts.
 
 
 \section{Characterizing relationships}
+\label{characterizing}
 
 Scatter plots provide a general impression of the relationship
 between variables, but there are other visualizations that provide
@@ -6785,22 +6786,22 @@ original, is bigger in the new dataset and significant.
 
 \section{Exercises}
 
+A solution to these exercises is in \verb"chap09ex_soln.py".
 
 \begin{exercise}
-To investigate the effect of sample size on p-value, see what happens
-if you discard half of the data from the NSFG.  
+As sample size increases, the power of a hypothesis test increases,
+which means it is more likely to be positive if the effect is real.
+Conversely, as sample size decreases, the test is less likely to
+be positive even if the effect is real.
 
-Hint: ???
-
-What if you discard three-quarters of the data, and
-so on?
+To investigate this behavior, run the tests in this chapter with
+different subsets of the NSFG data.  You can use {\tt scatter.SampleRows}
+to select a random subset of the rows in a DataFrame.
 \index{National Survey of Family Growth}
 \index{NSFG}
 
-What is the smallest sample size where the difference in mean birth
-weight is still significant with $\alpha$ = 5\%?  How much
-larger does the sample size have to be with $\alpha$ = 1\%?
-
+What happens to the p-values of these tests as sample size decreases?
+What is the smallest sample size that yields a positive test?
 \end{exercise}
 
 
@@ -6812,28 +6813,15 @@ permutation; that is, we treated the observed values as if they
 represented the entire population, and randomly assigned the
 members of the population to the two groups.
 
-An alternative is to compute the distribution of the observed
-values and then draw a random sample from that distribution.
-This process is called {\bf resampling}.  Here's how you could
-test a difference in means using resampling:
+An alternative is to use the sample to estimate the distribution for
+the population, then draw a random sample from that distribution.
+This process is called {\bf resampling}.  There are several ways to
+implement the resampling, but one of the simplest is to draw a sample,
+with replacement, from the observed values, as in Section~\ref{power}.
 
-\begin{verbatim}
-class DiffMeansResample(DiffMeansPermute):
-
-    def RunModel(self):
-        group1 = np.random.choice(self.pool, self.n, replace=True)
-        group2 = np.random.choice(self.pool, self.m, replace=True)
-        return group1, group2
-\end{verbatim}
-
-This version inherits {\tt TestStatistic} and {\tt MakeModel} 
-from {\tt DiffMeansPermute}.  The only difference is in {\tt RunModel},
-which draws random samples from the observed values with replacement.
-
-The two models are based on slightly difference assumptions, and in
-this example there is no compelling reason to choose one or the other.
-But in general p-values depend on the choice of the null hypothesis;
-different models can yield very different results.
+Write a class named {\tt DiffMeansResample} that inherits from
+{\tt DiffMeansPermute} and overrides {\tt RunModel} to implement
+resampling, rather than permutation.
 
 Use this model to test the differences in pregnancy length and
 birth weight.  How much does the model affect the results?
@@ -6845,9 +6833,11 @@ birth weight.  How much does the model affect the results?
 
 \begin{itemize}
 
-\item significant: An effect is statistically significant if it is unlikely
-to occur by chance.
-\index{significant}
+\item hypothesis testing: The process of determining whether an apparent
+effect is statistically significant.
+\index{hypothesis testing}
+
+\item test statistic: A statistic used to quantify an effect size.
 
 \item null hypothesis: A model of a system based on the assumption that
 an apparent effect is due to chance.
@@ -6856,20 +6846,17 @@ an apparent effect is due to chance.
 \item p-value: The probability that an effect could occur by chance.
 \index{p-value}
 
-\item hypothesis testing: The process of determining whether an apparent
-effect is statistically significant.
-\index{hypothesis testing}
+\item significant: An effect is statistically significant if it is unlikely
+to occur by chance.
+\index{significant}
 
 \item permutation test: A way to compute p-values by generating
   permutations of an observed dataset.
   \index{permutation test}
 
-\item false positive: The conclusion that an effect is real when it is not.
-\index{false positive}
-
-\item false negative: The conclusion that an effect is due to chance when it
-is not.
-\index{false negative}
+\item resampling test: A way to compute p-values by generating
+  samples, with replacement, from an observed dataset.
+  \index{resampling test}
 
 \item two-sided test: A test that asks, ``What is the chance of an effect
 as big as the observed effect, positive or negative?''
@@ -6881,20 +6868,19 @@ as big as the observed effect, and with the same sign?''
 \index{test!one-sided}
 \index{test!two-sided}
 
-\item test statistic: A statistic used to measure the deviation of an
-apparent effect from what is expected by chance.
-\index{test statistic}
-
 \item chi-square test: A test that uses the chi-square statistic as
 the test statistic.
-\index{ch-square test}
+\index{chi-square test}
 
-\item cell: In a chi-square test, the categories the observations are
-divided into.
-\index{cell}
+\item false positive: The conclusion that an effect is real when it is not.
+\index{false positive}
 
-\item power: The probability that a test will reject the null hypothesis
-if it is false.
+\item false negative: The conclusion that an effect is due to chance when it
+is not.
+\index{false negative}
+
+\item power: The probability of a positive test if the null hypothesis
+is false.
 \index{power}
 
 \end{itemize}
@@ -6924,7 +6910,8 @@ expect each $y_i$ to be roughly $\alpha + \beta x_i$.
 \index{residual}
 
 But unless the correlation is perfect, this prediction is only
-approximate.  The deviation, or {\bf residual}, is 
+approximate.  The vertical deviation from the line, or {\bf residual},
+is
 
 \[ \eps_i = (\alpha + \beta x_i) - y_i \]
 
@@ -6939,8 +6926,8 @@ If we get the parameters $\alpha$ and $\beta$ wrong, the residuals
 get bigger, so it makes intuitive sense that the parameters we want
 are the ones that minimize the residuals.
 
-As usual, we could minimize the absolute value of the
-residuals, or their squares, or their cubes, etc.  The most common
+We might try to minimize the absolute value of the
+residuals, or their squares, or their cubes; but the most common
 choice is to minimize the sum of squared residuals
 %
 \[ \min_{\inter, \slope} \sum \eps_i^2 \]
@@ -6949,19 +6936,18 @@ Why?  There are three good reasons and one bad one:
 
 \begin{itemize}
 
-\item Squaring has the obvious feature of treating positive and
+\item Squaring has the feature of treating positive and
 negative residuals the same, which is usually what we want.
 
 \item Squaring gives more weight to large residuals, but not
 so much weight that the largest residual always dominates.
 
-\item If the residuals are independent of $x$, random, and normally
-  distributed with $\mu = 0$ and constant (but unknown) $\sigma$, then
-  the least squares fit is also the maximum likelihood estimator of
-  $\alpha$ and $\beta$.\footnote{See Press et al., {\em Numerical Recipes in C},
-    Chapter 15 at \url{http://www.nrbook.com/a/bookcpdf/c15-1.pdf}.}
-\index{MLE}
-\index{maximum likelihood estimator}
+\item If the residuals are uncorrelated and
+  normally distributed with $\mu = 0$ and constant (but unknown)
+  $\sigma$, then the least squares fit is also the maximum likelihood
+  estimator of $\alpha$ and $\beta$.  See
+  \url{https://en.wikipedia.org/wiki/Linear_regression}.  \index{MLE}
+  \index{maximum likelihood estimator}
 
 \item The values of $\hat{\inter}$ and $\hat{\slope}$ that minimize
   the squared residuals can be computed efficiently.
@@ -6977,87 +6963,215 @@ whether squared residuals are the right thing to minimize.
 For example, if you are using values of $X$ to predict values of $Y$,
 guessing too high might be better (or worse) than guessing too low.
 In that case you might want to compute some cost function,
-cost(\_i), and minimize total cost.
+cost(\eps_i), and minimize total cost.
 \index{cost function}
 
 However, computing a least squares fit is quick, easy and often good
-enough, so here's how:
+enough.  {\tt thinkstats2} provides simple functions that demonstrate
+linear least squares:
 
-\begin{enumerate}
+\begin{verbatim}
+def LeastSquares(xs, ys):
+    meanx, varx = MeanVar(xs)
+    meany = Mean(ys)
 
-\item Compute the sample means, $\xbar$ and $\ybar$, the variance
-of $X$, and the covariance of $X$ and $Y$.
+    slope = Cov(xs, ys, meanx, meany) / varx
+    inter = meany - slope * meanx
 
-\item The estimated slope is
-%
-\[ \hat{\slope} = \frac{Cov(X,Y)}{Var(X)} \]
-%
-\item And the intercept is
-%
-\[ \hat{\inter} = \ybar - \hat{\slope} \xbar \]
-%
-\end{enumerate}
+    return inter, slope
+\end{verbatim}
 
-To see how this is derived, you can read
+To see how this is derived, see
 \url{http://wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
 
+{\tt LeastSquares} takes sequences
+{\tt xs} and {\tt ys} and return the estimated parameters {\tt inter}
+and {\tt slope}.
+
+{\tt thinkstats2} also provides {\tt FitLine}, which takes the
+estimated parameters and returns the fitted line for a sequence
+of {\tt xs}.
+
+\begin{verbatim}
+def FitLine(xs, inter, slope):
+    """Fits a line to the given data.
+
+    xs: sequence of x
+
+    returns: tuple of numpy arrays (sorted xs, fit ys)
+    """
+    fit_xs = np.sort(xs)
+    fit_ys = inter + slope * fit_xs
+    return fit_xs, fit_ys
+\end{verbatim}
+
+We can use these functions to compute and a least squares
+fit for birth weight as a function of mother's age.
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    ages = live.agepreg
+    weights = live.totalwgt_lb
+
+    inter, slope = thinkstats2.LeastSquares(ages, weights)
+    fit_xs, fit_ys = thinkstats2.FitLine(ages, inter, slope)
+\end{verbatim}
+
+The estimated intercept and slope are 6.8 lbs and 0.017 lbs per year.
+These value are hard to interpret in this form: the intercept is
+the expected weight of a baby whose mother is 0 years old, which
+doesn't make sense in this context, and the slope is too small to
+grasp easily.
+
+Instead of presenting the intercept with $x=0$, it
+is often helpful to present the intercept at the mean of $x$.  In
+this case the mean age is about 25 years and the expected weight
+for a 25 year old mother is 7.3 pounds.  The slope is 0.27 ounces
+per year, or 0.17 pounds per decade.
+
+\begin{figure}
+% regression.py
+\centerline{\includegraphics[height=2.5in]{figs/regression1.pdf}}
+\caption{Scatter plot of birth weight and mother's age with
+a linear fit.}
+\label{regression1}
+\end{figure}
+
+Figure~\ref{regression1} shows a scatter plot of birth weight and age
+along with the fitted line.  It's a good idea to look at a figure like
+this to assess whether the relationship is linear and whether the
+fitted line seems like a good model of the relationship.
+
+Another useful test is to plot the vertical deviations from the
+fitted line, called {\bf residuals}.  {\tt thinkstats2} provides
+a function that computes residuals:
+
+\begin{verbatim}
+def Residuals(xs, ys, inter, slope):
+    res = [y - inter - slope*x for x, y in zip(xs, ys)]
+    return res
+\end{verbatim}
+
+{\tt Residuals} takes sequences {\tt xs} and {\tt ys} and
+estimated parameters {\tt inter} and {\tt slope}.  It returns
+the differences between the actual values and the fitted line.
+
+\begin{figure}
+% regression.py
+\centerline{\includegraphics[height=2.5in]{figs/regression2.pdf}}
+\caption{Residuals of the linear fit.}
+\label{regression2}
+\end{figure}
+
+To visualize the residuals, I group respondents by age and compute
+percentiles in each group, as we saw in Section~\ref{characterizing}.
+Figure~\ref{regression2} shows the 25th, 50th and 75th percentiles of
+the residuals for each age group.  The median is near zero, as
+expected, and the interquartile range is about 2 pounds.  So if we
+know the mother's age, we can guess the baby's weight within a pound,
+about 50\% of the time.
+
+Ideally these lines should be flat, indicating that the residuals are
+random, and parallel, indicating that the variance of the residuals is
+the same for all age groups.  In fact, the lines are close to
+parallel, so that's good; but they have some curvature, indicating
+that the relationship is non-linear.  Nevertheless, the linear fit
+is a simple model that is probably good enough for most purposes.
+
+
+\section{Estimation}
+
+The parameters {\tt slope} and {\tt inter} are estimates based on a
+sample; like other estimates, they are vulnerable to sampling bias,
+measurement error, and sampling error.  As discussed in
+Chapter~\ref{estimation}, sampling bias is caused by non-representative
+sampling, measurement error is caused by errors in collecting
+and recording data, and sampling error is the result of measuring a
+sample rather than the entire population.
+
+To assess sampling error, we ask, ``If we run this experiment again,
+how much variability do we expect in the estimates?''  We can
+answer this question by running simulated experiments and computing
+sampling distributions of the estimates.
+
+To simulate the experiments, I'll assume temporarily that the estimated
+parameters are right, and that the residuals represent deviations from
+the fitted line due to unknown factors and random noise.  So we can
+generate simulated data by permuting the residuals and adding them
+to the fitted line.
+
+\begin{verbatim}
+def SamplingDistributions(fxs, fys, res, iters=100):
+    t = []
+    for _ in range(iters):
+        random.shuffle(res)
+        estimates = thinkstats2.LeastSquares(fxs, fys + res)
+        t.append(estimates)
+
+    inters, slopes = zip(*t)
+    return inters, slopes
+\end{verbatim}
+
+{\tt fxs} and {\tt fys} are the fitted values, and {\tt res}
+is the sequence of residuals.  {\tt iters} is the number of
+experiments to simulate.
+
+Each time through the loop, {\tt SamplingDistributions} shuffles
+the residuals, generates simulated data, and used {\tt LeastSquares}
+to estimate {\tt inter} and {\tt slope}.  It returns sequences
+of estimated intercepts and estimated slopes.
+
+I summarize the sampling distributions by printing the standard
+error and confidence interval:
+
+\begin{verbatim}
+def Summarize(values, actual):
+    std = thinkstats2.Std(values, mu=actual)
+    cdf = thinkstats2.Cdf(values)
+    ci = cdf.Percentile(5), cdf.Percentile(95)
+    print('SE, CI', std, ci)
+\end{verbatim}
+
+For the intercept, the estimated value is 6.83, with standard error
+0.07 and confidence interval (6.70, 6.95).  The estimated slope, in more
+compact form, is
+0.0175, SE 0.0028, CI (0.0126, 0.0226).
+
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
+inter 6.83039697331
+SE, CI 0.0695704914151 (6.7017063350011705, 6.9472713922362352)
+slope 0.0174538514718
+SE, CI 0.00278994757445 (0.012640165265054685, 0.022557267762599829)
+
+
+
+% check residuals
 
 \begin{exercise}
-Write a function named {\tt LeastSquares} that takes $X$ and $Y$ and
-computes $\hat{\inter}$ and $\hat{\slope}$.  You can download a
-solution from \url{http://thinkstats2.com/correlation.py}.  \index{{\tt
-    correlation.py}}
+
+% do this
+
+Write a function named {\tt Residuals} that takes X, Y, $\hat{\inter}$
+and $\hat{\slope}$ and returns a list of $\eps_i$.
+\index{residual}
+
+Write a function named {\tt CoefDetermination} that takes the 
+$\eps_i$ and Y and returns $R^{2}$.  To test your functions, 
+confirm that $R^{2} = \rho^{2}$.  You can download a solution
+from \url{http://thinkstats2.com/correlation.py}.
+\index{{\tt correlation.py}}
 
 \end{exercise}
 
-\begin{exercise}
-Using the data from the BRFSS again, compute the linear least squares
-fit for log(weight) versus height.  You can download a
-solution from \url{http://thinkstats2.com/brfss_corr.py}.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss\_corr.py}}
-
-\end{exercise}
-
-
-\begin{exercise}
-The distribution of wind speeds in a given location determines the
-wind power density, which is an upper bound on the average power that
-a wind turbine at that location can generate.  According to some
-sources, empirical distributions of wind speed are well modeled by a
-Weibull distribution (see
-\url{http://wikipedia.org/wiki/Wind_power#Distribution_of_wind_speed}).
-\index{wind speed}
-\index{wind power density}
-\index{turbine}
-\index{Weibull distribution}
-\index{distribution!Weibull}
-
-To evaluate whether a location is a viable site for a wind turbine,
-you can set up an anemometer to measure wind speed for a period of
-time.  But it is hard to measure the tail of the wind speed distribution
-accurately because, by definition, events in the tail don't happen
-very often.
-\index{tail}
-
-One way to address this problem is to use measurements to estimate the
-parameters of a Weibull distribution, then integrate over the
-analytic PDF to compute wind power density.
-\index{PDF}
-
-To estimate the parameters of a Weibull distribution, we can use the
-transformation from Exercise~\ref{weibull} and then use a linear fit
-to find the slope and intercept of the transformed data.
-
-Write a function that takes a sample from a Weibull distribution and
-estimates its parameters.
-
-Now write a function that takes the parameters of a Weibull distribution
-of wind speed and computes average wind power density (you might have
-to do some research for this part).
-
-\end{exercise}
 
 
 \section{Goodness of fit}
@@ -7089,8 +7203,8 @@ that case the MSE of your guesses would be $Var(Y)$:
 %
 \[ MSE = \frac{1}{n} \sum (\ybar - y_i)^2 = Var(Y) \]
 %
-But if I told you their height, you would guess $\hat{\inter} +
-\hat{\slope} x_i$; in that case your MSE would be $Var(\eps)$.
+But if I told you their height, you would guess
+{\tt inter + slope * x}; in that case your MSE would be $Var(\eps)$.
 %
 \[ MSE = 
 \frac{1}{n} \sum (\hat{\inter} + \hat{\slope} x_i - y_i)^2 =
@@ -7106,17 +7220,21 @@ If a model yields $R^{2} = 0.64$, you could say that the model explains
 64\% of the variability, or it might be more precise to say that it
 reduces the MSE of your predictions by 64\%.
 
-In the context of a linear least squares model, it turns out that
+It turns out that
 there is a simple relationship between the coefficient of
 determination and Pearson's correlation coefficient, $\rho$:
 
 \[ R^{2} = \rho^{2}\]
 
-See \url{http://wikipedia.org/wiki/Howzzat}!
-\index{howzzat}
+For example, if $\rho$ is 0.8 or -0.8, $R^2 = 0.64$.
+
+% TODO: example here of expressing these things in terms of predictive
+% power
 
 
 \section{Testing a linear regression}
+
+% TODO: fix this transition
 
 With the same data from the previous section, we can use linear
 least squares to estimate the slope and intercept of the relationship
@@ -7194,6 +7312,8 @@ and compute the probability that the estimated parameter exceeds
 the observed parameter under the null hypothesis.  For example,
 if we are testing whether the slope is significant, the null hypothesis
 is that the slope is actually 0.
+
+% TODO: rewrite this using the framework
 
 If the slope is 0, the line that minimizes squared error is
 $y = \ybar$; in this example, $\ybar$ is the mean birth weight.
@@ -7323,6 +7443,18 @@ Python.  But that's a whole other book.
 \section{Exercises}
 
 \begin{exercise}
+
+Using the data from the BRFSS again, compute the linear least squares
+fit for log(weight) versus height.
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
+How would you best present the estimated parameters for a model
+like this where one of the variables is log-transformed?
+
+\end{exercise}
+
+\begin{exercise}
 The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
 of intelligence; scores are calibrated so that the mean and standard
 deviation in the general population are 100 and 15.
@@ -7341,19 +7473,6 @@ be the mean squared error (MSE) of your predictions?
 Hint: What is the MSE if you always guess 100?
 \end{exercise}
 
-
-\begin{exercise}
-Write a function named {\tt Residuals} that takes X, Y, $\hat{\inter}$
-and $\hat{\slope}$ and returns a list of $\eps_i$.
-\index{residual}
-
-Write a function named {\tt CoefDetermination} that takes the 
-$\eps_i$ and Y and returns $R^{2}$.  To test your functions, 
-confirm that $R^{2} = \rho^{2}$.  You can download a solution
-from \url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
-
-\end{exercise}
 
 \begin{exercise}
 Using the height and weight data from the BRFSS (one more time),

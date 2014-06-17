@@ -2026,18 +2026,6 @@ def Jitter(values, jitter=0.5):
     return np.random.uniform(-jitter, +jitter, n) + values
 
 
-def FitLine(xs, inter, slope):
-    """Fits a line to the given data.
-
-    xs: sequence of x
-
-    returns: tuple of numpy arrays (sorted xs, fit ys)
-    """
-    fit_xs = np.sort(xs)
-    fit_ys = inter + slope * fit_xs
-    return fit_xs, fit_ys
-
-
 def NormalProbabilityPlot(sample, label='', fit_color='0.8'):
     """Makes a normal probability plot with a fitted line.
 
@@ -2082,6 +2070,19 @@ def Var(xs, mu=None, ddof=0):
 
     ds = xs - mu
     return np.dot(ds, ds) / (len(xs) - ddof)
+
+
+def Std(xs, mu=None, ddof=0):
+    """Computes standard deviation.
+
+    xs: sequence of values
+    mu: option known mean
+    ddof: delta degrees of freedom
+
+    returns: float
+    """
+    var = Var(xs, mu, ddof)
+    return math.sqrt(var)
 
 
 def MeanVar(xs, ddof=0):
@@ -2276,6 +2277,18 @@ def LeastSquares(xs, ys):
     inter = meany - slope * meanx
 
     return inter, slope
+
+
+def FitLine(xs, inter, slope):
+    """Fits a line to the given data.
+
+    xs: sequence of x
+
+    returns: tuple of numpy arrays (sorted xs, fit ys)
+    """
+    fit_xs = np.sort(xs)
+    fit_ys = inter + slope * fit_xs
+    return fit_xs, fit_ys
 
 
 def Residuals(xs, ys, inter, slope):

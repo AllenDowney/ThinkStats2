@@ -21,6 +21,7 @@ import matplotlib.pyplot as pyplot
 
 
 class CoinTest(thinkstats2.HypothesisTest):
+    """Tests the hypothesis that a coin is fair."""
 
     def TestStatistic(self, data):
         """Computes the test statistic.
@@ -45,6 +46,7 @@ class CoinTest(thinkstats2.HypothesisTest):
 
 
 class DiffMeansPermute(thinkstats2.HypothesisTest):
+    """Tests a difference in means by permutation."""
 
     def TestStatistic(self, data):
         """Computes the test statistic.
@@ -73,6 +75,7 @@ class DiffMeansPermute(thinkstats2.HypothesisTest):
 
 
 class DiffMeansOneSided(DiffMeansPermute):
+    """Tests a one-sided difference in means by permutation."""
 
     def TestStatistic(self, data):
         """Computes the test statistic.
@@ -85,6 +88,7 @@ class DiffMeansOneSided(DiffMeansPermute):
 
 
 class DiffStdPermute(DiffMeansPermute):
+    """Tests a one-sided difference in standard deviation by permutation."""
 
     def TestStatistic(self, data):
         """Computes the test statistic.
@@ -94,18 +98,6 @@ class DiffStdPermute(DiffMeansPermute):
         group1, group2 = data
         test_stat = group1.std() - group2.std()
         return test_stat
-
-
-class DiffMeansResample(DiffMeansPermute):
-
-    def RunModel(self):
-        """Run the model of the null hypothesis.
-
-        returns: simulated data
-        """
-        group1 = np.random.choice(self.pool, self.n, replace=True)
-        group2 = np.random.choice(self.pool, self.m, replace=True)
-        return group1, group2
 
 
 class CorrelationPermute(thinkstats2.HypothesisTest):
@@ -131,7 +123,7 @@ class CorrelationPermute(thinkstats2.HypothesisTest):
 
 
 class DiceTest(thinkstats2.HypothesisTest):
-    """Tests correlations by permutation."""
+    """Tests whether a six-sided die is fair."""
 
     def TestStatistic(self, data):
         """Computes the test statistic.
@@ -158,7 +150,7 @@ class DiceTest(thinkstats2.HypothesisTest):
 
 
 class DiceChiTest(DiceTest):
-    """Tests correlations by permutation."""
+    """Tests a six-sided die using a chi-squared statistic."""
 
     def TestStatistic(self, data):
         """Computes the test statistic.
@@ -173,7 +165,7 @@ class DiceChiTest(DiceTest):
 
 
 class PregLengthTest(thinkstats2.HypothesisTest):
-    """Tests correlations by permutation."""
+    """Tests difference in pregnancy length using a chi-squared statistic."""
 
     def TestStatistic(self, data):
         """Computes the test statistic.
@@ -219,7 +211,7 @@ class PregLengthTest(thinkstats2.HypothesisTest):
 
 
 def RunDiceTest():
-    """
+    """Tests whether a die is fair.
     """
     data = [8, 9, 19, 5, 8, 11]
     dt = DiceTest(data)
@@ -231,7 +223,7 @@ def RunDiceTest():
 
 
 def FalseNegRate(data, num_runs=100):
-    """Compute the chance of a false negative based on resampling.
+    """Computes the chance of a false negative based on resampling.
 
     data: pair of sequences
     num_runs: how many experiments to simulate
@@ -253,7 +245,10 @@ def FalseNegRate(data, num_runs=100):
 
 
 def PrintTest(p_value, ht):
-    """
+    """Prints results from a hypothesis test.
+
+    p_value: float
+    ht: HypothesisTest
     """
     print('p-value =', p_value)
     print('actual =', ht.actual)
@@ -261,7 +256,10 @@ def PrintTest(p_value, ht):
 
 
 def RunTests(data, iters=1000):
-    """
+    """Runs several tests on the given data.
+
+    data: pair of sequences
+    iters: number of iterations to run
     """
 
     # test the difference in means
@@ -288,26 +286,6 @@ def RunTests(data, iters=1000):
     p_value = ht.PValue(iters=iters)
     print('\nstd permute one-sided')
     PrintTest(p_value, ht)
-
-    #ht.PlotCdf()
-    #thinkplot.Save(root='hypothesis2',
-    #               title='Permutation test',
-    #               xlabel='difference in std (weeks)',
-    #               ylabel='CDF',
-    #               legend=False) 
-    
-    # test the difference in means by resampling
-    ht = DiffMeansResample(data)
-    p_value = ht.PValue(iters=iters)
-    print('\nmeans resample two-sided')
-    PrintTest(p_value, ht)
-
-    #ht.PlotCdf()
-    #thinkplot.Save(root='hypothesis3',
-    #               title='Resampling test',
-    #               xlabel='difference in means (weeks)',
-    #               ylabel='CDF',
-    #               legend=False) 
 
 
 def ReplicateTests():    
