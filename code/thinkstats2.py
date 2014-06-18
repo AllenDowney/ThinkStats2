@@ -2303,7 +2303,9 @@ def Residuals(xs, ys, inter, slope):
     Returns:
         list of residuals
     """
-    res = [y - inter - slope*x for x, y in zip(xs, ys)]
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+    res = ys - (inter + slope * xs)
     return res
 
 
@@ -2317,9 +2319,7 @@ def CoefDetermination(ys, res):
     Returns:
         float coefficient of determination
     """
-    vary = Var(ys)
-    varres = Var(res)
-    return 1 - varres / vary
+    return 1 - Var(res) / Var(ys)
 
 
 def CorrelatedGenerator(rho):
@@ -2471,6 +2471,21 @@ def ReadStataDct(dct_file):
 
     dct = FixedWidthVariables(variables, index_base=1)
     return dct
+
+
+def SampleRows(df, nrows, replace=False):
+    """Choose a sample of rows from a DataFrame.
+
+    df: DataFrame
+    nrows: number of rows
+    replace: whether to sample with replacement
+
+    returns: DataFrame
+    """
+    indices = df.index
+    sample_indices = np.random.choice(indices, nrows, replace=replace)
+    sample = df.loc[sample_indices]
+    return sample
 
 
 class HypothesisTest(object):

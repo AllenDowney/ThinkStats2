@@ -61,8 +61,11 @@
 \newcommand{\Erdos}{Erd\H{o}s}
 \newcommand{\nhat}{\hat{N}}
 \newcommand{\eps}{\varepsilon}
-\newcommand{\slope}{\beta}
-\newcommand{\inter}{\alpha}
+\newcommand{\slope}{\mathrm{slope}}
+\newcommand{\inter}{\mathrm{inter}}
+\newcommand{\xs}{\mathrm{xs}}
+\newcommand{\ys}{\mathrm{ys}}
+\newcommand{\res}{\mathrm{res}}
 \newcommand{\xbar}{\bar{x}}
 \newcommand{\ybar}{\bar{y}}
 \newcommand{\PMF}{\mathrm{PMF}}
@@ -6903,17 +6906,19 @@ squared error (MSE) between the line and the data\footnote{See
 \index{coefficient!correlation}
 \index{linear regression}
 
-Suppose we have a sequence of points, $Y$, that we want to express as a
-function of another sequence $X$.  If there is a linear relationship
-between $X$ and $Y$ with intercept $\alpha$ and slope $\beta$, we
-expect each $y_i$ to be roughly $\alpha + \beta x_i$.
-\index{residual}
+Suppose we have a sequence of points, {\tt ys}, that we want to
+express as a function of another sequence {\tt xs}.  If there is a
+linear relationship between {\tt xs} and {\tt ys} with intercept {\tt
+  inter} and slope {\tt slope}, we expect each {\tt y[i]} to be
+roughly {\tt inter + slope * x[i]}.  \index{residual}
 
 But unless the correlation is perfect, this prediction is only
 approximate.  The vertical deviation from the line, or {\bf residual},
 is
 
-\[ \eps_i = (\alpha + \beta x_i) - y_i \]
+\begin{verbatim}
+res = ys - (inter + slope * xs)
+\end{verbatim}
 
 The residual might be due to random factors like measurement error,
 or non-random factors that are unknown.  For example, if we are
@@ -6922,16 +6927,15 @@ might include diet, exercise, and body type.
 \index{slope}
 \index{intercept}
 
-If we get the parameters $\alpha$ and $\beta$ wrong, the residuals
+If we get the parameters {\tt inter} and {\tt slope} wrong, the residuals
 get bigger, so it makes intuitive sense that the parameters we want
 are the ones that minimize the residuals.
 
 We might try to minimize the absolute value of the
 residuals, or their squares, or their cubes; but the most common
-choice is to minimize the sum of squared residuals
-%
-\[ \min_{\inter, \slope} \sum \eps_i^2 \]
-%
+choice is to minimize the sum of squared residuals,
+{\tt sum(res**2))}.
+
 Why?  There are three good reasons and one bad one:
 
 \begin{itemize}
@@ -6945,11 +6949,11 @@ so much weight that the largest residual always dominates.
 \item If the residuals are uncorrelated and
   normally distributed with $\mu = 0$ and constant (but unknown)
   $\sigma$, then the least squares fit is also the maximum likelihood
-  estimator of $\alpha$ and $\beta$.  See
+  estimator of {\tt inter} and {\tt slope}.  See
   \url{https://en.wikipedia.org/wiki/Linear_regression}.  \index{MLE}
   \index{maximum likelihood estimator}
 
-\item The values of $\hat{\inter}$ and $\hat{\slope}$ that minimize
+\item The values of {\tt inter} and {\tt slope} that minimize
   the squared residuals can be computed efficiently.
 
 \end{itemize}
@@ -6960,10 +6964,10 @@ at hand.  That's no longer the case, so it is worth considering
 whether squared residuals are the right thing to minimize.
 \index{computation}
 
-For example, if you are using values of $X$ to predict values of $Y$,
+For example, if you are using {\tt xs} to predict values of {\tt ys},
 guessing too high might be better (or worse) than guessing too low.
-In that case you might want to compute some cost function,
-cost(\eps_i), and minimize total cost.
+In that case you might want to compute some cost function for each
+residual, and minimize total cost, {\tt sum(cost(res))}.
 \index{cost function}
 
 However, computing a least squares fit is quick, easy and often good
@@ -6994,19 +6998,13 @@ of {\tt xs}.
 
 \begin{verbatim}
 def FitLine(xs, inter, slope):
-    """Fits a line to the given data.
-
-    xs: sequence of x
-
-    returns: tuple of numpy arrays (sorted xs, fit ys)
-    """
     fit_xs = np.sort(xs)
     fit_ys = inter + slope * fit_xs
     return fit_xs, fit_ys
 \end{verbatim}
 
-We can use these functions to compute and a least squares
-fit for birth weight as a function of mother's age.
+We can use these functions to compute and a least squares fit for
+birth weight as a function of mother's age.
 
 \begin{verbatim}
     live, firsts, others = first.MakeFrames()
@@ -7021,10 +7019,10 @@ fit for birth weight as a function of mother's age.
 The estimated intercept and slope are 6.8 lbs and 0.017 lbs per year.
 These value are hard to interpret in this form: the intercept is
 the expected weight of a baby whose mother is 0 years old, which
-doesn't make sense in this context, and the slope is too small to
+doesn't make sense in context, and the slope is too small to
 grasp easily.
 
-Instead of presenting the intercept with $x=0$, it
+Instead of presenting the intercept at $x=0$, it
 is often helpful to present the intercept at the mean of $x$.  In
 this case the mean age is about 25 years and the expected weight
 for a 25 year old mother is 7.3 pounds.  The slope is 0.27 ounces
@@ -7057,13 +7055,6 @@ def Residuals(xs, ys, inter, slope):
 estimated parameters {\tt inter} and {\tt slope}.  It returns
 the differences between the actual values and the fitted line.
 
-\begin{figure}
-% regression.py
-\centerline{\includegraphics[height=2.5in]{figs/regression2.pdf}}
-\caption{Residuals of the linear fit.}
-\label{regression2}
-\end{figure}
-
 To visualize the residuals, I group respondents by age and compute
 percentiles in each group, as we saw in Section~\ref{characterizing}.
 Figure~\ref{regression2} shows the 25th, 50th and 75th percentiles of
@@ -7078,6 +7069,13 @@ the same for all age groups.  In fact, the lines are close to
 parallel, so that's good; but they have some curvature, indicating
 that the relationship is non-linear.  Nevertheless, the linear fit
 is a simple model that is probably good enough for most purposes.
+
+\begin{figure}
+% regression.py
+\centerline{\includegraphics[height=2.5in]{figs/regression2.pdf}}
+\caption{Residuals of the linear fit.}
+\label{regression2}
+\end{figure}
 
 
 \section{Estimation}
@@ -7095,31 +7093,29 @@ how much variability do we expect in the estimates?''  We can
 answer this question by running simulated experiments and computing
 sampling distributions of the estimates.
 
-To simulate the experiments, I'll assume temporarily that the estimated
-parameters are right, and that the residuals represent deviations from
-the fitted line due to unknown factors and random noise.  So we can
-generate simulated data by permuting the residuals and adding them
-to the fitted line.
+I simulate the experiments by resampling the data; that is, I treat
+the observed pregnancies as if they were the entire population
+and draw samples, with replacement, from the observed sample.
 
 \begin{verbatim}
-def SamplingDistributions(fxs, fys, res, iters=100):
+def SamplingDistributions(live, iters=101):
     t = []
     for _ in range(iters):
-        random.shuffle(res)
-        estimates = thinkstats2.LeastSquares(fxs, fys + res)
+        sample = thinkstats2.SampleRows(live, len(live), replace=True)
+        ages = sample.agepreg
+        weights = sample.totalwgt_lb
+        estimates = thinkstats2.LeastSquares(ages, weights)
         t.append(estimates)
 
     inters, slopes = zip(*t)
     return inters, slopes
 \end{verbatim}
 
-{\tt fxs} and {\tt fys} are the fitted values, and {\tt res}
-is the sequence of residuals.  {\tt iters} is the number of
-experiments to simulate.
-
-Each time through the loop, {\tt SamplingDistributions} shuffles
-the residuals, generates simulated data, and used {\tt LeastSquares}
-to estimate {\tt inter} and {\tt slope}.  It returns sequences
+{\tt SamplingDistributions} takes a DataFrame with one row
+per live birth, and {\tt iters}, the number of experiments to simulate.
+It uses {\tt SampleRows} to resample the observed pregnancies,
+then uses the simulated sample to estimate the parameters.
+It returns sequences
 of estimated intercepts and estimated slopes.
 
 I summarize the sampling distributions by printing the standard
@@ -7134,102 +7130,129 @@ def Summarize(values, actual):
 \end{verbatim}
 
 For the intercept, the estimated value is 6.83, with standard error
-0.07 and confidence interval (6.70, 6.95).  The estimated slope, in more
-compact form, is
-0.0175, SE 0.0028, CI (0.0126, 0.0226).
+0.07 and confidence interval (6.70, 6.95).  The estimated slope, in
+more compact form, is 0.0175, SE 0.0028, CI (0.0126, 0.0226).
+There is almost a factor of two between the low and high ends of
+this CI, so it should be considered a rough estimate.
 
+%inter 6.83039697331
+%SE, CI 0.0695704914151 (6.7017063350011705, 6.9472713922362352)
+%slope 0.0174538514718
+%SE, CI 0.00278994757445 (0.012640165265054685, 0.022557267762599829)
 
+To visualize the sampling error of the estimate, we could plot
+all of the fitted lines, or for a less cluttered representation,
+plot a 90\% confidence interval for each age.  Here's the code:
 
 \begin{verbatim}
+def PlotConfidenceIntervals(xs, inters, slopes, **options):
+    size = len(slopes), len(xs)
+    array = np.zeros(size)
+
+    for i, (inter, slope) in enumerate(zip(inters, slopes)):
+        fxs, fys = thinkstats2.FitLine(xs, inter, slope)
+        array[i,] = fys
+
+    xs = np.sort(xs)
+    array = np.sort(array, axis=0)
+    
+    low = array[5,]
+    high = array[95,]
+    thinkplot.FillBetween(xs, low, high, **options)
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
+{\tt xs} is the sequence of mother's age.  {\tt inters} and {\tt slopes}
+are the estimates parameters generated by {\tt SamplingDistributions}.
 
+{\tt PlotConfidenceIntervals} generates a fitted line for each pairs
+of {\tt inter} and {\tt slope} and stores the results in an array with
+one row per simulated experiment.  Then it sorts each column in the
+array, and selects the row with indices 5 and 95, which contain the
+5th and 95th percentiles (provided that there are 101 rows).
 
-inter 6.83039697331
-SE, CI 0.0695704914151 (6.7017063350011705, 6.9472713922362352)
-slope 0.0174538514718
-SE, CI 0.00278994757445 (0.012640165265054685, 0.022557267762599829)
+{\tt FillBetween} draws a polygon that fills the space between two
+lines.  Figure~\ref{regression3} shows the result.  The vertical
+width of the region represents the effect of sampling error; the
+effect is smaller for values near the mean and larger for extreme
+values.
 
-
-
-% check residuals
-
-\begin{exercise}
-
-% do this
-
-Write a function named {\tt Residuals} that takes X, Y, $\hat{\inter}$
-and $\hat{\slope}$ and returns a list of $\eps_i$.
-\index{residual}
-
-Write a function named {\tt CoefDetermination} that takes the 
-$\eps_i$ and Y and returns $R^{2}$.  To test your functions, 
-confirm that $R^{2} = \rho^{2}$.  You can download a solution
-from \url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
-
-\end{exercise}
-
+\begin{figure}
+% regression.py
+\centerline{\includegraphics[height=2.5in]{figs/regression3.pdf}}
+\caption{Confidence intervals of weight for each age.}
+\label{regression3}
+\end{figure}
 
 
 \section{Goodness of fit}
 \index{goodness of fit}
 \index{fit, goodness}
 
-Having fit a linear model to the data, we might want to know how good
-it is.  Well, that depends on what it's for.  One way to evaluate a
-model is its predictive power.
+There are several ways to measure the quality of a linear model, or
+{\bf goodness of fit}.  One of the simplest is the standard deviation
+of the residuals, also known as the {\bf norm of residuals}:
 
-In the context of prediction, the quantity we are trying to guess is
-called a {\bf dependent variable} and the quantity we are using to
-make the guess is called an {\bf explanatory} or {\bf independent
-  variable}.
-\index{dependent variable}
-\index{explanatory variable}
-\index{independent variable}
-\index{coefficient!determination}
+\begin{verbatim}
+norm_res = thinkstats2.Std(res)
+\end{verbatim}
 
-To measure the predictive power of a model, we can compute the {\bf
-  coefficient of determination}, more commonly known as ``R-squared'':
-%
-\[ R^2 = 1 - \frac{Var(\eps)}{Var(Y)}\]
-%
-To understand what $R^{2}$ means, suppose (again) that you are trying
-to guess someone's weight.  If you didn't know anything about them,
-your best strategy would be to guess $\ybar$; in
-that case the MSE of your guesses would be $Var(Y)$:
-%
-\[ MSE = \frac{1}{n} \sum (\ybar - y_i)^2 = Var(Y) \]
-%
-But if I told you their height, you would guess
-{\tt inter + slope * x}; in that case your MSE would be $Var(\eps)$.
-%
-\[ MSE = 
-\frac{1}{n} \sum (\hat{\inter} + \hat{\slope} x_i - y_i)^2 =
-Var(\eps) \]
-%
-So the term $Var(\eps)/Var(Y)$ is the ratio of mean squared error with
-and without the explanatory variable, which is the fraction of
-variability left unexplained by the model.  The complement, $R^{2}$,
-is the fraction of variability explained by the model.
-\index{variability}
+If you use a linear model to make predictions, the norm of residuals
+is the root mean squared error (RMSE) of your predictions.  For
+example, if you use mother's age to guess birth weight, the RMSE of
+your guess would be 1.40 lbs.
 
-If a model yields $R^{2} = 0.64$, you could say that the model explains
-64\% of the variability, or it might be more precise to say that it
-reduces the MSE of your predictions by 64\%.
+If you guess birth weight without knowing the mother's age, 
+the RMSE of your guess is {\tt Var(ys)}, which is 1.41 lbs.
+So in this example mother's age does not improve the predictions
+substantially.
+
+Another way to measure goodness of fit is  the {\bf
+  coefficient of determination}, usually denoted $R^2$ and 
+called ``R-squared'':
+
+\begin{verbatim}
+def CoefDetermination(ys, res):
+    return 1 - Var(res) / Var(ys)
+\end{verbatim}
+
+{\tt Var(res)} is the MSE of your guesses using the model,
+{\tt Var(ys)} if the MSE without it.   So their ratio is the fraction
+of MSE that remains if you use the model, and $R^2$ is the fraction
+of MSE the model removes.
+
+For birth weight and mother's age, $R^2$ is 0.0047, which means
+that mother's age predicts less than half of 1\% of variance in
+birth weight.
 
 It turns out that
 there is a simple relationship between the coefficient of
-determination and Pearson's correlation coefficient, $\rho$:
+determination and Pearson's correlation coefficient: $R^{2} = \rho^{2}$.
+So if $\rho$ is 0.8 or -0.8, $R^2 = 0.64$.
 
-\[ R^{2} = \rho^{2}\]
+Although $\rho$ and $R^2$ are often used to quantify the strength of a
+relationship, they are not easy to interpret in terms of predictive
+power.  In my opinion, norm of residuals is the best representation
+of the quality of prediction, especially if it is presented
+in relation to {\tt Var(ys)}.
 
-For example, if $\rho$ is 0.8 or -0.8, $R^2 = 0.64$.
+For example, when people talk about the validity of the SAT,
+a standardized test used for college admissions in the U.S., they
+often talk about correlations between SAT scores and other measures of
+intelligence.
 
-% TODO: example here of expressing these things in terms of predictive
-% power
+According to one study, there is a Pearson correlation of
+$\rho=0.72$ between total SAT scores and IQ scores, which sounds like
+a strong correlation.  But $R^{2} = \rho^{2} = 0.52$, so SAT scores
+only predict only 52\% of variance in IQ.
+
+In terms of norm of residuals, using SAT score to predict IQ
+reduces RMSE from 15 points to 10.4 points.  So a correlation of 0.72
+yields a reduction in RMSE of only 31\%.
+
+If you see a correlation that looks impressive, remember that $R^2$
+(which is generally smaller) is a better indicator of the effect of
+the model on MSE, and reduction in RMSE is a better indicator of
+predictive power.
 
 
 \section{Testing a linear regression}
@@ -7453,26 +7476,6 @@ How would you best present the estimated parameters for a model
 like this where one of the variables is log-transformed?
 
 \end{exercise}
-
-\begin{exercise}
-The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
-of intelligence; scores are calibrated so that the mean and standard
-deviation in the general population are 100 and 15.
-\index{Adult Intelligence Scale}
-\index{WAIS}
-\index{IQ}
-\index{intelligence}
-
-Suppose that you wanted to predict someone's WAIS score based on their
-SAT scores.  According to one study, there is a Pearson correlation of
-0.72 between total SAT scores and WAIS scores.
-
-If you applied your predictor to a large sample, what would you expect to
-be the mean squared error (MSE) of your predictions?
-
-Hint: What is the MSE if you always guess 100?
-\end{exercise}
-
 
 \begin{exercise}
 Using the height and weight data from the BRFSS (one more time),

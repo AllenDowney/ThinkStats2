@@ -23,7 +23,7 @@ Conversely, as sample size decreases, the test is less likely to
 be positive even if the effect is real.
 
 To investigate this behavior, run the tests in this chapter with
-different subsets of the NSFG data.  You can use scatter.SampleRows
+different subsets of the NSFG data.  You can use thinkstats2.SampleRows
 to select a random subset of the rows in a DataFrame.
 
 What happens to the p-values of these tests as sample size decreases?
@@ -171,7 +171,7 @@ def main():
 
     n = len(live)
     for _ in range(7):
-        sample = scatter.SampleRows(live, n)
+        sample = thinkstats2.SampleRows(live, n)
         RunTests(sample)
         n //= 2
 

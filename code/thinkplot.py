@@ -183,12 +183,15 @@ def Figure(**options):
     pyplot.figure(**options)
 
 
-def UnderrideColor(options):    
+def UnderrideColor(options):
+    if 'color' in options:
+        return options
+
     color_iter = Brewer.GetIter()
 
     if color_iter:
         try:
-            options = Underride(options, color=next(color_iter))
+            options['color'] = next(color_iter)
         except StopIteration:
             print('Warning: Brewer ran out of colors.')
             Brewer.ClearIter()
@@ -207,6 +210,20 @@ def Plot(xs, ys, style='', **options):
     options = UnderrideColor(options)
     options = Underride(options, linewidth=3, alpha=0.8)
     pyplot.plot(xs, ys, style, **options)
+
+
+def FillBetween(xs, y1, y2=None, where=None, **options):
+    """Plots a line.
+
+    Args:
+      xs: sequence of x values
+      y1: sequence of y values
+      y2: sequence of y values
+      where: sequence of boolean
+      options: keyword args passed to pyplot.fill_between
+    """
+    options = Underride(options, color='blue', linewidth=0, alpha=0.6)
+    pyplot.fill_between(xs, y1, y2, where, **options)
 
 
 def Bar(xs, ys, **options):
