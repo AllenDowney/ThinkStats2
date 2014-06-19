@@ -38,6 +38,7 @@ import pandas
 
 import scipy.stats
 import scipy.special
+import scipy.ndimage
 
 ROOT2 = math.sqrt(2)
 
@@ -975,7 +976,7 @@ class Cdf(object):
         if x < self.xs[0]:
             return 0.0
         index = bisect.bisect(self.xs, x)
-        p = self.ps[index - 1]
+        p = self.ps[index-1]
         return p
 
     def Probs(self, xs):
@@ -994,15 +995,8 @@ class Cdf(object):
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
 
-        if p == 0: 
-            return self.xs[0]
-        if p == 1: 
-            return self.xs[-1]
-        index = bisect.bisect(self.ps, p)
-        if p == self.ps[index - 1]:
-            return self.xs[index - 1]
-        else:
-            return self.xs[index]
+        index = bisect.bisect_left(self.ps, p)
+        return self.xs[index]
 
     def Percentile(self, p):
         """Returns the value that corresponds to percentile p.
@@ -2473,6 +2467,16 @@ def ReadStataDct(dct_file):
     return dct
 
 
+def Resample(xs):
+    """Draw a sample from xs with the same length as xs.
+
+    xs: sequence
+
+    returns: NumPy array
+    """
+    return np.random.choice(xs, len(xs), replace=True)
+
+
 def SampleRows(df, nrows, replace=False):
     """Choose a sample of rows from a DataFrame.
 
@@ -2482,10 +2486,28 @@ def SampleRows(df, nrows, replace=False):
 
     returns: DataFrame
     """
-    indices = df.index
-    sample_indices = np.random.choice(indices, nrows, replace=replace)
-    sample = df.loc[sample_indices]
+    indices = np.random.choice(df.index, nrows, replace=replace)
+    sample = df.loc[indices]
     return sample
+
+
+def ResampleRows(df):
+    """Resamples rows from a DataFrame.
+
+    df: DataFrame
+
+    returns: DataFrame
+    """
+    return SampleRows(df, len(df), replace=True)
+
+
+def Smooth(xs, sigma=2, **options):
+    """Smooths a NumPy array with a Gaussian filter.
+
+    xs: sequence
+    sigma: standard deviation of the filter
+    """
+    return scipy.ndimage.filters.gaussian_filter1d(xs, sigma, **options)
 
 
 class HypothesisTest(object):
@@ -2521,7 +2543,7 @@ class HypothesisTest(object):
         """
         return max(self.test_stats)
 
-    def PlotCdf(self):
+    def PlotCdf(self, label=''):
         """Draws a Cdf with vertical lines at the observed test stat.
         """
         def VertLine(x):
@@ -2529,7 +2551,7 @@ class HypothesisTest(object):
             thinkplot.Plot([x, x], [0, 1], color='0.8')
 
         VertLine(self.actual)
-        thinkplot.Cdf(self.test_cdf)
+        thinkplot.Cdf(self.test_cdf, label=label)
 
     def TestStatistic(self, data):
         """Computes the test statistic.

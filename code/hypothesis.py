@@ -218,11 +218,9 @@ def RunDiceTest():
     print('dice test', dt.PValue(iters=10000))
     dt = DiceChiTest(data)
     print('dice chi test', dt.PValue(iters=10000))
-    #dt.PlotCdf()
-    #thinkplot.Show()
 
 
-def FalseNegRate(data, num_runs=100):
+def FalseNegRate(data, num_runs=1000):
     """Computes the chance of a false negative based on resampling.
 
     data: pair of sequences
@@ -234,8 +232,8 @@ def FalseNegRate(data, num_runs=100):
     count = 0
 
     for i in range(num_runs):
-        sample1 = np.random.choice(group1, len(group1), replace=True)
-        sample2 = np.random.choice(group2, len(group2), replace=True)
+        sample1 = thinkstats2.Resample(group1)
+        sample2 = thinkstats2.Resample(group2)
         ht = DiffMeansPermute((sample1, sample2))
         p_value = ht.PValue(iters=101)
         if p_value > 0.05:
@@ -369,7 +367,7 @@ def main():
     # compute the false negative rate for difference in pregnancy length
     data = firsts.prglngth.values, others.prglngth.values
     neg_rate = FalseNegRate(data)
-    print('neg_rate', neg_rate)
+    print('false neg rate', neg_rate)
 
     # run the tests with new nsfg data
     ReplicateTests()

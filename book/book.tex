@@ -4417,15 +4417,8 @@ probability and returns the corresponding value:
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
 
-        if p == 0: 
-            return self.xs[0]
-        if p == 1: 
-            return self.xs[-1]
-        index = bisect.bisect(self.ps, p)
-        if p == self.ps[index - 1]:
-            return self.xs[index - 1]
-        else:
-            return self.xs[index]
+        index = bisect.bisect_left(self.ps, p)
+        return self.xs[index]
 \end{verbatim}
 
 Given a Cdf, we can compute the Pmf by computing differences between
@@ -4781,7 +4774,7 @@ weight:
 
 \begin{verbatim}
     df = brfss.ReadBrfss(nrows=None)
-    sample = SampleRows(df, 5000)
+    sample = thinkstats2.SampleRows(df, 5000)
     heights, weights = sample.htm3, sample.wtkg2
 \end{verbatim}
 
@@ -4789,9 +4782,8 @@ weight:
 
 \begin{verbatim}
 def SampleRows(df, nrows, replace=False):
-    indices = df.index
-    sample_indices = np.random.choice(indices, nrows, replace=replace)
-    sample = df.loc[sample_indices]
+    indices = np.random.choice(df.index, nrows, replace=replace)
+    sample = df.loc[indices]
     return sample
 \end{verbatim}
 
@@ -6273,7 +6265,7 @@ To test the difference in pregnancy length, we run:
     live, firsts, others = first.MakeFrames()
     data = firsts.prglngth.values, others.prglngth.values
     ht = DiffMeansPermute(data)
-    p_value = ht.PValue()
+    pvalue = ht.PValue()
 \end{verbatim}
 
 {\tt MakeFrames} reads the NSFG data and returns DataFrames
@@ -6373,6 +6365,7 @@ is 0.09, which is not statistically significant.
 
 
 \section{Testing a correlation}
+\label{corrtest}
 
 This framework can also test correlations.  For example, in the NSFG
 data set, the correlation between birth weight and mother's age is
@@ -6415,7 +6408,7 @@ Here's the code that reads the data and runs the test:
     live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
     data = live.agepreg.values, live.totalwgt_lb.values
     ht = CorrelationPermute(data)
-    p_value = ht.PValue()
+    pvalue = ht.PValue()
 \end{verbatim}
 
 I use {\tt dropna} with the {\tt subset} argument to drop rows
@@ -6685,12 +6678,12 @@ def FalseNegRate(data, num_runs=100):
     count = 0
 
     for i in range(num_runs):
-        sample1 = np.random.choice(group1, len(group1), replace=True)
-        sample2 = np.random.choice(group2, len(group2), replace=True)
+        sample1 = thinkstats2.Resample(group1)
+        sample2 = thinkstats2.Resample(group2)
 
         ht = DiffMeansPermute((sample1, sample2))
-        p_value = ht.PValue(iters=101)
-        if p_value > 0.05:
+        pvalue = ht.PValue(iters=101)
+        if pvalue > 0.05:
             count += 1
 
     return count / num_runs
@@ -6701,6 +6694,14 @@ each group.  Each time through the loop, it simulates an experiment by
 drawing a random sample from each group and running a hypothesis test.
 Then it checks the result and counts the number of false negatives.
 
+{\tt Resample} takes a sequence and draws a sample with the same
+length, with replacement:
+
+\begin{verbatim}
+def Resample(xs):
+    return np.random.choice(xs, len(xs), replace=True)
+\end{verbatim}
+
 Here's the code that tests pregnancy lengths:
 
 \begin{verbatim}
@@ -6709,17 +6710,17 @@ Here's the code that tests pregnancy lengths:
     neg_rate = FalseNegRate(data)
 \end{verbatim}
 
-The result is about 68\%, which means that if the actual difference in
+The result is about 70\%, which means that if the actual difference in
 mean pregnancy length is 0.78 weeks, we expect an experiment with this
-sample size to yield a negative test 68\% of the time.
+sample size to yield a negative test 70\% of the time.
 
 This result is often presented the other way around: if the actual
-difference is 0.78 weeks, we should expect a positive test only 32\%
+difference is 0.78 weeks, we should expect a positive test only 30\%
 of the time.  This ``correct positive rate'' is called the {\bf power}
 of the test, or sometimes ``sensitivity''.  It reflects the ability of
 the test to detect an effect of a given size.
 
-In this example, the test had only a 32\% chance of yielding a
+In this example, the test had only a 30\% chance of yielding a
 positive result (again, assuming that the difference is 0.78 weeks).
 As a rule of thumb, a power of 80\% is considered acceptable, so
 we would say that this test was ``underpowered.''
@@ -6727,7 +6728,6 @@ we would say that this test was ``underpowered.''
 In general a negative hypothesis test does not imply that there is no
 difference between the groups; instead it suggests that if there is a
 difference, it is too small to detect with this sample size.
-
 
 
 \section{Replication}
@@ -6798,7 +6798,7 @@ Conversely, as sample size decreases, the test is less likely to
 be positive even if the effect is real.
 
 To investigate this behavior, run the tests in this chapter with
-different subsets of the NSFG data.  You can use {\tt scatter.SampleRows}
+different subsets of the NSFG data.  You can use {\tt thinkstats2.SampleRows}
 to select a random subset of the rows in a DataFrame.
 \index{National Survey of Family Growth}
 \index{NSFG}
@@ -6890,7 +6890,7 @@ is false.
 
 
 
-\chapter{Linear regression}
+\chapter{Simple regression}
 
 \section{Least squares fit}
 
@@ -7079,6 +7079,7 @@ is a simple model that is probably good enough for most purposes.
 
 
 \section{Estimation}
+\label{regest}
 
 The parameters {\tt slope} and {\tt inter} are estimates based on a
 sample; like other estimates, they are vulnerable to sampling bias,
@@ -7130,15 +7131,15 @@ def Summarize(values, actual):
 \end{verbatim}
 
 For the intercept, the estimated value is 6.83, with standard error
-0.07 and confidence interval (6.70, 6.95).  The estimated slope, in
-more compact form, is 0.0175, SE 0.0028, CI (0.0126, 0.0226).
+0.07 and 90\% confidence interval (6.71, 6.94).  The estimated slope, in
+more compact form, is 0.0174, SE 0.0028, CI (0.0126, 0.0220).
 There is almost a factor of two between the low and high ends of
 this CI, so it should be considered a rough estimate.
 
-%inter 6.83039697331
-%SE, CI 0.0695704914151 (6.7017063350011705, 6.9472713922362352)
-%slope 0.0174538514718
-%SE, CI 0.00278994757445 (0.012640165265054685, 0.022557267762599829)
+%inter 6.83039697331 6.83174035366
+%SE, CI 0.0699814482068 (6.7146843084406846, 6.9447797068631871)
+%slope 0.0174538514718 0.0173840926936
+%SE, CI 0.00276116142884 (0.012635074392201724, 0.021975282350381781)
 
 To visualize the sampling error of the estimate, we could plot
 all of the fitted lines, or for a less cluttered representation,
@@ -7190,19 +7191,15 @@ values.
 
 There are several ways to measure the quality of a linear model, or
 {\bf goodness of fit}.  One of the simplest is the standard deviation
-of the residuals, also known as the {\bf norm of residuals}:
+of the residuals.
 
-\begin{verbatim}
-norm_res = thinkstats2.Std(res)
-\end{verbatim}
-
-If you use a linear model to make predictions, the norm of residuals
+If you use a linear model to make predictions, {\tt Std(res)}
 is the root mean squared error (RMSE) of your predictions.  For
 example, if you use mother's age to guess birth weight, the RMSE of
 your guess would be 1.40 lbs.
 
 If you guess birth weight without knowing the mother's age, 
-the RMSE of your guess is {\tt Var(ys)}, which is 1.41 lbs.
+the RMSE of your guess is {\tt Std(ys)}, which is 1.41 lbs.
 So in this example mother's age does not improve the predictions
 substantially.
 
@@ -7216,7 +7213,7 @@ def CoefDetermination(ys, res):
 \end{verbatim}
 
 {\tt Var(res)} is the MSE of your guesses using the model,
-{\tt Var(ys)} if the MSE without it.   So their ratio is the fraction
+{\tt Var(ys)} is the MSE without it.   So their ratio is the fraction
 of MSE that remains if you use the model, and $R^2$ is the fraction
 of MSE the model removes.
 
@@ -7224,190 +7221,314 @@ For birth weight and mother's age, $R^2$ is 0.0047, which means
 that mother's age predicts less than half of 1\% of variance in
 birth weight.
 
-It turns out that
-there is a simple relationship between the coefficient of
+There is a simple relationship between the coefficient of
 determination and Pearson's correlation coefficient: $R^{2} = \rho^{2}$.
-So if $\rho$ is 0.8 or -0.8, $R^2 = 0.64$.
+For example, if $\rho$ is 0.8 or -0.8, $R^2 = 0.64$.
 
 Although $\rho$ and $R^2$ are often used to quantify the strength of a
 relationship, they are not easy to interpret in terms of predictive
-power.  In my opinion, norm of residuals is the best representation
+power.  In my opinion, {\tt Std(res)} is the best representation
 of the quality of prediction, especially if it is presented
-in relation to {\tt Var(ys)}.
+in relation to {\tt Std(ys)}.
 
-For example, when people talk about the validity of the SAT,
-a standardized test used for college admissions in the U.S., they
+For example, when people talk about the validity of the SAT
+(a standardized test used for college admissions in the U.S.) they
 often talk about correlations between SAT scores and other measures of
 intelligence.
 
 According to one study, there is a Pearson correlation of
 $\rho=0.72$ between total SAT scores and IQ scores, which sounds like
 a strong correlation.  But $R^{2} = \rho^{2} = 0.52$, so SAT scores
-only predict only 52\% of variance in IQ.
+account for only 52\% of variance in IQ.
 
-In terms of norm of residuals, using SAT score to predict IQ
-reduces RMSE from 15 points to 10.4 points.  So a correlation of 0.72
-yields a reduction in RMSE of only 31\%.
+IQ scores are normalized so {\tt Std(ys) = 15}, so
 
-If you see a correlation that looks impressive, remember that $R^2$
-(which is generally smaller) is a better indicator of the effect of
-the model on MSE, and reduction in RMSE is a better indicator of
-predictive power.
+\begin{verbatim}
+>>> var_y = 15**2
+>>> rho = 0.72
+>>> r2 = rho**2
+>>> var_res = (1 - r2) * var_y
+>>> std_res = math.sqrt(var_res)
+10.4096
+\end{verbatim}
+
+So using SAT score to predict IQ reduces RMSE from 15 points to 10.4
+points.  A correlation of 0.72 yields a reduction in RMSE of only
+31\%.
+
+If you see a correlation that looks impressive, remember that $R^2$ is
+a better indicator of reduction in MSE, and reduction in
+RMSE is a better indicator of predictive power.
 
 
 \section{Testing a linear regression}
 
-% TODO: fix this transition
+The effect of mother's age on birth weight is small, and has little
+predictive power.  So is it possible that the apparent relationship
+is due to chance?  There are several ways we might test the
+results of a linear regression.
 
-With the same data from the previous section, we can use linear
-least squares to estimate the slope and intercept of the relationship
-between birth weight and mother's age.  Here's the code:
-
-\begin{verbatim}
-    xs, ys = ReadData(data_dir)
-    inter, slope = thinkstats2.LeastSquares(xs, ys)
-\end{verbatim}
-
-The estimated value of {\tt inter} is 109 oz; the value of
-{\tt slope} is 0.28 oz/year.  It is important to present estimates
-like this in terms people can comprehend, so I would report
-slope as 2.8 ounces per decade, or say, ``If the mother is
-10 years older, we expect the baby to be 2.8 oz heavier.''
-
-Interpreted literally, the intercept is the expected weight of
-a baby if the mother is 0 years old.  Obviously, that doesn't
-mean anything, so I would suggest reporting the value of the
-fitted line for the mean or median age.  Here's the code that
-computes the fitted line and prints the median birth weight
-and age:
+One option is to test whether the apparent reduction in MSE is due to
+chance.  In that case, the test statistic is $R^2$ and the null
+hypothesis is that there is no relationship between the variables.  We
+can simulate the null hypothesis by permutation, as in
+Section~\ref{corrtest}, when we tested the correlation between
+mother's age and birthweight.  In fact, because $R^2 = \rho_2$, a
+one-sided test of $R^2$ is equivalent to a two-sided test of $\rho$.
+We've already done that test, and found $p < 0.001$, so we conclude
+that the apparent relationship between mother's age and birth weight
+is statistically significant.
+  
+Another approach is to test whether the apparent slope is due to chance.
+The null hypothesis is that the slope is actually zero; in that case
+we can model the birth weights as random variation around their mean.
+Here's a HypothesisTest for this model:
 
 \begin{verbatim}
-    fxs, fys = thinkstats2.FitLine(xs, inter, slope)
-    i = len(fxs) / 2
-    print('median weight, age', fxs[i], fys[i])
+class SlopeTest(thinkstats2.HypothesisTest):
+
+    def TestStatistic(self, data):
+        ages, weights = data
+        inter, slope = thinkstats2.LeastSquares(ages, weights)
+        return slope
+
+    def MakeModel(self):
+        ages, weights = self.data
+        self.ybar = weights.mean()
+        self.res = weights - self.ybar
+
+    def RunModel(self):
+        ages, _ = self.data
+        weights = self.ybar + np.random.permutation(self.res)
+        return ages, weights
 \end{verbatim}
 
-If the mother is 24, we expect the baby to weigh 116 oz (or 7.25 pounds).
+The data are represented as sequences of ages and weights.  The
+test statistic is the slope estimated by linear least squares.
+The model of the null hypothesis is represented by the mean weight
+of all babies and the sequence of deviations from the mean.  To
+generate simulated data, we permute the deviations and add them to
+the mean.
 
-Now that we have presented the results in human-comprehensible terms,
-let's get back to hypothesis testing.  As always, we would like to
-know whether the apparent relationship between these variables might
-be due to chance.
-
-One option is to use $R^2$ as a test statistic.  
+Here's the code that runs the hypothesis test:
 
 \begin{verbatim}
-    res = thinkstats2.Residuals(xs, ys, inter, slope)
-    R2 = thinkstats2.CoefDetermination(ys, res)
+    live, firsts, others = first.MakeFrames()
+    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    ht = SlopeTest((live.agepreg, live.totalwgt_lb))
+    pvalue = ht.PValue()
 \end{verbatim}
 
-The result is $R^2 = 0.0047$.  So, the p-value we
-want is the probability of seeing $R^2$ as big as that by chance.
+The p-value is less than $0.001$, so although the estimated
+slope is small, it is unlikely to be due to chance.
 
-As it happens, we have already computed this p-value.  Recall that
-$R^2 = \rho^2$, so if $R^2$ exceeds 0.0047, the magnitude of $\rho$
-must exceed $0.07$, which is the correlation we saw in the previous
-section.  So a one-sided test of $R^2$ corresponds to a two-sided
-test of $\rho$.  Based on the results of the previous section, we
-conclude that the observed $R^2$ is statistically significant with
-$p < 0.001$.
+Estimating the p-value by simulating the null hypothesis is 
+rigorous, but there is a simpler alternative.  Remember that we
+already computed the sampling distribution of the slope, in
+Section~\ref{regest}.  To do that, we assumed that the observed
+slope was correct and simulated experiments by resampling.
 
-In addition, with linear regression we have the option of testing
-each estimated parameter.  For example, we might like answer either
-or both of these questions:
+Figure~\ref{regression4} shows the sampling distribution of the
+slope, from Section~\ref{regest}, and the distribution of slopes
+generated under the null hypothesis.  The sampling distribution
+is centered about the estimated slope, 0.017 lbs/year, and the slopes
+under the null hypothesis are centered around 0; but other than
+that the distributions are identical.  The distributions are
+also symmetric, for reasons we will see in Section~\ref{CLT}.
+
+\begin{figure}
+% regression.py
+\centerline{\includegraphics[height=2.5in]{figs/regression4.pdf}}
+\caption{The sampling distribution of the estimated
+slope and the distribution of slopes
+generated under the null hypothesis.  The vertical lines are at 0
+and the observed slope, 0.017 lbs/year.}
+\label{regression4}
+\end{figure}
+
+So we could estimate the p-value two ways:
 
 \begin{itemize}
 
-\item If the actual intercept were 0, what would be the chance of
-seeing an intercept as big as 109 oz?
+\item Compute the probability that the slope under the null
+hypothesis exceeds the observed slope, 0.017 lbs/year, or
 
-\item If the actual slope were 0, what would be the chance of seeing
-a slope as big as 0.28 oz/year?
+\item Compute the probability that the slope in the sampling
+distribution falls below 0.
 
 \end{itemize}
 
-The second question is often relevant in practice.  The first question
-is not always relevant, unless we there is a theoretical reason to
-expect the intercept to be 0.
+The first is more strictly correct, but the second is easier, because
+we normally want to compute the sampling distributions of the
+parameters anyway.  And it is a good approximation unless the sample
+size is small {\em and} the distribution of residuals is skewed.  Even
+then, it is good enough, because we only care about the order of
+magnitude, usually.
 
-To answer these questions, we model a null hypothesis
-and compute the probability that the estimated parameter exceeds
-the observed parameter under the null hypothesis.  For example,
-if we are testing whether the slope is significant, the null hypothesis
-is that the slope is actually 0.
-
-% TODO: rewrite this using the framework
-
-If the slope is 0, the line that minimizes squared error is
-$y = \ybar$; in this example, $\ybar$ is the mean birth weight.
-Here's the code that computes the resulting residuals:
+Here's the code that estimates the p-value of the slope using the
+sampling distribution:
 
 \begin{verbatim}
-    xs, ys = ReadData(data_dir)
-    inter = thinkstats2.Mean(ys)
-    slope = 0
-    fxs, fys = thinkstats2.FitLine(xs, inter, slope)
-    res = thinkstats2.Residuals(xs, ys, inter, slope)
+    inters, slopes = SamplingDistributions(live, iters=1000)
+    slope_cdf = thinkstats2.Cdf(slopes)
+    pvalue = slope_cdf[0]
 \end{verbatim}
 
-Using the fitted line and the residuals, we can generate a simulation
-of the null hypothesis by permutation:
+Again, we find $p < 0.001$.  If the estimated slope were negative,
+we would compute the probability that the slope in the sampling
+distribution exceeds 0.
+
+\section{Weighted resampling}
+
+So far we have been treating the NSFG data as if it were a
+representative sample, but as I mentioned in Section~\ref{nsfg},
+it is not.  The NSFG deliberately oversamples several groups
+in order to improve the chance of getting statistically significant
+results; that is, in order to improve the power of tests involving
+these groups.
+
+This survey design is useful for many purposes, but it means that
+we cannot use the survey sample to estimate values for the general
+population without accounting for the sampling process.
+
+For each respondent, the NSFG data includes a variable called {\tt
+  finalwgt}, which is the number of people in the general population
+the respondent represents.  This value is called a ``weight'' in
+the sense of ``weight of evidence'' -- not to be confused with birth
+weight!
+
+As an example, if you survey 100,000 people in a country of 300
+million, each respondent represents 300,000 people.  If you oversample
+one group by a factor of 2, each person in the oversampled
+group would have a lower weight, about 150,000.
+
+To correct for oversampling, we can use resampling; that is, we
+can draw samples from the survey data using probabilities proportional
+to {\tt totalwgt}.  For any quantity we want to estimate, we can
+generate sampling distributions, standard errors, and confidence
+intervals.
+
+{\tt ResampleRowsWeighted} takes a DataFrame, resamples rows according
+to the weights in {\tt finalwgt}, and returns a DataFrame containing
+the resampled rows:
 
 \begin{verbatim}
-def Permute(fxs, fys, res):
-    random.shuffle(res)
-    inter, slope = thinkstats2.LeastSquares(fxs, fys + res)
-    return inter, slope
+def ResampleRowsWeighted(live):
+    weights = live.finalwgt
+    pmf = thinkstats2.Pmf(weights.iteritems())
+    cdf = pmf.MakeCdf()
+    indices = cdf.Sample(len(weights))
+    sample = live.loc[indices]
+    return sample
 \end{verbatim}
 
-{\tt Permute} takes the fitted values, {\tt fxs} and {\tt fys} and the
-residuals, {\tt res}.  It shuffles the residuals, adds the shuffled
-residuals to the fitted {\tt fys} and then computes a least squares
-fit to the resulting simulated data.
+{\tt pmf} maps from each row index to its normalized weight.  Converting
+to a Cdf makes the sampling process faster.  {\tt indices} is a sequence
+of row indices; {\tt sample} is a DataFrame that contains the selected
+rows.  Since we sampled with replacement, the same row might appear
+more than once.
 
-\begin{figure}
-% regress1.py
-\centerline{\includegraphics[height=2.5in]{figs/regress1.pdf}}
-\caption{Sampling distribution of the estimated slope.}
-\label{regress1}
-\end{figure}
-
-Each time we call {\tt Permute}, we get the result of another simulated
-experiment.  If we call it 1000 times, we can estimate the sampling
-distribution of {\tt slope} and {\tt intercept} under the null
-hypothesis:
+Now we can compare the effect of resampling with and without
+weights.  Without weights, we can generate the sampling distribution
+like this:
 
 \begin{verbatim}
-def SamplingDistributions(fxs, fys, res, n=10):
-    res_copy = list(res)
-
-    t = []
-    for i in range(n):
-        estimates = Permute(fxs, fys, res)
-        t.append(estimates)
-
-    inters, slopes = zip(*t)
-    inter_cdf = thinkstats2.MakeCdfFromList(inters)
-    slope_cdf = thinkstats2.MakeCdfFromList(slopes)
-
-    return inter_cdf, slope_cdf
+    estimates = [thinkstats2.ResampleRows(live).totalwgt_lb.mean()
+                 for _ in range(iters)]
 \end{verbatim}
 
-{\tt SamplingDistributions} takes the fitted values, {\tt fxs} and {\tt fys},
-the residuals, {\tt res}, and the number of iterations, {\tt n}.
-It runs {\tt Permute} {\tt n} times and returns the accumulated
-sampling distributions of {\tt inter} and {\tt slope}.
+With weights, it looks like this:
 
-Figure~\ref{regress1} shows the sampling CDF of {\tt slope}.  The
-upper bound, after 1000 tries, is about 0.12 oz/year.  So the
-probability of seeing an estimated slope that exceeds the observed
-value, 0.28 oz/year, is less than 1 in 1000.  We conclude that the
-slope is statistically significant with $p < 0.001$.
+\begin{verbatim}
+    estimates = [ResampleRowsWeighted(live).totalwgt_lb.mean()
+                 for _ in range(iters)]
+\end{verbatim}
 
-To test the intercept, we find the line with {\tt inter=0} that
-minimizes MSE, and use permutation to estimate the sampling
-distribution of {\tt inter}.  In this example, the intercept is also
-statistically significant with $p < 0.001$.
+The following table summarizes the results:
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+                    &  mean birth   & standard  &  90\% CI  \\ 
+                    &  weight (lbs) & error     &           \\ 
+\hline
+Unweighted          &  7.27  &  0.014  &  (7.24, 7.29)  \\ 
+Weighted            &  7.35  &  0.014  &  (7.32, 7.37)  \\ 
+\hline
+\end{tabular}
+\end{center}
+
+%mean 7.26580789518
+%stderr 0.0141683527792
+%ci (7.2428565501217079, 7.2890814917127074)
+%mean 7.34778034718
+%stderr 0.0142738972319
+%ci (7.3232804012858885, 7.3704916897506925)
+
+In this example, the effect of weighting is small but non-negligible.
+The difference in estimated means, with and without weighting, is
+about 0.08 pounds, or 1.3 ounces.  This difference is substantially
+larger than the standard error of the estimate, 0.014 pounds, so
+we conclude that the difference is not due to chance.
+
+
+\section{Exercises}
+
+\begin{exercise}
+
+Using the data from the BRFSS, compute the linear least squares
+fit for log(weight) versus height.
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
+How would you best present the estimated parameters for a model
+like this where one of the variables is log-transformed?
+If you were trying to guess
+someone's weight, how much would it help to know their height?
+
+Like the NSFG, the BRFSS oversamples some groups and provides
+a sampling weight for each respondent.  In the BRFSS data, the variable
+name for these weights is {\tt totalwt}.
+
+Use resampling, with and without weights, to estimate the mean height
+of respondents in the BRFSS, the standard error of the mean, and a
+90\% confidence interval.  How much does correct weighting affect the
+estimates?
+
+A solution to this exercise is in \verb"chap10ex_soln.py"
+
+\end{exercise}
+
+
+\section{Glossary}
+
+\begin{itemize}
+
+\item least squares fit: A model of a dataset that minimizes the
+sum of squares of the residuals.
+\index{least squares fit}
+
+\item residual: A measure of the deviation of an actual value from a model.
+\index{residual}
+
+\item dependent variable: A variable we are trying to predict or explain.
+\index{dependent variable}
+
+\item independent variable: A variable we are using to predict a dependent
+variable, also called an explanatory variable.
+\index{independent variable}
+
+\item coefficient of determination: A measure of the goodness of fit
+of a linear model.
+\index{coefficient!determination}
+
+\end{itemize}
+
+
+
+\chapter{More regression}
+
+\section{StatsModels}
 
 
 \section{Multiple regression}
@@ -7463,63 +7584,7 @@ Python.  But that's a whole other book.
 \end{exercise}
 
 
-\section{Exercises}
-
-\begin{exercise}
-
-Using the data from the BRFSS again, compute the linear least squares
-fit for log(weight) versus height.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-
-How would you best present the estimated parameters for a model
-like this where one of the variables is log-transformed?
-
-\end{exercise}
-
-\begin{exercise}
-Using the height and weight data from the BRFSS (one more time),
-compute $\hat{\inter}$, $\hat{\slope}$ and $R^{2}$.  If you were trying to guess
-someone's weight, how much would it help to know their height?
-You can download a solution from
-\url{http://thinkstats2.com/brfss_corr.py}.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss\_corr.py}}
-
-\end{exercise}
-
-
-\section{Weighted resampling}
-
-
-\section{Glossary}
-
-\begin{itemize}
-
-\item least squares fit: A model of a dataset that minimizes the
-sum of squares of the residuals.
-\index{least squares fit}
-
-\item residual: A measure of the deviation of an actual value from a model.
-\index{residual}
-
-\item dependent variable: A variable we are trying to predict or explain.
-\index{dependent variable}
-
-\item independent variable: A variable we are using to predict a dependent
-variable, also called an explanatory variable.
-\index{independent variable}
-
-\item coefficient of determination: A measure of the goodness of fit
-of a linear model.
-\index{coefficient!determination}
-
-\end{itemize}
-
-
-
-\chapter{Logistic regression}
+\section{Logistic regression}
 
 
 \chapter{Time series analysis}
