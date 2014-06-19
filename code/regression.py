@@ -14,7 +14,7 @@ import numpy as np
 import first
 import thinkplot
 import thinkstats2
-
+import statsmodels.formula.api as smf
 
 def Summarize(values, actual):
     """Prints standard error and 90% confidence interval.
@@ -153,13 +153,18 @@ def PlotResiduals(live):
                    xlim=[10, 45])
 
 
-
+def RunOlm(live):
+    formula = 'totalwgt_lb ~ agepreg'
+    results = smf.ols(formula, data=live).fit()
+    print(results.summary())
 
 def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
     
     live, firsts, others = first.MakeFrames()
     live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    RunOlm(live)
+    return
 
     #PlotFit(live)
     #PlotResiduals(live)
