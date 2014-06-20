@@ -1059,6 +1059,8 @@ class Cdf(object):
         interval = self.Value(prob), self.Value(1 - prob)
         return interval
 
+    ConfidenceInterval = CredibleInterval
+
     def _Round(self, multiplier=1000.0):
         """
         An entry is added to the cdf only if the percentile differs

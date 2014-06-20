@@ -5331,7 +5331,7 @@ topic at \url{http://wikipedia.org/wiki/Natural_experiment}.
 \index{natural experiment}
 
 In some cases it is possible to infer causal relationships using {\bf
-  regression analysis}, which is the topic of Chapter~\ref{regression}.
+  regression analysis}, which is the topic of Chapter~\ref{regression2}.
 \index{regression analysis}
 
 
@@ -6890,7 +6890,8 @@ is false.
 
 
 
-\chapter{Simple regression}
+\chapter{Linear regression}
+\label{regression}
 
 \section{Least squares fit}
 
@@ -6936,7 +6937,7 @@ residuals, or their squares, or their cubes; but the most common
 choice is to minimize the sum of squared residuals,
 {\tt sum(res**2))}.
 
-Why?  There are three good reasons and one bad one:
+Why?  There are three good reasons and one less important one:
 
 \begin{itemize}
 
@@ -6958,7 +6959,7 @@ so much weight that the largest residual always dominates.
 
 \end{itemize}
 
-That last reason made sense when computational efficiency was more
+The last reason made sense when computational efficiency was more
 important than choosing the method most appropriate to the problem
 at hand.  That's no longer the case, so it is worth considering
 whether squared residuals are the right thing to minimize.
@@ -6989,7 +6990,7 @@ To see how this is derived, see
 \url{http://wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
 
 {\tt LeastSquares} takes sequences
-{\tt xs} and {\tt ys} and return the estimated parameters {\tt inter}
+{\tt xs} and {\tt ys} and returns the estimated parameters {\tt inter}
 and {\tt slope}.
 
 {\tt thinkstats2} also provides {\tt FitLine}, which takes the
@@ -7003,7 +7004,7 @@ def FitLine(xs, inter, slope):
     return fit_xs, fit_ys
 \end{verbatim}
 
-We can use these functions to compute and a least squares fit for
+We can use these functions to compute the least squares fit for
 birth weight as a function of mother's age.
 
 \begin{verbatim}
@@ -7177,10 +7178,13 @@ width of the region represents the effect of sampling error; the
 effect is smaller for values near the mean and larger for extreme
 values.
 
+%TODO: show 50% and 90% CIs?
+
 \begin{figure}
 % regression.py
 \centerline{\includegraphics[height=2.5in]{figs/regression3.pdf}}
-\caption{Confidence intervals of weight for each age.}
+\caption{Confidence intervals showing variability in the fitted
+line due to sampling error of {\tt inter} and {\tt slope}.}
 \label{regression3}
 \end{figure}
 
@@ -7351,19 +7355,19 @@ So we could estimate the p-value two ways:
 \begin{itemize}
 
 \item Compute the probability that the slope under the null
-hypothesis exceeds the observed slope, 0.017 lbs/year, or
+hypothesis exceeds the observed slope.
 
 \item Compute the probability that the slope in the sampling
 distribution falls below 0.
 
 \end{itemize}
 
-The first is more strictly correct, but the second is easier, because
+The first is more strictly correct, but the second is easier because
 we normally want to compute the sampling distributions of the
 parameters anyway.  And it is a good approximation unless the sample
 size is small {\em and} the distribution of residuals is skewed.  Even
-then, it is good enough, because we only care about the order of
-magnitude, usually.
+then, it is usually good enough, because p-values don't have to
+be precise.
 
 Here's the code that estimates the p-value of the slope using the
 sampling distribution:
@@ -7378,33 +7382,32 @@ Again, we find $p < 0.001$.  If the estimated slope were negative,
 we would compute the probability that the slope in the sampling
 distribution exceeds 0.
 
+
 \section{Weighted resampling}
 
-So far we have been treating the NSFG data as if it were a
-representative sample, but as I mentioned in Section~\ref{nsfg},
-it is not.  The NSFG deliberately oversamples several groups
-in order to improve the chance of getting statistically significant
-results; that is, in order to improve the power of tests involving
-these groups.
+So far we have treated the NSFG data as if it were a representative
+sample, but as I mentioned in Section~\ref{nsfg}, it is not.  The NSFG
+deliberately oversamples several groups in order to improve the chance
+of getting statistically significant results; that is, in order to
+improve the power of tests involving these groups.
 
-This survey design is useful for many purposes, but it means that
-we cannot use the survey sample to estimate values for the general
+This survey design is useful for many purposes, but it means that we
+cannot use the survey sample to estimate values for the general
 population without accounting for the sampling process.
 
 For each respondent, the NSFG data includes a variable called {\tt
   finalwgt}, which is the number of people in the general population
-the respondent represents.  This value is called a ``weight'' in
-the sense of ``weight of evidence'' -- not to be confused with birth
-weight!
+the respondent represents.  This value is called a {\bf sampling
+  weight}, or just ``weight.''
 
 As an example, if you survey 100,000 people in a country of 300
-million, each respondent represents 300,000 people.  If you oversample
+million, each respondent represents 3,000 people.  If you oversample
 one group by a factor of 2, each person in the oversampled
-group would have a lower weight, about 150,000.
+group would have a lower weight, about 1500.
 
 To correct for oversampling, we can use resampling; that is, we
 can draw samples from the survey data using probabilities proportional
-to {\tt totalwgt}.  For any quantity we want to estimate, we can
+to sampling weights.  Then, for any quantity we want to estimate, we can
 generate sampling distributions, standard errors, and confidence
 intervals.
 
@@ -7413,12 +7416,12 @@ to the weights in {\tt finalwgt}, and returns a DataFrame containing
 the resampled rows:
 
 \begin{verbatim}
-def ResampleRowsWeighted(live):
-    weights = live.finalwgt
+def ResampleRowsWeighted(df):
+    weights = df.finalwgt
     pmf = thinkstats2.Pmf(weights.iteritems())
     cdf = pmf.MakeCdf()
     indices = cdf.Sample(len(weights))
-    sample = live.loc[indices]
+    sample = df.loc[indices]
     return sample
 \end{verbatim}
 
@@ -7502,6 +7505,8 @@ A solution to this exercise is in \verb"chap10ex_soln.py"
 
 \section{Glossary}
 
+%TODO: glossary
+
 \begin{itemize}
 
 \item least squares fit: A model of a dataset that minimizes the
@@ -7526,10 +7531,10 @@ of a linear model.
 
 
 
-\chapter{More regression}
+\chapter{Multiple regression}
+\label{regression2}
 
 \section{StatsModels}
-
 
 \section{Multiple regression}
 
@@ -7538,10 +7543,8 @@ control for spurious relationships.  For example, in the NSFG, we saw
 that first babies tend to be lighter than others (see
 Section~\ref{birth_weights}).  But birth weight is also correlated
 with the mother's age, and mothers of first babies tend to be younger
-than mothers of other babies.
-\index{birth weight}
-\index{weight!birth}
-\index{National Survey of Family Growth}
+than mothers of other babies.  \index{birth weight}
+\index{weight!birth} \index{National Survey of Family Growth}
 \index{NSFG}
 
 So it may be that first babies are lighter because their mothers are
