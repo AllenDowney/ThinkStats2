@@ -8,267 +8,120 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 from __future__ import print_function, division
 
 import math
+import pandas
+import random
 import numpy as np
+import statsmodels.formula.api as smf
 
 import first
 import thinkplot
 import thinkstats2
 
+def AlmostEquals(x, y, tol=1e-6):
+    return abs(x-y) < tol
 
-def Summarize(values, actual=None):
-    """Prints standard error and 90% confidence interval.
-
-    values: sequence of estimates
-    actual: float actual value
-    """
-    mean = thinkstats2.Mean(values)
-    stderr = thinkstats2.Std(values, mu=actual)
-    cdf = thinkstats2.Cdf(values)
-    ci = cdf.ConfidenceInterval(90)
-    print('mean, SE, CI', mean, stderr, ci)
-
-
-def SamplingDistributions(live, iters=101):
-    """Estimates sampling distributions by resampling rows.
-
-    live: DataFrame
-    iters: number of times to run simulations
-
-    returns: pair of sequences (inters, slopes)
-    """
-    t = []
-    for _ in range(iters):
-        sample = thinkstats2.ResampleRows(live)
-        ages = sample.agepreg
-        weights = sample.totalwgt_lb
-        estimates = thinkstats2.LeastSquares(ages, weights)
-        t.append(estimates)
-
-    inters, slopes = zip(*t)
-    return inters, slopes
-
-
-def PlotConfidenceIntervals(xs, inters, slopes, res=None, **options):
-    """Plots the 90% confidence intervals for weights based on ages.
-
-    xs: sequence
-    inters: estimated intercepts
-    slopes: estimated slopes
-    res: residuals
-    """
-    size = len(slopes), len(xs)
-    array = np.zeros(size)
-
-    for i, (inter, slope) in enumerate(zip(inters, slopes)):
-        fxs, fys = thinkstats2.FitLine(xs, inter, slope)
-        if res is not None:
-            fys += np.random.permutation(res)
-        array[i,] = fys
-
-    array = np.sort(array, axis=0)
-
-    def Percentile(p):
-        """Selects the line from array that corresponds to percentile p.
-
-        p: float 0--100
-
-        returns: NumPy array (one row)
-        """
-        index = int(len(slopes) * p / 100)
-        print(index)
-        return array[index,]
-
-    low = thinkstats2.Smooth(Percentile(5))
-    high = thinkstats2.Smooth(Percentile(95))
-    thinkplot.FillBetween(fxs, low, high, **options)
-
-
-def PlotSamplingDistributions(live):
-    """Plots confidence intervals for the fitted curve and sampling dists.
-
-    live: DataFrame
-    """
+def RunSimpleRegression(live):
     ages = live.agepreg
     weights = live.totalwgt_lb
     inter, slope = thinkstats2.LeastSquares(ages, weights)
     res = thinkstats2.Residuals(ages, weights, inter, slope)
     r2 = thinkstats2.CoefDetermination(weights, res)
 
-    print('rho', thinkstats2.Corr(ages, weights))
-    print('R2', r2)
-    print('R', math.sqrt(r2))
-    print('Std(ys)', thinkstats2.Std(weights))
-    print('Std(res)', thinkstats2.Std(res))
+    formula = 'totalwgt_lb ~ agepreg'
+    model = smf.ols(formula, data=live)
+    # OLS object
+    results = model.fit()
+    # RegressionResults object
 
-    # plot the confidence intervals
-    inters, slopes = SamplingDistributions(live, iters=1001)
-    PlotConfidenceIntervals(ages, inters, slopes)
-    thinkplot.Save(root='regression3',
-                   xlabel='age (years)',
-                   ylabel='birth weight (lbs)',
-                   title='90% CI',
-                   legend=False)
+    print(results.f_pvalue)
+    print(results.mse_model)
+    print(results.mse_resid)
+    print(results.mse_total)
+    print(results.params['Intercept'], inter)
+    print(results.params['agepreg'], slope)
+    print(results.pvalues)
+    print(thinkstats2.Std(results.resid), thinkstats2.Std(res))
+    print(results.rsquared, r2)
+    print(results.rsquared_adj)
+    print(results.fittedvalues)
+    print(results.summary())
 
-    # plot the confidence intervals
-    thinkplot.PrePlot(2)
-    thinkplot.Scatter(ages, weights, color='gray', alpha=0.1)
-    PlotConfidenceIntervals(ages, inters, slopes, res=res, alpha=0.2)
-    PlotConfidenceIntervals(ages, inters, slopes)
-    thinkplot.Save(root='regression5',
-                   xlabel='age (years)',
-                   ylabel='birth weight (lbs)',
-                   title='90% CI',
-                   axis=[10, 45, 0, 15],
-                   legend=False)
-
-    # plot the sampling distribution of slope under null hypothesis
-    # and alternate hypothesis
-    sampling_cdf = thinkstats2.Cdf(slopes)
-    print('p-value, sampling distribution', slope_cdf[0])
-
-    ht = SlopeTest((ages, weights))
-    pvalue = ht.PValue()
-    print('p-value, slope test', slope_cdf[0])
-
-    print('inter', inter, thinkstats2.Mean(inters))
-    Summarize(inters, inter)
-    print('slope', slope, thinkstats2.Mean(slopes))
-    Summarize(slopes, slope)
-
-    thinkplot.PrePlot(2)
-    thinkplot.Plot([0, 0], [0, 1], color='0.8')
-    ht.PlotCdf(label='null hypothesis')
-    thinkplot.Cdf(sampling_cdf, label='sampling distribution')
-    thinkplot.Save(root='regression4',
-                   xlabel='slope (lbs / year)',
-                   ylabel='CDF',
-                   xlim=[-0.03, 0.03],
-                   loc='upper left')
+    assert(AlmostEquals(results.params['Intercept'], inter))
+    assert(AlmostEquals(results.params['agepreg'], slope))
+    assert(AlmostEquals(results.rsquared, r2))
 
 
-def PlotFit(live):
-    """Plots a scatter plot and fitted curve.
+def RunModels(live, firsts, others):
+    live['isfirst'] = live.birthord == 1
 
-    live: DataFrame
-    """
-    ages = live.agepreg
-    weights = live.totalwgt_lb
-    inter, slope = thinkstats2.LeastSquares(ages, weights)
-    fit_xs, fit_ys = thinkstats2.FitLine(ages, inter, slope)
+    table = pandas.pivot_table(live, 'totalwgt_lb', rows='isfirst')
+    print(table)
+    table = pandas.pivot_table(live, 'agepreg', rows='isfirst')
+    print(table)
 
-    thinkplot.Scatter(ages, weights, color='gray', alpha=0.1)
-    thinkplot.Plot(fit_xs, fit_ys, color='white', linewidth=3)
-    thinkplot.Plot(fit_xs, fit_ys, color='blue', linewidth=2)
-    thinkplot.Save(root='regression1',
-                   xlabel='age (years)',
-                   ylabel='birth weight (lbs)',
-                   axis=[10, 45, 0, 15],
-                   legend=False)
+    columns = ['isfirst[T.True]', 'agepreg', 'isyoung[T.True]', 'isold[T.True]',]
 
+    def Summarize(results):
+        t = []
+        for col in columns:
+            coef = results.params.get(col, np.nan)
+            pval = results.pvalues.get(col, np.nan)
+            if pval < 0.001:
+                s = '%0.3g (*)' % (coef)
+            else:
+                s = '%0.3g (%0.2g)' % (coef, pval)
+            t.append(s)
+        t.append('%.2g' % results.rsquared)
+        return t
 
-def PlotResiduals(live):
-    """Plots percentiles of the residuals.
+    rows = []
+    formula = 'totalwgt_lb ~ isfirst'
+    results = smf.ols(formula, data=live).fit()
+    rows.append(Summarize(results))
 
-    live: DataFrame
-    """
-    ages = live.agepreg
-    weights = live.totalwgt_lb
-    inter, slope = thinkstats2.LeastSquares(ages, weights)
-    live['residual'] = thinkstats2.Residuals(ages, weights, inter, slope)
-
-    bins = np.arange(10, 48, 3)
-    indices = np.digitize(live.agepreg, bins)
-    groups = live.groupby(indices)
-
-    ages = [group.agepreg.mean() for _, group in groups][1:-1]
-    cdfs = [thinkstats2.Cdf(group.residual) for _, group in groups][1:-1]
-
-    thinkplot.PrePlot(3)
-    for percent in [75, 50, 25]:
-        weights = [cdf.Percentile(percent) for cdf in cdfs]
-        label = '%dth' % percent
-        thinkplot.Plot(ages, weights, label=label)
-
-    thinkplot.Save(root='regression2',
-                   xlabel='age (years)',
-                   ylabel='residual (lbs)',
-                   xlim=[10, 45])
-
-
-class SlopeTest(thinkstats2.HypothesisTest):
-    """Tests the slope of a linear regression. """
-
-    def TestStatistic(self, data):
-        """Computes the test statistic.
-
-        data: data in whatever form is relevant        
-        """
-        ages, weights = data
-        _, slope = thinkstats2.LeastSquares(ages, weights)
-        return slope
-
-    def MakeModel(self):
-        """Builds a model of the null hypothesis.
-        """
-        _, weights = self.data
-        self.ybar = weights.mean()
-        self.res = weights - self.ybar
-
-    def RunModel(self):
-        """Runs the model of the null hypothesis.
-
-        returns: simulated data
-        """
-        ages, _ = self.data
-        weights = self.ybar + np.random.permutation(self.res)
-        return ages, weights
-
-
-def ResampleRowsWeighted(df, attr='finalwgt'):
-    """Resamples a DataFrame using probabilities proportional to finalwgt.
-
-    df: DataFrame
-    attr: string column name to use as weights
-
-    returns: DataFrame
-    """
-    weights = df[attr]
-    cdf = thinkstats2.Pmf(weights.iteritems()).MakeCdf()
-    indices = cdf.Sample(len(weights))
-    sample = df.loc[indices]
-    return sample
-
-
-def EstimateBirthWeight(live, iters=1001):
-    """Estimate mean birth weight by resampling, with and without weights.
-
-    live: DataFrame
-    iters: number of experiments to run
-    """
-
-    mean = live.totalwgt_lb.mean()
-    print('mean', mean)
-
-    estimates = [thinkstats2.ResampleRows(live).totalwgt_lb.mean()
-                 for _ in range(iters)]
-    Summarize(estimates)
-
-    estimates = [ResampleRowsWeighted(live).totalwgt_lb.mean()
-                 for _ in range(iters)]
-    Summarize(estimates)
+    formula = 'totalwgt_lb ~ agepreg'
+    results = smf.ols(formula, data=live).fit()
+    rows.append(Summarize(results))
     
+    formula = 'totalwgt_lb ~ isfirst + agepreg'
+    results = smf.ols(formula, data=live).fit()
+    rows.append(Summarize(results))
+    
+    live['isyoung'] = live.agepreg < 20
+    formula = 'totalwgt_lb ~ isfirst + isyoung'
+    results = smf.ols(formula, data=live).fit()
+    rows.append(Summarize(results))
+    
+    formula = 'totalwgt_lb ~ isfirst + agepreg + isyoung'
+    results = smf.ols(formula, data=live).fit()
+    rows.append(Summarize(results))
 
-def main():
+    header = ['isfirst', 'agepreg', 'isyoung']
+    PrintTabular(rows, header)
+
+
+def PrintTabular(rows, header):
+    s = r'\hline' + ' & '.join(header) + r' \\ \hline'
+    print(s)
+
+    for row in rows:
+        s = ' & '.join(row) + r' \\'
+        print(s)
+
+    print(r'\hline')
+
+def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
     
-    live, _, _ = first.MakeFrames()
-    EstimateBirthWeight(live)
+    live, firsts, others = first.MakeFrames()
+    RunModels(live, firsts, others)
+    return
 
     live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
-    PlotSamplingDistributions(live)
-    PlotFit(live)
-    PlotResiduals(live)
+    RunSimpleRegression(live)
+
 
 
 if __name__ == '__main__':
-    main()
+    import sys
+    main(*sys.argv)

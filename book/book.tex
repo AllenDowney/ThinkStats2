@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.7}
+\newcommand{\theversion}{2.0.10}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -3541,7 +3541,7 @@ Figure~\ref{analytic_birthwgt_normal} shows the results for
 all live births, and also for full term births (pregnancy length greater
 than 36 weeks).  Both curves match the model near the mean and
 deviate in the tails.  The heaviest babies are heavier than what
-the model expects, and the lightest babies are heavier.
+the model expects, and the lightest babies are lighter.
 
 When we select only full term births, we remove some of the lightest
 weights, which reduces the deviation in the lower tail of the
@@ -3788,7 +3788,7 @@ so that works out well.  \index{random module}
 \section{Why model?}
 \index{model}
 
-At the beginning of this chapter I said that many real world phenomena
+At the beginning of this chapter, I said that many real world phenomena
 can be modeled with analytic distributions.  ``So,'' you might ask,
 ``what?''  \index{abstraction}
 
@@ -5139,11 +5139,11 @@ $\rho$ is 1 or -1, the variables are perfectly correlated, which means
 that if you know one, you can make a perfect prediction about the
 other.  \index{prediction}
 
-Most correlation in the real world is not perfect, but it
-is still useful.  The correlation of height and weight is 0.51, which
-is a strong correlation compared to similar human-related variables.
-% TODO: forward reference to discussion of strength
-
+Most correlation in the real world is not perfect, but it is still
+useful.  The correlation of height and weight is 0.51, which is a
+strong correlation compared to similar human-related variables.  In
+Section~\ref{goodness} I will say more about how to interpret
+correlations.
 
 
 \section{Non-linear relationships}
@@ -5331,7 +5331,7 @@ topic at \url{http://wikipedia.org/wiki/Natural_experiment}.
 \index{natural experiment}
 
 In some cases it is possible to infer causal relationships using {\bf
-  regression analysis}, which is the topic of Chapter~\ref{regression2}.
+  regression analysis}, which is the topic of Chapter~\ref{regression}.
 \index{regression analysis}
 
 
@@ -6208,7 +6208,7 @@ data do not provide strong evidence that the coin is biased or not.
 
 
 \section{Testing a difference in means}
-\label{testing}
+\label{testdiff}
 \index{mean, difference in}
 
 One of the most common effects to test is a difference in mean
@@ -6811,7 +6811,7 @@ What is the smallest sample size that yields a positive test?
 
 \begin{exercise}
 
-In Section~\ref{testing}, we simulated the null hypothesis by
+In Section~\ref{testdiff}, we simulated the null hypothesis by
 permutation; that is, we treated the observed values as if they
 represented the entire population, and randomly assigned the
 members of the population to the two groups.
@@ -6889,9 +6889,11 @@ is false.
 \end{itemize}
 
 
+\chapter{Linear least squares}
+\label{linear}
 
-\chapter{Linear regression}
-\label{regression}
+The code for this chapter is in {\tt linear.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
 
 \section{Least squares fit}
 
@@ -6900,18 +6902,16 @@ relationship, but not the slope.  There are several ways to estimate
 the slope; the most common is a {\bf linear least squares fit}.  A
 ``linear fit'' is a line intended to model the relationship between
 variables.  A ``least squares'' fit is one that minimizes the mean
-squared error (MSE) between the line and the data\footnote{See
-  \url{http://wikipedia.org/wiki/Simple_linear_regression}.}.
+squared error (MSE) between the line and the data.
 \index{least squares fit}
 \index{linear least squares}
 \index{coefficient!correlation}
-\index{linear regression}
 
 Suppose we have a sequence of points, {\tt ys}, that we want to
 express as a function of another sequence {\tt xs}.  If there is a
 linear relationship between {\tt xs} and {\tt ys} with intercept {\tt
   inter} and slope {\tt slope}, we expect each {\tt y[i]} to be
-roughly {\tt inter + slope * x[i]}.  \index{residual}
+{\tt inter + slope * x[i]}.  \index{residual}
 
 But unless the correlation is perfect, this prediction is only
 approximate.  The vertical deviation from the line, or {\bf residual},
@@ -6921,7 +6921,7 @@ is
 res = ys - (inter + slope * xs)
 \end{verbatim}
 
-The residual might be due to random factors like measurement error,
+The residuals might be due to random factors like measurement error,
 or non-random factors that are unknown.  For example, if we are
 trying to predict weight as a function of height, unknown factors
 might include diet, exercise, and body type.
@@ -6947,10 +6947,10 @@ negative residuals the same, which is usually what we want.
 \item Squaring gives more weight to large residuals, but not
 so much weight that the largest residual always dominates.
 
-\item If the residuals are uncorrelated and
-  normally distributed with $\mu = 0$ and constant (but unknown)
-  $\sigma$, then the least squares fit is also the maximum likelihood
-  estimator of {\tt inter} and {\tt slope}.  See
+\item If the residuals are uncorrelated and normally distributed with
+  mean 0 and constant (but unknown) variance, then the least squares
+  fit is also the maximum likelihood estimator of {\tt inter} and {\tt
+    slope}.  See
   \url{https://en.wikipedia.org/wiki/Linear_regression}.  \index{MLE}
   \index{maximum likelihood estimator}
 
@@ -6969,10 +6969,14 @@ For example, if you are using {\tt xs} to predict values of {\tt ys},
 guessing too high might be better (or worse) than guessing too low.
 In that case you might want to compute some cost function for each
 residual, and minimize total cost, {\tt sum(cost(res))}.
+However, computing a least squares fit is quick, easy and often good
+enough.  
 \index{cost function}
 
-However, computing a least squares fit is quick, easy and often good
-enough.  {\tt thinkstats2} provides simple functions that demonstrate
+
+\section{Implementation}
+
+{\tt thinkstats2} provides simple functions that demonstrate
 linear least squares:
 
 \begin{verbatim}
@@ -7030,25 +7034,29 @@ for a 25 year old mother is 7.3 pounds.  The slope is 0.27 ounces
 per year, or 0.17 pounds per decade.
 
 \begin{figure}
-% regression.py
-\centerline{\includegraphics[height=2.5in]{figs/regression1.pdf}}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear1.pdf}}
 \caption{Scatter plot of birth weight and mother's age with
 a linear fit.}
-\label{regression1}
+\label{linear1}
 \end{figure}
 
-Figure~\ref{regression1} shows a scatter plot of birth weight and age
+Figure~\ref{linear1} shows a scatter plot of birth weight and age
 along with the fitted line.  It's a good idea to look at a figure like
 this to assess whether the relationship is linear and whether the
 fitted line seems like a good model of the relationship.
 
-Another useful test is to plot the vertical deviations from the
-fitted line, called {\bf residuals}.  {\tt thinkstats2} provides
-a function that computes residuals:
+
+\section{Residuals}
+
+Another useful test is to plot the residuals.
+{\tt thinkstats2} provides a function that computes residuals:
 
 \begin{verbatim}
 def Residuals(xs, ys, inter, slope):
-    res = [y - inter - slope*x for x, y in zip(xs, ys)]
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+    res = ys - (inter + slope * xs)
     return res
 \end{verbatim}
 
@@ -7058,7 +7066,7 @@ the differences between the actual values and the fitted line.
 
 To visualize the residuals, I group respondents by age and compute
 percentiles in each group, as we saw in Section~\ref{characterizing}.
-Figure~\ref{regression2} shows the 25th, 50th and 75th percentiles of
+Figure~\ref{linear2} shows the 25th, 50th and 75th percentiles of
 the residuals for each age group.  The median is near zero, as
 expected, and the interquartile range is about 2 pounds.  So if we
 know the mother's age, we can guess the baby's weight within a pound,
@@ -7069,13 +7077,13 @@ random, and parallel, indicating that the variance of the residuals is
 the same for all age groups.  In fact, the lines are close to
 parallel, so that's good; but they have some curvature, indicating
 that the relationship is non-linear.  Nevertheless, the linear fit
-is a simple model that is probably good enough for most purposes.
+is a simple model that is probably good enough for some purposes.
 
 \begin{figure}
-% regression.py
-\centerline{\includegraphics[height=2.5in]{figs/regression2.pdf}}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear2.pdf}}
 \caption{Residuals of the linear fit.}
-\label{regression2}
+\label{linear2}
 \end{figure}
 
 
@@ -7170,26 +7178,26 @@ are the estimates parameters generated by {\tt SamplingDistributions}.
 of {\tt inter} and {\tt slope} and stores the results in an array with
 one row per simulated experiment.  Then it sorts each column in the
 array, and selects the row with indices 5 and 95, which contain the
-5th and 95th percentiles (provided that there are 101 rows).
+5th and 95th percentiles (this is a simplified version of the code for
+the case where there are 101 rows).
 
 {\tt FillBetween} draws a polygon that fills the space between two
-lines.  Figure~\ref{regression3} shows the result.  The vertical
-width of the region represents the effect of sampling error; the
-effect is smaller for values near the mean and larger for extreme
-values.
-
-%TODO: show 50% and 90% CIs?
+lines.  Figure~\ref{linear3} shows the 50\% and 90\% confidence
+intervals.  The vertical width of the region represents the effect of
+sampling error; the effect is smaller for values near the mean and
+larger for the extremes.
 
 \begin{figure}
-% regression.py
-\centerline{\includegraphics[height=2.5in]{figs/regression3.pdf}}
-\caption{Confidence intervals showing variability in the fitted
-line due to sampling error of {\tt inter} and {\tt slope}.}
-\label{regression3}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear3.pdf}}
+\caption{50\% and 90\% confidence intervals showing variability in the
+  fitted line due to sampling error of {\tt inter} and {\tt slope}.}
+\label{linear3}
 \end{figure}
 
 
 \section{Goodness of fit}
+\label{goodness}
 \index{goodness of fit}
 \index{fit, goodness}
 
@@ -7202,9 +7210,9 @@ is the root mean squared error (RMSE) of your predictions.  For
 example, if you use mother's age to guess birth weight, the RMSE of
 your guess would be 1.40 lbs.
 
-If you guess birth weight without knowing the mother's age, 
-the RMSE of your guess is {\tt Std(ys)}, which is 1.41 lbs.
-So in this example mother's age does not improve the predictions
+If you guess birth weight without knowing the mother's age, the RMSE
+of your guess is {\tt Std(ys)}, which is 1.41 lbs.  So in this
+example, knowing a mother's age does not improve the predictions
 substantially.
 
 Another way to measure goodness of fit is  the {\bf
@@ -7219,14 +7227,14 @@ def CoefDetermination(ys, res):
 {\tt Var(res)} is the MSE of your guesses using the model,
 {\tt Var(ys)} is the MSE without it.   So their ratio is the fraction
 of MSE that remains if you use the model, and $R^2$ is the fraction
-of MSE the model removes.
+of MSE the model eliminates.
 
 For birth weight and mother's age, $R^2$ is 0.0047, which means
 that mother's age predicts less than half of 1\% of variance in
 birth weight.
 
 There is a simple relationship between the coefficient of
-determination and Pearson's correlation coefficient: $R^{2} = \rho^{2}$.
+determination and Pearson's correlation coefficient: $R^2 = \rho^2$.
 For example, if $\rho$ is 0.8 or -0.8, $R^2 = 0.64$.
 
 Although $\rho$ and $R^2$ are often used to quantify the strength of a
@@ -7236,22 +7244,22 @@ of the quality of prediction, especially if it is presented
 in relation to {\tt Std(ys)}.
 
 For example, when people talk about the validity of the SAT
-(a standardized test used for college admissions in the U.S.) they
+(a standardized test used for college admission in the U.S.) they
 often talk about correlations between SAT scores and other measures of
 intelligence.
 
 According to one study, there is a Pearson correlation of
 $\rho=0.72$ between total SAT scores and IQ scores, which sounds like
-a strong correlation.  But $R^{2} = \rho^{2} = 0.52$, so SAT scores
+a strong correlation.  But $R^2 = \rho^2 = 0.52$, so SAT scores
 account for only 52\% of variance in IQ.
 
 IQ scores are normalized so {\tt Std(ys) = 15}, so
 
 \begin{verbatim}
->>> var_y = 15**2
+>>> var_ys = 15**2
 >>> rho = 0.72
 >>> r2 = rho**2
->>> var_res = (1 - r2) * var_y
+>>> var_res = (1 - r2) * var_ys
 >>> std_res = math.sqrt(var_res)
 10.4096
 \end{verbatim}
@@ -7261,23 +7269,23 @@ points.  A correlation of 0.72 yields a reduction in RMSE of only
 31\%.
 
 If you see a correlation that looks impressive, remember that $R^2$ is
-a better indicator of reduction in MSE, and reduction in
-RMSE is a better indicator of predictive power.
+a better indicator of reduction in MSE, and reduction in RMSE is a
+better indicator of predictive power.
 
 
-\section{Testing a linear regression}
+\section{Testing a linear model}
 
 The effect of mother's age on birth weight is small, and has little
 predictive power.  So is it possible that the apparent relationship
 is due to chance?  There are several ways we might test the
-results of a linear regression.
+results of a linear fit.
 
 One option is to test whether the apparent reduction in MSE is due to
 chance.  In that case, the test statistic is $R^2$ and the null
 hypothesis is that there is no relationship between the variables.  We
 can simulate the null hypothesis by permutation, as in
 Section~\ref{corrtest}, when we tested the correlation between
-mother's age and birthweight.  In fact, because $R^2 = \rho_2$, a
+mother's age and birthweight.  In fact, because $R^2 = \rho^2$, a
 one-sided test of $R^2$ is equivalent to a two-sided test of $\rho$.
 We've already done that test, and found $p < 0.001$, so we conclude
 that the apparent relationship between mother's age and birth weight
@@ -7285,7 +7293,7 @@ is statistically significant.
   
 Another approach is to test whether the apparent slope is due to chance.
 The null hypothesis is that the slope is actually zero; in that case
-we can model the birth weights as random variation around their mean.
+we can model the birth weights as random variations around their mean.
 Here's a HypothesisTest for this model:
 
 \begin{verbatim}
@@ -7293,11 +7301,11 @@ class SlopeTest(thinkstats2.HypothesisTest):
 
     def TestStatistic(self, data):
         ages, weights = data
-        inter, slope = thinkstats2.LeastSquares(ages, weights)
+        _, slope = thinkstats2.LeastSquares(ages, weights)
         return slope
 
     def MakeModel(self):
-        ages, weights = self.data
+        _, weights = self.data
         self.ybar = weights.mean()
         self.res = weights - self.ybar
 
@@ -7308,9 +7316,9 @@ class SlopeTest(thinkstats2.HypothesisTest):
 \end{verbatim}
 
 The data are represented as sequences of ages and weights.  The
-test statistic is the slope estimated by linear least squares.
+test statistic is the slope estimated by {\tt LeastSquares}.
 The model of the null hypothesis is represented by the mean weight
-of all babies and the sequence of deviations from the mean.  To
+of all babies and the deviations from the mean.  To
 generate simulated data, we permute the deviations and add them to
 the mean.
 
@@ -7326,28 +7334,28 @@ Here's the code that runs the hypothesis test:
 The p-value is less than $0.001$, so although the estimated
 slope is small, it is unlikely to be due to chance.
 
-Estimating the p-value by simulating the null hypothesis is 
-rigorous, but there is a simpler alternative.  Remember that we
-already computed the sampling distribution of the slope, in
-Section~\ref{regest}.  To do that, we assumed that the observed
-slope was correct and simulated experiments by resampling.
+Estimating the p-value by simulating the null hypothesis is strictly
+correct, but there is a simpler alternative.  Remember that we already
+computed the sampling distribution of the slope, in
+Section~\ref{regest}.  To do that, we assumed that the observed slope
+was correct and simulated experiments by resampling.
 
-Figure~\ref{regression4} shows the sampling distribution of the
+Figure~\ref{linear4} shows the sampling distribution of the
 slope, from Section~\ref{regest}, and the distribution of slopes
 generated under the null hypothesis.  The sampling distribution
 is centered about the estimated slope, 0.017 lbs/year, and the slopes
 under the null hypothesis are centered around 0; but other than
-that the distributions are identical.  The distributions are
+that, the distributions are identical.  The distributions are
 also symmetric, for reasons we will see in Section~\ref{CLT}.
 
 \begin{figure}
-% regression.py
-\centerline{\includegraphics[height=2.5in]{figs/regression4.pdf}}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear4.pdf}}
 \caption{The sampling distribution of the estimated
 slope and the distribution of slopes
 generated under the null hypothesis.  The vertical lines are at 0
 and the observed slope, 0.017 lbs/year.}
-\label{regression4}
+\label{linear4}
 \end{figure}
 
 So we could estimate the p-value two ways:
@@ -7358,41 +7366,40 @@ So we could estimate the p-value two ways:
 hypothesis exceeds the observed slope.
 
 \item Compute the probability that the slope in the sampling
-distribution falls below 0.
+distribution falls below 0.  If the estimated slope were negative,
+we would compute the probability that the slope in the sampling
+distribution exceeds 0.
 
 \end{itemize}
 
-The first is more strictly correct, but the second is easier because
-we normally want to compute the sampling distributions of the
-parameters anyway.  And it is a good approximation unless the sample
-size is small {\em and} the distribution of residuals is skewed.  Even
-then, it is usually good enough, because p-values don't have to
-be precise.
+The second option is easier because we normally want to compute the
+sampling distributions of the parameters anyway.  And it is a good
+approximation unless the sample size is small {\em and} the
+distribution of residuals is skewed.  Even then, it is usually good
+enough, because p-values don't have to be precise.
 
 Here's the code that estimates the p-value of the slope using the
 sampling distribution:
 
 \begin{verbatim}
-    inters, slopes = SamplingDistributions(live, iters=1000)
+    inters, slopes = SamplingDistributions(live, iters=1001)
     slope_cdf = thinkstats2.Cdf(slopes)
     pvalue = slope_cdf[0]
 \end{verbatim}
 
-Again, we find $p < 0.001$.  If the estimated slope were negative,
-we would compute the probability that the slope in the sampling
-distribution exceeds 0.
+Again, we find $p < 0.001$.  
 
 
 \section{Weighted resampling}
 
 So far we have treated the NSFG data as if it were a representative
-sample, but as I mentioned in Section~\ref{nsfg}, it is not.  The NSFG
-deliberately oversamples several groups in order to improve the chance
-of getting statistically significant results; that is, in order to
-improve the power of tests involving these groups.
+sample, but as I mentioned in Section~\ref{nsfg}, it is not.  The
+survey deliberately oversamples several groups in order to
+improve the chance of getting statistically significant results; that
+is, in order to improve the power of tests involving these groups.
 
 This survey design is useful for many purposes, but it means that we
-cannot use the survey sample to estimate values for the general
+cannot use the sample to estimate values for the general
 population without accounting for the sampling process.
 
 For each respondent, the NSFG data includes a variable called {\tt
@@ -7406,11 +7413,22 @@ one group by a factor of 2, each person in the oversampled
 group would have a lower weight, about 1500.
 
 To correct for oversampling, we can use resampling; that is, we
-can draw samples from the survey data using probabilities proportional
+can draw samples from the survey using probabilities proportional
 to sampling weights.  Then, for any quantity we want to estimate, we can
 generate sampling distributions, standard errors, and confidence
-intervals.
+intervals.  As an example, I will estimate mean birth weight with
+and without sample weights.
 
+We've already seen {\tt SampleRows}, which chooses random rows
+from a DataFrame.  {\tt thinkstats2} also provide {\tt ResampleRows},
+which handles the case when the new sample is the same size as the original:
+
+\begin{verbatim}
+def ResampleRows(df):
+    return SampleRows(df, len(df), replace=True)
+\end{verbatim}
+
+Now we need to do the same thing using sample weights.
 {\tt ResampleRowsWeighted} takes a DataFrame, resamples rows according
 to the weights in {\tt finalwgt}, and returns a DataFrame containing
 the resampled rows:
@@ -7428,11 +7446,11 @@ def ResampleRowsWeighted(df):
 {\tt pmf} maps from each row index to its normalized weight.  Converting
 to a Cdf makes the sampling process faster.  {\tt indices} is a sequence
 of row indices; {\tt sample} is a DataFrame that contains the selected
-rows.  Since we sampled with replacement, the same row might appear
+rows.  Since we sample with replacement, the same row might appear
 more than once.
 
 Now we can compare the effect of resampling with and without
-weights.  Without weights, we can generate the sampling distribution
+weights.  Without weights, we generate the sampling distribution
 like this:
 
 \begin{verbatim}
@@ -7471,8 +7489,8 @@ Weighted            &  7.35  &  0.014  &  (7.32, 7.37)  \\
 In this example, the effect of weighting is small but non-negligible.
 The difference in estimated means, with and without weighting, is
 about 0.08 pounds, or 1.3 ounces.  This difference is substantially
-larger than the standard error of the estimate, 0.014 pounds, so
-we conclude that the difference is not due to chance.
+larger than the standard error of the estimate, 0.014 pounds, which
+implies that the difference is not due to chance.
 
 
 \section{Exercises}
@@ -7481,60 +7499,111 @@ we conclude that the difference is not due to chance.
 
 Using the data from the BRFSS, compute the linear least squares
 fit for log(weight) versus height.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-
 How would you best present the estimated parameters for a model
 like this where one of the variables is log-transformed?
 If you were trying to guess
 someone's weight, how much would it help to know their height?
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
 
 Like the NSFG, the BRFSS oversamples some groups and provides
 a sampling weight for each respondent.  In the BRFSS data, the variable
 name for these weights is {\tt totalwt}.
-
 Use resampling, with and without weights, to estimate the mean height
 of respondents in the BRFSS, the standard error of the mean, and a
 90\% confidence interval.  How much does correct weighting affect the
 estimates?
 
-A solution to this exercise is in \verb"chap10ex_soln.py"
+A solution to this exercise is in \verb"chap10ex_soln.ipynb"
 
 \end{exercise}
 
 
 \section{Glossary}
 
-%TODO: glossary
-
 \begin{itemize}
+
+\item linear fit: a line intended to model the relationship between
+variables.  
+\index{linear fit}
 
 \item least squares fit: A model of a dataset that minimizes the
 sum of squares of the residuals.
 \index{least squares fit}
 
-\item residual: A measure of the deviation of an actual value from a model.
+\item residual: The deviation of an actual value from a model.
 \index{residual}
 
-\item dependent variable: A variable we are trying to predict or explain.
-\index{dependent variable}
+\item goodness of fit: A measure of how well a model fits data.
+\index{goodness of fit}
 
-\item independent variable: A variable we are using to predict a dependent
-variable, also called an explanatory variable.
-\index{independent variable}
-
-\item coefficient of determination: A measure of the goodness of fit
-of a linear model.
+\item coefficient of determination: A statistic intended to
+quantify goodness of fit.
 \index{coefficient!determination}
+
+\item sampling weight: A value associated with an observation in a
+  sample that indicates what part of the population it represents.
+\index{sampling weight}
 
 \end{itemize}
 
 
 
-\chapter{Multiple regression}
-\label{regression2}
+\chapter{Regression}
+\label{regression}
+
+The linear least squares fit in the previous chapter is an example of
+{\bf regression}, which is the more general problem of fitting any
+kind of curve to any kind of data.  This use of the term ``regression''
+is a historical accident; it is only indirectly related to the
+original meaning of the word.
+
+The goal of regression analysis is to describe the relationships
+between one set of variables, called the {\bf dependent variables},
+and another set of variables, called independent variables or {\bf
+  explanatory variables}.
+
+In the previous chapter we used mother's age, the explanatory
+variable, to predict birth weight, the dependent variable.  When there
+is only one dependent and one explanatory variable, that's called {\bf
+  simple regression}.  In this chapter, we move on to {\bf multiple
+  regression}, with more than one explanatory variable.  If there is
+more than one dependent variable, that's called multivariate
+regression.
+
+If the relationship between the dependent and explanatory variable
+is linear, that's called {\bf linear regression}.  For example,
+if the dependent variable is $y$ and the explanatory variables
+are $x_1$, $x_2$, and $x_3$, we would write the following linear
+regression model:
+%
+\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \eps \]
+%
+where $\beta_0$ is the intercept, $\beta_1$ is the parameter
+associated with $x_1$, $\beta_2$ is the parameter associated with
+$x_2$, and $\eps$ is the residual due to random variation or other
+unknown factors.
+
+Given a sequence of values for $y$ and sequences for $x_1$ and $x_2$,
+we can find the parameters, $\beta_0$, $\beta_1$, and $\beta_2$, that
+minimize the mean squared value of $\eps$.  This process is called
+{\bf ordinary least squares}.  The implementation is similar to {\tt
+  thinkstats2.LeastSquare}, but generalized to deal with more than one
+explanatory variable.  You can find the details at
+\url{https://en.wikipedia.org/wiki/Ordinary_least_squares}
+
+The code for this chapter is in {\tt regression.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
 
 \section{StatsModels}
+
+In the previous chapter we used functions in {\tt thinkstats2} to
+do simple linear regression.  For multiple regression we are going
+to use StatsModels, a Python package that implements several forms
+of regression and other analyses.  If you are using Anaconda, you
+already have StatsModels; otherwise you might have to install it.
+
+
 
 \section{Multiple regression}
 
@@ -7567,7 +7636,7 @@ Make a scatter plot of mother's age and baby's weight for each live
 birth.  Can you see a relationship?
 
 Compute a linear least-squares fit for these variables.  What are the
-units of the estimated parameters $\hat{\inter}$ and $\hat{\slope}$?
+units of the estimated parameters {\tt inter} and {\tt slope}?
 How would you summarize these results in a sentence or two?
 
 Compute the average age for mothers of first babies and the average
