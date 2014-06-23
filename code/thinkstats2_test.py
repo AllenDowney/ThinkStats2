@@ -145,6 +145,26 @@ class Test(unittest.TestCase):
         cdf = thinkstats2.Cdf(pmf)
         self.assertEquals(len(str(cdf)), 40)
 
+        self.assertEquals(cdf[0], 0)
+        self.assertAlmostEquals(cdf[1], 0.2)
+        self.assertAlmostEquals(cdf[2], 0.6)
+        self.assertAlmostEquals(cdf[3], 0.8)
+        self.assertAlmostEquals(cdf[4], 0.8)
+        self.assertAlmostEquals(cdf[5], 1)
+        self.assertAlmostEquals(cdf[6], 1)
+
+        self.assertEquals(cdf.Value(0), 1)
+        self.assertEquals(cdf.Value(0.1), 1)
+        self.assertEquals(cdf.Value(0.2), 1)
+        self.assertEquals(cdf.Value(0.3), 2)
+        self.assertEquals(cdf.Value(0.4), 2)
+        self.assertEquals(cdf.Value(0.5), 2)
+        self.assertEquals(cdf.Value(0.6), 2)
+        self.assertEquals(cdf.Value(0.7), 3)
+        self.assertEquals(cdf.Value(0.8), 3)
+        self.assertEquals(cdf.Value(0.9), 5)
+        self.assertEquals(cdf.Value(1), 5)
+
         # when you make a Cdf from a Pdf, you might get some floating
         # point representation error
         self.assertEquals(len(cdf), 4)

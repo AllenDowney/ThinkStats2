@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.5}
+\newcommand{\theversion}{2.0.10}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -61,8 +61,11 @@
 \newcommand{\Erdos}{Erd\H{o}s}
 \newcommand{\nhat}{\hat{N}}
 \newcommand{\eps}{\varepsilon}
-\newcommand{\slope}{\beta}
-\newcommand{\inter}{\alpha}
+\newcommand{\slope}{\mathrm{slope}}
+\newcommand{\inter}{\mathrm{inter}}
+\newcommand{\xs}{\mathrm{xs}}
+\newcommand{\ys}{\mathrm{ys}}
+\newcommand{\res}{\mathrm{res}}
 \newcommand{\xbar}{\bar{x}}
 \newcommand{\ybar}{\bar{y}}
 \newcommand{\PMF}{\mathrm{PMF}}
@@ -410,6 +413,8 @@ Google.
 
 \section*{Using the code}
 \label{code}
+
+% TODO: add note about Python 2/3 and print, division
 
 The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  Git is a version
@@ -1007,12 +1012,12 @@ operations return {\tt nan} if either argument is {\tt nan}:
 \begin{verbatim}
 >>> import numpy as np
 >>> np.nan / 100.0
+nan
 \end{verbatim}
 
-So computations with {\tt nan} tend to do the right thing.  Most
-pandas functions handle {\tt nan} appropriately, at least for most
-applications.  But dealing with missing data will be a recurring
-issue.
+So computations with {\tt nan} tend to do the right thing, and most
+pandas functions handle {\tt nan} appropriately.  But dealing with
+missing data will be a recurring issue.
 
 The last line of {\tt CleanFemPreg} creates a new
 column \verb"totalwgt_lb" that combines pounds and ounces into
@@ -1144,6 +1149,8 @@ respondents.  Because of the way the data files are organized, we have
 to do some processing to match up each pregnancy record with a respondent.
 Here's a function that does that:
 
+% TODO: clean this up by using caseid as the index
+
 \begin{verbatim}
 def MakePregMap(df):
     d = {}
@@ -1157,9 +1164,8 @@ method creates an iterator that enumerates the index (row number)
 and {\tt caseid} for each pregnancy.
 
 {\tt d} is a dictionary that maps from each case ID to a list of
-indices.  Using {\tt d} we can look up a respondent and 
-get the indices of
-that respondent's pregnancies.
+indices.  Using {\tt d} we can look up a respondent and get the
+indices of that respondent's pregnancies.
 
 This example looks up one respondent and prints a list of outcomes
 for her pregnancies:
@@ -1408,8 +1414,6 @@ mode:
 \begin{verbatim}
 >>> import thinkstats2
 >>> hist = thinkstats2.Hist([1, 2, 2, 3, 5])
->>> hist
-<thinkstats2.Hist object at 0xb76cf68c>
 \end{verbatim}
 
 Hist objects provide the method {\tt Freq}, which takes a value and
@@ -1494,12 +1498,10 @@ is the format {\tt bar} expects:
 >>> pyplot.show()
 \end{verbatim}
 
-The code that accompanies this book includes
-{\tt thinkplot.py}, which provides functions
-for plotting histograms and other objects we will see soon.
-You can read the documentation at {\tt
-  http://thinkstats2.com/thinkplot.html}. 
-\index{{\tt thinkplot.py}}
+The code that accompanies this book includes {\tt thinkplot.py}, which
+provides functions for plotting histograms and other objects we will
+see soon.  You can read the documentation at {\tt
+  http://thinkstats2.com/thinkplot.html}.  \index{{\tt thinkplot.py}}
 
 To plot the same histogram with {\tt thinkplot.py}, try this:
 
@@ -1524,7 +1526,8 @@ the objects defined in {\tt thinkstats2.py}.
 \section{NSFG variables}
 
 Now let's get back to the data from the NSFG.  The code in this
-chapter is from {\tt first.py}.  For information about downloading and
+chapter is from {\tt first.py}.  
+For information about downloading and
 working with this code, see Section~\ref{code}.
 
 % TODO: apparently I can't refer to a label in the preface?
@@ -2059,8 +2062,6 @@ with a simple list.
 \begin{verbatim}
 >>> import thinkstats2
 >>> pmf = thinkstats2.Pmf([1, 2, 2, 3, 5])
->>> pmf
-<thinkstats2.Pmf object at 0xb76cf68c>
 \end{verbatim}
 
 The result is normalized so the total probability is 1.
@@ -3487,7 +3488,7 @@ xs, ys = thinkstats2.NormalProbability(sample)
 \begin{figure}
 % analytic.py
 \centerline{\includegraphics[height=2.5in]{figs/analytic_normal_prob_example.pdf}}
-\caption{Normal probability plot of birth weights.}
+\caption{Normal probability plot for random samples from normal distributions.}
 \label{analytic_normal_prob_example}
 \end{figure}
 
@@ -3540,7 +3541,7 @@ Figure~\ref{analytic_birthwgt_normal} shows the results for
 all live births, and also for full term births (pregnancy length greater
 than 36 weeks).  Both curves match the model near the mean and
 deviate in the tails.  The heaviest babies are heavier than what
-the model expects, and the lightest babies are heavier.
+the model expects, and the lightest babies are lighter.
 
 When we select only full term births, we remove some of the lightest
 weights, which reduces the deviation in the lower tail of the
@@ -3787,7 +3788,7 @@ so that works out well.  \index{random module}
 \section{Why model?}
 \index{model}
 
-At the beginning of this chapter I said that many real world phenomena
+At the beginning of this chapter, I said that many real world phenomena
 can be modeled with analytic distributions.  ``So,'' you might ask,
 ``what?''  \index{abstraction}
 
@@ -4114,6 +4115,7 @@ distribution at a location one standard deviation from the mean.
 >>> std = math.sqrt(var)
 >>> pdf = thinkstats2.GaussianPdf(mean, std)
 >>> pdf.Density(mean + std)
+0.0333001
 \end{verbatim}
 
 The result is about 0.03, in units of probability mass per cm.
@@ -4122,6 +4124,7 @@ we plot the Pdf, we can see the shape of the distribution:
 
 \begin{verbatim}
 >>> thinkplot.Pdf(pdf, label='Gaussian')
+>>> thinkplot.Show()
 \end{verbatim}
 
 {\tt thinkplot.Pdf} plots the Pdf as a smooth function,
@@ -4317,8 +4320,8 @@ that is, their run time does not increase as the Hist gets bigger.
 and setting items, so instead of using {\tt Incr} you could write:
 
 \begin{verbatim}
-    hist = thinkstats2.Hist()
-    hist['a'] += 1
+>>> hist = thinkstats2.Hist()
+>>> hist['a'] += 1
 \end{verbatim}
 
 {\tt Hist} also provides {\tt Freq}, which looks up the frequency
@@ -4414,15 +4417,8 @@ probability and returns the corresponding value:
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
 
-        if p == 0: 
-            return self.xs[0]
-        if p == 1: 
-            return self.xs[-1]
-        index = bisect.bisect(self.ps, p)
-        if p == self.ps[index - 1]:
-            return self.xs[index - 1]
-        else:
-            return self.xs[index]
+        index = bisect.bisect_left(self.ps, p)
+        return self.xs[index]
 \end{verbatim}
 
 Given a Cdf, we can compute the Pmf by computing differences between
@@ -4741,143 +4737,243 @@ the skewness of a distribution.
 
 \chapter{Relationships between variables}
 
-\section{Scatterplots}
+So far we have only looked at one variable at a time.  In this
+chapter we look at relationships between variables.  Two variables are
+related if knowing one gives you information about the other.  For
+example, height and weight are related; people who are taller tend to
+be heavier.  Of course, it is not a perfect relationship: there
+are short, heavy people and tall, light people.  But if you are
+trying to guess someone's weight, you will be more accurate if you
+know their height than if you don't.
+
+The code for this chapter is in {\tt scatter.py}.
+For information about downloading and
+working with this code, see Section~\ref{code}.
+
+
+\section{Scatter plots}
 \index{scatter plot}
 \index{plot!scatter}
 \index{pyplot}
 
-In this chapter we look at relationships between variables.  For
-example, you might expect that weight is related to height; people who
-are taller tend to be heavier.
-
 \begin{figure}
-% brfss_corr.py
-\centerline{\includegraphics[height=2.5in]{figs/scatter1.pdf}}
-\caption{Simple scatterplot of weight versus height for the respondents
-in the BRFSS.}
-\label{scatterplot1}
+% scatter.py
+\centerline{\includegraphics[height=3.0in]{figs/scatter1.pdf}}
+\caption{Scatter plots of weight versus height for the respondents
+in the BRFSS, unjittered (left), jittered (right).}
+\label{scatter1}
 \end{figure}
-
-\begin{figure}
-% brfss_corr.py
-\centerline{\includegraphics[height=2.5in]{figs/scatter2.pdf}}
-\caption{Scatterplot with jittered data.}
-\label{scatterplot2}
-\end{figure}
-
-\begin{figure}
-% brfss_corr.py
-\centerline{\includegraphics[height=2.5in]{figs/scatter3.pdf}}
-\caption{Scatterplot with jittering and transparency.}
-\label{scatterplot3}
-\end{figure}
-
-\begin{figure}
-% brfss_corr.py
-\centerline{\includegraphics[height=2.5in]{figs/scatter4.pdf}}
-\caption{Scatterplot with binned data using {\tt pyplot.hexbin}.}
-\label{scatterplot4}
-\end{figure}
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
 
 The simplest way to check for a relationship between two variables
-is a scatterplot, but making a good scatterplot is not always easy.
+is a {\bf scatter plot}, but making a good scatter plot is not always easy.
 As an example, I'll plot weight versus height for the respondents
-in the BRFSS (see Section~\ref{lognormal}).  {\tt pyplot} provides
-a function named {\tt scatter} that makes scatterplots:
-%
+in the BRFSS (see Section~\ref{lognormal}).
+
+Here's the code that reads the data file and extracts height and
+weight:
+
 \begin{verbatim}
-import matplotlib.pyplot as pyplot
-pyplot.scatter(heights, weights)
+    df = brfss.ReadBrfss(nrows=None)
+    sample = thinkstats2.SampleRows(df, 5000)
+    heights, weights = sample.htm3, sample.wtkg2
 \end{verbatim}
 
-Figure~\ref{scatterplot1} shows the result.  Not surprisingly, taller
-people tend to be heavier.  But this is not the best representation of
+{\tt SampleRows} chooses a random subset of the data:
+
+\begin{verbatim}
+def SampleRows(df, nrows, replace=False):
+    indices = np.random.choice(df.index, nrows, replace=replace)
+    sample = df.loc[indices]
+    return sample
+\end{verbatim}
+
+{\tt df} is the DataFrame, {\tt nrows} is the number of rows to choose,
+and {\tt replace} is a boolean indicating whether sampling should be
+done with replacement; in other words, whether the same row could be
+chosen more than one.
+
+{\tt thinkplot} provides {\tt Scatter}, which makes scatter plots:
+%
+\begin{verbatim}
+    thinkplot.Scatter(heights, weights)
+    thinkplot.Show(xlabel='Height (cm)',
+                   ylabel='Weight (kg)',
+                   axis=[140, 210, 20, 200])
+\end{verbatim}
+
+The result, in Figure~\ref{scatter1} (left), shows the shape of
+the relationship.  As we expected, taller
+people tend to be heavier.  
+
+\begin{figure}
+% scatter.py
+\centerline{\includegraphics[height=3.0in]{figs/scatter2.pdf}}
+\caption{Scatter plot with jittering and transparency (left),
+hexbin plot (right).}
+\label{scatter2}
+\end{figure}
+
+But this is not the best representation of
 the data, because the data are packed into columns.  The problem is
-that the heights were rounded to the nearest inch, converted to
+that the heights are rounded to the nearest inch, converted to
 centimeters, and then rounded again.  Some information is lost in
 translation.  \index{height} \index{weight} \index{jitter}
 
 We can't get that information back, but we can minimize the effect on
-the scatterplot by {\bf jittering} the data, which means adding random
+the scatter plot by {\bf jittering} the data, which means adding random
 noise to reverse the effect of rounding off.  Since these measurements
 were rounded to the nearest inch, they might be off by up to 0.5 inches or
-1.3 cm.  So I added uniform noise in the range -1.3 to 1.3 cm:
+1.3 cm.  Similarly, the weights might be off by 0.5 kg.
 \index{uniform distribution}
 \index{distribution!uniform}
 \index{noise}
 %
 \begin{verbatim}
-jitter = 1.3
-heights = [h + random.uniform(-jitter, jitter) for h in heights]
+    heights = thinkstats2.Jitter(heights, 1.3)
+    weights = thinkstats2.Jitter(weights, 0.5)
 \end{verbatim}
 
-Figure~\ref{scatterplot2} shows the result.  Jittering the data makes
-the shape of the relationship clearer.  In general you should only jitter
-data for purposes of visualization and avoid using jittered data
-for analysis.
+Here's the implementation of {\tt Jitter}:
+
+\begin{verbatim}
+def Jitter(values, jitter=0.5):
+    n = len(values)
+    return np.random.uniform(-jitter, +jitter, n) + values
+\end{verbatim}
+
+The values can be any sequence; the result is a NumPy array.
+
+Figure~\ref{scatter1} (right) shows the result.  Jittering reduces the
+visual effect of rounding and makes the shape of the relationship
+clearer.  But in general you should only jitter data for purposes of
+visualization and avoid using jittered data for analysis.
 
 Even with jittering, this is not the best way to represent the data.
 There are many overlapping points, which hides data
 in the dense parts of the figure and gives disproportionate emphasis
-to outliers.
+to outliers.  This effect is called {\bf saturation}.
 \index{outlier}
 
 We can solve this problem with the {\tt alpha} parameter, which makes
 the points partly transparent:
 %
 \begin{verbatim}
-pyplot.scatter(heights, weights, alpha=0.2)
+    thinkplot.Scatter(heights, weights, alpha=0.2)
 \end{verbatim}
 %
-Figure~\ref{scatterplot3} shows the result.  Overlapping data
+Figure~\ref{scatter2} (left) shows the result.  Overlapping data
 points look darker, so darkness is proportional to density.  In this
-version of the plot we can see an apparent artifact: a horizontal line
-near 90 kg or 200 pounds.  Since this data is based on self-reports in
-pounds, the most likely explanation is that some responses were rounded off
-(possibly down).
+version of the plot we can two details that were not apparent before:
+vertical clusters at several heights and a horizontal line near 90 kg
+or 200 pounds.  Since this data is based on self-reports in pounds,
+the most likely explanation is that some respondents reported
+rounded values.
 
 Using transparency works well for moderate-sized datasets, but this
-figure only shows the first 1000 records in the BRFSS, out of a total
-of 414509.
+figure only shows the first 5000 records in the BRFSS, out of a total
+of 414 509.
 \index{hexbin plot}
 \index{plot!hexbin}
 
-To handle larger datasets, one option is a hexbin plot, which divides
-the graph into hexagonal bins and colors each bin according to how many
-data points fall in it.  {\tt pyplot} provides a function called 
-{\tt hexbin}:
+To handle larger datasets, another option is a hexbin plot, which
+divides the graph into hexagonal bins and colors each bin according to
+how many data points fall in it.  {\tt thinkplot} provides 
+{\tt HexBin}:
 %
 \begin{verbatim}
-pyplot.hexbin(heights, weights, cmap=matplotlib.cm.Blues)
+    thinkplot.HexBin(heights, weights)
 \end{verbatim}
 %
-Figure~\ref{scatterplot4} shows the result with a blue colormap.
-An advantage of a hexbin is that it shows the shape of the relationship
-well, and it is efficient for large datasets.  A drawback is that
-it makes the outliers invisible.
-\index{colormap}
-\index{grayscale}
+Figure~\ref{scatter2} (right) shows the result.  An advantage of a
+hexbin is that it shows the shape of the relationship well, and it is
+efficient for large datasets, but in time and in the size of the file
+it generates.  A drawback is that it makes the outliers invisible.
 
 The moral of this story is that it is
-not easy to make a scatterplot that shows the relationship clearly
+not easy to make a scatter plot that shows relationships clearly
 without introducing misleading artifacts.
-You can download the code for these figures from
-\url{http://thinkstats2.com/brfss_scatter.py}.
-\index{{\tt brfss\_scatter.py}}
+
+
+\section{Characterizing relationships}
+\label{characterizing}
+
+Scatter plots provide a general impression of the relationship
+between variables, but there are other visualizations that provide
+more insight into the nature of the relationship.  One option is
+to use one variable to bin the data and plot percentiles of the
+other variable.
+
+NumPy and pandas provide functions for binning data:
+
+\begin{verbatim}
+    df = df.dropna(subset=['htm3', 'wtkg2'])
+    bins = np.arange(135, 210, 5)
+    indices = np.digitize(df.htm3, bins)
+    groups = df.groupby(indices)
+\end{verbatim}
+
+{\tt dropna} drops rows with {\tt nan} in any of the columns
+listed in {\tt subset}.
+
+{\tt arange} makes a NumPy array of bins from 135 to, but not including,
+210, in increments of 5.
+
+{\tt digitize} computes the index of the bin that contains each value
+in {\tt df.htm3}.  The result is a NumPy array of integer indices.
+Values that fall below the lowest bin are mapped to index 0.  Values
+above the highest bin are mapped to {\tt len(bins)}.  So
+{\tt indices} is one element longer than {\tt bins}.
+
+\begin{figure}
+% scatter.py
+\centerline{\includegraphics[height=2.5in]{figs/scatter3.pdf}}
+\caption{Percentiles of weight for a range of height bins.}
+\label{scatter3}
+\end{figure}
+
+{\tt groupby} is a pandas method that divides a DataFrame into groups.
+The result is an object that iterates over the groups.  So, for example,
+we can print the number of rows in each group:
+
+\begin{verbatim}
+for i, group in groups:
+    print(i, len(group))
+\end{verbatim}
+
+Now for each group we can compute the mean height and the CDF
+of weight:
+
+\begin{verbatim}
+    heights = [group.htm3.mean() for i, group in groups][1:-1]
+    cdfs = [thinkstats2.Cdf(group.wtkg2) for i, group in groups][1:-1]
+\end{verbatim}
+
+The slice operators omit the first and last groups, which contain
+the values that fall outside the range of bins.  Finally, we can
+plot percentiles of weight versus height:
+
+\begin{verbatim}
+    for percent in [75, 50, 25]:
+        weights = [cdf.Percentile(percent) for cdf in cdfs]
+        label = '%dth' % percent
+        thinkplot.Plot(heights, weights, label=label)
+\end{verbatim}
+
+Figure~\ref{scatter3} shows the result.  Between 140 and 200 cm
+the relationship between these variables is linear.  This range
+includes more than 99\% of the data, so we don't have to worry
+too much about the extremes.
 
 
 \section{Correlation}
 
-If the relationship between variables is linear, you can measure
-the strength of the relationship by computing one of several
-correlation statistics.
+A {\bf correlation} is a statistic intended to quantify the strength
+of the relationship between two variables.
+\index{correlation}
 
-A challenge in measuring correlation is that the variables we want
-to compare might not be expressed in the same units.  For example, height
-might be in centimeters and weight in kilograms.  And even if they are
-in the same units, they come from different distributions.
+A challenge in measuring correlation is that the variables we want to
+compare are often not expressed in the same units.  And even if they
+are in the same units, they come from different distributions.
 \index{units}
 
 There are two common solutions to these problems:
@@ -4885,14 +4981,14 @@ There are two common solutions to these problems:
 \begin{enumerate}
 
 \item Transform all values to {\bf standard scores}.  This leads to
-the Pearson coefficient of correlation.
+the ``Pearson product-moment correlation coefficient.''
 \index{standard scores}
 \index{Pearson coefficient of correlation}
 \index{Spearman coefficient of correlation}
 \index{coefficient!correlation}
 
 \item Transform all values to their percentile ranks.  This
-leads to the Spearman coefficient.
+leads to the ``Spearman rank correlation coefficient.''
 \index{rank}
 \index{percentile rank}
 
@@ -4905,10 +5001,10 @@ $z_i = (x_i - \mu) / \sigma$.
 \index{standard deviation}
 
 The numerator is a deviation: the distance from the mean.  Dividing by
-$\sigma$ {\bf normalizes} the deviation, so the values of $Z$ are
+$\sigma$ {\bf standardizes} the deviation, so the values of $Z$ are
 dimensionless (no units) and their distribution has mean 0 and
 variance 1.
-\index{normalize}
+\index{standardize}
 \index{deviation}
 \index{normal distribution}
 \index{distribution!normal}
@@ -4916,7 +5012,7 @@ variance 1.
 \index{distribution!Gaussian}
 
 If $X$ is normally distributed, so is $Z$; but if $X$ is skewed or has
-outliers, so does $Z$.  In those cases it is more robust to use
+outliers, so does $Z$.  In that case it is more robust to use
 percentile ranks.  If we compute a new variable, $R$, so that $r_i$ is
 the percentile rank of $x_i$, the distribution of $R$ is uniform
 between 0 and 100, regardless of the distribution of $X$.
@@ -4931,11 +5027,11 @@ between 0 and 100, regardless of the distribution of $X$.
 {\bf Covariance} is a measure of the tendency of two variables
 to vary together.  If we have two series, $X$ and $Y$, their
 deviations from the mean are
-
+%
 \[ dx_i = x_i - \xbar \]
-
+%
 \[ dy_i = y_i - \ybar \]
-
+%
 where $\xbar$ is the sample mean of $X$ and $\ybar$ is the sample mean
 of $Y$.  If $X$ and $Y$ vary together, their deviations tend to have
 the same sign.
@@ -4952,31 +5048,49 @@ Covariance is the mean of these products:
 where $n$ is the length of the two series (they have to be the same
 length).
 
-\begin{exercise}
-Write a function called {\tt Cov} that takes two lists
-and computes their covariance.  To test your function, compute
-the covariance of a list with itself and confirm that
-$Cov(X, X) = Var(X)$.
+If you have studied linear algebra, you might recognize that
+{\tt Cov} is the dot product of the deviations, divided
+by their length.  So the covariance is maximized if the two vectors
+are identical, 0 if they are othogonal, and negative if they
+point in opposite directions.  {\tt thinkstats2} uses {\tt np.dot} to
+implement {\tt Cov} efficiently:
 
-You can download a solution from
-\url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
+\begin{verbatim}
+def Cov(xs, ys, meanx=None, meany=None):
+    if meanx is None:
+        meanx = np.mean(xs)
+    if meany is None:
+        meany = np.mean(ys)
 
-\end{exercise}
+    cov = np.dot(np.asarray(xs)-meanx, np.asarray(ys)-meany) / len(xs)
+    return cov
+\end{verbatim}
+
+By default {\tt Cov} computes deviations from the sample means,
+or you can provide known values.  If {\tt xs} and {\tt ys} are
+Python sequences, {\tt np.asarray} converts them to NumPy arrays.
+If they are already NumPy arrays, {\tt np.asarray} does nothing.
+
+This implementation of covariance is meant to be simple for purposes
+of explanation.  NumPy and pandas also provide implementations of
+covariance, but both of them apply a correction for small sample sizes
+that we have not covered yet, and {\tt np.cov} returns a covariance
+matrix, which is more than we need for now.
 
 
 \section{Pearson's correlation}
 \index{correlation}
 \index{standard score}
 
-Covariance is useful in some computations, but
-it is seldom reported as a summary statistic because it is hard to
-interpret.  Among other problems, its units are the product of the
-units of $X$ and $Y$.  So the covariance of weight and height might be
-in units of kilogram-meters, which doesn't mean much.
+Covariance is useful in some computations, but it is seldom reported
+as a summary statistic because it is hard to interpret.  Among other
+problems, its units are the product of the units of $X$ and $Y$.  For
+example, the covariance of weight and height in the BRFSS dataset is
+113 kilogram-centimeters, whatever that means.
 
-One solution to this problem is to divide the deviations by $\sigma$,
-which yields standard scores, and compute the product of standard scores:
+One solution to this problem is to divide the deviations by the standard
+deviation, which yields standard scores, and compute the product of
+standard scores:
 %
 \[ p_i = \frac{(x_i - \xbar)}{S_X} \frac{(y_i - \ybar)}{S_Y} \]
 %
@@ -4997,6 +5111,23 @@ interpret.  Because standard scores are dimensionless, so is $\rho$.
 \index{Pearson coefficient of correlation}
 \index{coefficient!correlation}
 
+Here is the implementation in {\tt thinkstats2}:
+
+\begin{verbatim}
+def Corr(xs, ys):
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+
+    meanx, varx = MeanVar(xs)
+    meany, vary = MeanVar(ys)
+
+    corr = Cov(xs, ys, meanx, meany) / math.sqrt(varx * vary)
+    return corr
+\end{verbatim}
+
+{\tt MeanVar} computes mean and variance slightly more efficiently
+than separate calls to {\tt np.mean} and {\tt np.var}.
+
 Pearson's correlation is always between -1 and +1 (including both).
 If $\rho$ is positive, we say that the correlation is positive,
 which means that when one variable is high, the other tends to be
@@ -5008,17 +5139,20 @@ $\rho$ is 1 or -1, the variables are perfectly correlated, which means
 that if you know one, you can make a perfect prediction about the
 other.  \index{prediction}
 
-Most correlation in the real world is not perfect, but it
-is still useful.  For example, if you know someone's height, you might
-be able to guess their weight.  You might not get it exactly right, but
-your guess will be better than if you didn't know the height.
-Correlation is a measure of how much better.
+Most correlation in the real world is not perfect, but it is still
+useful.  The correlation of height and weight is 0.51, which is a
+strong correlation compared to similar human-related variables.  In
+Section~\ref{goodness} I will say more about how to interpret
+correlations.
 
-So if $\rho = 0$, does that mean there is no
-relationship between the variables?  Unfortunately, no.  Pearson's
-correlation only measures {\em linear} relationships.  If there's a
-nonlinear relationship, $\rho$ understates its strength.
-\index{linear relationship}
+
+\section{Non-linear relationships}
+
+If Pearson's correlation is near 0, it is tempting to conclude
+that there is no relationship between the variables, but that
+conclusion is not valid.  Pearson's correlation only measures {\em
+  linear} relationships.  If there's a nonlinear relationship, $\rho$
+understates its strength.  \index{linear relationship}
 
 \begin{figure}
 \centerline{\includegraphics[height=2.5in]{figs/Correlation_examples.png}}
@@ -5028,7 +5162,7 @@ nonlinear relationship, $\rho$ understates its strength.
 
 Figure~\ref{corr_examples} is from
 \url{http://wikipedia.org/wiki/Correlation_and_dependence}.  It shows
-scatterplots and correlation coefficients for several
+scatter plots and correlation coefficients for several
 carefully-constructed datasets.
 \index{coefficient!correlation}
 \index{scatter plot}
@@ -5042,24 +5176,9 @@ slope (we'll talk about estimating slope soon).  The third row shows
 variables that are clearly related, but because the relationship is
 non-linear, the correlation coefficient is 0.
 
-The moral of this story is that you should always look at a scatterplot of
-your data before blindly computing a correlation coefficient.
-\index{correlation coefficient}
-\index{coefficient!correlation}
-
-\begin{exercise}
-Write a function called {\tt Corr} that takes two lists and
-computes their correlation.  Hint: use {\tt thinkstats.Var} and
-the {\tt Cov} function you wrote in the previous exercise.
-\index{variance}
-\index{covariance}
-
-To test your function, compute the covariance of a list with itself
-and confirm that $\Corr(X, X)$ is 1.  You can download a solution
-from \url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
-
-\end{exercise}
+The moral of this story is that you should always look at a scatter
+plot of your data before blindly computing a correlation coefficient.
+\index{correlation coefficient} \index{coefficient!correlation}
 
 
 \section{Spearman's rank correlation}
@@ -5090,342 +5209,74 @@ index in the sorted sample.  For example, in the sample {\tt [1, 2, 5, 7]}
 the rank of the value 5 is 3, because it appears third in the sorted
 list.  Then we compute Pearson's correlation for the ranks.
 
-An alternative way to quantify correlation is to apply a transform
-that makes the data more nearly normal, then compute Pearson's
-correlation for the transformed data.  For example, if the data are
-approximately lognormal, you could take the log of each value and
-compute the correlation of the logs.  \index{lognormal distribution}
-\index{distribution!lognormal}
+{\tt thinkstats2} provides a function that computes Spearman's rank
+correlation:
 
-\begin{exercise}
-Write a function that takes a sequence and returns a list that
-contains the rank for each element.  For example, if the sequence is
-{\tt [7, 1, 2, 5]}, the result should be {\tt [4, 1, 2, 3]}.
+\begin{verbatim}
+def SpearmanCorr(xs, ys):
+    xranks = pandas.Series(xs).rank()
+    yranks = pandas.Series(ys).rank()
+    return Corr(xranks, yranks)
+\end{verbatim}
 
-If the same value appears more than once, the strictly correct
-solution is to assign each of them the average of their ranks.  But if
-you ignore that and assign them ranks in arbitrary order, the error is
-usually small.
+I convert the arguments to pandas Series objects so I can use
+{\tt rank}, which computes the rank for each value and returns
+a Series.  Then I use {\tt Corr} to compute the 
 
-Write a function that takes two sequences (with the same length) and
-computes their Spearman rank coefficient.  You can download a solution
-from \url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
-\index{Spearman coefficient of correlation}
-\index{coefficient!correlation}
+Or I could use {\tt Series.corr} directly and specify
+Spearman's method:
 
-\end{exercise}
+\begin{verbatim}
+def SpearmanCorr(xs, ys):
+    xranks = pandas.Series(xs)
+    yranks = pandas.Series(ys)
+    return xs.corr(ys, method='spearman')
+\end{verbatim}
 
-
-\begin{exercise}
-Download \url{http://thinkstats2.com/brfss.py} and
-\url{http://thinkstats2.com/brfss_scatter.py}.  Run them and confirm that you
-can read the BRFSS data and generate scatterplots.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss.py}}
-\index{{\tt brfss\_scatter.py}}
-
-Comparing the scatterplots to Figure~\ref{corr_examples}, what value
-do you expect for Pearson's correlation?  What value do you get?
-\index{weight!adult}
-\index{adult weight}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{outlier}
-
-Because the distribution of adult weight is lognormal, there are
-outliers that affect the correlation.  Try plotting
-log(weight) versus height, and compute Pearson's
-correlation for the transformed variable.
-
-Finally, compute Spearman's rank correlation for weight and height.
-Which coefficient do you think is the best measure of the strength of
-the relationship?  You can download a solution from
-\url{http://thinkstats2.com/brfss_corr.py}.
-\index{{\tt brfss\_corr.py}}
-
-\end{exercise}
-
-
-\section{Least squares fit}
-
-Correlation coefficients measure the strength and sign of a
-relationship, but not the slope.  There are several ways to estimate
-the slope; the most common is a {\bf linear least squares fit}.  A
-``linear fit'' is a line intended to model the relationship between
-variables.  A ``least squares'' fit is one that minimizes the mean
-squared error (MSE) between the line and the data\footnote{See
-  \url{http://wikipedia.org/wiki/Simple_linear_regression}.}.
-\index{least squares fit}
-\index{linear least squares}
-\index{coefficient!correlation}
-\index{linear regression}
-
-Suppose we have a sequence of points, $Y$, that we want to express as a
-function of another sequence $X$.  If there is a linear relationship
-between $X$ and $Y$ with intercept $\alpha$ and slope $\beta$, we
-expect each $y_i$ to be roughly $\alpha + \beta x_i$.
-\index{residual}
-
-But unless the correlation is perfect, this prediction is only
-approximate.  The deviation, or {\bf residual}, is 
-
-\[ \eps_i = (\alpha + \beta x_i) - y_i \]
-
-The residual might be due to random factors like measurement error,
-or non-random factors that are unknown.  For example, if we are
-trying to predict weight as a function of height, unknown factors
-might include diet, exercise, and body type.
-\index{slope}
-\index{intercept}
-
-If we get the parameters $\alpha$ and $\beta$ wrong, the residuals
-get bigger, so it makes intuitive sense that the parameters we want
-are the ones that minimize the residuals.
-
-As usual, we could minimize the absolute value of the
-residuals, or their squares, or their cubes, etc.  The most common
-choice is to minimize the sum of squared residuals
-%
-\[ \min_{\inter, \slope} \sum \eps_i^2 \]
-%
-Why?  There are three good reasons and one bad one:
+The Spearman rank correlation for the BRFSS data is 0.54, a little
+higher than the Pearson correlation, 0.51.  There are several possible
+reasons for the difference, including:
 
 \begin{itemize}
 
-\item Squaring has the obvious feature of treating positive and
-negative residuals the same, which is usually what we want.
+\item If the relationship is
+nonlinear, Pearson's correlation tends to underestimate the strength
+of the relationship, and 
 
-\item Squaring gives more weight to large residuals, but not
-so much weight that the largest residual always dominates.
-
-\item If the residuals are independent of $x$, random, and normally
-  distributed with $\mu = 0$ and constant (but unknown) $\sigma$, then
-  the least squares fit is also the maximum likelihood estimator of
-  $\alpha$ and $\beta$.\footnote{See Press et al., {\em Numerical Recipes in C},
-    Chapter 15 at \url{http://www.nrbook.com/a/bookcpdf/c15-1.pdf}.}
-\index{MLE}
-\index{maximum likelihood estimator}
-
-\item The values of $\hat{\inter}$ and $\hat{\slope}$ that minimize
-  the squared residuals can be computed efficiently.
+\item Pearson's correlation can affected (in either direction)
+if one of the distributions is skewed or contains outliers.  Spearman's
+rank correlation is immune to these effects.
 
 \end{itemize}
 
-That last reason made sense when computational efficiency was more
-important than choosing the method most appropriate to the problem
-at hand.  That's no longer the case, so it is worth considering
-whether squared residuals are the right thing to minimize.
-\index{computation}
+In the BRFSS example, we know that the distribution of weights is
+roughly lognormal, so we could eliminate the effect of skewness
+by computing Pearson's
+correlation between height and the log of weight.
+\index{lognormal distribution}
+\index{distribution!lognormal}
 
-For example, if you are using values of $X$ to predict values of $Y$,
-guessing too high might be better (or worse) than guessing too low.
-In that case you might want to compute some cost function,
-cost(\_i), and minimize total cost.
-\index{cost function}
+\begin{verbatim}
+    thinkstats2.Corr(df.htm3, np.log(df.wtkg2)))
+\end{verbatim}
 
-However, computing a least squares fit is quick, easy and often good
-enough, so here's how:
-
-\begin{enumerate}
-
-\item Compute the sample means, $\xbar$ and $\ybar$, the variance
-of $X$, and the covariance of $X$ and $Y$.
-
-\item The estimated slope is
-%
-\[ \hat{\slope} = \frac{Cov(X,Y)}{Var(X)} \]
-%
-\item And the intercept is
-%
-\[ \hat{\inter} = \ybar - \hat{\slope} \xbar \]
-%
-\end{enumerate}
-
-To see how this is derived, you can read
-\url{http://wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
+The result is 0.53, close to the rank correlation, 0.54.  So that
+suggests that skewness in the distribution of weight explains most of
+the difference between Pearson's and Spearman's correlation.
 
 
-\begin{exercise}
-Write a function named {\tt LeastSquares} that takes $X$ and $Y$ and
-computes $\hat{\inter}$ and $\hat{\slope}$.  You can download a
-solution from \url{http://thinkstats2.com/correlation.py}.  \index{{\tt
-    correlation.py}}
-
-\end{exercise}
-
-\begin{exercise}
-Using the data from the BRFSS again, compute the linear least squares
-fit for log(weight) versus height.  You can download a
-solution from \url{http://thinkstats2.com/brfss_corr.py}.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss\_corr.py}}
-
-\end{exercise}
-
-
-\begin{exercise}
-The distribution of wind speeds in a given location determines the
-wind power density, which is an upper bound on the average power that
-a wind turbine at that location can generate.  According to some
-sources, empirical distributions of wind speed are well modeled by a
-Weibull distribution (see
-\url{http://wikipedia.org/wiki/Wind_power#Distribution_of_wind_speed}).
-\index{wind speed}
-\index{wind power density}
-\index{turbine}
-\index{Weibull distribution}
-\index{distribution!Weibull}
-
-To evaluate whether a location is a viable site for a wind turbine,
-you can set up an anemometer to measure wind speed for a period of
-time.  But it is hard to measure the tail of the wind speed distribution
-accurately because, by definition, events in the tail don't happen
-very often.
-\index{tail}
-
-One way to address this problem is to use measurements to estimate the
-parameters of a Weibull distribution, then integrate over the
-analytic PDF to compute wind power density.
-\index{PDF}
-
-To estimate the parameters of a Weibull distribution, we can use the
-transformation from Exercise~\ref{weibull} and then use a linear fit
-to find the slope and intercept of the transformed data.
-
-Write a function that takes a sample from a Weibull distribution and
-estimates its parameters.
-
-Now write a function that takes the parameters of a Weibull distribution
-of wind speed and computes average wind power density (you might have
-to do some research for this part).
-
-\end{exercise}
-
-
-\section{Goodness of fit}
-\index{goodness of fit}
-\index{fit, goodness}
-
-Having fit a linear model to the data, we might want to know how good
-it is.  Well, that depends on what it's for.  One way to evaluate a
-model is its predictive power.
-
-In the context of prediction, the quantity we are trying to guess is
-called a {\bf dependent variable} and the quantity we are using to
-make the guess is called an {\bf explanatory} or {\bf independent
-  variable}.
-\index{dependent variable}
-\index{explanatory variable}
-\index{independent variable}
-\index{coefficient!determination}
-
-To measure the predictive power of a model, we can compute the {\bf
-  coefficient of determination}, more commonly known as ``R-squared'':
-%
-\[ R^2 = 1 - \frac{Var(\eps)}{Var(Y)}\]
-%
-To understand what $R^{2}$ means, suppose (again) that you are trying
-to guess someone's weight.  If you didn't know anything about them,
-your best strategy would be to guess $\ybar$; in
-that case the MSE of your guesses would be $Var(Y)$:
-%
-\[ MSE = \frac{1}{n} \sum (\ybar - y_i)^2 = Var(Y) \]
-%
-But if I told you their height, you would guess $\hat{\inter} +
-\hat{\slope} x_i$; in that case your MSE would be $Var(\eps)$.
-%
-\[ MSE = 
-\frac{1}{n} \sum (\hat{\inter} + \hat{\slope} x_i - y_i)^2 =
-Var(\eps) \]
-%
-So the term $Var(\eps)/Var(Y)$ is the ratio of mean squared error with
-and without the explanatory variable, which is the fraction of
-variability left unexplained by the model.  The complement, $R^{2}$,
-is the fraction of variability explained by the model.
-\index{variability}
-
-If a model yields $R^{2} = 0.64$, you could say that the model explains
-64\% of the variability, or it might be more precise to say that it
-reduces the MSE of your predictions by 64\%.
-
-In the context of a linear least squares model, it turns out that
-there is a simple relationship between the coefficient of
-determination and Pearson's correlation coefficient, $\rho$:
-
-\[ R^{2} = \rho^{2}\]
-
-See \url{http://wikipedia.org/wiki/Howzzat}!
-\index{howzzat}
-
-\begin{exercise}
-The Wechsler Adult Intelligence Scale (WAIS) is meant to be a measure
-of intelligence; scores are calibrated so that the mean and standard
-deviation in the general population are 100 and 15.
-\index{Adult Intelligence Scale}
-\index{WAIS}
-\index{IQ}
-\index{intelligence}
-
-Suppose that you wanted to predict someone's WAIS score based on their
-SAT scores.  According to one study, there is a Pearson correlation of
-0.72 between total SAT scores and WAIS scores.
-
-If you applied your predictor to a large sample, what would you expect to
-be the mean squared error (MSE) of your predictions?
-
-Hint: What is the MSE if you always guess 100?
-\end{exercise}
-
-
-\begin{exercise}
-Write a function named {\tt Residuals} that takes X, Y, $\hat{\inter}$
-and $\hat{\slope}$ and returns a list of $\eps_i$.
-\index{residual}
-
-Write a function named {\tt CoefDetermination} that takes the 
-$\eps_i$ and Y and returns $R^{2}$.  To test your functions, 
-confirm that $R^{2} = \rho^{2}$.  You can download a solution
-from \url{http://thinkstats2.com/correlation.py}.
-\index{{\tt correlation.py}}
-
-\end{exercise}
-
-\begin{exercise}
-Using the height and weight data from the BRFSS (one more time),
-compute $\hat{\inter}$, $\hat{\slope}$ and $R^{2}$.  If you were trying to guess
-someone's weight, how much would it help to know their height?
-You can download a solution from
-\url{http://thinkstats2.com/brfss_corr.py}.
-\index{Behavioral Risk Factor Surveillance System}
-\index{BRFSS}
-\index{{\tt brfss\_corr.py}}
-
-\end{exercise}
-
-
-\section{Correlation and Causation}
+\section{Correlation and causation}
 \index{correlation}
 \index{causation}
-\index{xkcd}
-\index{comic}
-\index{Munroe, Randall}
 
-The web comic {\tt xkcd} demonstrates the difficulty of inferring
-causation:
+If variables A and B are related, there are three possible
+explanations: A causes B, or B causes A, or some other set of factors
+causes both A and B.  These explanations are called ``causal
+relationships''.
 
-\begin{figure}
-\centerline{\includegraphics[width=4.0in]{figs/correlation.png}}
-\caption{From {\tt xkcd.com} by Randall Munroe.}
-\end{figure}
-
-In general, a relationship between two variables does not tell you
-whether one causes the other, or the other way around, or both, or
-whether they might both be caused by something else altogether.
-
-This rule can be summarized with the phrase ``Correlation
+Correlation alone does not distinguish between these explanations,
+so it does not tell you which ones are true.
+This rule is often summarized with the phrase ``Correlation
 does not imply causation,'' which is so pithy it has its own
 Wikipedia page: \url{http://wikipedia.org/wiki/Correlation_does_not_imply_causation}.
 
@@ -5439,14 +5290,12 @@ So what can you do to provide evidence of causation?
   of causation, but it does not preclude the possibility that something
   else causes both A and B.
 
-\item Use randomness.  If you divide a large population into two
+\item Use randomness.  If you divide a large sample into two
   groups at random and compute the means of almost any variable, you
-  expect the difference to be small.  This is a consequence of the
-  Central Limit Theorem (so it is subject to the same requirements).
-
+  expect the difference to be small.
   If the groups are nearly identical in all variable but one, you
   can eliminate spurious relationships.
-\index{spurious relationship}
+  \index{spurious relationship}
 
   This works even if you don't know what the relevant variables
   are, but it works even better if you do, because you can check that
@@ -5456,7 +5305,7 @@ So what can you do to provide evidence of causation?
 
 These ideas are the motivation for the {\bf randomized controlled
 trial}, in which subjects are assigned randomly to two (or more)
-groups: a {\bf treatment} group that receives some kind of intervention,
+groups: a {\bf treatment group} that receives some kind of intervention,
 like a new medicine, and a {\bf control group} that receives
 no intervention, or another treatment whose effects are known.
 \index{randomized controlled trial}
@@ -5474,7 +5323,7 @@ sciences, medicine, and a few other disciplines.  In the social sciences,
 controlled experiments are rare, usually because they are impossible
 or unethical.
 
-One alternative is to look for a {\bf natural experiment}, where
+An alternative is to look for a {\bf natural experiment}, where
 different ``treatments'' are applied to groups that are otherwise
 similar.  One danger of natural experiments is that the groups might
 differ in ways that are not apparent.  You can read more about this
@@ -5482,60 +5331,20 @@ topic at \url{http://wikipedia.org/wiki/Natural_experiment}.
 \index{natural experiment}
 
 In some cases it is possible to infer causal relationships using {\bf
-  regression analysis}.  A linear least squares fit
-is a simple form of regression that explains a dependent
-variable using one explanatory variable.  There are similar
-techniques that work with arbitrary numbers of independent variables.
+  regression analysis}, which is the topic of Chapter~\ref{regression}.
 \index{regression analysis}
 
-I won't cover those techniques here, but there are also simple ways to
-control for spurious relationships.  For example, in the NSFG, we saw
-that first babies tend to be lighter than others (see
-Section~\ref{birth_weights}).  But birth weight is also correlated
-with the mother's age, and mothers of first babies tend to be younger
-than mothers of other babies.
-\index{birth weight}
-\index{weight!birth}
-\index{National Survey of Family Growth}
-\index{NSFG}
 
-So it may be that first babies are lighter because their mothers are
-younger.  To control for the effect of age, we could divide the mothers
-into age groups and compare birth weights for first babies and others
-in each age group.
-\index{pooled data}
-
-If the difference between first babies and others is the same in
-each age group as it was in the pooled data, we conclude
-that the difference is not related to age.  If there is no difference,
-we conclude that the effect is entirely due to age.  Or,
-if the difference is smaller, we can quantify how much of the effect
-is due to age.
+\section{Exercises}
 
 \begin{exercise}
-The NSFG data includes a variable named {\tt agepreg} that records
-the age of the mother at the time of birth.
-Make a scatterplot of mother's age and baby's weight for each live
-birth.  Can you see a relationship?
+Using data from the NSFG, make a scatter plot of birth weight
+versus mother's age.  Plot percentiles of birth weight
+versus mother's age.  Compute Pearson's and Spearman's correlations.
+How would you characterize the relationship
+between these variables?
 
-Compute a linear least-squares fit for these variables.  What are the
-units of the estimated parameters $\hat{\inter}$ and $\hat{\slope}$?
-How would you summarize these results in a sentence or two?
-
-Compute the average age for mothers of first babies and the average
-age of other mothers.  Based on the difference in ages between the
-groups, how much difference do you expect in the mean birth weights?
-What fraction of the actual difference in birth weights is explained
-by the difference in ages?
-
-You can download a solution to this problem from
-\url{http://thinkstats2.com/agemodel.py}.  If you are curious about
-multivariate regression, you can run \url{http://thinkstats2.com/age_lm.py}
-which shows how to use the R statistical computing package from
-Python.  But that's a whole other book.
-\index{{\tt agemodel.py}}
-\index{{\tt age\_lm.py}}
-
+A solution to this exercise is in \verb"chap07ex_soln.py".
 \end{exercise}
 
 
@@ -5543,48 +5352,44 @@ Python.  But that's a whole other book.
 
 \begin{itemize}
 
-\item correlation: a description of the dependence between variables.
+\item scatter plot: A visualization of the relationship between
+two variables, showing one point for each row of data.
+\index{scatter plot}
+
+\item jitter: Random noise added to data for purposes of
+visualization.
+\index{jitter}
+
+\item saturation: Loss of information when multiple points are
+plotted on top of each other. 
+\index{saturation}
+
+\item correlation: A statistic that measures the strength of the
+relationship between two variables.
 \index{correlation}
 
-\item normalize: To transform a set of values so that their mean is 0 and
+\item standardize: To transform a set of values so that their mean is 0 and
 their variance is 1.
-\index{normalize}
+\index{standardize}
 
-\item standard score: A value that has been normalized.
+\item standard score: A value that has been standardized so it expressed
+in terms of standard deviations from the mean.
 \index{standard score}
 
-\item covariance: a measure of the tendency of two variables
+\item covariance: A measure of the tendency of two variables
 to vary together.
 \index{covariance}
 
 \item rank: The index where an element appears in a sorted list.
 \index{rank}
 
-\item least squares fit: A model of a dataset that minimizes the
-sum of squares of the residuals.
-\index{least squares fit}
-
-\item residual: A measure of the deviation of an actual value from a model.
-\index{residual}
-
-\item dependent variable: A variable we are trying to predict or explain.
-\index{dependent variable}
-
-\item independent variable: A variable we are using to predict a dependent
-variable, also called an explanatory variable.
-\index{independent variable}
-
-\item coefficient of determination: A measure of the goodness of fit
-of a linear model.
-\index{coefficient!determination}
-
 \item randomized controlled trial: An experimental design in which subject
 are divided into groups at random, and different groups are given different
 treatments.
 \index{randomized controlled trial}
 
-\item treatment: An change or intervention applied to one group in a
-controlled trial.
+\item treatment group: A group in a controlled trial that receives
+some kind of interventions.
 \index{treatment group}
 
 \item control group: A group in a controlled trial that receives no
@@ -5604,6 +5409,10 @@ approximately random.
 \chapter{Estimation}
 \label{estimation}
 \index{estimation}
+
+The code for this chapter is in {\tt estimation.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
 
 \section{The estimation game}
 
@@ -5664,9 +5473,9 @@ compute the error $\xbar - \mu$, the sample mean minimizes
 %
 \[ MSE = \frac{1}{m} \sum (\xbar - \mu)^2 \]
 %
-Where $m$ is the number of times you play the estimation game (not to
-be confused with $n$, which is the size of the sample used to compute
-$\xbar$).
+Where $m$ is the number of times you play the estimation game, not
+to be confused with $n$, which is the size of the sample used to
+compute $\xbar$.
 
 Here is a function that simulates the estimation game and computes
 the root mean squared error (RMSE), which is the square root of
@@ -5681,8 +5490,8 @@ def Estimate1(n=7, m=1000):
     medians = []
     for _ in range(m):
         xs = [random.gauss(mu, sigma) for i in range(n)]
-        xbar = numpy.mean(xs)
-        median = thinkstats2.Median(xs)
+        xbar = np.mean(xs)
+        median = np.median(xs)
         means.append(xbar)
         medians.append(median)
 
@@ -5699,7 +5508,7 @@ Here's the function that computes RMSE:
 \begin{verbatim}
 def RMSE(estimates, actual):
     e2 = [(estimate-actual)**2 for estimate in estimates]
-    mse = numpy.mean(e2)
+    mse = np.mean(e2)
     return math.sqrt(mse)
 \end{verbatim}
 
@@ -5769,14 +5578,14 @@ estimator of $\sigma^2$:
 %
 \[ S_{n-1}^2 = \frac{1}{n-1} \sum (x_i - \xbar)^2 \] 
 %
+For an explanation of why $S^2$ is biased, and a proof that
+$S_{n-1}^2$ is unbiased, see
+\url{http://wikipedia.org/wiki/Bias_of_an_estimator}.
+
 The biggest problem with this estimator is that its name and symbol
 are used inconsistently.  The name ``sample variance'' can refer to
 either $S^2$ or $S_{n-1}^2$, and the symbol $S^2$ is used
 for either or both.
-
-For an explanation of why $S^2$ is biased, and a proof that
-$S_{n-1}^2$ is unbiased, see
-\url{http://wikipedia.org/wiki/Bias_of_an_estimator}.
 
 Here is a function that simulates the estimation game and tests
 the performance of $S^2$ and $S_{n-1}^2$:
@@ -5790,8 +5599,8 @@ def Estimate2(n=7, m=1000):
     estimates2 = []
     for _ in range(m):
         xs = [random.gauss(mu, sigma) for i in range(n)]
-        biased = numpy.var(xs)
-        unbiased = numpy.var(xs, ddof=1)
+        biased = np.var(xs)
+        unbiased = np.var(xs, ddof=1)
         estimates1.append(biased)
         estimates2.append(unbiased)
 
@@ -5800,10 +5609,10 @@ def Estimate2(n=7, m=1000):
 \end{verbatim}
 
 Again, {\tt n} is the sample size and {\tt m} is the number of times
-we play the game.  {\tt numpy.var} to computes $S^2$ by default and
-$S_{n-1}^2$ if you provide the parameter {\tt ddof=1}, which stands for
-``delta degrees of freedom.''  I won't explain that now, but if you
-can't stand suspense, you can read
+we play the game.  {\tt np.var} computes $S^2$ by default and
+$S_{n-1}^2$ if you provide the argument {\tt ddof=1}, which stands for
+``delta degrees of freedom.''  I won't explain that now, but you can read
+about it at
 \url{http://en.wikipedia.org/wiki/Degrees_of_freedom_(statistics)}.
 
 {\tt MeanError} computes the mean difference between the estimates
@@ -5812,7 +5621,7 @@ and the actual value:
 \begin{verbatim}
 def MeanError(estimates, actual):
     errors = [estimate-actual for estimate in estimates]
-    return numpy.mean(errors)
+    return np.mean(errors)
 \end{verbatim}
 
 When I ran this code, the mean error for $S^2$ was -0.13.  As
@@ -5835,27 +5644,10 @@ generate an estimate, the next step is to characterize the
 uncertainty of the estimate, which is the topic of the next
 section.
 
-% You can download code for these experiments from \url{}.
-
-\begin{exercise}
-
-So far we have used $\xbar$ and median to estimate $\mu$, and
-found that $\xbar$  yields lower MSE.
-
-As we used $S^2$ and $S_{n-1}^2$ to estimate $\sigma$, and found that
-$S^2$ is biased and $S_{n-1}^2$ unbiased.
-
-Run similar experiments to see if $\xbar$ and median are biased estimates
-of $\mu$.
-
-Also check whether $S^2$ or $S_{n-1}^2$ yields a lower MSE.
-
-\end{exercise}
-
 
 \section{Sampling distributions}
 
-Suppose you are a primatologist studying gorillas in a wildlife
+Suppose you are a scientist studying gorillas in a wildlife
 preserve.  You want to know the average weight of the adult
 female gorillas in the preserve.  To weigh them, you have
 to tranquilize them, which is dangerous, expensive, and possibly
@@ -5878,7 +5670,7 @@ and choose the 9 heaviest gorillas (or the 9 lightest ones) just by
 chance.  Variation in the estimate caused by random selection is
 called {\bf sampling error}.
 
-To quantify the size of the sampling error, we can simulate the
+To quantify sampling error, we can simulate the
 sampling process with hypothetical values of $\mu$ and $\sigma$, and
 see how much $\xbar$ varies.
 
@@ -5894,14 +5686,15 @@ The following function answers that question:
 
 \begin{verbatim}
 def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
-    
     means = []
     for j in range(m):
-        xs = [random.gauss(mu, sigma) for i in range(n)]
-        xbar = numpy.mean(xs)
+        xs = np.random.normal(mu, sigma, n)
+        xbar = np.mean(xs)
         means.append(xbar)
 
     cdf = thinkstats2.MakeCdfFromList(means)
+    ci = cdf.Percentile(5), cdf.Percentile(95)
+    stderr = RMSE(means, mu)
 \end{verbatim}
 
 {\tt mu} and {\tt sigma} are the {\em hypothetical} values of
@@ -5910,17 +5703,17 @@ gorillas we measured.  {\tt m} is the number of times we run
 the simulation.
 
 \begin{figure}
-% estimate.py
-\centerline{\includegraphics[height=2.5in]{figs/estimate1.pdf}}
-\caption{Sampling distribution of $\xbar$.}
-\label{fig.sampling}
+% estimation.py
+\centerline{\includegraphics[height=2.5in]{figs/estimation1.pdf}}
+\caption{Sampling distribution of $\xbar$, with confidence interval.}
+\label{estimation1}
 \end{figure}
 
-For each simulation, we choose {\tt n} values from a Gaussian
+In each iteration, we choose {\tt n} values from a normal
 distribution with the given parameters, and compute the sample mean,
 {\tt xbar}.  We run 1000 simulations and then compute the
 distribution, {\tt cdf}, of the estimates.  The result is shown in
-Figure~\ref{fig.sampling}.  This distribution is called the {\bf
+Figure~\ref{estimation1}.  This distribution is called the {\bf
   sampling distribution} of the estimator.  It shows how much the
 estimates would vary if we ran the experiment over and over.
 
@@ -5928,38 +5721,53 @@ The mean of the sampling distribution is pretty close
 to the hypothetical value of $\mu$, which means that the experiment
 yields the right answer, on average.  After 1000 tries, the lowest
 result is 82 kg, and the highest is 98 kg.  This range suggests that
-the estimate might be off by 8 kg.  
+the estimate might be off by as much as 8 kg.
 
-But there are other ways to summarize the sampling distribution.
-For each simulated experiment, we can compute the error, $\xbar - \mu$,
-and then compute the root mean squared error (RMSE).
+There are two common ways to summarize the sampling distribution:
 
-The RMSE of the sampling distribution is called the {\bf standard
-  error} of the estimate.  In this example, it is roughly 2.5 kg,
-which means that we expect the estimate to be off by 2.5 kg on
-average.
+\begin{itemize}
 
-Another way to summarize the sampling error is by reporting
-percentiles of the sampling distribution.  In this example, the 5th
-percentile is 86 kg and the 95th percentile is 94 kg.  If we run the
-experiment many times, we expect the estimate to fall in this range
-about 90\% of the time.  This range is called a 90\%
-{\bf confidence interval}.
+\item {\bf Standard error} (SE) is a measure of how far we expect the
+  estimate to be off, on average.  For each simulated experiment, we
+  compute the error, $\xbar - \mu$, and then compute the root mean
+  squared error (RMSE).  In this example, it is roughly 2.5 kg.
 
-People get confused about confidence intervals; they often think
-that there is a 90\% probability that the actual parameter, $\mu$,
-falls in the 90\% confidence interval.  Sadly, that is not true.
-If you want to make a claim like that, you have to use Bayesian
-methods (see my book, {\it Think Bayes}).
+\item A {\bf confidence interval} (CI) is a range that includes a
+  given fraction of the sampling distribution.  For example, the 90\%
+  confidence interval is the range from the 5th to the 95th
+  percentile.  In this example, the 90\% CI is $(86, 94)$ kg.
+
+\end{itemize}
+
+Standard errors and confidence intervals are the source of much confusion:
+
+\begin{itemize}
+
+\item People often confuse standard error and standard deviation.
+  Remember that standard deviation describes variability in a measured
+  quantity; in this example, the standard deviation of gorilla weight
+  is 7.5 kg.  Standard error describes variability in an estimate.  In
+  this example, the standard error of the mean, based on a sample of 9
+  measurements, is 2.5 kg.
+
+One way to remember the difference is that, as sample size increases,
+standard error gets smaller; standard deviation does not.
+
+\item People often think that there is a 90\% probability that the
+  actual parameter, $\mu$, falls in the 90\% confidence interval.
+  Sadly, that is not true.  If you want to make a claim like that, you
+  have to use Bayesian methods (see my book, {\it Think Bayes}).
+
+\end{itemize}
 
 The sampling distribution answers a different question:
 it gives you a sense of how reliable an estimate
 is by telling you how much it would vary if you ran the experiment
 again.
 
-It is important to remember that the confidence interval
-(and the standard error) only quantify sampling error; that is,
-error caused because you sampled only part of the population.
+It is important to remember that confidence intervals
+and standard errors only quantify sampling error; that is,
+error due to measuring only part of the population.
 The sampling distribution does not account for other
 sources of error, notably sampling bias and measurement error, 
 which are the topics of the next section.
@@ -5969,7 +5777,7 @@ which are the topics of the next section.
 
 Suppose that instead of the weight of gorillas in a nature preserve,
 you want to know the average weight of women in the city where you
-live.  It is unlikely, to say that least, that you would be allowed
+live.  It is unlikely that you would be allowed
 to choose a representative sample of women and
 weigh them.
 
@@ -5978,15 +5786,14 @@ A simple alternative would be
 you could choose random numbers from the phone book, call and ask to
 speak to an adult woman, and ask how much she weighs.
 
-Telephone sampling has obvious limitations.  For example, the
-sample is limited to people whose telephone numbers are listed, so
-it eliminates people without phones (who might be poorer than average)
-and people with unlisted numbers (who might be richer).
-Also, if you
+Telephone sampling has obvious limitations.  For example, the sample
+is limited to people whose telephone numbers are listed, so it
+eliminates people without phones (who might be poorer than average)
+and people with unlisted numbers (who might be richer).  Also, if you
 call home telephones during the day, you are less likely to sample
-people with jobs.  And if you only sample the person who answers
-the phone, you are less likely to sample people who share a phone
-number with other women.
+people with jobs.  And if you only sample the person who answers the
+phone, you are less likely to sample people who share a phone number
+with other women.
 
 If factors like income, employment, and household size are related
 to weight (and it is plausible that they are), the results of your
@@ -5994,19 +5801,18 @@ survey will be affected one way or another.  This problem is
 called {\bf sampling bias} because it is a property of the sampling
 process.
 
-This sampling process is also vulnerable to 
-self-selection, which is a kind of sampling bias.  Some
-people will refuse to answer the question, and if the tendency
-to refuse is related to weight, that will affect the results.
+This sampling process is also vulnerable to self-selection, which is a
+kind of sampling bias.  Some people will refuse to answer the
+question, and if the tendency to refuse is related to weight, that
+will affect the results.
 
 Finally, if you ask people how much they weigh, rather than weighing
-them, the results might not be accurate.
-Even helpful respondents might round up or down if they are
-uncomfortable with their actual weight.  And not all respondents are
-helpful.  These inaccuracies are examples of {\bf measurement
-error}.
+them, the results might not be accurate.  Even helpful respondents
+might round up or down if they are uncomfortable with their actual
+weight.  And not all respondents are helpful.  These inaccuracies are
+examples of {\bf measurement error}.
 
-When you report an estimated quantity, it is important to report
+When you report an estimated quantity, it is useful to report
 standard error, or a confidence interval, or both, in order to
 quantify sampling error.  But it is also important to remember that
 sampling error is only one source of error, and often it is not the
@@ -6037,7 +5843,7 @@ so working backwards, we might choose
 %
 $\lamhat$ is an
 estimator of $\lambda$.  And not just any estimator; it is also the
-MLE estimator\footnote{See
+maximum likelihood estimator\footnote{See
 \url{http://wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}.}.
 So if you want to maximize your chance of guessing $\lambda$ exactly,
 $\lamhat$ is the way to go.
@@ -6049,8 +5855,8 @@ we expect $\lamhat$ to have the same problem.
 \index{robust}
 \index{outlier}
 
-We can find an alternative based on the sample median.
-The median of an exponential distribution is $ln(2) / \lambda$,
+We can choose an alternative based on the sample median.
+The median of an exponential distribution is $\ln(2) / \lambda$,
 so working backwards again, we can define an estimator
 %
 \[ \lamhatmed = \ln(2) / m \]
@@ -6068,8 +5874,8 @@ def Estimate3(n=7, m=1000):
     means = []
     medians = []
     for _ in range(m):
-        xs = [random.expovariate(lam) for i in range(n)]
-        L = 1 / numpy.mean(xs)
+        xs = np.random.exponential(1.0/lam, n)
+        L = 1 / np.mean(xs)
         Lm = math.log(2) / thinkstats2.Median(xs)
         means.append(L)
         medians.append(Lm)
@@ -6091,26 +5897,62 @@ as {\tt m} increases.
 
 It turns out that $\xbar$ is an unbiased estimator of the mean
 of the distribution, $1 / \lambda$, but $L$ is not an unbiased
-estimator of $\lambda$.  Later we will see how to derive results
-like this mathematically.
+estimator of $\lambda$.
+
+
+\section{Exercises}
+
+For the following exercises, you might want to start with
+{\tt estimation.py}.  
 
 \begin{exercise}
 
-Run an experiment to test whether $\xbar$ is an unbiased estimator of
-the mean of the distribution, $1 / \lambda$.
+In this chapter we used $\xbar$ and median to estimate $\mu$, and
+found that $\xbar$  yields lower MSE.
+Also, we used $S^2$ and $S_{n-1}^2$ to estimate $\sigma$, and found that
+$S^2$ is biased and $S_{n-1}^2$ unbiased.
+
+Run similar experiments to see if $\xbar$ and median are biased estimates
+of $\mu$.
+Also check whether $S^2$ or $S_{n-1}^2$ yields a lower MSE.
 
 \end{exercise}
+
 
 \begin{exercise}
 
 Suppose you draw a sample with size $n=10$ from a population 
-with an exponential disrtribution with $\lambda=2$.  Simulate
+with an exponential distribution with $\lambda=2$.  Simulate
 this experiment 1000 times and plot the sampling distribution of
 the estimate $\lamhat$.  Compute the standard error of the estimate
 and the 90\% confidence interval.
 
 Repeat the experiment with a few different values of $n$ and make
 a plot of standard error versus $n$.
+
+\end{exercise}
+
+
+\begin{exercise}
+
+In games like hockey and soccer, the time between goals is
+roughly exponential.  So you could estimate a team's goal-scoring rate
+by observing the number of goals they score in a game.  This
+estimation process is a little different from sampling the time
+between goals, so let's see how it works.
+
+Write a function that takes a goal-scoring rate, {\tt lam}, in goals
+per game, and simulates a game by generating the time between goals
+until the total time exceeds 1 game, then returns the number of goals
+scored.
+
+Write another function that simulates many games, stores the
+estimates of {\tt lam}, then computes their mean error and RMSE.
+
+Is this way of making an estimate biased?  Plot the sampling
+distribution of the estimates and the 90\% confidence interval.  What
+is the standard error?  What happens to sampling error for increasing
+values of {\tt lam}?
 
 \end{exercise}
 
@@ -6135,14 +5977,17 @@ a more meaningful representation of typical error magnitude.
 \index{mean squared error}
 \index{MSE}
 
-\item maximum likelihood estimator: An estimator that computes the
-point estimate with the highest likelihood.
+\item maximum likelihood estimator (MLE): An estimator that computes the
+point estimate most likely to be correct.
 \index{MLE}
 \index{maximum likelihood estimator}
 
 \item bias (of an estimator): The tendency of an estimator to be above or
   below the actual value of the parameter, when averaged over repeated
-  samples.  \index{biased estimator}
+  experiments.  \index{biased estimator}
+
+\item sampling error: Error in an estimate due to the limited
+  size of the sample and variation due to chance. \index{point estimation}
 
 \item sampling bias: Error in an estimate due to a sampling process
   that is not representative of the population. \index{sampling bias}
@@ -6150,19 +5995,16 @@ point estimate with the highest likelihood.
 \item measurement error: Error in an estimate due to errors collecting
   or recording data. \index{measurement error}
 
-\item sampling error: Error in an estimate due to the limited
-  size of the sample and variation due to chance. \index{point estimation}
-
 \item sampling distribution: The distribution of a statistic if an
-experiment is repeated many times.
-\index{sampling distribution}
+  experiment is repeated many times.  \index{sampling distribution}
 
-\item standard error: The standard deviation of the sampling distribution,
-which quantifies the variability in an estimate due to sampling error.
+\item standard error: The RMSE of an estimate,
+which quantifies variability due to sampling error (but not
+other sources of error).
 \index{standard error}
 
 \item confidence interval: An interval that represents the expected
-  spread of an estimator if an experiment is repeated many times.
+  range of an estimator if an experiment is repeated many times.
   \index{confidence interval} \index{interval!confidence}
 
 \end{itemize}
@@ -6170,71 +6012,75 @@ which quantifies the variability in an estimate due to sampling error.
 
 \chapter{Hypothesis testing}
 \label{testing}
+
+The code for this chapter is in {\tt hypothesis.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+\section{Classical hypothesis testing}
 \index{hypothesis testing}
 \index{apparent effect}
 
 Exploring the data from the NSFG, we saw several ``apparent effects,''
-including a number of differences between first babies and others.
+including differences between first babies and others.
 So far we have taken these effects at face value; in this chapter,
-finally, we put them to the test.
+we put them to the test.
 \index{National Survey of Family Growth}
 \index{NSFG}
 
-The fundamental question we want to address is whether these effects
-are real.  For example, if we see a difference in the mean pregnancy
-length for first babies and others, we want to know whether that
-difference is real, or whether it occurred by chance.
-\index{pregnancy length}
-\index{length!pregnancy}
+The fundamental question we want to address is whether the effects
+we see in a sample are likely to appear in the larger population.
+For example, in the NSFG sample we see a difference in mean pregnancy
+length for first babies and others.  We would like to know if
+that effect reflects a real difference for women
+in the U.S., or if it might appear in the sample by chance.
+\index{pregnancy length} \index{length!pregnancy}
 
-That question turns out to be hard to address directly, so we will
-proceed in two steps.  First we will test whether the effect is {\bf
-statistically significant}, then we will try to interpret the result
-  as an answer to the original question.
-\index{significant}
+There are several ways we could formulate this question, including
+Fisher null hypothesis testing, Neyman-Pearson decision theory, and
+Bayesian inference\footnote{For more about Bayesian inference, see the
+  sequel to this book, {\it Think Bayes}.}.  What I present here is a
+subset of all three that makes up most of what people use in practice,
+which I will call {\bf classical hypothesis testing}.
 
-In the context of statistics, ``significant'' has a technical
-definition that is different from its use in common language.
-An apparent effect is statistically
-significant if it is unlikely to have occurred by chance.
-\index{chance}
-
-To make this more precise, we have to answer three questions:
-
-\begin{enumerate}
-
-\item What do we mean by ``chance''?
-
-\item What do we mean by ``unlikely''?
-
-\item What do we mean by ``effect''?
-
-\end{enumerate}
-
-All three of these questions are harder than they look.  Nevertheless,
-there is a general structure that people use to test statistical
-significance:
+The goal of classical hypothesis testing is to answer the question,
+``Given a sample and an apparent effect, what is the probability of
+seeing such an effect by chance?''  Here's how we answer that question:
 
 \begin{itemize}
 
-\item Null hypothesis: The {\bf null hypothesis} is a model of the
-  system based on the assumption that the apparent effect is not real.
-\index{null hypothesis}
+\item The first step is to quantify the size of the apparent effect by
+  choosing a {\bf test statistic}.  In the NSFG example, the apparent
+  effect is a difference in pregnancy length between first babies and
+  others, so a natural choice for the test statistic is the difference
+  in means between the two groups.
+  \index{test statistic}
 
-\item p-value: The {\bf p-value} is the probability of seeing the apparent
-  effect under the null hypothesis.
-\index{p-value}
+\item The second step is to define a {\bf null hypothesis}, which is a
+  model of the system based on the assumption that the apparent effect
+  is not real.  In the NSFG example the null hypothesis is that there
+  is no difference between first babies and others; that is, that
+  pregnancy lengths for both groups have the same distribution.
+  \index{null hypothesis}
 
-\item Interpretation: Based on the p-value, we conclude that the
-  effect is either statistically significant, or not.
+\item The third step is to compute a {\bf p-value}, which is the
+  probability of seeing the apparent effect if the null hypothesis is
+  true.  In the NSFG example, we would compute the actual difference
+  in means, then compute the probability of seeing a
+  difference as big, or bigger, under the null hypothesis.
+  \index{p-value}
+
+\item The last step is to interpret the result.  If the p-value is
+  low, the effect is said to be {\bf statistically significant}, which
+  means that it is unlikely to have occurred by chance.  In that case
+  we infer that the effect is more likely to appear in the larger
+  population.  \index{statistically significant} \index{significant}
 
 \end{itemize}
 
-This process is called {\bf hypothesis testing}.  The underlying
-logic is similar to a proof by contradiction.  To prove a mathematical
-statement, A, you assume temporarily that A is false.  If that
-assumption leads to a contradiction, you conclude that A must actually
-be true.
+The logic of this process is similar to a proof by
+contradiction.  To prove a mathematical statement, A, you assume
+temporarily that A is false.  If that assumption leads to a
+contradiction, you conclude that A must actually be true.
 \index{contradiction, proof by}
 
 Similarly, to test a hypothesis like, ``This effect is real,'' we
@@ -6244,687 +6090,757 @@ effect.  That's the p-value.  If the p-value is low enough, we
 conclude that the null hypothesis is unlikely to be true.
 
 
-\section{Testing a difference in means}
+\section{HypothesisTest}
 \index{mean, difference in}
 
-One of the easiest hypotheses to test is an apparent difference in mean
+{\tt thinkstats2} provides {\tt HypothesisTest}, a
+class that represents the structure of a classical hypothesis
+test.  Here is the definition:
+
+\begin{verbatim}
+class HypothesisTest(object):
+
+    def __init__(self, data):
+        self.data = data
+        self.MakeModel()
+        self.actual = self.TestStatistic(data)
+
+    def PValue(self, iters=1000):
+        self.test_stats = [self.TestStatistic(self.RunModel()) 
+                           for _ in range(iters)]
+
+        count = sum(1 for x in self.test_stats if x >= self.actual)
+        return count / iters
+
+    def TestStatistic(self, data):
+        raise UnimplementedMethodException()
+
+    def MakeModel(self):
+        pass
+
+    def RunModel(self):
+        raise UnimplementedMethodException()
+\end{verbatim}
+
+{\tt HypothesisTest} is an abstract parent class that provides
+complete definitions for some methods, and place-keepers for others.
+Child classes based on {\tt HypothesisTest} inherit \verb"__init__"
+and {\tt PValue} and provide implementations for {\tt TestStatistic},
+{\tt RunModel}, and optionally {\tt MakeModel}.
+
+\verb"__init__" takes the data in whatever form is appropriate.  It
+calls {\tt RunModel}, which builds a representation of the null
+hypothesis, then passes the data to {\tt TestStatistic}, which
+computes the size of the effect in the sample.
+
+{\tt PValue} computes the probability of the apparent effect under
+the null hypothesis.  It takes as a parameter {\tt iters}, which is
+the number of simulations to run.  The first line generates simulated
+data, computes test statistics, and stored them in
+\verb"test_stats".
+The result is
+the fraction of elements in \verb"test_stats" that
+exceed or equal the observed test statistic, {\tt self.actual}.
+
+As a simple example\footnote{Adapted from MacKay, {\it Information
+    Theory, Inference, and Learning Algorithms}, 2003.}, suppose we
+toss a coin 250 times and see 140 heads and 110 tails.  Based on this
+result, we might suspect that the coin is biased; that is, more likely
+to land heads.  To test this hypothesis, we compute the
+probability of seeing such a big difference if the coin is actually
+fair:
+
+\begin{verbatim}
+class CoinTest(thinkstats2.HypothesisTest):
+
+    def TestStatistic(self, data):
+        heads, tails = data
+        test_stat = abs(heads - tails)
+        return test_stat
+
+    def RunModel(self):
+        heads, tails = self.data
+        n = heads + tails
+        sample = [random.choice('HT') for _ in range(n)]
+        hist = thinkstats2.Hist(sample)
+        data = hist['H'], hist['T']
+        return data
+\end{verbatim}
+
+The parameter, {\tt data}, is a pair
+integers: the number of heads and tails.  The test statistic is
+the absolute difference between them, so {\tt self.actual}
+is 30.
+
+{\tt RunModel} simulates coin tosses assuming that the coin is
+actually fair.  It generates a sample of 250 tosses, uses {\tt Hist}
+to count the number of heads and tails, and returns a pair of
+integers.
+
+Now all we have to do is instantiate {\tt CoinTest} and call
+{\tt PValue}:
+
+\begin{verbatim}
+    ct = CoinTest((140, 110))
+    pvalue = ct.PValue()
+\end{verbatim}
+
+The result is about 0.07, which means that if the coin is
+fair, we expect to see a difference as big as 30 about 7\% of the
+time.
+
+How should we interpret this result?  By convention,
+5\% is the threshold of statistical significance.  If the
+p-value is less than 5\%, the effect is considered significant; otherwise
+it is not.
+
+But the choice of 5\% is arbitrary, and (as we will see later) the
+p-value depends on the choice of the test statistics and
+the model of the null hypothesis.  So p-values should not be considered
+precise measurements.
+
+Instead I recommend interpreting p-values according to their order of
+magnitude: if the p-value is less than 1\%, the effect is unlikely to
+be due to chance; if it is greater than 10\%, the effect can plausibly
+be explained by chance.  P-values between 1\% and 10\% should be
+considered borderline.  So in this example I would conclude that the
+data do not provide strong evidence that the coin is biased or not.
+
+
+\section{Testing a difference in means}
+\label{testdiff}
+\index{mean, difference in}
+
+One of the most common effects to test is a difference in mean
 between two groups.  In the NSFG data, we saw that the mean pregnancy
-length for first babies is slightly longer, and the mean weight at
-birth is slightly smaller.  Now we will see if those effects are
-significant.
+length for first babies is slightly longer, and the mean birth weight
+is slightly smaller.  Now we will see if those effects are
+statistically significant.
 \index{National Survey of Family Growth}
 \index{NSFG}
 \index{pregnancy length}
 \index{length!pregnancy}
 
 For these examples, the null hypothesis is that the distributions
-for the two groups are the same, and that the apparent difference is
-due to chance.
+for the two groups are the same.  One way to model the null
+hypothesis is by {\bf permutation}; that is, we can take values
+for first babies and others and shuffle them, treating
+the two groups as one big group:
 \index{null hypothesis}
 
-To compute p-values, we find the pooled distribution for all live
-births (first babies and others), generate random samples that are
-the same size as the observed samples, and compute the difference
-in means.
-\index{p-value}
+\begin{verbatim}
+class DiffMeansPermute(thinkstats2.HypothesisTest):
 
-If we generate a large number of samples, we can count how often the
-difference in means (due to chance) is as big or bigger than the
-difference we actually observed.  This fraction is the p-value.
+    def TestStatistic(self, data):
+        group1, group2 = data
+        test_stat = abs(group1.mean() - group2.mean())
+        return test_stat
 
-For pregnancy length, we observed $n = 4413$ first babies and $m = 4735$
-others, and the difference in mean was $\delta = 0.078$ weeks.  To
-approximate the p-value of this effect, I pooled the distributions,
-generated samples with sizes $n$ and $m$ and computed the difference
-in mean.
-\index{resampling}
+    def MakeModel(self):
+        group1, group2 = self.data
+        self.n, self.m = len(group1), len(group2)
+        self.pool = np.hstack((group1, group2))
 
-This is another example of resampling, because we are drawing a
-random sample from a dataset that is, itself, a sample of the general
-population.  I computed differences for 1000 sample pairs;
-Figure~\ref{length_deltas_cdf} shows their distribution.
+    def RunModel(self):
+        np.random.shuffle(self.pool)
+        data = self.pool[:self.n], self.pool[self.n:]
+        return data
+\end{verbatim}
+
+The parameter, {\tt data}, is a pair of sequences, one for each
+group.  The test statistic is the absolute difference in the means.
+
+{\tt MakeModel} records the sizes of the groups, {\tt n} and
+{\tt m}, and combines the data from the groups into one NumPy
+array, {\tt self.pool}.
+
+{\tt RunModel} simulates the null hypothesis by shuffling the
+pooled values and splitting them into two groups with sizes {\tt n}
+and {\tt m}.  As always, the return value from {\tt RunModel} has
+the same format as the observed data.
+
+To test the difference in pregnancy length, we run:
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    data = firsts.prglngth.values, others.prglngth.values
+    ht = DiffMeansPermute(data)
+    pvalue = ht.PValue()
+\end{verbatim}
+
+{\tt MakeFrames} reads the NSFG data and returns DataFrames
+representing all live births, first babies, and others.
+We extract pregnancy lengths as NumPy arrays, pass them as
+data to {\tt DiffMeansPermute}, and compute the p-value.  The
+result is about 0.17, which means that we expect to see a difference
+as big as the observed effect about 17\% of the time.  So
+this effect is not statistically significant.
 
 \begin{figure}
 % hypothesis.py
-\centerline{\includegraphics[height=2.5in]{figs/length_deltas_cdf.pdf}}
-\caption{CDF of difference in mean for resampled data.}
-\label{length_deltas_cdf}
+\centerline{\includegraphics[height=2.5in]{figs/hypothesis1.pdf}}
+\caption{CDF of difference in mean pregnancy length under the null
+hypothesis.}
+\label{hypothesis1}
 \end{figure}
 
-The mean difference is near 0, as you would expect with samples
-from the same distribution.  The vertical lines show the cutoffs where
-$x = -\delta$ or $x = \delta$.
+{\tt HypothesisTest} provides {\tt PlotCdf}, which plots the
+distribution of the test statistic and a gray line indicating
+the observed effect size:
 
-Of 1000 sample pairs, there were 166 where the difference in means
-(positive or negative) was as big or bigger than $\delta$, so the
-p-value is approximately 0.166.  In other words, we expect to see an
-effect as big as $\delta$ about 17\% of the time, even if the actual
-distribution for the two groups is the same.
+\begin{verbatim}
+    ht.PlotCdf()
+    thinkplot.Show(xlabel='test statistic',
+                   ylabel='CDF')
+\end{verbatim}
 
-So the apparent effect is not very likely, but is it unlikely enough?
-I'll address that in the next section.
+Figure~\ref{hypothesis1} shows the result.  The CDF intersects the
+observed difference at 0.83, which is the complement of the p-value,
+0.17.
 
-\begin{exercise}
-In the NSFG dataset, the difference in mean weight for first
-births is 2.0 ounces.  Compute the p-value of this difference.
-\index{National Survey of Family Growth}
-\index{NSFG}
-
-Hint: for this kind of resampling it is important to sample
-with replacement, so you should use {\tt random.choice} rather
-than {\tt random.sample} (see Section~\ref{random}).
-\index{resampling}
-\index{random module}
-
-You can start with the code I used to generate the results in this
-section, which you can download from \url{http://thinkstats2.com/hypothesis.py}.
-\index{{\tt hypothesis.py}}
-
-\end{exercise}
+If we run the same analysis with birth weight, the computed p-value
+is 0; after 1000 attempts,
+the simulation never yielded an effect
+as big as the observed difference, 0.12 lbs.  So we would
+report $p < 0.001$, and
+conclude that the difference in birth weight is statistically
+significant.
 
 
-\section{Choosing a threshold}
-\label{threshold}
-\index{threshold}
+\section{Other test statistics}
 
-In hypothesis testing we have to worry about two kinds of errors.
-\index{false positive}
-\index{false negative}
-\index{error, Type I}
-\index{error, Type II}
+Choosing the best test statistic depends on what question you are
+trying to address.  For example, if the relevant question is whether
+pregnancy lengths are different for first
+babies, then it makes sense to test the absolute difference in means,
+as we did in the previous section.
 
-\begin{itemize}
+If we had some reason to think that first babies are likely
+to be late, then we would not take the absolute value of the difference;
+instead we would use this test statistic:
 
-\item A Type I error, also called a {\bf false positive}, is when we
-  accept a hypothesis that is actually false; that is, we consider an
-  effect significant when it was actually due to chance.
+\begin{verbatim}
+class DiffMeansOneSided(DiffMeansPermute):
 
-\item A Type II error, also called a {\bf false negative}, is when we
-  reject a hypothesis that is actually true; that is, we attribute an
-  effect to chance when it was actually real.
+    def TestStatistic(self, data):
+        group1, group2 = data
+        test_stat = group1.mean() - group2.mean()
+        return test_stat
+\end{verbatim}
 
-\end{itemize}
+{\tt DiffMeansOneSided} inherits {\tt MakeModel} and {\tt RunModel}
+from {\tt DiffMeansPermute}; the only difference is that
+{\tt TestStatistic} does not take the absolute value of the
+difference.  This kind of test is called {\bf one-sided} because
+it only counts one side of the distribution of differences.  The
+previous test, using both sides, is {\bf two-sided}.
 
-The most common approach to hypothesis testing is to choose a
-threshold\footnote{Also known as a ``Significance criterion.''},
-$\alpha$, for the p-value and to accept as significant any effect with
-a p-value less than $\alpha$.  A common choice for $\alpha$ is 5\%.
-By this criterion, the apparent difference in pregnancy length for
-first babies is not significant, but the difference in weight is.
-\index{significance criterion}
-\index{pregnancy length}
-\index{length!pregnancy}
+For this version of the test, the p-value is 0.09.  In general
+the p-value for a one-sided test is about half the p-value for
+a two-sided test, depending on the shape of the distribution.
 
-For this kind of hypothesis testing, we can compute the probability of
-a false positive explicitly: it turns out to be $\alpha$.
+The one-sided hypothesis, that first babies are born late, is more
+specific than the two-sided hypothesis, so the p-value is smaller.
+But even for the stronger hypothesis, the difference is
+not statistically significant.
 
-To see why, think about the definition of false positive---the chance
-of accepting a hypothesis that is false---and the definition of a
-p-value---the chance of generating the measured effect if the
-hypothesis is false.
+We can use the same framework to test for a difference in standard
+deviation.  In Section~\ref{visualization}, we saw some evidence that
+first babies are more likely to be early or late, and less likely to
+be on time.  So we might hypothesize that the standard deviation is
+higher.  Here's how we can test that:
 
-Putting these together, we can ask: if the hypothesis is false,
-what is the chance of generating a measured effect that will be
-considered significant with threshold $\alpha$?  The answer is
-$\alpha$.
+\begin{verbatim}
+class DiffStdPermute(DiffMeansPermute):
 
-We can decrease the chance of a false positive by decreasing the
-threshold.  For example, if the threshold is 1\%, there is only a 1\%
-chance of a false positive.
+    def TestStatistic(self, data):
+        group1, group2 = data
+        test_stat = group1.std() - group2.std()
+        return test_stat
+\end{verbatim}
 
-But there is a price to pay: decreasing the threshold raises the
-standard of evidence, which increases the chance of rejecting
-a valid hypothesis.
-
-In general there is a tradeoff between Type I and Type II errors.
-The only way to decrease both at the same time is to increase the
-sample size (or, if possible, decrease measurement error).
-\index{sample size}
-
-\begin{exercise}
-To investigate the effect of sample size on p-value, see what happens
-if you discard half of the data from the NSFG.  Hint: use {\tt
-  random.sample}.  What if you discard three-quarters of the data, and
-so on?
-\index{National Survey of Family Growth}
-\index{NSFG}
-
-What is the smallest sample size where the difference in mean birth
-weight is still significant with $\alpha$ = 5\%?  How much
-larger does the sample size have to be with $\alpha$ = 1\%?
-
-You can start with the code I used to generate the results in this
-section, which you can download from
-\url{http://thinkstats2.com/hypothesis.py}.  \index{{\tt
-    hypothesis.py}}
-
-\end{exercise}
-
-
-\section{Defining the effect}
-
-When something unusual happens, people often say something like,
-``Wow!  What were the chances of {\em that}?''  This question makes
-sense because we have an intuitive sense that some things are more
-likely than others.  But this intuition doesn't always hold up to
-scrutiny.
-\index{chance}
-\index{coin}
-
-For example, suppose I toss a coin 10 times, and after each toss I
-write down H for heads and T for tails.  If the result was a sequence
-like THHTHTTTHH, you wouldn't be too surprised.  But if the result was
-HHHHHHHHHH, you would say something like, ``Wow!  What were the
-chances of {\em that}?''
-
-But in this example, the probability of the two sequences is the
-same: one in 1024.  And the same is true for any other sequence.
-So when we ask, ``What were the chances of {\em that},'' we have
-to be careful about what we mean by ``that.''
-
-For the NSFG data, I defined the effect as ``a difference in mean
-(positive or negative) as big or bigger than $\delta$.''  By making
-this choice, I decided to evaluate the magnitude of the difference,
-ignoring the sign.
-\index{National Survey of Family Growth}
-\index{NSFG}
-
-A test like that is called {\bf two-sided}, because we consider both
-sides (positive and negative) of the distribution shown in
-Figure~\ref{length_deltas_cdf}.  By using a two-sided test we are
-testing the hypothesis that there is a significant difference between
-the distributions, without specifying the sign of the difference.
-\index{one-sided test}
-\index{two-sided test}
-\index{test!one-sided}
-\index{test!two-sided}
-
-The alternative is to use a {\bf one-sided} test, which asks whether
-the mean for first babies is significantly {\em higher} than
-the mean for others.  Because the hypothesis is more specific, the
-p-value is lower---in this case it is roughly half.
-
-
-\section{Interpreting the result}
-
-At the beginning of this chapter I said that the question we want to
-address is whether an apparent effect is real.  We started by defining
-the null hypothesis, denoted $H_{0}$, which is the hypothesis that
-the effect is not real.  Then we defined the p-value, which is
-$\Prob(E|H_{0})$, where $E$ is an effect as big as or bigger
-than the apparent effect.  Then we computed p-values and compared them
-to a threshold, $\alpha$.
-
-That's a useful step, but it doesn't answer the original question,
-which is whether the effect is real.  There are several ways to
-interpret the result of a hypothesis test:
-
-\begin{itemize}
-
-\item Classical: In classical hypothesis testing, if a p-value
-  is less than $\alpha$, you can say that the effect is statistically
-  significant, but you can't conclude that it's real.  This
-  formulation is careful to avoid leaping to conclusions, but it is
-  unsatisfying because it provides no guidance for practical
-  decision making.
-
-\item Practical: In practice, people are not so formal.  In most
-  science journals, researchers report p-values without apology, and
-  readers interpret them as evidence that the apparent effect is real.
-  The lower the p-value, the higher their confidence in this
-  conclusion.
-
-\end{itemize}
+This is a one-sided test because the hypothesis is that the standard
+deviation for first babies is higher, not just different.  The p-value
+is 0.09, which is not statistically significant.
 
 
 \section{Testing a correlation}
+\label{corrtest}
 
-The NSFG data we saw in Section~\ref{nsfg} includes records for
-xx pregnancies.  For each pregnancy, we have the mother's age
-and the baby's weight at birth, and we might wonder whether they
-are correlated.  Do older mothers have heavier babies?  The
-code I used to answer this question is available from
-\url{}.
+This framework can also test correlations.  For example, in the NSFG
+data set, the correlation between birth weight and mother's age is
+about 0.07.  It seems like older mothers have heavier babies.  But
+could this effect be due to chance?
 
-\begin{figure}
-% correlate1.py
-\centerline{\includegraphics[height=2.5in]{figs/correlate1.pdf}}
-\caption{Scatterplot of birth weight and mother's age for 13593 live
-births.}
-\label{correlate1}
-\end{figure}
+For the test statistic, I'll use
+Pearson's correlation, but Spearman's would work as well.
+If we had reason to expect positive correlation, we would do a
+one-sided test.  But since we have no such reason, I'll
+do a two-sided test using the absolute value of correlation.
 
-Here's the code that reads the data and extracts the relevant
-variables:
-
-\begin{verbatim}
-def ReadData(data_dir='.'):
-    preg = survey.Pregnancies()
-    preg.ReadRecords(data_dir)
-    print('Number of pregnancies', len(preg.records))
-
-    res = []
-    for p in preg.records:
-        if p.outcome == 1 and p.totalwgt_oz != 'NA':
-            res.append((p.agepreg, p.totalwgt_oz))
-    
-    return zip(*res)
-\end{verbatim}
-
-And here's the code that makes a scatterplot of the data:
+The null hypothesis is that there is no correlation between mother's
+age and birth weight.  By shuffling the observed values, we can
+simulate a world where the distributions of age and
+birth weight are the same, but where the variables are unrelated:
 
 \begin{verbatim}
-    xs, ys = ReadData(data_dir)
+class CorrelationPermute(thinkstats2.HypothesisTest):
 
-    thinkplot.Scatter(xs, ys, alpha=0.05)
-    thinkplot.Show(xlabel='Age (years)',
-                   ylabel='Birth weight (oz)')
+    def TestStatistic(self, data):
+        xs, ys = data
+        test_stat = abs(thinkstats2.Corr(xs, ys))
+        return test_stat
+
+    def RunModel(self):
+        xs, ys = self.data
+        xs = np.random.permutation(xs)
+        return xs, ys
 \end{verbatim}
 
-I chose {\tt alpha=0.05} to compromise between showing the densest
-parts of the scatterplot without saturation and making the outliers
-visible.  Figure~\ref{correlate1} shows the result.  Visually, it looks like
-there might be a weak positive correlation, but it is hard to tell for sure.
+{\tt data} is a pair of sequences.  {\tt TestStatistic} computes the
+absolute value of Pearson's correlation.  {\tt RunModel} shuffles the
+{\tt xs} and returns simulated data.
 
-For this dataset, Pearson's and Spearman's correlation coefficients
-are 0.07 and 0.09.  Those numbers indicate weak correlations, so we
-should wonder whether they might be due to chance.  As always, the question
-we'll answer is, ``If there is no relationship between these variables,
-what would be the chance of seeing a correlation as high as 0.07?''
-
-There are several ways we could model the null hypothesis, but one of the
-simplest is to shuffle the values of $x$ and $y$, like this:
+Here's the code that reads the data and runs the test:
 
 \begin{verbatim}
-def SimulateNull(xs, ys):
-    random.shuffle(xs)
-    random.shuffle(ys)
-    return thinkstats2.Corr(xs, ys)
+    live, firsts, others = first.MakeFrames()
+    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    data = live.agepreg.values, live.totalwgt_lb.values
+    ht = CorrelationPermute(data)
+    pvalue = ht.PValue()
 \end{verbatim}
 
-This shuffle preserves the distribution of $x$ and $y$, but simulates
-a hypothetical world where there is no relationship between them.
-If we simulate this world 1000 times, we can see how often the null
-hypothesis yields a correlation that exceeds what we actually saw:
+I use {\tt dropna} with the {\tt subset} argument to drop rows
+that are missing either of the variables we need.
 
-\begin{verbatim}
-def PValue(xs, ys, n=1000):
-    actual = thinkstats2.Corr(xs, ys)
+The actual correlation is 0.07.  The computed p-value is 0; after 1000
+iterations the largest simulated correlation is 0.04.  So although the
+observed correlation is small, it is statistically significant.
 
-    xs_copy = list(xs)
-    ys_copy = list(ys)
-
-    corrs = []
-    for i in range(n):
-        corr = SimulateNull(xs_copy, ys_copy)
-        corrs.append(corr)
-
-    hits = [corr for corr in corrs if abs(corr) >= abs(actual)]
-    p = len(hits) / float(n)
-    return p
-\end{verbatim}
-
-{\tt actual} is the correlation between $x$ and $y$ before shuffling.
-{\tt corrs} is the list of simulated correlations.  {\tt hits} is
-the number of simulated correlations that exceed {\tt actual}.
-And {\tt p} is the resulting p-value.
-
-In this case, I compare the absolute value of {\tt corr} and {\tt
-  actual}, so this is a two-sided test.  That's an appropriate choice
-in this case because the hypothesis I am testing is whether there is
-any relationship between these variables, positive or negative.  If I
-suspected (before looking at the data) that there was a positive
-relationship, I would use a one-sided test for that hypothesis.
-
-The result in this case is 0, which means that after 1000 attempts,
-the null hypothesis never yielded a correlation as high as 0.06.
-The p-value is not actually 0.  If we keep trying, we will get a hit
-eventually.  But the p-value is probably less than
-1 in 1000, so I would report $p < 0.001$.
-
-If we repeat the test with Spearman's correlation, the results are
-similar.
-
-This way of computing p-values is called a {\bf permutation test} because
-when we shuffle {\tt xs} and {\tt ys} we get a permutation of the
-original data.  Actually, shuffling either list is sufficient; shuffling
-both doesn't make it any more random.
-
-
-\section{Testing a linear regression}
-
-With the same data from the previous section, we can use linear
-least squares to estimate the slope and intercept of the relationship
-between birth weight and mother's age.  Here's the code:
-
-\begin{verbatim}
-    xs, ys = ReadData(data_dir)
-    inter, slope = thinkstats2.LeastSquares(xs, ys)
-\end{verbatim}
-
-The estimated value of {\tt inter} is 109 oz; the value of
-{\tt slope} is 0.28 oz/year.  It is important to present estimates
-like this in terms people can comprehend, so I would report
-slope as 2.8 ounces per decade, or say, ``If the mother is
-10 years older, we expect the baby to be 2.8 oz heavier.''
-
-Interpreted literally, the intercept is the expected weight of
-a baby if the mother is 0 years old.  Obviously, that doesn't
-mean anything, so I would suggest reporting the value of the
-fitted line for the mean or median age.  Here's the code that
-computes the fitted line and prints the median birth weight
-and age:
-
-\begin{verbatim}
-    fxs, fys = thinkstats2.FitLine(xs, inter, slope)
-    i = len(fxs) / 2
-    print('median weight, age', fxs[i], fys[i])
-\end{verbatim}
-
-If the mother is 24, we expect the baby to weigh 116 oz (or 7.25 pounds).
-
-Now that we have presented the results in human-comprehensible terms,
-let's get back to hypothesis testing.  As always, we would like to
-know whether the apparent relationship between these variables might
-be due to chance.
-
-One option is to use $R^2$ as a test statistic.  
-
-\begin{verbatim}
-    res = thinkstats2.Residuals(xs, ys, inter, slope)
-    R2 = thinkstats2.CoefDetermination(ys, res)
-\end{verbatim}
-
-The result is $R^2 = 0.0047$.  So, the p-value we
-want is the probability of seeing $R^2$ as big as that by chance.
-
-As it happens, we have already computed this p-value.  Recall that
-$R^2 = \rho^2$, so if $R^2$ exceeds 0.0047, the magnitude of $\rho$
-must exceed $0.07$, which is the correlation we saw in the previous
-section.  So a one-sided test of $R^2$ corresponds to a two-sided
-test of $\rho$.  Based on the results of the previous section, we
-conclude that the observed $R^2$ is statistically significant with
-$p < 0.001$.
-
-In addition, with linear regression we have the option of testing
-each estimated parameter.  For example, we might like answer either
-or both of these questions:
-
-\begin{itemize}
-
-\item If the actual intercept were 0, what would be the chance of
-seeing an intercept as big as 109 oz?
-
-\item If the actual slope were 0, what would be the chance of seeing
-a slope as big as 0.28 oz/year?
-
-\end{itemize}
-
-The second question is often relevant in practice.  The first question
-is not always relevant, unless we there is a theoretical reason to
-expect the intercept to be 0.
-
-To answer these questions, we model a null hypothesis
-and compute the probability that the estimated parameter exceeds
-the observed parameter under the null hypothesis.  For example,
-if we are testing whether the slope is significant, the null hypothesis
-is that the slope is actually 0.
-
-If the slope is 0, the line that minimizes squared error is
-$y = \ybar$; in this example, $\ybar$ is the mean birth weight.
-Here's the code that computes the resulting residuals:
-
-\begin{verbatim}
-    xs, ys = ReadData(data_dir)
-    inter = thinkstats2.Mean(ys)
-    slope = 0
-    fxs, fys = thinkstats2.FitLine(xs, inter, slope)
-    res = thinkstats2.Residuals(xs, ys, inter, slope)
-\end{verbatim}
-
-Using the fitted line and the residuals, we can generate a simulation
-of the null hypothesis by permutation:
-
-\begin{verbatim}
-def Permute(fxs, fys, res):
-    random.shuffle(res)
-    inter, slope = thinkstats2.LeastSquares(fxs, fys + res)
-    return inter, slope
-\end{verbatim}
-
-{\tt Permute} takes the fitted values, {\tt fxs} and {\tt fys} and the
-residuals, {\tt res}.  It shuffles the residuals, adds the shuffled
-residuals to the fitted {\tt fys} and then computes a least squares
-fit to the resulting simulated data.
-
-\begin{figure}
-% regress1.py
-\centerline{\includegraphics[height=2.5in]{figs/regress1.pdf}}
-\caption{Sampling distribution of the estimated slope.}
-\label{regress1}
-\end{figure}
-
-Each time we call {\tt Permute}, we get the result of another simulated
-experiment.  If we call it 1000 times, we can estimate the sampling
-distribution of {\tt slope} and {\tt intercept} under the null
-hypothesis:
-
-\begin{verbatim}
-def SamplingDistributions(fxs, fys, res, n=10):
-    res_copy = list(res)
-
-    t = []
-    for i in range(n):
-        estimates = Permute(fxs, fys, res)
-        t.append(estimates)
-
-    inters, slopes = zip(*t)
-    inter_cdf = thinkstats2.MakeCdfFromList(inters)
-    slope_cdf = thinkstats2.MakeCdfFromList(slopes)
-
-    return inter_cdf, slope_cdf
-\end{verbatim}
-
-{\tt SamplingDistributions} takes the fitted values, {\tt fxs} and {\tt fys},
-the residuals, {\tt res}, and the number of iterations, {\tt n}.
-It runs {\tt Permute} {\tt n} times and returns the accumulated
-sampling distributions of {\tt inter} and {\tt slope}.
-
-Figure~\ref{regress1} shows the sampling CDF of {\tt slope}.  The
-upper bound, after 1000 tries, is about 0.12 oz/year.  So the
-probability of seeing an estimated slope that exceeds the observed
-value, 0.28 oz/year, is less than 1 in 1000.  We conclude that the
-slope is statistically significant with $p < 0.001$.
-
-To test the intercept, we find the line with {\tt inter=0} that
-minimizes MSE, and use permutation to estimate the sampling
-distribution of {\tt inter}.  In this example, the intercept is also
-statistically significant with $p < 0.001$.
+This example is a reminder that ``statistically significant'' does not
+always mean that an effect is important, or significant in practice.
+It only means that it is unlikely to have occurred by chance.
 
 
 \section{Testing proportions}
 \index{Chi-square test}
 
-In Section~\ref{threshold} we concluded that the apparent difference
-in mean pregnancy length for first babies and others was not
-significant.  But in Section~\ref{visualization}, when we computed
-relative risk, we saw that first babies are more likely to be early,
-less likely to be on time, and more likely to be late.
-\index{relative risk}
-\index{pregnancy length}
-\index{length!pregnancy}
-
-So maybe the distributions have the same mean and different variance.
-We could test the significance of the difference in variance, but
-variances are less robust than means, and hypothesis tests for
-variance often behave badly.
-\index{mean}
-\index{variance}
-\index{hypothesis}
-
-An alternative is to test a hypothesis that more directly reflects the
-effect as it appears; that is, the hypothesis that first babies are
-more likely to be early, less likely to be on time, and more likely to
-be late.
-
-We proceed in five easy steps:
-
-\begin{enumerate}
-
-\item We define a set of categories, called {\bf cells}, that each
-  baby might fall into.  In this example, there are six cells because
-  there are two groups (first babies and others) and three bins
-  (early, on time or late).
-\index{cell}
-
-I'll use the definitions from Section~\ref{visualization}: a baby is
-early if it is born during Week 37 or earlier, on time if it is born
-during Week 38, 39 or 40, and late if it is born during Week 41 or
-later.
-
-\item We compute the number of babies we expect in each cell.  Under
-  the null hypothesis, we assume that the distributions are the same
-  for the two groups, so we can compute the pooled probabilities:
-  $\Prob(early)$, $\Prob(ontime)$ and $\Prob(late)$.
-
-For first babies, we have $n = 4413$ samples, so under the null
-hypothesis we expect $n \cdot \Prob(early)$ first babies to be early,
-$n \cdot \Prob(ontime)$ to be on time, etc.  Likewise, we have $m = 4735$
-other babies, so we expect $m \cdot \Prob(early)$ other babies to be
-early, etc.
-
-\item For each cell we compute the deviation; that is, the difference
-  between the observed value, $O_i$, and the expected value, $E_i$.
-\index{test statistic}
-\index{chi-square statistic}
-
-\item We compute some measure of the total deviation; this quantity
-is called the {\bf test statistic}.  The most common
-choice is the chi-square statistic:
-%
-\[ \goodchi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
-%
-%% Consider using upper case chi, which is more strictly correct,
-%% but harder to distinguish from X.
-
-\item We can use a Monte Carlo simulation to compute the p-value,
-  which is the probability of seeing a chi-square statistic as high
-  as the observed value under the null hypothesis.
-\index{simulation!Monte Carlo}
-\index{Monte Carlo}
-
-\end{enumerate}
-
-When the chi-square statistic is used, this process is called a 
-{\bf chi-square test}.  One feature of the chi-square test is that
-the distribution of the test statistic can be computed analytically.
-\index{chi-square test}
-\index{analysis}
-
-Using the data from the NSFG I computed $\goodchi^{2} = 91.64$, which would
-occur by chance about one time in 10,000.  I conclude that this result
-is statistically significant, with one caution: we used the
-same dataset for exploration and testing.  It would be a good idea
-to confirm this result with another dataset.
-\index{National Survey of Family Growth}
-\index{NSFG}
-
-You can download the code I used in this section from
-\url{http://thinkstats2.com/chi.py}.
-\index{{\tt chi.py}}
-
-% See \url{http://en.wiktionary.org/wiki/voila}!
-
-
-\begin{exercise}
-Suppose you run a casino and you suspect that a customer has
-replaced a die provided by the casino with a ``crooked die;'' that
-is, one that has been tampered with to make one of the faces more
-likely to come up than the others.  You apprehend the alleged
+Suppose you run a casino and you suspect that a customer is
+using a ``crooked die;'' that
+is, one that has been modified to make one of the faces more
+likely than the others.  You apprehend the alleged
 cheater and confiscate the die, but now you have to prove that it
-is crooked.
+is crooked.  You roll the die 60 times and get the following results:
 \index{casino}
 \index{dice}
 \index{crooked die}
-
-You roll the die 60 times and get the following results:
 
 \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|c|}
 \hline
 Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
 \hline
-\hline
-Frequency &  8  &  9  &  19  &  6  &  8  &  10  \\
+Frequency &  8  &  9  &  19  &  5  &  8  &  11  \\
 \hline
 \end{tabular}
 \end{center}
 
-What is the chi-squared statistic for these values?  What is the
-probability of seeing a chi-squared value as large by chance?
+On average you expect each value to appear 10 times.  In this
+dataset, the value 3 appears more often than expected, and the value 4
+appears less often.  But are these differences statistically
+significant?
 
-\end{exercise}
+To test this hypothesis, we can compute the expected frequency for
+each value, the difference between the expected and observed
+frequencies, and the total absolute difference.  In this
+example, we expect each side to come up 10 times out of 60; the
+deviations from this expectation are -2, -1, 9, -5, -2, and 1; so the
+total absolute difference is 20.  How often would we see a
+difference as big as that by chance?
+
+Here's a version of {\tt HypothesisTest} that answers that question:
+
+\begin{verbatim}
+class DiceTest(thinkstats2.HypothesisTest):
+
+    def TestStatistic(self, data):
+        observed = data
+        n = sum(observed)
+        expected = np.ones(6) * n / 6
+        test_stat = sum(abs(observed - expected))
+        return test_stat
+
+    def RunModel(self):
+        n = sum(self.data)
+        values = [1, 2, 3, 4, 5, 6]
+        rolls = np.random.choice(values, n, replace=True)
+        hist = thinkstats2.Hist(rolls)
+        freqs = hist.Freqs(values)
+        return freqs
+\end{verbatim}
+
+The data are represented as a list of frequencies: the observed
+values are {\tt [8, 9, 19, 5, 8, 11]}; the expected frequencies
+are all 10.  The test statistic is the sum of the absolute differences.
+
+The null hypothesis is that the die is fair, so we simulate that by
+drawing random samples from {\tt values}.  {\tt RunModel} uses {\tt
+  Hist} to compute and return the list of frequencies.
+
+The p-value for this data is 0.13, which means that if the die is
+fair we expect to see the observed total deviation, or more, about
+13\% of the time.  So the apparent effect is not statistically
+significant.
+
+
+\section{Chi-squared tests}
+
+In the previous section we used total deviation as the test statistic.
+But for testing proportions it is more common to use the chi-squared
+statistic:
+%
+\[ \goodchi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
+%
+%% TODO: Consider using upper case chi, which is more strictly correct,
+%% but harder to distinguish from X.
+% 
+Where $O_i$ are the observed frequencies and $E_i$ are the expected
+frequencies.  Here's the Python code:
+
+\begin{verbatim}
+class DiceChiTest(DiceTest):
+
+    def TestStatistic(self, data):
+        observed = data
+        n = sum(observed)
+        expected = np.ones(6) * n / 6
+        test_stat = sum((observed - expected)**2 / expected)
+        return test_stat
+\end{verbatim}
+
+Squaring the deviations (rather than taking absolute values) gives
+more weight to large deviations.  Dividing through by {\tt expected}
+standardizes the deviations, although in this case it has no effect
+because the expected frequencies are all equal.
+
+The p-value using the chi-squared statistic is 0.04,
+substantially smaller than what we got using total deviation, 0.12.
+If we take the 5\% threshold seriously, we would consider this effect
+statistically significant.  But considering the two tests togther, I
+would say that the results are borderline.  I would not rule out the
+possibility that the die is crooked, but I would not convict the
+accused cheater.
+
+\section{First babies again}
+
+Earlier in this chapter we looked at pregnancy lengths for first
+babies and others, and concluded that the apparent differences in
+mean and standard deviation are not statistically signficant.  But in
+Section~\ref{visualization}, we saw several apparent differences
+in the distribution of pregnancy length, especially in the range from
+35 to 43 weeks.  To see whether those differences are statistically
+significant, we can use a test based on a chi-squared statistic.
+
+The code combines elements from previous examples, so it is
+a bit more complex.  Here's the code that makes and runs the model:
+
+\begin{verbatim}
+class PregLengthTest(thinkstats2.HypothesisTest):
+
+    def MakeModel(self):
+        firsts, others = self.data
+        self.n = len(firsts)
+        self.pool = np.hstack((firsts, others))
+
+        pmf = thinkstats2.Pmf(self.pool)
+        self.values = range(35, 44)
+        self.expected_probs = np.array(pmf.Probs(self.values))
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        np.random.shuffle(self.pool)
+        data = self.pool[:self.n], self.pool[self.n:]
+        return data
+\end{verbatim}
+
+The data are represented as two lists of pregnancy lengths.  The null
+hypothesis is that both samples are drawn from the same distribution.
+{\tt MakeModel} models that distribution by pooling the two
+samples using {\tt hstack}.  Then {\tt RunModel} generates
+simulated data by shuffling the pooled sample and splitting it
+into two parts.
+
+{\tt MakeModel} also defines {\tt values}, which is the
+range of weeks we'll use, and \verb"expected_probs",
+which is the probability of each value in the pooled distribution.
+
+Here's the code that computes the test statistic:
+
+\begin{verbatim}
+#class PregLengthTest:
+
+    def TestStatistic(self, data):
+        firsts, others = data
+        stat = self.ChiSquared(firsts) + self.ChiSquared(others)
+        return stat
+
+    def ChiSquared(self, lengths):
+        hist = thinkstats2.Hist(lengths)
+        observed = np.array(hist.Freqs(self.values))
+        expected = self.expected_probs * len(lengths)
+        stat = sum((observed - expected)**2 / expected)
+        return stat
+\end{verbatim}
+
+{\tt TestStatistic} computes the chi-squared statistic for
+first babies and others, and adds them.
+
+{\tt ChiSquared} takes a sequence of pregnancy lengths, computes
+its histogram, and computes {\tt observed}, which is a list of
+frequencies corresponding to {\tt self.values}.
+To compute the list of expected frequencies, it multiplies the
+pre-computed probabilities, \verb"expected_probs", by the sample
+size.  It returns the chi-squared statistic, {\tt stat}.
+
+For the NSFG data the total chi-squared statistic is 102, which
+doesn't mean much by itself.  But after 1000 iteration, the largest
+test statistic generated under the null hypothesis is 32.  We conclude
+that the observed chi-squared statistic is unlikely under the null
+hypothesis, so the apparent effect is statistically significant.
+
+This example demonstrates a limitation of chi-squared tests: they
+indicate that there is a difference between the two groups,
+but they don't say anything specific about what the difference is.
+
+
+\section{Errors}
+\index{errors}
+
+In classical hypothesis testing, an effect is considered statistically
+significant if the p-value is below some threshold, commonly 5\%.
+This procedure raises two question:
+
+\begin{itemize}
+
+\item If the effect is actually due to chance, what is the probability
+that we will wrongly consider it significant?  This
+probability is the {\bf false positive rate}.
+
+\item If the effect is real, what is the chance that the hypothesis
+test will fail?  This probability is the {\bf false negative rate}.
+
+\end{itemize}
+
+The false positive rate is relatively easy to compute: if the
+threshold is 5\%, the false positive rate is 5\%.  Here's why:
+
+\begin{itemize}
+
+\item If there is no real effect, the null hypothesis is true, so we
+  can compute the distribution of the test statistic by simulating the
+  null hypothesis.  Call the distribution $T$ and its CDF $\CDF_T$.
+
+\item Each time we run an experiment, we get a test statistic, $t$,
+  which is drawn from $T$.  Then we compute a p-value, which is
+  the probability that a random value from $T$ exceeds {\tt t},
+  so that's $1 - CDF_T(t)$.
+
+\item The p-value is less than 5\% if $CDF_T(t)$ is greater
+  than 95\%; that is, if $t$ exceeds the 95th percentile.
+  And how often does a value chosen from $T$ exceed
+  the 95th percentile?  5\% of the time.
+
+\end{itemize}
+
+So if you perform one hypothesis test with a 5\% threshold, you expect
+a false positive 1 time in 20.
 
 
 \section{Power}
-\index{power}
+\label{power}
 
-When the result of a hypothesis test is negative (that is, the effect is
-not statistically significant), can we conclude that the effect is not
-real?  That depends on the power of the test.
+The false negative rate is harder to compute because it depends on
+the actual effect size, and normally we don't know that.
+One option is to compute a rate
+conditioned on a hypothetical effect size.
 
-Statistical {\bf power} is the probability that the test will be
-positive if the null hypothesis is false.  In general, the power of a
-test depends on the sample size, the magnitude of the effect, and the
-threshold $\alpha$.
+For example, if we assume that the observed difference between groups
+is accurate, we can use the observed samples as a model of the
+population and run hypothesis tests with simulated data:
 
-% TODO: replace this with the calculation
+\begin{verbatim}
+def FalseNegRate(data, num_runs=100):
+    group1, group2 = data
+    count = 0
+
+    for i in range(num_runs):
+        sample1 = thinkstats2.Resample(group1)
+        sample2 = thinkstats2.Resample(group2)
+
+        ht = DiffMeansPermute((sample1, sample2))
+        pvalue = ht.PValue(iters=101)
+        if pvalue > 0.05:
+            count += 1
+
+    return count / num_runs
+\end{verbatim}
+
+{\tt FalseNegRate} takes data in the form of two sequences, one for
+each group.  Each time through the loop, it simulates an experiment by
+drawing a random sample from each group and running a hypothesis test.
+Then it checks the result and counts the number of false negatives.
+
+{\tt Resample} takes a sequence and draws a sample with the same
+length, with replacement:
+
+\begin{verbatim}
+def Resample(xs):
+    return np.random.choice(xs, len(xs), replace=True)
+\end{verbatim}
+
+Here's the code that tests pregnancy lengths:
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    data = firsts.prglngth.values, others.prglngth.values
+    neg_rate = FalseNegRate(data)
+\end{verbatim}
+
+The result is about 70\%, which means that if the actual difference in
+mean pregnancy length is 0.78 weeks, we expect an experiment with this
+sample size to yield a negative test 70\% of the time.
+
+This result is often presented the other way around: if the actual
+difference is 0.78 weeks, we should expect a positive test only 30\%
+of the time.  This ``correct positive rate'' is called the {\bf power}
+of the test, or sometimes ``sensitivity''.  It reflects the ability of
+the test to detect an effect of a given size.
+
+In this example, the test had only a 30\% chance of yielding a
+positive result (again, assuming that the difference is 0.78 weeks).
+As a rule of thumb, a power of 80\% is considered acceptable, so
+we would say that this test was ``underpowered.''
+
+In general a negative hypothesis test does not imply that there is no
+difference between the groups; instead it suggests that if there is a
+difference, it is too small to detect with this sample size.
+
+
+\section{Replication}
+
+The hypothesis testing process I demonstrated in this chapter is not,
+strictly speaking, good practice.
+
+First, I performed multiple tests.  If you run one hypothesis test,
+the chance of a false positive is about 1 in 20, which might be
+acceptable.  But if you run 20 tests, you should expect at least one
+false positive, most of the time.
+
+Second, I used the same dataset for exploration and testing.  If
+you explore a large dataset, find a surprising effect, and then test
+whether it is significant, you have a good chance of generating a
+false positive.
+
+To compensate for multiple tests, you can adjust the p-value
+threshold\footnote{See
+  \url{https://en.wikipedia.org/wiki/Holm-Bonferroni_method}}.  Or you
+can address both problems by partitioning the data, using one set for
+exploration and the other for testing.
+
+In some fields these practices are required or at least encouraged.
+But it is more common to address these problems, implicitly, by
+replicating published results.  Typically the first paper to report a
+new result is considered exploratory.  Subsequent papers that
+replicate the result with new data are considered confirmatory.
+
+As it happens, we have an opportunity to replicate the results in this
+chapter.  The first edition of this book is based on Cycle 6 of the
+NSFG, which was released in 2002.  In October 2011, the CDC released
+additional data based on interviews conducted from 2006--2010.  {\tt
+  nsfg2.py} contains code to read and clean this data.  In the new
+dataset:
+
+\begin{itemize}
+
+\item The difference in mean pregnancy length is
+0.16 weeks and statistically significant with $p < 0.001$ (compared
+to 0.078 weeks in the original dataset).
+
+\item The difference in birth weight is 0.17 pounds with $p < 0.001$
+(compared with 0.12 lbs in the original dataset).
+
+\item The correlation between birthweight and mother's age is
+0.08 with $p < 0.001$ (compared to 0.07).
+
+\item The chi-squared test is statistically significant with
+$p < 0.001$ (as it was in the original).
+
+\end{itemize}
+
+In summary, all of the effects that were statistically significant
+in the original dataset were replicated in the new dataset, and the
+difference in pregnancy length, which was not significant in the
+original, is bigger in the new dataset and significant.
+
+
+\section{Exercises}
+
+A solution to these exercises is in \verb"chap09ex_soln.py".
 
 \begin{exercise}
-What is the power of the test in Section~\ref{threshold}, using
-$\alpha$ = 0.05 and assuming that the actual difference between the
-means is 0.078 weeks?
+As sample size increases, the power of a hypothesis test increases,
+which means it is more likely to be positive if the effect is real.
+Conversely, as sample size decreases, the test is less likely to
+be positive even if the effect is real.
 
-You can estimate power by generating random samples from distributions
-with the given difference in the mean, testing the observed difference
-in the mean, and counting the number of positive tests.
+To investigate this behavior, run the tests in this chapter with
+different subsets of the NSFG data.  You can use {\tt thinkstats2.SampleRows}
+to select a random subset of the rows in a DataFrame.
+\index{National Survey of Family Growth}
+\index{NSFG}
 
-What is the power of the test with $\alpha$ = 0.10?
-
+What happens to the p-values of these tests as sample size decreases?
+What is the smallest sample size that yields a positive test?
 \end{exercise}
 
-One way to report the power of a test, along with a negative result,
-is to say something like, ``If the apparent effect were as large
-as $x$, this test would reject the null hypothesis with probability $p$.''
 
 
-%\section{Discussion}
+\begin{exercise}
 
-%Pitfalls:
+In Section~\ref{testdiff}, we simulated the null hypothesis by
+permutation; that is, we treated the observed values as if they
+represented the entire population, and randomly assigned the
+members of the population to the two groups.
 
-%1) Exploring and then testing
+An alternative is to use the sample to estimate the distribution for
+the population, then draw a random sample from that distribution.
+This process is called {\bf resampling}.  There are several ways to
+implement the resampling, but one of the simplest is to draw a sample,
+with replacement, from the observed values, as in Section~\ref{power}.
 
-%2) Multiple tests
+Write a class named {\tt DiffMeansResample} that inherits from
+{\tt DiffMeansPermute} and overrides {\tt RunModel} to implement
+resampling, rather than permutation.
 
-%3) Publication bias
+Use this model to test the differences in pregnancy length and
+birth weight.  How much does the model affect the results?
 
-
-%Solutions:
-
-%1) two phases: exploratory and testing, on different data (possibly a subset)
-
-%2) Holm-Bonferroni method
-
-%3) publish everything and wait for consensus
+\end{exercise}
 
 
 \section{Glossary}
 
 \begin{itemize}
 
-\item significant: An effect is statistically significant if it is unlikely
-to occur by chance.
-\index{significant}
+\item hypothesis testing: The process of determining whether an apparent
+effect is statistically significant.
+\index{hypothesis testing}
+
+\item test statistic: A statistic used to quantify an effect size.
 
 \item null hypothesis: A model of a system based on the assumption that
 an apparent effect is due to chance.
@@ -6933,20 +6849,17 @@ an apparent effect is due to chance.
 \item p-value: The probability that an effect could occur by chance.
 \index{p-value}
 
-\item hypothesis testing: The process of determining whether an apparent
-effect is statistically significant.
-\index{hypothesis testing}
+\item significant: An effect is statistically significant if it is unlikely
+to occur by chance.
+\index{significant}
 
 \item permutation test: A way to compute p-values by generating
   permutations of an observed dataset.
   \index{permutation test}
 
-\item false positive: The conclusion that an effect is real when it is not.
-\index{false positive}
-
-\item false negative: The conclusion that an effect is due to chance when it
-is not.
-\index{false negative}
+\item resampling test: A way to compute p-values by generating
+  samples, with replacement, from an observed dataset.
+  \index{resampling test}
 
 \item two-sided test: A test that asks, ``What is the chance of an effect
 as big as the observed effect, positive or negative?''
@@ -6958,32 +6871,792 @@ as big as the observed effect, and with the same sign?''
 \index{test!one-sided}
 \index{test!two-sided}
 
-\item test statistic: A statistic used to measure the deviation of an
-apparent effect from what is expected by chance.
-\index{test statistic}
-
 \item chi-square test: A test that uses the chi-square statistic as
 the test statistic.
-\index{ch-square test}
+\index{chi-square test}
 
-\item cell: In a chi-square test, the categories the observations are
-divided into.
-\index{cell}
+\item false positive: The conclusion that an effect is real when it is not.
+\index{false positive}
 
-\item power: The probability that a test will reject the null hypothesis
-if it is false.
+\item false negative: The conclusion that an effect is due to chance when it
+is not.
+\index{false negative}
+
+\item power: The probability of a positive test if the null hypothesis
+is false.
 \index{power}
 
 \end{itemize}
 
 
+\chapter{Linear least squares}
+\label{linear}
 
-\chapter{Multiple regression}
+The code for this chapter is in {\tt linear.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+\section{Least squares fit}
+
+Correlation coefficients measure the strength and sign of a
+relationship, but not the slope.  There are several ways to estimate
+the slope; the most common is a {\bf linear least squares fit}.  A
+``linear fit'' is a line intended to model the relationship between
+variables.  A ``least squares'' fit is one that minimizes the mean
+squared error (MSE) between the line and the data.
+\index{least squares fit}
+\index{linear least squares}
+\index{coefficient!correlation}
+
+Suppose we have a sequence of points, {\tt ys}, that we want to
+express as a function of another sequence {\tt xs}.  If there is a
+linear relationship between {\tt xs} and {\tt ys} with intercept {\tt
+  inter} and slope {\tt slope}, we expect each {\tt y[i]} to be
+{\tt inter + slope * x[i]}.  \index{residual}
+
+But unless the correlation is perfect, this prediction is only
+approximate.  The vertical deviation from the line, or {\bf residual},
+is
+
+\begin{verbatim}
+res = ys - (inter + slope * xs)
+\end{verbatim}
+
+The residuals might be due to random factors like measurement error,
+or non-random factors that are unknown.  For example, if we are
+trying to predict weight as a function of height, unknown factors
+might include diet, exercise, and body type.
+\index{slope}
+\index{intercept}
+
+If we get the parameters {\tt inter} and {\tt slope} wrong, the residuals
+get bigger, so it makes intuitive sense that the parameters we want
+are the ones that minimize the residuals.
+
+We might try to minimize the absolute value of the
+residuals, or their squares, or their cubes; but the most common
+choice is to minimize the sum of squared residuals,
+{\tt sum(res**2))}.
+
+Why?  There are three good reasons and one less important one:
+
+\begin{itemize}
+
+\item Squaring has the feature of treating positive and
+negative residuals the same, which is usually what we want.
+
+\item Squaring gives more weight to large residuals, but not
+so much weight that the largest residual always dominates.
+
+\item If the residuals are uncorrelated and normally distributed with
+  mean 0 and constant (but unknown) variance, then the least squares
+  fit is also the maximum likelihood estimator of {\tt inter} and {\tt
+    slope}.  See
+  \url{https://en.wikipedia.org/wiki/Linear_regression}.  \index{MLE}
+  \index{maximum likelihood estimator}
+
+\item The values of {\tt inter} and {\tt slope} that minimize
+  the squared residuals can be computed efficiently.
+
+\end{itemize}
+
+The last reason made sense when computational efficiency was more
+important than choosing the method most appropriate to the problem
+at hand.  That's no longer the case, so it is worth considering
+whether squared residuals are the right thing to minimize.
+\index{computation}
+
+For example, if you are using {\tt xs} to predict values of {\tt ys},
+guessing too high might be better (or worse) than guessing too low.
+In that case you might want to compute some cost function for each
+residual, and minimize total cost, {\tt sum(cost(res))}.
+However, computing a least squares fit is quick, easy and often good
+enough.  
+\index{cost function}
+
+
+\section{Implementation}
+
+{\tt thinkstats2} provides simple functions that demonstrate
+linear least squares:
+
+\begin{verbatim}
+def LeastSquares(xs, ys):
+    meanx, varx = MeanVar(xs)
+    meany = Mean(ys)
+
+    slope = Cov(xs, ys, meanx, meany) / varx
+    inter = meany - slope * meanx
+
+    return inter, slope
+\end{verbatim}
+
+To see how this is derived, see
+\url{http://wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
+
+{\tt LeastSquares} takes sequences
+{\tt xs} and {\tt ys} and returns the estimated parameters {\tt inter}
+and {\tt slope}.
+
+{\tt thinkstats2} also provides {\tt FitLine}, which takes the
+estimated parameters and returns the fitted line for a sequence
+of {\tt xs}.
+
+\begin{verbatim}
+def FitLine(xs, inter, slope):
+    fit_xs = np.sort(xs)
+    fit_ys = inter + slope * fit_xs
+    return fit_xs, fit_ys
+\end{verbatim}
+
+We can use these functions to compute the least squares fit for
+birth weight as a function of mother's age.
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    ages = live.agepreg
+    weights = live.totalwgt_lb
+
+    inter, slope = thinkstats2.LeastSquares(ages, weights)
+    fit_xs, fit_ys = thinkstats2.FitLine(ages, inter, slope)
+\end{verbatim}
+
+The estimated intercept and slope are 6.8 lbs and 0.017 lbs per year.
+These value are hard to interpret in this form: the intercept is
+the expected weight of a baby whose mother is 0 years old, which
+doesn't make sense in context, and the slope is too small to
+grasp easily.
+
+Instead of presenting the intercept at $x=0$, it
+is often helpful to present the intercept at the mean of $x$.  In
+this case the mean age is about 25 years and the expected weight
+for a 25 year old mother is 7.3 pounds.  The slope is 0.27 ounces
+per year, or 0.17 pounds per decade.
+
+\begin{figure}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear1.pdf}}
+\caption{Scatter plot of birth weight and mother's age with
+a linear fit.}
+\label{linear1}
+\end{figure}
+
+Figure~\ref{linear1} shows a scatter plot of birth weight and age
+along with the fitted line.  It's a good idea to look at a figure like
+this to assess whether the relationship is linear and whether the
+fitted line seems like a good model of the relationship.
+
+
+\section{Residuals}
+
+Another useful test is to plot the residuals.
+{\tt thinkstats2} provides a function that computes residuals:
+
+\begin{verbatim}
+def Residuals(xs, ys, inter, slope):
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+    res = ys - (inter + slope * xs)
+    return res
+\end{verbatim}
+
+{\tt Residuals} takes sequences {\tt xs} and {\tt ys} and
+estimated parameters {\tt inter} and {\tt slope}.  It returns
+the differences between the actual values and the fitted line.
+
+To visualize the residuals, I group respondents by age and compute
+percentiles in each group, as we saw in Section~\ref{characterizing}.
+Figure~\ref{linear2} shows the 25th, 50th and 75th percentiles of
+the residuals for each age group.  The median is near zero, as
+expected, and the interquartile range is about 2 pounds.  So if we
+know the mother's age, we can guess the baby's weight within a pound,
+about 50\% of the time.
+
+Ideally these lines should be flat, indicating that the residuals are
+random, and parallel, indicating that the variance of the residuals is
+the same for all age groups.  In fact, the lines are close to
+parallel, so that's good; but they have some curvature, indicating
+that the relationship is non-linear.  Nevertheless, the linear fit
+is a simple model that is probably good enough for some purposes.
+
+\begin{figure}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear2.pdf}}
+\caption{Residuals of the linear fit.}
+\label{linear2}
+\end{figure}
+
+
+\section{Estimation}
+\label{regest}
+
+The parameters {\tt slope} and {\tt inter} are estimates based on a
+sample; like other estimates, they are vulnerable to sampling bias,
+measurement error, and sampling error.  As discussed in
+Chapter~\ref{estimation}, sampling bias is caused by non-representative
+sampling, measurement error is caused by errors in collecting
+and recording data, and sampling error is the result of measuring a
+sample rather than the entire population.
+
+To assess sampling error, we ask, ``If we run this experiment again,
+how much variability do we expect in the estimates?''  We can
+answer this question by running simulated experiments and computing
+sampling distributions of the estimates.
+
+I simulate the experiments by resampling the data; that is, I treat
+the observed pregnancies as if they were the entire population
+and draw samples, with replacement, from the observed sample.
+
+\begin{verbatim}
+def SamplingDistributions(live, iters=101):
+    t = []
+    for _ in range(iters):
+        sample = thinkstats2.SampleRows(live, len(live), replace=True)
+        ages = sample.agepreg
+        weights = sample.totalwgt_lb
+        estimates = thinkstats2.LeastSquares(ages, weights)
+        t.append(estimates)
+
+    inters, slopes = zip(*t)
+    return inters, slopes
+\end{verbatim}
+
+{\tt SamplingDistributions} takes a DataFrame with one row
+per live birth, and {\tt iters}, the number of experiments to simulate.
+It uses {\tt SampleRows} to resample the observed pregnancies,
+then uses the simulated sample to estimate the parameters.
+It returns sequences
+of estimated intercepts and estimated slopes.
+
+I summarize the sampling distributions by printing the standard
+error and confidence interval:
+
+\begin{verbatim}
+def Summarize(values, actual):
+    std = thinkstats2.Std(values, mu=actual)
+    cdf = thinkstats2.Cdf(values)
+    ci = cdf.Percentile(5), cdf.Percentile(95)
+    print('SE, CI', std, ci)
+\end{verbatim}
+
+For the intercept, the estimated value is 6.83, with standard error
+0.07 and 90\% confidence interval (6.71, 6.94).  The estimated slope, in
+more compact form, is 0.0174, SE 0.0028, CI (0.0126, 0.0220).
+There is almost a factor of two between the low and high ends of
+this CI, so it should be considered a rough estimate.
+
+%inter 6.83039697331 6.83174035366
+%SE, CI 0.0699814482068 (6.7146843084406846, 6.9447797068631871)
+%slope 0.0174538514718 0.0173840926936
+%SE, CI 0.00276116142884 (0.012635074392201724, 0.021975282350381781)
+
+To visualize the sampling error of the estimate, we could plot
+all of the fitted lines, or for a less cluttered representation,
+plot a 90\% confidence interval for each age.  Here's the code:
+
+\begin{verbatim}
+def PlotConfidenceIntervals(xs, inters, slopes, **options):
+    size = len(slopes), len(xs)
+    array = np.zeros(size)
+
+    for i, (inter, slope) in enumerate(zip(inters, slopes)):
+        fxs, fys = thinkstats2.FitLine(xs, inter, slope)
+        array[i,] = fys
+
+    xs = np.sort(xs)
+    array = np.sort(array, axis=0)
+    
+    low = array[5,]
+    high = array[95,]
+    thinkplot.FillBetween(xs, low, high, **options)
+\end{verbatim}
+
+{\tt xs} is the sequence of mother's age.  {\tt inters} and {\tt slopes}
+are the estimates parameters generated by {\tt SamplingDistributions}.
+
+{\tt PlotConfidenceIntervals} generates a fitted line for each pairs
+of {\tt inter} and {\tt slope} and stores the results in an array with
+one row per simulated experiment.  Then it sorts each column in the
+array, and selects the row with indices 5 and 95, which contain the
+5th and 95th percentiles (this is a simplified version of the code for
+the case where there are 101 rows).
+
+{\tt FillBetween} draws a polygon that fills the space between two
+lines.  Figure~\ref{linear3} shows the 50\% and 90\% confidence
+intervals.  The vertical width of the region represents the effect of
+sampling error; the effect is smaller for values near the mean and
+larger for the extremes.
+
+\begin{figure}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear3.pdf}}
+\caption{50\% and 90\% confidence intervals showing variability in the
+  fitted line due to sampling error of {\tt inter} and {\tt slope}.}
+\label{linear3}
+\end{figure}
+
+
+\section{Goodness of fit}
+\label{goodness}
+\index{goodness of fit}
+\index{fit, goodness}
+
+There are several ways to measure the quality of a linear model, or
+{\bf goodness of fit}.  One of the simplest is the standard deviation
+of the residuals.
+
+If you use a linear model to make predictions, {\tt Std(res)}
+is the root mean squared error (RMSE) of your predictions.  For
+example, if you use mother's age to guess birth weight, the RMSE of
+your guess would be 1.40 lbs.
+
+If you guess birth weight without knowing the mother's age, the RMSE
+of your guess is {\tt Std(ys)}, which is 1.41 lbs.  So in this
+example, knowing a mother's age does not improve the predictions
+substantially.
+
+Another way to measure goodness of fit is  the {\bf
+  coefficient of determination}, usually denoted $R^2$ and 
+called ``R-squared'':
+
+\begin{verbatim}
+def CoefDetermination(ys, res):
+    return 1 - Var(res) / Var(ys)
+\end{verbatim}
+
+{\tt Var(res)} is the MSE of your guesses using the model,
+{\tt Var(ys)} is the MSE without it.   So their ratio is the fraction
+of MSE that remains if you use the model, and $R^2$ is the fraction
+of MSE the model eliminates.
+
+For birth weight and mother's age, $R^2$ is 0.0047, which means
+that mother's age predicts less than half of 1\% of variance in
+birth weight.
+
+There is a simple relationship between the coefficient of
+determination and Pearson's correlation coefficient: $R^2 = \rho^2$.
+For example, if $\rho$ is 0.8 or -0.8, $R^2 = 0.64$.
+
+Although $\rho$ and $R^2$ are often used to quantify the strength of a
+relationship, they are not easy to interpret in terms of predictive
+power.  In my opinion, {\tt Std(res)} is the best representation
+of the quality of prediction, especially if it is presented
+in relation to {\tt Std(ys)}.
+
+For example, when people talk about the validity of the SAT
+(a standardized test used for college admission in the U.S.) they
+often talk about correlations between SAT scores and other measures of
+intelligence.
+
+According to one study, there is a Pearson correlation of
+$\rho=0.72$ between total SAT scores and IQ scores, which sounds like
+a strong correlation.  But $R^2 = \rho^2 = 0.52$, so SAT scores
+account for only 52\% of variance in IQ.
+
+IQ scores are normalized so {\tt Std(ys) = 15}, so
+
+\begin{verbatim}
+>>> var_ys = 15**2
+>>> rho = 0.72
+>>> r2 = rho**2
+>>> var_res = (1 - r2) * var_ys
+>>> std_res = math.sqrt(var_res)
+10.4096
+\end{verbatim}
+
+So using SAT score to predict IQ reduces RMSE from 15 points to 10.4
+points.  A correlation of 0.72 yields a reduction in RMSE of only
+31\%.
+
+If you see a correlation that looks impressive, remember that $R^2$ is
+a better indicator of reduction in MSE, and reduction in RMSE is a
+better indicator of predictive power.
+
+
+\section{Testing a linear model}
+
+The effect of mother's age on birth weight is small, and has little
+predictive power.  So is it possible that the apparent relationship
+is due to chance?  There are several ways we might test the
+results of a linear fit.
+
+One option is to test whether the apparent reduction in MSE is due to
+chance.  In that case, the test statistic is $R^2$ and the null
+hypothesis is that there is no relationship between the variables.  We
+can simulate the null hypothesis by permutation, as in
+Section~\ref{corrtest}, when we tested the correlation between
+mother's age and birthweight.  In fact, because $R^2 = \rho^2$, a
+one-sided test of $R^2$ is equivalent to a two-sided test of $\rho$.
+We've already done that test, and found $p < 0.001$, so we conclude
+that the apparent relationship between mother's age and birth weight
+is statistically significant.
+  
+Another approach is to test whether the apparent slope is due to chance.
+The null hypothesis is that the slope is actually zero; in that case
+we can model the birth weights as random variations around their mean.
+Here's a HypothesisTest for this model:
+
+\begin{verbatim}
+class SlopeTest(thinkstats2.HypothesisTest):
+
+    def TestStatistic(self, data):
+        ages, weights = data
+        _, slope = thinkstats2.LeastSquares(ages, weights)
+        return slope
+
+    def MakeModel(self):
+        _, weights = self.data
+        self.ybar = weights.mean()
+        self.res = weights - self.ybar
+
+    def RunModel(self):
+        ages, _ = self.data
+        weights = self.ybar + np.random.permutation(self.res)
+        return ages, weights
+\end{verbatim}
+
+The data are represented as sequences of ages and weights.  The
+test statistic is the slope estimated by {\tt LeastSquares}.
+The model of the null hypothesis is represented by the mean weight
+of all babies and the deviations from the mean.  To
+generate simulated data, we permute the deviations and add them to
+the mean.
+
+Here's the code that runs the hypothesis test:
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    ht = SlopeTest((live.agepreg, live.totalwgt_lb))
+    pvalue = ht.PValue()
+\end{verbatim}
+
+The p-value is less than $0.001$, so although the estimated
+slope is small, it is unlikely to be due to chance.
+
+Estimating the p-value by simulating the null hypothesis is strictly
+correct, but there is a simpler alternative.  Remember that we already
+computed the sampling distribution of the slope, in
+Section~\ref{regest}.  To do that, we assumed that the observed slope
+was correct and simulated experiments by resampling.
+
+Figure~\ref{linear4} shows the sampling distribution of the
+slope, from Section~\ref{regest}, and the distribution of slopes
+generated under the null hypothesis.  The sampling distribution
+is centered about the estimated slope, 0.017 lbs/year, and the slopes
+under the null hypothesis are centered around 0; but other than
+that, the distributions are identical.  The distributions are
+also symmetric, for reasons we will see in Section~\ref{CLT}.
+
+\begin{figure}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear4.pdf}}
+\caption{The sampling distribution of the estimated
+slope and the distribution of slopes
+generated under the null hypothesis.  The vertical lines are at 0
+and the observed slope, 0.017 lbs/year.}
+\label{linear4}
+\end{figure}
+
+So we could estimate the p-value two ways:
+
+\begin{itemize}
+
+\item Compute the probability that the slope under the null
+hypothesis exceeds the observed slope.
+
+\item Compute the probability that the slope in the sampling
+distribution falls below 0.  If the estimated slope were negative,
+we would compute the probability that the slope in the sampling
+distribution exceeds 0.
+
+\end{itemize}
+
+The second option is easier because we normally want to compute the
+sampling distributions of the parameters anyway.  And it is a good
+approximation unless the sample size is small {\em and} the
+distribution of residuals is skewed.  Even then, it is usually good
+enough, because p-values don't have to be precise.
+
+Here's the code that estimates the p-value of the slope using the
+sampling distribution:
+
+\begin{verbatim}
+    inters, slopes = SamplingDistributions(live, iters=1001)
+    slope_cdf = thinkstats2.Cdf(slopes)
+    pvalue = slope_cdf[0]
+\end{verbatim}
+
+Again, we find $p < 0.001$.  
+
 
 \section{Weighted resampling}
 
+So far we have treated the NSFG data as if it were a representative
+sample, but as I mentioned in Section~\ref{nsfg}, it is not.  The
+survey deliberately oversamples several groups in order to
+improve the chance of getting statistically significant results; that
+is, in order to improve the power of tests involving these groups.
 
-\chapter{Logistic regression}
+This survey design is useful for many purposes, but it means that we
+cannot use the sample to estimate values for the general
+population without accounting for the sampling process.
+
+For each respondent, the NSFG data includes a variable called {\tt
+  finalwgt}, which is the number of people in the general population
+the respondent represents.  This value is called a {\bf sampling
+  weight}, or just ``weight.''
+
+As an example, if you survey 100,000 people in a country of 300
+million, each respondent represents 3,000 people.  If you oversample
+one group by a factor of 2, each person in the oversampled
+group would have a lower weight, about 1500.
+
+To correct for oversampling, we can use resampling; that is, we
+can draw samples from the survey using probabilities proportional
+to sampling weights.  Then, for any quantity we want to estimate, we can
+generate sampling distributions, standard errors, and confidence
+intervals.  As an example, I will estimate mean birth weight with
+and without sample weights.
+
+We've already seen {\tt SampleRows}, which chooses random rows
+from a DataFrame.  {\tt thinkstats2} also provide {\tt ResampleRows},
+which handles the case when the new sample is the same size as the original:
+
+\begin{verbatim}
+def ResampleRows(df):
+    return SampleRows(df, len(df), replace=True)
+\end{verbatim}
+
+Now we need to do the same thing using sample weights.
+{\tt ResampleRowsWeighted} takes a DataFrame, resamples rows according
+to the weights in {\tt finalwgt}, and returns a DataFrame containing
+the resampled rows:
+
+\begin{verbatim}
+def ResampleRowsWeighted(df):
+    weights = df.finalwgt
+    pmf = thinkstats2.Pmf(weights.iteritems())
+    cdf = pmf.MakeCdf()
+    indices = cdf.Sample(len(weights))
+    sample = df.loc[indices]
+    return sample
+\end{verbatim}
+
+{\tt pmf} maps from each row index to its normalized weight.  Converting
+to a Cdf makes the sampling process faster.  {\tt indices} is a sequence
+of row indices; {\tt sample} is a DataFrame that contains the selected
+rows.  Since we sample with replacement, the same row might appear
+more than once.
+
+Now we can compare the effect of resampling with and without
+weights.  Without weights, we generate the sampling distribution
+like this:
+
+\begin{verbatim}
+    estimates = [thinkstats2.ResampleRows(live).totalwgt_lb.mean()
+                 for _ in range(iters)]
+\end{verbatim}
+
+With weights, it looks like this:
+
+\begin{verbatim}
+    estimates = [ResampleRowsWeighted(live).totalwgt_lb.mean()
+                 for _ in range(iters)]
+\end{verbatim}
+
+The following table summarizes the results:
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|}
+\hline
+                    &  mean birth   & standard  &  90\% CI  \\ 
+                    &  weight (lbs) & error     &           \\ 
+\hline
+Unweighted          &  7.27  &  0.014  &  (7.24, 7.29)  \\ 
+Weighted            &  7.35  &  0.014  &  (7.32, 7.37)  \\ 
+\hline
+\end{tabular}
+\end{center}
+
+%mean 7.26580789518
+%stderr 0.0141683527792
+%ci (7.2428565501217079, 7.2890814917127074)
+%mean 7.34778034718
+%stderr 0.0142738972319
+%ci (7.3232804012858885, 7.3704916897506925)
+
+In this example, the effect of weighting is small but non-negligible.
+The difference in estimated means, with and without weighting, is
+about 0.08 pounds, or 1.3 ounces.  This difference is substantially
+larger than the standard error of the estimate, 0.014 pounds, which
+implies that the difference is not due to chance.
+
+
+\section{Exercises}
+
+\begin{exercise}
+
+Using the data from the BRFSS, compute the linear least squares
+fit for log(weight) versus height.
+How would you best present the estimated parameters for a model
+like this where one of the variables is log-transformed?
+If you were trying to guess
+someone's weight, how much would it help to know their height?
+\index{Behavioral Risk Factor Surveillance System}
+\index{BRFSS}
+
+Like the NSFG, the BRFSS oversamples some groups and provides
+a sampling weight for each respondent.  In the BRFSS data, the variable
+name for these weights is {\tt totalwt}.
+Use resampling, with and without weights, to estimate the mean height
+of respondents in the BRFSS, the standard error of the mean, and a
+90\% confidence interval.  How much does correct weighting affect the
+estimates?
+
+A solution to this exercise is in \verb"chap10ex_soln.ipynb"
+
+\end{exercise}
+
+
+\section{Glossary}
+
+\begin{itemize}
+
+\item linear fit: a line intended to model the relationship between
+variables.  
+\index{linear fit}
+
+\item least squares fit: A model of a dataset that minimizes the
+sum of squares of the residuals.
+\index{least squares fit}
+
+\item residual: The deviation of an actual value from a model.
+\index{residual}
+
+\item goodness of fit: A measure of how well a model fits data.
+\index{goodness of fit}
+
+\item coefficient of determination: A statistic intended to
+quantify goodness of fit.
+\index{coefficient!determination}
+
+\item sampling weight: A value associated with an observation in a
+  sample that indicates what part of the population it represents.
+\index{sampling weight}
+
+\end{itemize}
+
+
+
+\chapter{Regression}
+\label{regression}
+
+The linear least squares fit in the previous chapter is an example of
+{\bf regression}, which is the more general problem of fitting any
+kind of curve to any kind of data.  This use of the term ``regression''
+is a historical accident; it is only indirectly related to the
+original meaning of the word.
+
+The goal of regression analysis is to describe the relationships
+between one set of variables, called the {\bf dependent variables},
+and another set of variables, called independent variables or {\bf
+  explanatory variables}.
+
+In the previous chapter we used mother's age, the explanatory
+variable, to predict birth weight, the dependent variable.  When there
+is only one dependent and one explanatory variable, that's called {\bf
+  simple regression}.  In this chapter, we move on to {\bf multiple
+  regression}, with more than one explanatory variable.  If there is
+more than one dependent variable, that's called multivariate
+regression.
+
+If the relationship between the dependent and explanatory variable
+is linear, that's called {\bf linear regression}.  For example,
+if the dependent variable is $y$ and the explanatory variables
+are $x_1$, $x_2$, and $x_3$, we would write the following linear
+regression model:
+%
+\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \eps \]
+%
+where $\beta_0$ is the intercept, $\beta_1$ is the parameter
+associated with $x_1$, $\beta_2$ is the parameter associated with
+$x_2$, and $\eps$ is the residual due to random variation or other
+unknown factors.
+
+Given a sequence of values for $y$ and sequences for $x_1$ and $x_2$,
+we can find the parameters, $\beta_0$, $\beta_1$, and $\beta_2$, that
+minimize the mean squared value of $\eps$.  This process is called
+{\bf ordinary least squares}.  The implementation is similar to {\tt
+  thinkstats2.LeastSquare}, but generalized to deal with more than one
+explanatory variable.  You can find the details at
+\url{https://en.wikipedia.org/wiki/Ordinary_least_squares}
+
+The code for this chapter is in {\tt regression.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+\section{StatsModels}
+
+In the previous chapter we used functions in {\tt thinkstats2} to
+do simple linear regression.  For multiple regression we are going
+to use StatsModels, a Python package that implements several forms
+of regression and other analyses.  If you are using Anaconda, you
+already have StatsModels; otherwise you might have to install it.
+
+
+
+\section{Multiple regression}
+
+I won't cover those techniques here, but there are also simple ways to
+control for spurious relationships.  For example, in the NSFG, we saw
+that first babies tend to be lighter than others (see
+Section~\ref{birth_weights}).  But birth weight is also correlated
+with the mother's age, and mothers of first babies tend to be younger
+than mothers of other babies.  \index{birth weight}
+\index{weight!birth} \index{National Survey of Family Growth}
+\index{NSFG}
+
+So it may be that first babies are lighter because their mothers are
+younger.  To control for the effect of age, we could divide the mothers
+into age groups and compare birth weights for first babies and others
+in each age group.
+\index{pooled data}
+
+If the difference between first babies and others is the same in
+each age group as it was in the pooled data, we conclude
+that the difference is not related to age.  If there is no difference,
+we conclude that the effect is entirely due to age.  Or,
+if the difference is smaller, we can quantify how much of the effect
+is due to age.
+
+\begin{exercise}
+The NSFG data includes a variable named {\tt agepreg} that records
+the age of the mother at the time of birth.
+Make a scatter plot of mother's age and baby's weight for each live
+birth.  Can you see a relationship?
+
+Compute a linear least-squares fit for these variables.  What are the
+units of the estimated parameters {\tt inter} and {\tt slope}?
+How would you summarize these results in a sentence or two?
+
+Compute the average age for mothers of first babies and the average
+age of other mothers.  Based on the difference in ages between the
+groups, how much difference do you expect in the mean birth weights?
+What fraction of the actual difference in birth weights is explained
+by the difference in ages?
+
+You can download a solution to this problem from
+\url{http://thinkstats2.com/agemodel.py}.  If you are curious about
+multivariate regression, you can run \url{http://thinkstats2.com/age_lm.py}
+which shows how to use the R statistical computing package from
+Python.  But that's a whole other book.
+\index{{\tt agemodel.py}}
+\index{{\tt age\_lm.py}}
+
+\end{exercise}
+
+
+\section{Logistic regression}
 
 
 \chapter{Time series analysis}

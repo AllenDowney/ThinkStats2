@@ -64,25 +64,10 @@ def HexBin(heights, weights, bins=None):
                      legend=False)
 
 
-def SampleRows(df, nrows, replace=False):
-    """Choose a sample of rows from a DataFrame.
-
-    df: DataFrame
-    nrows: number of rows
-    replace: whether to sample with replacement
-
-    returns: DataFrame
-    """
-    indices = df.index
-    sample_indices = np.random.choice(indices, nrows, replace=replace)
-    sample = df.loc[sample_indices]
-    return sample
-
-
 def MakeFigures(df):
     """Make scatterplots.
     """
-    sample = SampleRows(df, 5000)
+    sample = thinkstats2.SampleRows(df, 5000)
 
     # simple scatter plot
     thinkplot.PrePlot(cols=2)

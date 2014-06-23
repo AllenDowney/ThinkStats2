@@ -5,7 +5,7 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 """This file contains class definitions for:
 
@@ -38,6 +38,7 @@ import pandas
 
 import scipy.stats
 import scipy.special
+import scipy.ndimage
 
 ROOT2 = math.sqrt(2)
 
@@ -87,7 +88,7 @@ def Probability2(yes, no):
     
     yes, no: int or float odds in favor
     """
-    return float(yes) / (yes + no)
+    return yes / (yes + no)
 
 
 class Interpolator(object):
@@ -512,7 +513,7 @@ class Pmf(_DictWrapper):
             #logging.warning('Normalize: total probability is zero.')
             #return total
 
-        factor = float(fraction) / total
+        factor = fraction / total
         for x in self.d:
             self.d[x] *= factor
 
@@ -975,8 +976,12 @@ class Cdf(object):
         if x < self.xs[0]:
             return 0.0
         index = bisect.bisect(self.xs, x)
-        p = self.ps[index - 1]
+        p = self.ps[index-1]
         return p
+
+    def Probs(self, xs):
+        """Gets probabilities for a sequence of values."""
+        return [self.Prob(x) for x in xs]
 
     def Value(self, p):
         """Returns InverseCDF(p), the value that corresponds to probability p.
@@ -990,15 +995,8 @@ class Cdf(object):
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
 
-        if p == 0: 
-            return self.xs[0]
-        if p == 1: 
-            return self.xs[-1]
-        index = bisect.bisect(self.ps, p)
-        if p == self.ps[index - 1]:
-            return self.xs[index - 1]
-        else:
-            return self.xs[index]
+        index = bisect.bisect_left(self.ps, p)
+        return self.xs[index]
 
     def Percentile(self, p):
         """Returns the value that corresponds to percentile p.
@@ -1060,6 +1058,8 @@ class Cdf(object):
         prob = (1 - percentage / 100.0) / 2
         interval = self.Value(prob), self.Value(1 - prob)
         return interval
+
+    ConfidenceInterval = CredibleInterval
 
     def _Round(self, multiplier=1000.0):
         """
@@ -1350,18 +1350,18 @@ class Pdf(object):
         """
         raise UnimplementedMethodException()
 
-    def MakePmf(self, label='', **options):
+    def MakePmf(self, **options):
         """Makes a discrete version of this Pdf.
 
-        label: string
-
         options can include
+        label: string
         low: low end of range
         high: high end of range
         n: number of places to evaluate
 
         Returns: new Pmf
         """
+        label = options.pop('label', '')
         xs, ps = self.Render(**options)
         return Pmf(zip(xs, ps), label=label)
 
@@ -1822,7 +1822,7 @@ class Beta(object):
 
     def Mean(self):
         """Computes the mean of this distribution."""
-        return float(self.alpha) / (self.alpha + self.beta)
+        return self.alpha / (self.alpha + self.beta)
 
     def Random(self):
         """Generates a random variate from this distribution."""
@@ -2022,18 +2022,6 @@ def Jitter(values, jitter=0.5):
     return np.random.uniform(-jitter, +jitter, n) + values
 
 
-def FitLine(xs, inter, slope):
-    """Fits a line to the given data.
-
-    xs: sequence of x
-
-    returns: tuple of numpy arrays (sorted xs, fit ys)
-    """
-    fit_xs = np.sort(xs)
-    fit_ys = inter + slope * fit_xs
-    return fit_xs, fit_ys
-
-
 def NormalProbabilityPlot(sample, label='', fit_color='0.8'):
     """Makes a normal probability plot with a fitted line.
 
@@ -2078,6 +2066,19 @@ def Var(xs, mu=None, ddof=0):
 
     ds = xs - mu
     return np.dot(ds, ds) / (len(xs) - ddof)
+
+
+def Std(xs, mu=None, ddof=0):
+    """Computes standard deviation.
+
+    xs: sequence of values
+    mu: option known mean
+    ddof: delta degrees of freedom
+
+    returns: float
+    """
+    var = Var(xs, mu, ddof)
+    return math.sqrt(var)
 
 
 def MeanVar(xs, ddof=0):
@@ -2274,6 +2275,18 @@ def LeastSquares(xs, ys):
     return inter, slope
 
 
+def FitLine(xs, inter, slope):
+    """Fits a line to the given data.
+
+    xs: sequence of x
+
+    returns: tuple of numpy arrays (sorted xs, fit ys)
+    """
+    fit_xs = np.sort(xs)
+    fit_ys = inter + slope * fit_xs
+    return fit_xs, fit_ys
+
+
 def Residuals(xs, ys, inter, slope):
     """Computes residuals for a linear fit with parameters inter and slope.
 
@@ -2286,7 +2299,9 @@ def Residuals(xs, ys, inter, slope):
     Returns:
         list of residuals
     """
-    res = [y - inter - slope*x for x, y in zip(xs, ys)]
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+    res = ys - (inter + slope * xs)
     return res
 
 
@@ -2300,9 +2315,7 @@ def CoefDetermination(ys, res):
     Returns:
         float coefficient of determination
     """
-    vary = Var(ys)
-    varres = Var(res)
-    return 1 - varres / vary
+    return 1 - Var(res) / Var(ys)
 
 
 def CorrelatedGenerator(rho):
@@ -2338,7 +2351,7 @@ def CorrelatedGaussianGenerator(mu, sigma, rho):
 def RawMoment(xs, k):
     """Computes the kth raw moment of xs.
     """
-    return sum(x**k for x in xs) / float(len(xs))
+    return sum(x**k for x in xs) / len(xs)
 
 
 def CentralMoment(xs, k):
@@ -2437,6 +2450,7 @@ def ReadStataDct(dct_file):
             start = int(match.group(1))
             t = line.split()
             vtype, name, fstring = t[1:4]
+            name = name.lower()
             if vtype.startswith('str'):
                 vtype = str
             else:
@@ -2453,6 +2467,112 @@ def ReadStataDct(dct_file):
 
     dct = FixedWidthVariables(variables, index_base=1)
     return dct
+
+
+def Resample(xs):
+    """Draw a sample from xs with the same length as xs.
+
+    xs: sequence
+
+    returns: NumPy array
+    """
+    return np.random.choice(xs, len(xs), replace=True)
+
+
+def SampleRows(df, nrows, replace=False):
+    """Choose a sample of rows from a DataFrame.
+
+    df: DataFrame
+    nrows: number of rows
+    replace: whether to sample with replacement
+
+    returns: DataFrame
+    """
+    indices = np.random.choice(df.index, nrows, replace=replace)
+    sample = df.loc[indices]
+    return sample
+
+
+def ResampleRows(df):
+    """Resamples rows from a DataFrame.
+
+    df: DataFrame
+
+    returns: DataFrame
+    """
+    return SampleRows(df, len(df), replace=True)
+
+
+def Smooth(xs, sigma=2, **options):
+    """Smooths a NumPy array with a Gaussian filter.
+
+    xs: sequence
+    sigma: standard deviation of the filter
+    """
+    return scipy.ndimage.filters.gaussian_filter1d(xs, sigma, **options)
+
+
+class HypothesisTest(object):
+    """Represents a hypothesis test."""
+
+    def __init__(self, data):
+        """Initializes.
+
+        data: data in whatever form is relevant
+        """
+        self.data = data
+        self.MakeModel()
+        self.actual = self.TestStatistic(data)
+        self.test_stats = None
+        self.test_cdf = None
+
+    def PValue(self, iters=1000):
+        """Computes the distribution of the test statistic and p-value.
+
+        iters: number of iterations
+
+        returns: float p-value
+        """
+        self.test_stats = [self.TestStatistic(self.RunModel()) 
+                           for _ in range(iters)]
+        self.test_cdf = Cdf(self.test_stats)
+
+        count = sum(1 for x in self.test_stats if x >= self.actual)
+        return count / iters
+
+    def MaxTestStat(self):
+        """Returns the largest test statistic seen during simulations.
+        """
+        return max(self.test_stats)
+
+    def PlotCdf(self, label=''):
+        """Draws a Cdf with vertical lines at the observed test stat.
+        """
+        def VertLine(x):
+            """Draws a vertical line at x."""
+            thinkplot.Plot([x, x], [0, 1], color='0.8')
+
+        VertLine(self.actual)
+        thinkplot.Cdf(self.test_cdf, label=label)
+
+    def TestStatistic(self, data):
+        """Computes the test statistic.
+
+        data: data in whatever form is relevant        
+        """
+        raise UnimplementedMethodException()
+
+    def MakeModel(self):
+        """Build a model of the null hypothesis.
+        """
+        pass
+
+    def RunModel(self):
+        """Run the model of the null hypothesis.
+
+        returns: simulated data
+        """
+        raise UnimplementedMethodException()
 
 
 def main():
