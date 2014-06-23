@@ -13,12 +13,19 @@ import random
 import numpy as np
 import statsmodels.formula.api as smf
 
+import chap01ex_soln
 import first
 import thinkplot
 import thinkstats2
 
 def AlmostEquals(x, y, tol=1e-6):
     return abs(x-y) < tol
+
+
+def GoMining(join):
+ 
+
+
 
 def RunSimpleRegression(live):
     ages = live.agepreg
@@ -110,10 +117,25 @@ def PrintTabular(rows, header):
 
     print(r'\hline')
 
+
+def JoinRespFile(live):
+    resp = chap01ex_soln.ReadFemResp()
+    resp.index = resp.caseid
+    print(resp)
+    
+    # live.join(resp, on='caseid', how='inner')
+    join = pandas.merge(live, resp, left_on='caseid', right_index=True,
+                        how='inner', sort=False)
+    print(join.columns)
+
+
 def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
     
     live, firsts, others = first.MakeFrames()
+    JoinRespFile(live)
+    return
+
     RunModels(live, firsts, others)
     return
 
