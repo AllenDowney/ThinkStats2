@@ -45,6 +45,9 @@ def CleanFemPreg(df):
     df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
     df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
 
+    df.babysex.replace([7, 9], np.nan, inplace=True)
+    df.nbrnaliv.replace([9], np.nan, inplace=True)
+
     # birthweight is stored in two columns, lbs and oz.
     # convert to a single column in lb
     # NOTE: creating a new column requires dictionary syntax,
