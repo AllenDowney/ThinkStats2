@@ -12,6 +12,7 @@ import pandas
 import random
 import numpy as np
 import statsmodels.formula.api as smf
+import re
 
 import chap01ex_soln
 import first
@@ -20,6 +21,13 @@ import thinkstats2
 
 
 def QuickLeastSquares(xs, ys):
+    """Estimates linear least squares fit and returns MSE.
+
+    xs: sequence of values
+    ys: sequence of values
+
+    returns: inter, slope, mse
+    """
     n = float(len(xs))
 
     meanx = xs.mean()
@@ -34,16 +42,65 @@ def QuickLeastSquares(xs, ys):
     inter = meany - slope * meanx
 
     res = ys - (inter + slope * xs)
-    tse = np.dot(res, res)
-    return inter, slope, tse
+    mse = np.dot(res, res) / n
+    return inter, slope, mse
 
 
-def AlmostEquals(x, y, tol=1e-6):
-    return abs(x-y) < tol
+def ReadVariables():
+    vars1 = thinkstats2.ReadStataDct('2002FemPreg.dct').variables
+    vars2 = thinkstats2.ReadStataDct('2002FemResp.dct').variables
+
+    all_vars = vars1.append(vars2)
+    all_vars.index = all_vars.name
+    return all_vars
 
 
-def GoMining(join):
-    pass
+def GoMining(live):
+    """
+    """
+    resp = chap01ex_soln.ReadFemResp()
+    resp.index = resp.caseid
+
+    live = live[live.prglngth>30]
+    join = live.join(resp, on='caseid', rsuffix='_r')
+    join.screentime = pandas.to_datetime(join.screentime)
+    print(len(join), len(join.columns))
+
+    t = []
+    for name in join.columns:
+        try:
+            if join[name].var() < 1e-7:
+                continue
+
+            formula = 'totalwgt_lb ~ agepreg + ' + name
+            model = smf.ols(formula, data=join)
+            if model.nobs < len(join)/2:
+                continue
+
+            results = model.fit()
+        except (ValueError, TypeError):
+            continue
+
+        t.append((results.rsquared, name))
+
+    all_vars = ReadVariables()
+
+    t.sort(reverse=True)
+    for mse, name in t[:30]:
+        key = re.sub('_r$', '', name)
+        try:
+            desc = all_vars.loc[key].desc
+            if isinstance(desc, pandas.Series):
+                desc = desc[0]
+            print(name, mse, desc)
+        except KeyError:
+            print(name, mse)
+
+    formula = ('totalwgt_lb ~ agepreg + C(race) + babysex==1 + '
+               'nbrnaliv>1 + paydu==1 + totincr')
+    results = smf.ols(formula, data=join).fit()
+    Summarize(results)
+    print(results.summary())
 
 
 def Summarize(results):
@@ -58,8 +115,8 @@ def Summarize(results):
     print('R^2 %.4g' % results.rsquared)
 
     ys = results.model.endog
-    print('Std(ys) %.4g' % thinkstats2.Std(ys))
-    print('Std(res) %.4g' % thinkstats2.Std(results.resid))
+    print('Std(ys) %.4g' % ys.std())
+    print('Std(res) %.4g' % results.resid.std())
 
 
 def RunSimpleRegression(live):
@@ -90,6 +147,9 @@ def RunSimpleRegression(live):
     #print('fittedvalues', len(results.fittedvalues))
 
     Summarize(results)
+
+    def AlmostEquals(x, y, tol=1e-6):
+        return abs(x-y) < tol
 
     assert(AlmostEquals(results.params['Intercept'], inter))
     assert(AlmostEquals(results.params['agepreg'], slope))
@@ -185,6 +245,10 @@ def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
     
     live, firsts, others = first.MakeFrames()
+
+    GoMining(live)
+    return
+
     RunModels(live, firsts, others)
     return
 

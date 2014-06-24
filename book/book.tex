@@ -7690,6 +7690,7 @@ age provides no substantial improvement to the predictions.
 
 
 \section{Multiple regression}
+\label{multiple}
 
 In Section~\ref{birth_weights} we saw that first babies tend to be
 lighter than others, and this effect is statistically significant.
@@ -7776,8 +7777,8 @@ variation in birth weight.
 The results are simular with {\tt agepreg}:
 
 \begin{verbatim}
-   Intercept	6.83	(0)
-     agepreg	0.0175	(5.72e-11)
+Intercept	6.83	(0)
+agepreg	        0.0175	(5.72e-11)
 R^2 0.004738
 \end{verbatim}
 
@@ -7789,10 +7790,9 @@ can fit a single model that includes both variables.  With the
 formula \verb"totalwgt_lb ~ isfirst + agepreg", we get:
 
 \begin{verbatim}
-
-   Intercept	 6.91	(0)
+Intercept	 6.91	(0)
 isfirst[T.True]	-0.0698	(0.0253)
-     agepreg	 0.0154	(3.93e-08)
+agepreg	         0.0154	(3.93e-08)
 R^2 0.005289
 \end{verbatim}
 
@@ -7858,14 +7858,269 @@ Model 4 & -0.0504 (0.11) & 0.112 * & -0.00185 * & 0.0075 \\
 \end{tabular}
 \end{center}
 
-Conclusions.
-{\bf control}
+We conclude that the apparent difference in birth weight
+is explained, at least in part, by the difference in mother's age.
+When we include mother's age in the model, the effect of
+{\tt isfirst} gets smaller, and the remaining effect might be
+due to chance.
+
+In this example, mother's age acts as a {\bf control variable};
+including {\tt agepreg} in the model ``controls for'' the
+difference in age between first-time mothers and others, making
+it possible to isolate the effect (if any) of {\tt isfirst}. 
 
 
 \section{Data mining}
+\label{mining}
+
+So far we have used regression models for explanation; for example,
+in the previous section we discovered that an apparent difference
+in birth weight is actually due to a difference in mother's age.
+But the $R^2$ values of those models is very low, which means that
+they have little predictive power.  In this section we'll try to
+do better.
+
+Suppose one of your co-workers is expecting a baby and
+there is an office pool to guess the baby's birth weight (if you are
+not familiar with betting pools, see
+\url{https://en.wikipedia.org/wiki/Betting_pool}).
+
+Now suppose that you {\em really} want to win the pool.  What could
+you do to improve your chances?  Well, 
+the NSFG dataset includes 244 variables about each pregnancy and another
+3087 variables about each respondent.  Maybe some of those variables
+have predictive power.  To find out which ones are most useful,
+why not try them all?
+
+Testing the variables in the pregnancy table is easy, but in order to
+use the variables in the respondent table, we have to match up each
+pregnancy with a respondent.  In theory we could iterate through the
+rows of the pregnancy table, use the {\tt caseid} to find the
+corresponding respondent, and copy the values from the
+correspondent table into the pregnancy table.  But that would be slow.
+
+A better option is to recognize this process as a {\bf join} operation
+as defined in SQL and other relational database languages (see
+\url{https://en.wikipedia.org/wiki/Join_(SQL)}).  Join is implemented
+as a DataFrame method, so we can perform the operation like this:
+
+\begin{verbatim}
+    live = live[live.prglngth>30]
+    resp = chap01ex_soln.ReadFemResp()
+    resp.index = resp.caseid
+    join = live.join(resp, on='caseid', rsuffix='_r')
+\end{verbatim}
+
+The first line selects records for pregnancies longer than 30 weeks,
+assuming that the office pool is formed several weeks before the
+due date.
+
+The next line reads the respondent file.  The result is a DataFrame
+with integer indices; in order to look up respondents efficiently,
+I replace {\tt resp.index} with {\tt resp.caseid}. 
+
+The {\tt join} method is invoked on {\tt live}, which is considered
+the ``left'' table, and passed {\tt resp}, which is the ``right'' table.
+The keyword argument {\tt on} indicates the variable used to match up
+rows from the two tables.
+
+In this example some column names appear in both tables,
+so we have to provide {\tt rsuffix}, which is a string that will be
+appended to the names of overlapping columns from the right table.
+For example, both tables have a column named {\tt race} that encodes
+the race of the respondent.  The result of the join contains two
+columns named {\tt race} and \verb"race_r".
+
+The pandas implementation is fast.  Joining the NSFG tables takes
+less than a second on an ordinary desktop computer.
+Now we can start testing variables.
+
+\begin{verbatim}
+    t = []
+    for name in join.columns:
+        try:
+            if join[name].var() < 1e-7:
+                continue
+
+            formula = 'totalwgt_lb ~ agepreg + ' + name
+            model = smf.ols(formula, data=join)
+            if model.nobs < len(join)/2:
+                continue
+
+            results = model.fit()
+        except (ValueError, TypeError):
+            continue
+
+        t.append((results.rsquared, name))
+\end{verbatim}
+
+For each variable we construct a model, compute $R^2$, and append
+the results to a list.  The models all include {\tt agepreg}, since
+we already know that it has some predictive power.
+
+I check that each explanatory variable has some variability; otherwise
+the results of the regression are unreliable.  I also check the number
+of observations for each model.  Variables that contains a large number
+of NA values are not good candidates for prediction.
+
+For most of these variables, we haven't done any cleaning.  Some of them
+are encoded in ways that don't work very well for linear regression.
+As a result, we might overlook some variables that would be useful if
+they were cleaned properly.  But maybe we will find some good candidates.
+
+
+\section{Predictive modeling}
+
+The next step is to sort the results and select the variables that
+yield the highest values of $R^2$.
+
+\begin{verbatim}
+    t.sort(reverse=True)
+    for mse, name in t[:30]:
+        print(name, mse)
+\end{verbatim}
+
+The first variable on the list is \verb"totalwgt_lb",
+followed by \verb"birthwgt_lb".  Obviously, we can't use birth
+weight to predict birthweight.
+
+Similarly {\tt prglngth} has useful predictive power, but for the
+office pool we assume pregnancy length (and the related variables)
+are not known yet.
+
+The first useful predictive variable {\tt babysex} which indicates
+whether the baby is male or female.  In the NSFG dataset, boys are
+about 0.3 lbs heavier.  So, assuming that the sex of the baby is
+known, we can use it for prediction.
+
+Next is {\tt race}, which indicates whether the respondent is white,
+black, or other.  As an explanatory variable, race can be problematic.
+In datasets like the NSFG, race is correlated with many other
+variables, including income and other socioeconomic factors.  In a
+regression model, race acts as a {\bf proxy variable},
+so apparent correlations with race are often caused, at least in
+part, by other factors.
+
+The next variable on the list is {\tt nbrnaliv}, which indicates
+whether the pregnancy yielded multiple births.  Twins and triplets
+tend to be smaller than other babies, so if we know whether our
+hypothetical co-worker is expecting twins, that would help.
+
+Next on the list is {\tt paydu}, which indicates whether the
+respondent owns her home.  It is one of several income-related
+variables that turn out to be predictive.  In datasets like the NSFG,
+income and wealth are correlated with just about everything.  In this
+example, income is related to diet, health, health care, and other
+factors likely to affect birth weight.
+
+Some other the other variables on the list are things that would not
+be known until later, like {\tt bfeedwks}, the number of weeks
+the baby was breast fed.  We can't use these variables for prediction,
+but you might want to speculate on reasons
+{\tt bfeedwks} might be correlated with birth weight.
+
+Sometimes you start with a theory and use data to test it.  Other
+times you start with data and go looking for possible theories.
+The second approach, which this section demonstrates, is
+called {\bf data mining}.  An advantage of data mining is that it
+can discover unexpected patterns.  A hazard is that many of the
+patterns it discovers are either random or spurious.
+
+Having identified potential explanatory variables, I tested a few
+models and settled on this one:
+
+\begin{verbatim}
+    formula = ('totalwgt_lb ~ agepreg + C(race) + babysex==1 + '
+               'nbrnaliv>1 + paydu==1 + totincr')
+    results = smf.ols(formula, data=join).fit()
+\end{verbatim}
+
+This formula uses some syntax we have not seen yet:
+{\tt C(race)} tells the formula parser (Patsy) to treat race as a
+categorical variable, even though it is encoded numerically.
+
+The encoding for {\tt babysex} is 1 for male, 2 for female; writing
+{\tt babysex==1} converts it to boolean, True for male and false for
+female.
+
+Similarly {\tt nbrnaliv>1} is True for multiple births and 
+{\tt paydu==1} is True for respondents who own their houses.
+
+{\tt totincr} is encoded numerically from 1-14, which each increment
+representing about \$5000 in annual income.  So we can treat these
+values as numerical, expressed in units of \$5000.
+
+Here are the results of the model:
+
+\begin{verbatim}
+Intercept	        6.63	(0)
+C(race)[T.2]	        0.357	(5.43e-29)
+C(race)[T.3]	        0.266	(2.33e-07)
+babysex == 1[T.True]	0.295	(5.39e-29)
+nbrnaliv > 1[T.True]   -1.38	(5.1e-37)
+paydu == 1[T.True]	0.12	(0.000114)
+agepreg	                0.00741	(0.0035)
+totincr	                0.0122	(0.00188)
+\end{verbatim}
+
+The estimated parameters for race are larger than I expected,
+especially since we have controlled for income.  The encoding
+is 1 for white, 2 for black, and 3 for other.  Babies of white
+mothers are lighter than babies of other races by 0.27--0.36 lbs.
+
+As we've already seen, boys are heavier by about 0.3 lbs;
+twins and other multiplets are lighter by 1.4 lbs.
+
+People who own their homes have heavier babies by about 0.12 lbs,
+even when we control for income.  The parameter for mother's
+age is smaller than what we saw in Section~\ref{multiple}, which
+suggests that some of the other variables are correlated with
+age, probably including {\tt paydu} and {\tt totincr}.
+
+All of these variables are statistically significant, some with
+very low p-values, but 
+$R^2$ is only 0.06, still quite small.
+RMSE without using the model is 1.27 lbs; with the model it drops
+to 1.23.  So your chance of winning the pool is not substantially
+improved.  Sorry!
+
 
 
 \section{Logistic regression}
+
+In the previous examples, some of the explanatory variables are
+numerical, some categorical, and some boolean (which is really
+categorical).  But the dependent variable was numerical.
+
+Linear regression can be generalized to handle other kinds of
+dependent variables.  If the dependent variable is boolean, the
+process is called {\bf logistic regression}.  If the dependent
+variable is a positive, integer count, it's called {\bf Poisson
+regression}.  These forms of regression are known as
+{\bf generalized linear models}.
+
+\begin{verbatim}
+\end{verbatim}
+
+
+
+
+\section{Exercises}
+
+\begin{exercise}
+
+Section~\ref{} presents a hypothetical office pool where friends
+of a pregnant woman try to guess the baby's birth weight.  Suppose,
+instead, that the goal is to predict the date of birth.  Assuming that
+bets are placed during the 30th week of pregnancy, what variables
+could you use to make the best prediction?  You should limit yourself
+to variables that are known before the birth, and likely to be available
+to the people in the pool.
+
+\end{exercise}
+
+\section{Glossary}
+
 
 
 \chapter{Time series analysis}
