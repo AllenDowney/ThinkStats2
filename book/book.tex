@@ -7674,8 +7674,8 @@ I use a simpler function called {\tt SummarizeResults}.  Here are
 the results of this model:
 
 \begin{verbatim}
-   Intercept	6.83	(0)
-     agepreg	0.0175	(5.72e-11)
+Intercept       6.83    (0)
+agepreg         0.0175  (5.72e-11)
 R^2 0.004738
 Std(ys) 1.408
 Std(res) 1.405
@@ -7755,8 +7755,8 @@ using {\tt isfirst} as an explanatory variable.
 Here are the results:
 
 \begin{verbatim}
-   Intercept	  7.33	(0)
-isfirst[T.True]  -0.125	(2.55e-05)
+Intercept         7.33   (0)
+isfirst[T.True]  -0.125  (2.55e-05)
 R^2 0.00196
 \end{verbatim}
 
@@ -7777,8 +7777,8 @@ variation in birth weight.
 The results are simular with {\tt agepreg}:
 
 \begin{verbatim}
-Intercept	6.83	(0)
-agepreg	        0.0175	(5.72e-11)
+Intercept       6.83    (0)
+agepreg         0.0175  (5.72e-11)
 R^2 0.004738
 \end{verbatim}
 
@@ -7790,9 +7790,9 @@ can fit a single model that includes both variables.  With the
 formula \verb"totalwgt_lb ~ isfirst + agepreg", we get:
 
 \begin{verbatim}
-Intercept	 6.91	(0)
-isfirst[T.True]	-0.0698	(0.0253)
-agepreg	         0.0154	(3.93e-08)
+Intercept        6.91    (0)
+isfirst[T.True] -0.0698  (0.0253)
+agepreg          0.0154  (3.93e-08)
 R^2 0.005289
 \end{verbatim}
 
@@ -7823,10 +7823,10 @@ Now by estimating parameters for {\tt agepreg} and {\tt agepreg2},
 we are effectively fitting a parabola:
 
 \begin{verbatim}
-   Intercept	 5.69	 (1.38e-86)
-isfirst[T.True]	-0.0504	 (0.109)
-     agepreg	 0.112	 (3.23e-07)
-    agepreg2	-0.00185 (8.8e-06)
+Intercept        5.69     (1.38e-86)
+isfirst[T.True] -0.0504   (0.109)
+agepreg          0.112    (3.23e-07)
+agepreg2        -0.00185  (8.8e-06)
 R^2 0.007462
 \end{verbatim}
 
@@ -8053,14 +8053,14 @@ values as numerical, expressed in units of \$5000.
 Here are the results of the model:
 
 \begin{verbatim}
-Intercept	        6.63	(0)
-C(race)[T.2]	        0.357	(5.43e-29)
-C(race)[T.3]	        0.266	(2.33e-07)
-babysex == 1[T.True]	0.295	(5.39e-29)
-nbrnaliv > 1[T.True]   -1.38	(5.1e-37)
-paydu == 1[T.True]	0.12	(0.000114)
-agepreg	                0.00741	(0.0035)
-totincr	                0.0122	(0.00188)
+Intercept               6.63    (0)
+C(race)[T.2]            0.357   (5.43e-29)
+C(race)[T.3]            0.266   (2.33e-07)
+babysex == 1[T.True]    0.295   (5.39e-29)
+nbrnaliv > 1[T.True]   -1.38    (5.1e-37)
+paydu == 1[T.True]      0.12    (0.000114)
+agepreg                 0.00741 (0.0035)
+totincr                 0.0122  (0.00188)
 \end{verbatim}
 
 The estimated parameters for race are larger than I expected,
@@ -8099,17 +8099,215 @@ variable is a positive, integer count, it's called {\bf Poisson
 regression}.  These forms of regression are known as
 {\bf generalized linear models}.
 
+Logistic regression is used when the dependent variable is boolean.
+For example, thinking again about the office pool scenario, suppose
+a friend of yours is pregnant and you want to predict whether the
+baby is a boy or a girl.  You could use data from the NSFG to find
+factors that affect the probability of having a girl.
+
+If you encode the outcomes numerically, for example 0 for a girl
+and 1 for a boy, you could apply ordinary least squares to this
+problem.  The linear model might be something like this:
+%
+\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \eps \]
+%
+Where $y$ is the dependent variable, and $x_1$ and $x_2$ are
+explanatory variables.  Then we could find the parameters that
+minimize the residuals.
+
+The problem with this approach is that it produces predictions that
+are hard to interpret.  Given estimated parameters and values for
+$x_1$ and $x_2$, the model might predict $y=0.5$, but the only
+meaningful values of $y$ are 0 and 1.
+
+It is tempting to interpret a result like that as a probability; for
+example, we might say that a respondent with particular values of
+$x_1$ and $x_2$ has a 50\% chance of having a girl.  But it is also
+possible for this model to predict $y=1.1$ or $y=-0.1$, and those
+are not valid probabilities.
+
+Logistic regression solves this problem by expressing predictions in
+terms of {\bf odds} rather than probabilities.  You might have heard
+expressions like ``the odds are three to one,'' but you might not know
+what that means.  The ``odds in favor'' of an event refer to the
+ratio of the probability it will occur to the probability that it will
+not.
+
+So if I think my team has a 75\% chance of winning, I would
+say that the odds in their favor are three to one, because
+the chance of winning is three times the chance of losing.
+
+You can write odds in decimal form, but it is most common to
+represent them as a ratio of integers.  So ``three to one'' is
+written $3:1$.
+
+When probabilities are low, it is more common to report the
+``odds against'' rather than the odds in favor.  For
+example, if my horse has a 10\% chance of winning,
+the odds against are $9:1$.
+
+Odds and probabilities are different representations of the
+same information.  Given a probability, you can compute the
+odds like this:
+
 \begin{verbatim}
+def Odds(p):
+    return p / (1-p)
+\end{verbatim}
+
+Given the odds in favor, in decimal form, you can convert to
+probability like this:
+
+\begin{verbatim}
+def Probability(o):
+    return o / (o+1)
+\end{verbatim}
+
+If you represent odds as a ratio {\tt x:y}, you
+can convert to probability like this:
+
+\begin{verbatim}
+def Probability2(x, y):
+    return x / (x + y)
+\end{verbatim}
+
+Logistic regression is based on the following model:
+%
+\[ \log o = \beta_0 + \beta_1 x_1 + \beta_2 x_2 \]
+%
+Where $o$ is the odds in favor of a particular outcome; in the
+example, $o$ would be the odds of having a boy.
+
+Suppose we have estimated the parameters $\beta_0$, $\beta_1$, and
+$\beta_2$ (I'll explain how in a minute).  And suppose we are given
+values for $x_1$ and $x_2$.  We could compute the predicted value of
+$\log o$, and then convert to a probability:
+
+\begin{verbatim}
+def Probability3(log_o):
+    o = math.exp(log_o)
+    return o / (o+1)
+\end{verbatim}
+
+So in the office pool scenario we could compute the predictive
+probability of having a boy.  But how do we estimate the parameters?
+
+
+\section{Estimating parameters}
+
+Unlike linear regression, logistic regression does not have a
+closed-form solution, so it is solved by guessing an initial
+solution and improving it iteratively.
+
+The usual goal is to find the maximum-likelihood estimate (MLE),
+which is the parameter values that maximize the likelihood of the
+data.  For example, suppose we have the following data:
+
+\begin{verbatim}
+>>> y  = np.array([0, 1, 0, 1])
+>>> x1 = np.array([0, 0, 1, 1])
+>>> x2 = np.array([0, 1, 0, 1])
+\end{verbatim}
+
+And we start with the initial guesses $\beta_0=-1.5$, $\beta_1=1.3$,
+and $\beta_2=1.8$:
+
+\begin{verbatim}
+>>> beta = [-1.5, 1.3, 1.8]
+\end{verbatim}
+
+Then for each row we can compute \verb"log_o":
+
+\begin{verbatim}
+>>> log_o = beta[0] + beta[1] * x1 + beta[2] * x2 
+[-1.5,  0.3, -0.2,  1.6]
+\end{verbatim}
+
+Then we can convert from log-odds to odds:
+
+\begin{verbatim}
+>>> o = np.exp(log_o)
+[ 0.223,  1.349,  0.818,  4.953]
+\end{verbatim}
+
+And from odds to probabilities:
+
+\begin{verbatim}
+>>> p = o / (o+1)
+[ 0.182,  0.574,  0.450,  0.832]
+\end{verbatim}
+
+Notice that when log-odds are greater than 0, the correspond to
+odds greater than 1 and probabilities greater than 0.5.
+
+If we think the probability of a boy is 0.8 and the outcome is a boy,
+the likelihood of the outcome is 0.8; if the outcome is a girl, the
+likelihood is 0.2.  More generally, the likelihood of an outcome is 
+{\tt p} when {\tt y==1} and {\tt 1-p} when {\tt y==0}.  We can
+compute that like this:
+
+\begin{verbatim}
+>>> likes = y * p + (1-y) * (1-p)
+[ 0.817,  0.574,  0.549,  0.832]
+\end{verbatim}
+
+The overall likelihood of the data is the product of {\tt likes}:
+
+\begin{verbatim}
+>>> like = np.prod(likes)
+0.215
+\end{verbatim}
+
+For these values of {\tt beta}, the likelihood of the data is 0.215.
+To find the values of {\tt beta} that maximize likelihood, most
+statistics packages use an iterative solver like Newton's method
+(see \url{https://en.wikipedia.org/wiki/Logistic_regression#Model_fitting}).
+
+
+\section{Implementation}
+
+{\tt statsmodels} provides an implementation of logistic regression
+called {\tt logit} (it is named for the logit function, which converts
+from probability to log-odds).  We can use it to look for variables
+that help predict the sex of a baby.
+
+Again, I loaded the NSFG data and selected pregnancies longer than
+30 weeks:
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    df = live[live.prglngth>30]
+\end{verbatim}
+
+{\tt logit} requires the dependent variable to be binary (rather
+than boolean), so I'll create a new column:
+
+\begin{verbatim}
+    df['boy'] = (df.babysex==1).astype(int)
+\end{verbatim}
+
+{\tt astype} is a Series method that converts to other types.  Now
+we can run a logistic regression to see if the mother's age affects
+the sex of the baby:
+
+\begin{verbatim}
+    import statsmodels.formula.api as smf
+
+    model = smf.logit('boy ~ agepreg', data=df)
+    results = model.fit()
+    SummarizeResults(results)
 \end{verbatim}
 
 
+\begin{verbatim}
+\end{verbatim}
 
 
 \section{Exercises}
 
 \begin{exercise}
 
-Section~\ref{} presents a hypothetical office pool where friends
+Section~\ref{???} presents a hypothetical office pool where friends
 of a pregnant woman try to guess the baby's birth weight.  Suppose,
 instead, that the goal is to predict the date of birth.  Assuming that
 bets are placed during the 30th week of pregnancy, what variables
@@ -8118,6 +8316,21 @@ to variables that are known before the birth, and likely to be available
 to the people in the pool.
 
 \end{exercise}
+
+\begin{exercise}
+The Trivers–Willard hypothesis suggests that for many mammals the
+ratio of boys to girls depends on ``maternal condition''; that is,
+factors like the mother's age, size, health, and social status.
+\url{https://en.wikipedia.org/wiki/Trivers-Willard_hypothesis} Some
+studies have shown this effect among humans, but results have been
+mixed.
+
+Use the NSFG data to test this hypothesis.  Can you evidence that
+supports or refutes it?
+\end{exercise}
+
+
+
 
 \section{Glossary}
 
