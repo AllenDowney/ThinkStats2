@@ -436,6 +436,9 @@ def Cdf(cdf, complement=False, transform=None, **options):
       Config, Show or Save.
     """
     xs, ps = cdf.Render()
+    xs = np.asarray(xs)
+    ps = np.asarray(ps)
+
     scale = dict(xscale='linear', yscale='linear')
 
     for s in ['xscale', 'yscale']: 
@@ -455,15 +458,15 @@ def Cdf(cdf, complement=False, transform=None, **options):
         ps = [1.0-p for p in ps]
 
     if transform == 'weibull':
-        xs.pop()
-        ps.pop()
+        xs = np.delete(xs, -1)
+        ps = np.delete(ps, -1)
         ps = [-math.log(1.0-p) for p in ps]
         scale['xscale'] = 'log'
         scale['yscale'] = 'log'
 
     if transform == 'gumbel':
-        xs.pop(0)
-        ps.pop(0)
+        xs = xp.delete(xs, 0)
+        ps = np.delete(ps, 0)
         ps = [-math.log(p) for p in ps]
         scale['yscale'] = 'log'
 
