@@ -77,19 +77,20 @@ def JoinFemResp(df):
     return join
 
 
-def GoMining(df, formula='totalwgt_lb ~ agepreg + '):
+def GoMining(df):
     """Searches for variables that predict birth weight.
 
     df: DataFrame of pregnancy records
-    formula: string Patsy formula
+
+    returns: list of (rsquared, variable name) pairs
     """
-    t = []
+    variables = []
     for name in df.columns:
         try:
             if df[name].var() < 1e-7:
                 continue
 
-            formula += name
+            formula='totalwgt_lb ~ agepreg + ' + name
             model = smf.ols(formula, data=df)
             if model.nobs < len(df)/2:
                 continue
@@ -98,12 +99,12 @@ def GoMining(df, formula='totalwgt_lb ~ agepreg + '):
         except (ValueError, TypeError):
             continue
 
-        t.append((results.rsquared, name))
+        variables.append((results.rsquared, name))
 
-    return t
+    return variables
 
 
-def MiningReport(t, n=30):
+def MiningReport(variables, n=30):
     """Prints variables with the highest R^2.
 
     t: list of (R^2, variable name) pairs
@@ -111,8 +112,8 @@ def MiningReport(t, n=30):
     """
     all_vars = ReadVariables()
 
-    t.sort(reverse=True)
-    for mse, name in t[:n]:
+    variables.sort(reverse=True)
+    for mse, name in variables[:n]:
         key = re.sub('_r$', '', name)
         try:
             desc = all_vars.loc[key].desc
@@ -124,7 +125,7 @@ def MiningReport(t, n=30):
 
 
 def PredictBirthWeight(live):
-    """Predict birth weight of a baby at 30 weeks.
+    """Predicts birth weight of a baby at 30 weeks.
 
     live: DataFrame of live births
     """
@@ -138,7 +139,6 @@ def PredictBirthWeight(live):
                'nbrnaliv>1 + paydu==1 + totincr')
     results = smf.ols(formula, data=join).fit()
     SummarizeResults(results)
-    #print(results.summary())
 
 
 def SummarizeResults(results):
@@ -160,6 +160,11 @@ def SummarizeResults(results):
 
 
 def RunSimpleRegression(live):
+    """Runs a simple regression and compare results to thinkstats2 functions.
+
+    live: DataFrame of live births
+    """
+    # run the regression with thinkstats2 functions
     live_dropna = live.dropna(subset=['agepreg', 'totalwgt_lb'])
     ages = live_dropna.agepreg
     weights = live_dropna.totalwgt_lb
@@ -167,25 +172,10 @@ def RunSimpleRegression(live):
     res = thinkstats2.Residuals(ages, weights, inter, slope)
     r2 = thinkstats2.CoefDetermination(weights, res)
 
+    # run the regression with statsmodels
     formula = 'totalwgt_lb ~ agepreg'
     model = smf.ols(formula, data=live)
-    # OLS object
     results = model.fit()
-    # RegressionResults object
-
-    #print('p-value', results.f_pvalue)
-    #print('mse model', results.mse_model)
-    #print('mse resid', results.mse_resid)
-    #print('mse total', results.mse_total)
-    #print('r2', results.rsquared, r2)
-    #print('r2 adj', results.rsquared_adj)
-    #print('inter', results.params['Intercept'], inter)
-    #print('p-value', results.pvalues['Intercept'])
-    #print('slope', results.params['agepreg'], slope)
-    #print('p-value', results.pvalues['agepreg'])
-    #print('Std(res)', thinkstats2.Std(results.resid), thinkstats2.Std(res))
-    #print('fittedvalues', len(results.fittedvalues))
-
     SummarizeResults(results)
 
     def AlmostEquals(x, y, tol=1e-6):
@@ -197,6 +187,10 @@ def RunSimpleRegression(live):
 
 
 def PivotTables(live):
+    """Prints a pivot table comparing first babies to others.
+
+    live: DataFrame of live births
+    """
     table = pandas.pivot_table(live, rows='isfirst',
                                values=['totalwgt_lb', 'agepreg'])
     print(table)
@@ -234,8 +228,6 @@ def RunModels(live):
 
     live: DataFrame of pregnancy records
     """
-    live['isfirst'] = live.birthord == 1
-
     columns = ['isfirst[T.True]', 'agepreg', 'agepreg2']
     header = ['isfirst', 'agepreg', 'agepreg2']
 
@@ -287,11 +279,11 @@ def PrintTabular(rows, header):
 def LogisticRegressionExample():
     """Runs a simple example of logistic regression and prints results.
     """
-    y = np.array([0, 1, 0, 1, 1])
-    x1 = np.array([0, 0, 1, 1, 0])
-    x2 = np.array([0, 1, 1, 1, 1])
+    y = np.array([0, 1, 0, 1])
+    x1 = np.array([0, 0, 0, 1])
+    x2 = np.array([0, 1, 1, 1])
 
-    beta = [-1.5, 1.3, 1.8]
+    beta = [-1.5, 2.8, 1.1]
 
     log_o = beta[0] + beta[1] * x1 + beta[2] * x2 
     print(log_o)
@@ -307,9 +299,10 @@ def LogisticRegressionExample():
     print(np.prod(like))
 
     df = pandas.DataFrame(dict(y=y, x1=x1, x2=x2))
-    results = smf.logit('y ~ x1', data=df).fit()
+    results = smf.logit('y ~ x1 + x2', data=df).fit()
     print(results.summary())
 
+    
 
 def RunLogisticModels(live):
     """Runs regressions that predict sex.
@@ -324,22 +317,58 @@ def RunLogisticModels(live):
     df['boy'] = (df.babysex==1).astype(int)
     df['isyoung'] = (df.agepreg<20).astype(int)
     df['isold'] = (df.agepreg<35).astype(int)
+    df['season'] = (((df.datend+1) % 12) / 3).astype(int)
 
-    model = smf.logit('boy ~ agepreg', data=df)
+    # run the simple model
+    model = smf.logit('boy ~ agepreg', data=df)    
     results = model.fit()
+    print('nobs', results.nobs)
     print(type(results))
     SummarizeResults(results)
 
-    model = smf.logit('boy ~ isold + isyoung', data=df)
+    # run the complex model
+    model = smf.logit('boy ~ agepreg + hpagelb + birthord + C(race)', data=df)
     results = model.fit()
+    print('nobs', results.nobs)
+    print(type(results))
     SummarizeResults(results)
+
+    # make the scatter plot
+    exog = pandas.DataFrame(model.exog, columns=model.exog_names)
+    endog = pandas.DataFrame(model.endog, columns=[model.endog_names])
+    
+    xs = exog['agepreg']
+    lo = results.fittedvalues
+    o = np.exp(lo)
+    p = o / (o+1)
+
+    #thinkplot.Scatter(xs, p, alpha=0.1)
+    #thinkplot.Show()
+
+    # compute accuracy
+    actual = endog['boy']
+    baseline = actual.mean()
+
+    predict = (results.predict() >= 0.5)
+    true_pos = predict * actual
+    true_neg = (1 - predict) * (1 - actual)
+
+    acc = (sum(true_pos) + sum(true_neg)) / len(actual)
+    print(acc, baseline)
+
+    columns = ['agepreg', 'hpagelb', 'birthord', 'race']
+    new = pandas.DataFrame([[35, 39, 3, 1]], columns=columns)
+    y = results.predict(new)
+    print(y)
 
 
 def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
-    #LogisticRegressionExample()
+    LogisticRegressionExample()
+    return
 
     live, firsts, others = first.MakeFrames()
+    live['isfirst'] = (live.birthord == 1)
 
     RunLogisticModels(live)
     return

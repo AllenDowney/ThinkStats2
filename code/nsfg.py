@@ -44,6 +44,7 @@ def CleanFemPreg(df):
     na_vals = [97, 98, 99]
     df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
     df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
+    df.hpagelb.replace(na_vals, np.nan, inplace=True)
 
     df.babysex.replace([7, 9], np.nan, inplace=True)
     df.nbrnaliv.replace([9], np.nan, inplace=True)
@@ -99,9 +100,6 @@ def main(script):
     assert df.finalwgt.value_counts()[key] == 6
 
     print('%s: All tests passed.' % script)
-
-    firsts = df[df.birthord == 1]
-    print(firsts.totalwgt_lb.mean())
 
 if __name__ == '__main__':
     main(*sys.argv)

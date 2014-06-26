@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.10}
+\newcommand{\theversion}{2.0.11}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -217,11 +217,6 @@ of a textbook, which can be converted to other formats and printed.
 
 The \LaTeX\ source for this book is available from
 \url{http://thinkstats2.com}.
-
-The cover for this book is based on a photo by Paul Friel
-(\url{http://flickr.com/people/frielp/}), who made it available under
-the Creative Commons Attribution license.  The original photo
-is at \url{http://flickr.com/photos/frielp/11999738/}.
 
 \vspace{0.2in}
 
@@ -7588,7 +7583,7 @@ unknown factors.
 Given a sequence of values for $y$ and sequences for $x_1$ and $x_2$,
 we can find the parameters, $\beta_0$, $\beta_1$, and $\beta_2$, that
 minimize the sum of $\eps^2$.  This process is called
-{\bf ordinary least squares}.  The implementation is similar to {\tt
+{\bf ordinary least squares}.  The computation is similar to {\tt
   thinkstats2.LeastSquare}, but generalized to deal with more than one
 explanatory variable.  You can find the details at
 \url{https://en.wikipedia.org/wiki/Ordinary_least_squares}
@@ -7624,11 +7619,11 @@ operator separates the dependent variable on the left from the
 explatory variables on the right.
 
 {\tt smf.ols} takes the formula string and the DataFrame, {\tt live},
-and returns an object that represents the model.  The name {\tt ols}
+and returns an OLS object that represents the model.  The name {\tt ols}
 stands for ``ordinary least squares.''
 
-The {\tt fit} method fits the model to the data and returns an
-object that contains the results.  
+The {\tt fit} method fits the model to the data and returns a
+RegressionResults object that contains the results.
 
 The results are also available as attributes.  {\tt params}
 is a Series that maps from variable names to their parameters, so we can
@@ -7969,7 +7964,7 @@ As a result, we might overlook some variables that would be useful if
 they were cleaned properly.  But maybe we will find some good candidates.
 
 
-\section{Predictive modeling}
+\section{Prediction}
 
 The next step is to sort the results and select the variables that
 yield the highest values of $R^2$.
@@ -8088,26 +8083,29 @@ improved.  Sorry!
 
 \section{Logistic regression}
 
-In the previous examples, some of the explanatory variables are
-numerical, some categorical, and some boolean (which is really
-categorical).  But the dependent variable was numerical.
+In the previous examples, some of the explanatory variables were
+numerical and some categorical (including boolean).  But the dependent
+variable was always numerical.
 
 Linear regression can be generalized to handle other kinds of
 dependent variables.  If the dependent variable is boolean, the
-process is called {\bf logistic regression}.  If the dependent
+generalized model is called {\bf logistic regression}.  If the dependent
 variable is a positive, integer count, it's called {\bf Poisson
-regression}.  These forms of regression are known as
-{\bf generalized linear models}.
+regression}.
 
-Logistic regression is used when the dependent variable is boolean.
-For example, thinking again about the office pool scenario, suppose
+As an example of logistic regression, let's consider a variation
+on the office pool scenario.
+Suppose
 a friend of yours is pregnant and you want to predict whether the
 baby is a boy or a girl.  You could use data from the NSFG to find
-factors that affect the probability of having a girl.
+factors that affect the ``sex ratio'', which is conventionally
+defined to be the probability
+of having a boy.
 
-If you encode the outcomes numerically, for example 0 for a girl
-and 1 for a boy, you could apply ordinary least squares to this
-problem.  The linear model might be something like this:
+If you encode the dependent variable numerically, for example 0 for a
+girl and 1 for a boy, you could apply ordinary least squares, but
+there would be problems.  The linear model might be something like
+this:
 %
 \[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \eps \]
 %
@@ -8122,53 +8120,31 @@ meaningful values of $y$ are 0 and 1.
 
 It is tempting to interpret a result like that as a probability; for
 example, we might say that a respondent with particular values of
-$x_1$ and $x_2$ has a 50\% chance of having a girl.  But it is also
+$x_1$ and $x_2$ has a 50\% chance of having a boy.  But it is also
 possible for this model to predict $y=1.1$ or $y=-0.1$, and those
 are not valid probabilities.
 
-Logistic regression solves this problem by expressing predictions in
-terms of {\bf odds} rather than probabilities.  You might have heard
-expressions like ``the odds are three to one,'' but you might not know
-what that means.  The ``odds in favor'' of an event refer to the
-ratio of the probability it will occur to the probability that it will
-not.
+Logistic regression avoids this problem by expressing predictions in
+terms of {\bf odds} rather than probabilities.  If you are not
+familiar with odds, ``odds in favor'' of an event is the ratio of the
+probability it will occur to the probability that it will not.
 
 So if I think my team has a 75\% chance of winning, I would
 say that the odds in their favor are three to one, because
 the chance of winning is three times the chance of losing.
 
-You can write odds in decimal form, but it is most common to
-represent them as a ratio of integers.  So ``three to one'' is
-written $3:1$.
-
-When probabilities are low, it is more common to report the
-``odds against'' rather than the odds in favor.  For
-example, if my horse has a 10\% chance of winning,
-the odds against are $9:1$.
-
-Odds and probabilities are different representations of the
-same information.  Given a probability, you can compute the
-odds like this:
+Odds and probabilities are different representations of the same
+information.  Given a probability, you can compute the odds like this:
 
 \begin{verbatim}
-def Odds(p):
-    return p / (1-p)
+    o = p / (1-p)
 \end{verbatim}
 
-Given the odds in favor, in decimal form, you can convert to
+Given odds in favor, you can convert to
 probability like this:
 
 \begin{verbatim}
-def Probability(o):
-    return o / (o+1)
-\end{verbatim}
-
-If you represent odds as a ratio {\tt x:y}, you
-can convert to probability like this:
-
-\begin{verbatim}
-def Probability2(x, y):
-    return x / (x + y)
+    p = o / (o+1)
 \end{verbatim}
 
 Logistic regression is based on the following model:
@@ -8180,13 +8156,12 @@ example, $o$ would be the odds of having a boy.
 
 Suppose we have estimated the parameters $\beta_0$, $\beta_1$, and
 $\beta_2$ (I'll explain how in a minute).  And suppose we are given
-values for $x_1$ and $x_2$.  We could compute the predicted value of
+values for $x_1$ and $x_2$.  We can compute the predicted value of
 $\log o$, and then convert to a probability:
 
 \begin{verbatim}
-def Probability3(log_o):
-    o = math.exp(log_o)
-    return o / (o+1)
+    o = np.exp(log_o)
+    p = o / (o+1)
 \end{verbatim}
 
 So in the office pool scenario we could compute the predictive
@@ -8200,78 +8175,75 @@ closed-form solution, so it is solved by guessing an initial
 solution and improving it iteratively.
 
 The usual goal is to find the maximum-likelihood estimate (MLE),
-which is the parameter values that maximize the likelihood of the
+which is the parameters that maximizes the likelihood of the
 data.  For example, suppose we have the following data:
 
 \begin{verbatim}
->>> y  = np.array([0, 1, 0, 1])
->>> x1 = np.array([0, 0, 1, 1])
->>> x2 = np.array([0, 1, 0, 1])
+>>> y = np.array([0, 1, 0, 1])
+>>> x1 = np.array([0, 0, 0, 1])
+>>> x2 = np.array([0, 1, 1, 1])
 \end{verbatim}
 
-And we start with the initial guesses $\beta_0=-1.5$, $\beta_1=1.3$,
-and $\beta_2=1.8$:
+And we start with the initial guesses $\beta_0=-1.5$, $\beta_1=2.8$,
+and $\beta_2=1.1$:
 
 \begin{verbatim}
->>> beta = [-1.5, 1.3, 1.8]
+>>> beta = [-1.5, 2.8, 1.1]
 \end{verbatim}
 
 Then for each row we can compute \verb"log_o":
 
 \begin{verbatim}
 >>> log_o = beta[0] + beta[1] * x1 + beta[2] * x2 
-[-1.5,  0.3, -0.2,  1.6]
+[-1.5 -0.4 -0.4  2.4]
 \end{verbatim}
 
-Then we can convert from log-odds to odds:
+And convert from log-odds to probabilities:
 
 \begin{verbatim}
 >>> o = np.exp(log_o)
-[ 0.223,  1.349,  0.818,  4.953]
-\end{verbatim}
+[  0.223   0.670   0.670  11.02  ]
 
-And from odds to probabilities:
-
-\begin{verbatim}
 >>> p = o / (o+1)
-[ 0.182,  0.574,  0.450,  0.832]
+[ 0.182  0.401  0.401  0.916 ]
 \end{verbatim}
 
-Notice that when log-odds are greater than 0, the correspond to
-odds greater than 1 and probabilities greater than 0.5.
+Notice that when \verb"log_o" is greater than 0, {\tt o}
+is greater than 1 and {\tt p} is greater than 0.5.
 
-If we think the probability of a boy is 0.8 and the outcome is a boy,
-the likelihood of the outcome is 0.8; if the outcome is a girl, the
-likelihood is 0.2.  More generally, the likelihood of an outcome is 
-{\tt p} when {\tt y==1} and {\tt 1-p} when {\tt y==0}.  We can
-compute that like this:
+The likelihood of an outcome is {\tt p} when {\tt y==1} and {\tt 1-p}
+when {\tt y==0}.  For example, if we think the probability of a boy is
+0.8 and the outcome is a boy, the likelihood is 0.8; if
+the outcome is a girl, the likelihood is 0.2.  We can compute that
+like this:
 
 \begin{verbatim}
 >>> likes = y * p + (1-y) * (1-p)
-[ 0.817,  0.574,  0.549,  0.832]
+[ 0.817  0.401  0.598  0.916 ]
 \end{verbatim}
 
 The overall likelihood of the data is the product of {\tt likes}:
 
 \begin{verbatim}
 >>> like = np.prod(likes)
-0.215
+0.18
 \end{verbatim}
 
-For these values of {\tt beta}, the likelihood of the data is 0.215.
-To find the values of {\tt beta} that maximize likelihood, most
-statistics packages use an iterative solver like Newton's method
-(see \url{https://en.wikipedia.org/wiki/Logistic_regression#Model_fitting}).
+For these values of {\tt beta}, the likelihood of the data is 0.18.
+The goal of logistic regression is to find parameters that maximize
+this likelihood.  To do that, most statistics packages use an
+iterative solver like Newton's method (see
+\url{https://en.wikipedia.org/wiki/Logistic_regression#Model_fitting}).
 
 
 \section{Implementation}
 
 {\tt statsmodels} provides an implementation of logistic regression
-called {\tt logit} (it is named for the logit function, which converts
-from probability to log-odds).  We can use it to look for variables
-that help predict the sex of a baby.
+called {\tt logit}, named for the function that converts from
+probability to log-odds.  To demonstrate its use, I'll look for
+variables that affect the sex ratio.
 
-Again, I loaded the NSFG data and selected pregnancies longer than
+Again, I load the NSFG data and select pregnancies longer than
 30 weeks:
 
 \begin{verbatim}
@@ -8279,16 +8251,18 @@ Again, I loaded the NSFG data and selected pregnancies longer than
     df = live[live.prglngth>30]
 \end{verbatim}
 
-{\tt logit} requires the dependent variable to be binary (rather
-than boolean), so I'll create a new column:
+{\tt logit} requires the dependent variable to be binary (rather than
+boolean), so I'll create a new column named {\tt boy}, using {\tt
+  astype(int)} to convert to binary integers:
 
 \begin{verbatim}
     df['boy'] = (df.babysex==1).astype(int)
 \end{verbatim}
 
-{\tt astype} is a Series method that converts to other types.  Now
-we can run a logistic regression to see if the mother's age affects
-the sex of the baby:
+Factors that have been found to affect sex ratio include parents'
+age, birth order, race, and social status.  We can use logistic
+regression to see if these effect appear in the NSFG data.  I'll
+start with the mother's age:
 
 \begin{verbatim}
     import statsmodels.formula.api as smf
@@ -8298,41 +8272,225 @@ the sex of the baby:
     SummarizeResults(results)
 \end{verbatim}
 
+{\tt logit} takes the same arguments as {\tt ols}, a formula
+in Patsy syntax and a DataFrame.  The result is a Logit object
+that represents the model.  It contains attributes called
+{\tt endog} and {\tt exog} that contain the {\bf endogenous
+variable}, another name for the dependent variable,
+and the {\bf exogenous variables}, another name for the
+explanatory variables.  Since they are NumPy arrays, it is
+sometimes convenient to convert them to DataFrames:
 
 \begin{verbatim}
+    endog = pandas.DataFrame(model.endog, columns=[model.endog_names])
+    exog = pandas.DataFrame(model.exog, columns=model.exog_names)
 \end{verbatim}
+
+The result of {\tt model.fit} is BinaryResults object, which is
+similar to the RegressionResults object we got from {\tt ols}.
+Here is a summary of the results:
+
+\begin{verbatim}
+Intercept   0.00579   (0.953)
+agepreg     0.00105   (0.783)
+R^2 6.144e-06
+\end{verbatim}
+
+The parameter of {\tt agepreg} is positive, which suggests that
+older mothers are more likely to have boys, but the p-value is
+0.783, which means that the apparent effect could easily be due
+to chance.
+
+The coefficient of determination, $R^2$, does not apply to logistic
+regression, but there are several alternatives that are used
+as ``pseudo $R^2$ values.''  These values can be useful for comparing
+models.  For example, here's a model that includes several factors
+believed to be associated with sex ratio:
+
+\begin{verbatim}
+    formula = 'boy ~ agepreg + hpagelb + birthord + C(race)'
+    model = smf.logit(formula, data=df)
+    results = model.fit()
+\end{verbatim}
+
+Along with mother's age, this model includes father's age at
+birth, {\tt hpagelb}, birth order, {\tt birthord}, and
+race as a categorical variable.  Here are the results:
+
+\begin{verbatim}
+Intercept      -0.0301     (0.772)
+C(race)[T.2]   -0.0224     (0.66)
+C(race)[T.3]   -0.000457   (0.996)
+agepreg        -0.00267    (0.629)
+hpagelb         0.0047     (0.266)
+birthord        0.00501    (0.821)
+R^2 0.000144
+\end{verbatim}
+
+None of the estimated parameters are statistically significant.
+$R^2$ is a little higher, but that could be due to chance.
+
+
+\section{Accuracy}
+
+In the office pool scenario,
+we are most interested in the accuracy of the model:
+the number of successful predictions, compared with what we would
+expect by chance.
+
+In the NSFG data, there are more boys than girls, so the baseline
+strategy is to guess ``boy'' every time.  The accuracy of this
+strategy is just the fraction of boys:
+
+\begin{verbatim}
+    actual = endog['boy']
+    baseline = actual.mean()
+\end{verbatim}
+
+Since {\tt actual} in encoded in binary integers, the mean is the
+fraction of boys.  Here's how we compute the accuracy of the model:
+
+\begin{verbatim}
+    predict = (results.predict() >= 0.5)
+    true_pos = predict * actual
+    true_neg = (1 - predict) * (1 - actual)
+\end{verbatim}
+
+{\tt results.predict} returns a NumPy array of probabilities, which we
+round the predictions off to 0 or 1.  Multiplying by {\tt actual}
+yields 1 if we predict a boy and get it right, 0 otherwise.  So,
+\verb"true_pos" indicates ``true positives''.
+
+Similarly, \verb"true_neg" indicates the cases where we guess ``girl''
+and get it right.  Accuracy is the fraction of correct guesses:
+
+\begin{verbatim}
+    acc = (sum(true_pos) + sum(true_neg)) / len(actual)
+\end{verbatim}
+
+In this example, the accuracy is 0.512, slightly better than the
+baseline, 0.507.  Again, you should not take this result too seriously.
+We used the same data to build and test the model, so the model
+may not have predictive power on new data.
+
+Nevertheless, let's use the model to make a prediction for the office
+pool.  Let's suppose that your friend is and 35 years old and white,
+her husband is 39, and they are expecting their third child:
+
+\begin{verbatim}
+    columns = ['agepreg', 'hpagelb', 'birthord', 'race']
+    new = pandas.DataFrame([[35, 39, 3, 1]], columns=columns)
+    y = results.predict(new)
+\end{verbatim}
+
+To invoke {\tt results.predict} for a new case, you have to construct
+a DataFrame with a column for each variable in the model.  The result
+in this case is 0.52, so you should guess ``boy.''  But if the model
+improves your chances of winning, the difference is very small.
+
 
 
 \section{Exercises}
 
+My solution to these exercises is in \verb"chap11ex_soln.ipynb".
+
 \begin{exercise}
-
-Section~\ref{???} presents a hypothetical office pool where friends
-of a pregnant woman try to guess the baby's birth weight.  Suppose,
-instead, that the goal is to predict the date of birth.  Assuming that
-bets are placed during the 30th week of pregnancy, what variables
-could you use to make the best prediction?  You should limit yourself
-to variables that are known before the birth, and likely to be available
-to the people in the pool.
-
+Suppose one of your co-workers is expecting a baby and you are
+participating in an office pool to predict the date of birth.
+Assuming that bets are placed during the 30th week of pregnancy, what
+variables could you use to make the best prediction?  You should limit
+yourself to variables that are known before the birth, and likely to
+be available to the people in the pool.
 \end{exercise}
 
+
 \begin{exercise}
-The Trivers–Willard hypothesis suggests that for many mammals the
-ratio of boys to girls depends on ``maternal condition''; that is,
+The Trivers-Willard hypothesis suggests that for many mammals the
+sex ratio depends on ``maternal condition''; that is,
 factors like the mother's age, size, health, and social status.
-\url{https://en.wikipedia.org/wiki/Trivers-Willard_hypothesis} Some
-studies have shown this effect among humans, but results have been
-mixed.
+See \url{https://en.wikipedia.org/wiki/Trivers-Willard_hypothesis}
 
-Use the NSFG data to test this hypothesis.  Can you evidence that
-supports or refutes it?
+Some studies have shown this effect among humans, but results have
+been mixed.  In this chapter we tested several factors, but didn't
+find any with a statistically significant effect on sex ratio.
+
+As an exercise, use a data mining approach to test the other variables
+in the pregnancy and respondent files.  Can you find any factors with
+a substantial effect?  
 \end{exercise}
-
-
 
 
 \section{Glossary}
+
+\begin{itemize}
+
+\item regression: One of many related processes for estimating parameters
+that fit a model to data.
+\index{regression}
+
+\item dependent variables: The variables in a regression model we would
+like to predict.  Also known as endogenous variables.
+\index{dependent variables}
+
+\item explanatory variables: The variables used to predict or explain
+the dependent variables.  Also known as independent, or exogenous,
+variables.
+\index{explanatory variables}
+
+\item simple regression: A regression with only one dependent and
+one explanatory variable.
+\index{simple regression}
+
+\item multiple regression: A regression with multiple explanatory
+variables, but only one dependent variable.
+\index{multiple regression}
+
+\item linear regression: A regression based on a linear model.
+\index{linear regression}
+
+\item ordinary least squares: A linear regression that estimates
+parameters by minimizing the squared error of the residuals.
+\index{ordinary least squares}
+
+\item spurious relationship: A relationship between two variables that is 
+caused by a statistical artifact or a factor, not included in the
+model, that is related to both variables.
+\index{spurious relationship}
+
+\item control variable: A variable included in a regression to
+eliminate or ``control for'' a spurious relationship.
+\index{control variable}
+
+\item proxy variable: A variable that contributes information to
+a regression model indirectly because of a relationship with another
+factor, so it acts as a proxy for that factor.
+\index{proxy variable}
+
+\item categorical variable: A variable that can have one of a
+discrete set of unordered values.
+\index{categorical variable}
+
+\item join: An operation that combines data from two DataFrames
+using a key to match up rows in the two frames.
+\index{join}
+
+\item data mining: An approach to finding relationships between
+variables by testing a large number of models.
+\index{data mining}
+
+\item logistic regression: A form of regression used when the
+dependent variable is boolean.
+\index{logistic regression}
+
+\item Poisson regression: A form of regression used when the
+dependent variable is a non-negative integer, usually a count.
+\index{Poisson regression}
+
+\item odds: An alternative way of representing a probability, $p$, as
+  the ratio of the probability and its complement, $p / (1-p)$.
+\index{odds}
+
+\end{itemize}
 
 
 
