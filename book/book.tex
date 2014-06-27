@@ -8410,14 +8410,44 @@ sex ratio depends on ``maternal condition''; that is,
 factors like the mother's age, size, health, and social status.
 See \url{https://en.wikipedia.org/wiki/Trivers-Willard_hypothesis}
 
-Some studies have shown this effect among humans, but results have
-been mixed.  In this chapter we tested several factors, but didn't
-find any with a statistically significant effect on sex ratio.
+Some studies have shown this effect among humans, but results are
+mixed.  In this chapter we tested some variables related to these
+factors, but didn't find any with a statistically significant effect
+on sex ratio.
 
 As an exercise, use a data mining approach to test the other variables
 in the pregnancy and respondent files.  Can you find any factors with
 a substantial effect?  
 \end{exercise}
+
+
+\begin{exercise}
+If the quantity you want to predict is a count, you can use Poisson
+regression, which is implemented in StatsModels with a function called
+{\tt poisson}.  It works the same way as {\tt ols} and {\tt logit}.
+As an exercise, let's use it to predict how many children a woman
+has born; in the NSFG dataset, this variable is called {\tt numbabes}.
+
+Suppose you meet a woman who is 35 years old, black, and a college
+graduate whose annual household income exceeds \$75,000.  How many
+children would you predict she has born?
+\end{exercise}
+
+
+\begin{exercise}
+If the quantity you want to predict is a categorical, you can use
+multinomial logistic regression, which is implemented in StatsModels
+with a function called {\tt mnlogit}.  As an exercise, let's use it to
+guess whether a woman is married, cohabitating, widowed, divorced,
+separated, or never married; in the NSFG dataset, marital status is
+encoded in a variable called {\tt rmarital}.
+
+Suppose you meet a woman who is 25 years old, white, and a high
+school graduate whose annual household income is about \$45,000.
+What is the probability that she is married, cohabitating, etc?
+\end{exercise}
+
+
 
 
 \section{Glossary}
