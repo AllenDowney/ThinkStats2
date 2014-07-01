@@ -440,8 +440,18 @@ in a Zip file.
 \end{itemize}
 
 The code in this book is written to work in both Python 2 and Python 3
-with no translation.  However, you will need the following packages
-installed: 
+with no translation.  
+I developed this book using Anaconda from Continuum
+Analytics, which is a free Python distribution that includes all
+packages you'll need to run the code (and lots more).
+
+I found Anaconda easy to install.  By default it does a user-level
+installation, not system-level, so you don't need administrative
+privilege.  And it supports both Python 2 and Python 3.  You can
+download Anaconda from \url{http://continuum.io/downloads}.
+
+If you don't want to use Anaconda, you will need the following
+packages installed:
 
 \begin{itemize}
 
@@ -453,20 +463,18 @@ installed:
 \item SciPy for scientific computation including statistics,
   \url{http://www.scipy.org/}.
 
+\item StatsModels for regression and other statistical analysis,
+\url{http://statsmodels.sourceforge.net/}. 
+
 \item matplotlib for visualization, \url{http://matplotlib.org/}.
 
 \end{itemize}
 
 Although these are commonly-used packages, they are not included with
 all Python installations, and they can be hard to install in some
-environments.  I developed this book using Anaconda from Continuum
-Analytics, which is a free Python distribution that includes all
-packages you'll need to run the code (and lots more).
-
-I found Anaconda easy to install.  By default it does a user-level
-installation, not system-level, so you don't need administrative
-privilege.  And it supports both Python 2 and Python 3.  You can
-download Anaconda from \url{http://continuum.io/downloads}.
+environments.  If you have trouble installing them, I strongly
+recommend using Anaconda or one of the other Python distributions
+that include these packages.
 
 After you clone the repository or unzip the zip file, you should
 have a file called {\tt ThinkStats2/code/nsfg.py}.  If you run it,
@@ -555,6 +563,8 @@ Pearson's correlation.
 \item Christoph Lendenmann submitted several errata.
 
 \item Haitao Ma noticed a typo and and sent me a note.
+
+\item Michael Kearney sent me many excellent suggestions.
 
 % ENDCONTRIB
 
@@ -922,12 +932,13 @@ variables:
 \item {\tt outcome} is an integer code for the outcome of the
   pregnancy.  The code 1 indicates a live birth.
 
-\item {\tt pregordr} is a counter that indicates the order of
-pregnancies for a respondent.
+\item {\tt pregordr} is a pregnancy serial number; for example, the
+  code for a respondent's first pregnancy is 1, for the second
+  pregnancy is 2, and so on.
 
-\item {\tt birthord} is a counter that indicates the order of live
-  births for a respondent; for example, the code for a first child is
-  1.  For outcomes other than live birth, this field is blank.
+\item {\tt birthord} is a serial number for live
+  births; the code for a respondent's first child is 1, and so on.
+  For outcomes other than live birth, this field is blank.
 
 \item \verb"birthwgt_lb" and \verb"birthwgt_oz" contain the pounds and
   ounces parts of the birth weight of the baby.
@@ -937,17 +948,16 @@ pregnancies for a respondent.
 \item {\tt finalwgt} is the statistical weight associated with the
   respondent.  It is a floating-point value that indicates the number
   of people in the U.S. population this respondent represents.
-  Members of oversampled groups have lower
-  weights.\index{weight!sample}
+  \index{weight!sample}
 
 \end{itemize}
 
-If you read the codebook carefully, you will see that most of these
+If you read the codebook carefully, you will see that many of the
 variables are {\bf recodes}, which means that they are not part of the
 {\bf raw data} collected by the survey; they are calculated using
 the raw data.  \index{recode} \index{raw data}
 
-For example, {\tt prglength} for live births is equal to the raw
+For example, {\tt prglngth} for live births is equal to the raw
 variable {\tt wksgest} (weeks of gestation) if it is available;
 otherwise it is estimated using {\tt mosgest * 4.33} (months of
 gestation times the average number of weeks in a month).
@@ -3914,8 +3924,7 @@ data, about 33 minutes between births.
 
 Plot the distribution of the random values and compare it to the
 actual distribution.  You can use {\tt random.expovariate} 
-to generate the values.  A solution to this problem is in
-\verb"chap05ex_soln.py".
+to generate the values.
 
 \end{exercise}
 
@@ -4059,7 +4068,8 @@ following methods:
   density of the distribution at {\tt x}.
 
 \item {\tt Render}, which evaluates the density at a discrete set of
-  values and returns a pair of sequences, {\tt xs} and {\tt ps}.
+  values and returns a pair of sequences: the sorted values, {\tt xs},
+  and their probability densities, {\tt ps}.
 
 \item {\tt MakePmf}, which uses {\tt Render} to evaluate the density
   at a discrete set of values and returns a normalized Pmf that
@@ -8526,6 +8536,91 @@ dependent variable is a non-negative integer, usually a count.
 
 \chapter{Time series analysis}
 
+A {\bf time series} is a sequence of measurements from a system that
+varies in time.  One famous example is the ``hockey stick graph'' that
+shows global average temperature over time (see
+\url{https://en.wikipedia.org/wiki/Hockey_stick_graph}).
+
+The example I work with in this chapter comes from Zachary M. Jones, a
+researcher in political science who studies the black market for
+cannabis in the U.S.  (\url{http://zmjones.com/marijuana}).  He
+collected data from a web site called ``Price of Weed'' that
+crowdsources market information by asking participant to report the
+price, quantity, quality, and location of cannabis transactions
+(\url{http://www.priceofweed.com/}).  The goal of his project is to
+investigate the effect of policy decisions, like legalization, on
+markets.  I find this project appealing because it is an example that
+uses data to address important political questions, like drug policy.
+
+It is also an example many people find interesting, so I hope you
+will find this chapter entertaining.  But I'll take this opportunity
+to reiterate the importance of maintaining a professional attitude
+to data analysis.  Whether and which drugs should be illegal are
+difficult public policy questions; our decisions should be
+informed by accurate data reported honestly.
+
+The code for this chapter is in {\tt timeseries.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+
+\section{Importing and cleaning}
+
+I downloaded the data Jones collected from
+\url{http://zmjones.com/static/data/mj-clean.csv} and read it
+into a pandas DataFrame:
+
+\begin{verbatim}
+    df = pandas.read_csv('mj-clean.csv', parse_dates=[5])
+\end{verbatim}
+
+\verb"parse_dates" tells \verb"read_csv" to interpret column 5
+as a date and convert the values to NumPy {\tt datetime64} objects.
+
+The DataFrame has a row for each reported transaction and 
+the following columns:
+
+\begin{itemize}
+
+\item city: string city name.
+
+\item state: two-letter state abbreviation.
+
+\item price: price paid in dollars.
+
+\item amount: quantity purchased in grams.
+
+\item quality: high, medium, or low quality, as reported by the purchaser.
+
+\item date: date of report, presumed to be shortly after date of purchase.
+
+\item ppg: price per gram, in dollars.
+
+\item state.name: string state name.
+
+\item lat: approximate latitude of the transaction, based on city name.
+
+\item lon: approximate longitude of the transaction.
+
+\end{itemize}
+
+
+
+
+
+\begin{verbatim}
+\end{verbatim}
+
+Aggregation: mean, median, trimmed mean
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
 
 
 \chapter{Survival analysis}
@@ -8535,8 +8630,7 @@ dependent variable is a non-negative integer, usually a count.
 \label{operations}
 
 \section{Random Variables}
-\index{random variable}
-\index{variable!random}
+\index{random variable} \index{variable!random}
 
 A {\bf random variable} represents a process that generates a random
 number.  Random variables are usually written with a capital letter,

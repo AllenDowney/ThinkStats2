@@ -8,8 +8,6 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 from __future__ import print_function
 
 import pandas
-import thinkplot
-import thinkstats2
 import datetime
 import numpy as np
 import statsmodels.formula.api as smf
@@ -17,34 +15,73 @@ import statsmodels.tsa.stattools as smtsa
 
 import matplotlib.pyplot as pyplot
 
-def ReadData(filename='mj-clean.csv'):
-    df = pandas.read_csv(filename, parse_dates=[5])
-    return df
+import thinkplot
+import thinkstats2
+import regression
+
+import warnings
+
+def ReadData():
+    """Reads data about cannabis transactions.
+
+    http://zmjones.com/static/data/mj-clean.csv
+
+    returns: DataFrame
+    """
+    transactions = pandas.read_csv('mj-clean.csv', parse_dates=[5])
+    return transactions
 
 
-def GroupByDay(df):
-    grouped = df[['date', 'ppg']].groupby('date')
-    series = grouped.aggregate(np.mean)
+def tmean(series):
+    """Computes a trimmed mean.
 
-    dates = pandas.date_range(series.index.min(), series.index.max())
-    series = series.reindex(dates)
+    series: Series 
 
-    series['date'] = series.index
-    start = series.date[0]
+    returns: float
+    """
+    t = series.values
+    n = len(t)
+    if n <= 3:
+        return t.mean()
+    trim = max(1, n/10)
+    return np.mean(sorted(t)[trim:n-trim])
+
+
+def GroupByDay(transactions):
+    """Groups transactions by day and compute the daily mean ppg.
+
+    transactions: DataFrame of transactions
+
+    returns: DataFrame of daily prices
+    """
+    #warnings.filterwarnings("error")
+
+    grouped = transactions[['date', 'ppg']].groupby('date')
+    daily = grouped.aggregate(tmean)
+    #daily = grouped.aggregate(np.mean)
+
+    dates = pandas.date_range(daily.index.min(), daily.index.max())
+    daily = daily.reindex(dates)
+
+    daily['date'] = daily.index
+    start = daily.date[0]
     one_day = np.timedelta64(1, 'D')
-    series['days'] = ((series.date - start) / one_day).astype(int)
+    daily['days'] = ((daily.date - start) / one_day).astype(int)
 
-    return series
+    return daily
 
 
-def PlotSeries(series_map):
+def PlotDailies(dailies):
+    """Makes a plot with daily prices for different qualities.
 
+    dailies: map from name to DataFrame
+    """
     thinkplot.PrePlot(rows=3)
 
     i = 1
-    for name, series in series_map.items():
+    for name, daily in dailies.items():
         thinkplot.SubPlot(i)
-        thinkplot.Plot(series.index, series.ppg,
+        thinkplot.Plot(daily.index, daily.ppg,
                        linewidth=0.5, alpha=0.5, label=name)
         thinkplot.Config(ylim=[0, 20])
 
@@ -58,11 +95,16 @@ def PlotSeries(series_map):
                    title='price per gram ($)')
 
 
-def RunLinearModel(series):
-    series['years'] = series.days / 365.0
-    model = smf.ols('ppg ~ years', data=series)
+def RunLinearModel(daily):
+    """Runs a linear model of prices versus years.
+
+    daily: DataFrame of daily prices
+
+    returns: model, results
+    """
+    daily['years'] = daily.days / 365.0
+    model = smf.ols('ppg ~ years', data=daily)
     results = model.fit()
-    # print(results.summary())
     return model, results
 
 
@@ -110,8 +152,8 @@ def PlotResidualPercentiles(model, results, index=1, num_bins=20):
         thinkplot.Plot(means, percentiles, label=label)
 
 
-def GroupByDayOfWeek(df):
-    grouped = df[['dayofweek', 'ppg']].groupby('dayofweek')
+def GroupByDayOfWeek(transactions):
+    grouped = transactions[['dayofweek', 'ppg']].groupby('dayofweek')
     cdfs = grouped.aggregate(thinkstats2.Cdf)
     thinkplot.Cdfs(cdfs.ppg)
 
@@ -132,6 +174,9 @@ def PlotRollingMean():
 
 
 def PlotWindows():
+    """Makes a plot showing the shapes of windows for rolling means.
+
+    """
     import scipy.signal as sig
     gaussian = sig.get_window(('gaussian', 7.5), 30)
     gaussian_mean = gaussian.mean()
@@ -167,11 +212,11 @@ def PlotGaussian():
 
 def Autocorrelation():
     from pandas.tools.plotting import autocorrelation_plot
-    autocorrelation_plot(series.ppg.diff().dropna())
+    autocorrelation_plot(daily.ppg.diff().dropna())
 
 
 def CompareStates():
-    high = df[df.quality=='high']
+    high = transactions[transactions.quality=='high']
     ca_high = high[high.state=='CA']
     thinkplot.Scatter(ca_high.days, ca_high.ppg, alpha=0.05)
     ma_high = high[high.state=='MA']
@@ -180,21 +225,22 @@ def CompareStates():
 
 
 def main(name, data_dir='.'):
-    df = ReadData()
+    transactions = ReadData()
 
-    series = GroupByDay(df)
+    grouped = transactions.groupby('quality')
 
-    grouped = df.groupby('quality')
-    #qs = grouped.aggregate(GroupByDay)
-    #print(qs)
-
-    series_map = {}
+    dailies = {}
     for name, group in grouped:
-        series_map[name] = GroupByDay(group)        
-    PlotSeries(series_map)
+        dailies[name] = GroupByDay(group)        
 
-    for name, series in series_map.items():
-        model, results = RunLinearModel(series)
+    PlotDailies(dailies)
+
+    for name, daily in dailies.items():
+        model, results = RunLinearModel(daily)
+
+        print(name)
+        regression.SummarizeResults(results)
+        
         if name == 'high':
             PlotFittedValues(model, results, label=name)
             thinkplot.Save(root='timeseries2',
