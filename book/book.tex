@@ -8570,7 +8570,7 @@ I downloaded the data Jones collected from
 into a pandas DataFrame:
 
 \begin{verbatim}
-    df = pandas.read_csv('mj-clean.csv', parse_dates=[5])
+    transactions = pandas.read_csv('mj-clean.csv', parse_dates=[5])
 \end{verbatim}
 
 \verb"parse_dates" tells \verb"read_csv" to interpret column 5
@@ -8603,24 +8603,108 @@ the following columns:
 
 \end{itemize}
 
+Each transaction is an event in time, so we could treat this dataset
+as a time series.  But the events are not equally-spaced in time; the
+number of transactions reported each days varies from 0 to several
+hundred.  Many methods used to analyze time series require the
+measurements to be equally-spaced, or at least things are simpler if
+they are.
 
+In order to demonstrate these methods, I will divide the dataset
+into groups by reported quality, and then transform each group into
+an equally-spaced series by computing the mean daily price per gram.
 
+\begin{verbatim}
+def GroupByQualityAndDay(transactions):
+    grouped = transactions.groupby('quality')
+    dailies = {}
+    for name, group in grouped:
+        dailies[name] = GroupByDay(group)        
+
+    return dailies
+\end{verbatim}
+
+{\tt groupby} is a DataFrame method that returns a DataFrameGroupBy
+object, which is a map from each group name to a DataFrame that
+contains the elements in the group.  Since the values of {\tt quality}
+are {\tt low}, {\tt medium}, and {\tt high}, we get three groups with
+those names.
+
+The loop iterates through the groups and calls {\tt GroupByDay},
+which computes the daily average price and returns a new DataFrame:
+
+\begin{verbatim}
+def GroupByDay(transactions, func=np.mean):
+    grouped = transactions[['date', 'ppg']].groupby('date')
+    daily = grouped.aggregate(func)
+
+    dates = pandas.date_range(daily.index.min(), daily.index.max())
+    daily = daily.reindex(dates)
+
+    daily['date'] = daily.index
+    start = daily.date[0]
+    one_day = np.timedelta64(1, 'D')
+    daily['days'] = ((daily.date - start) / one_day).astype(int)
+
+    return daily
+\end{verbatim}
+
+From {\tt transactions} we select {\tt date} and {\tt ppg}, then
+group by {\tt date}.  The result, {\tt grouped}, is a map from
+each date to a DataFrame that contains the prices reported
+on that date.  {\tt aggregate} is a DataFrameGroupBy that iterates
+through the groups and applies a function to each column of the
+group; in this case there is only one column, {\tt ppg}.  So the
+result of {\tt aggregate} is a DataFrame with one row for each
+date and one column, {\tt ppg}.
+
+At this point {\tt daily} contains rows for each date with at
+least one reported transaction, but since there are days with no
+transactions, there are gaps.  To make the time series easier to work
+with, ???  What if we don't?
 
 
 \begin{verbatim}
 \end{verbatim}
 
-Aggregation: mean, median, trimmed mean
-
-
 \begin{verbatim}
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
+
+
+\begin{figure}
+% timeseries.py
+\centerline{\includegraphics[width=3in]{figs/timeseries1.pdf}}
+\caption{Time series of daily price per gram for high, medium, and low
+quality cannabis.}
+\label{timeseries1}
+\end{figure}
+
+\begin{figure}
+% timeseries.py
+\centerline{\includegraphics[height=2.5in]{figs/timeseries2.pdf}}
+\caption{Time series of daily price per gram for high quality cannabis,
+and a linear least squares fit.}
+\label{timeseries2}
+\end{figure}
+
+\begin{figure}
+% timeseries.py
+\centerline{\includegraphics[height=2.5in]{figs/timeseries3.pdf}}
+\caption{Residuals of the linear fit.}
+\label{timeseries3}
+\end{figure}
+
+\begin{figure}
+% timeseries.py
+\centerline{\includegraphics[height=2.5in]{figs/timeseries4.pdf}}
+\caption{Predictions based on the linear fit.}
+\label{timeseries4}
+\end{figure}
+
+
+
 
 
 \chapter{Survival analysis}

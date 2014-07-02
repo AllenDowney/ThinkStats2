@@ -12,6 +12,7 @@ import datetime
 import numpy as np
 import statsmodels.formula.api as smf
 import statsmodels.tsa.stattools as smtsa
+import itertools
 
 import matplotlib.pyplot as pyplot
 
@@ -47,21 +48,18 @@ def tmean(series):
     return np.mean(sorted(t)[trim:n-trim])
 
 
-def GroupByDay(transactions):
+def GroupByDay(transactions, func=np.mean):
     """Groups transactions by day and compute the daily mean ppg.
 
     transactions: DataFrame of transactions
 
     returns: DataFrame of daily prices
     """
-    #warnings.filterwarnings("error")
-
     grouped = transactions[['date', 'ppg']].groupby('date')
-    daily = grouped.aggregate(tmean)
-    #daily = grouped.aggregate(np.mean)
+    daily = grouped.aggregate(func)
 
-    dates = pandas.date_range(daily.index.min(), daily.index.max())
-    daily = daily.reindex(dates)
+#    dates = pandas.date_range(daily.index.min(), daily.index.max())
+#    daily = daily.reindex(dates)
 
     daily['date'] = daily.index
     start = daily.date[0]
@@ -81,9 +79,12 @@ def PlotDailies(dailies):
     i = 1
     for name, daily in dailies.items():
         thinkplot.SubPlot(i)
-        thinkplot.Plot(daily.index, daily.ppg,
-                       linewidth=0.5, alpha=0.5, label=name)
-        thinkplot.Config(ylim=[0, 20])
+
+        thinkplot.Config(ylim=[0, 20],
+                         title='price per gram ($)' if i==1 else '')
+
+        thinkplot.Scatter(daily.index, daily.ppg,
+                          s=10, label=name)
 
         if i == 3: 
             pyplot.xticks(rotation=30)
@@ -91,8 +92,7 @@ def PlotDailies(dailies):
             thinkplot.Config(xticks=[])
         i += 1
 
-    thinkplot.Save(root='timeseries1',
-                   title='price per gram ($)')
+    thinkplot.Save(root='timeseries1')
 
 
 def RunLinearModel(daily):
@@ -116,9 +116,8 @@ def PlotFittedValues(model, results, label=''):
     """
     years = model.exog[:,1]
     values = model.endog
-    thinkplot.Plot(years, values, linewidth=0.5, alpha=0.5, label=label)
-    thinkplot.Plot(years, results.fittedvalues, color='white')
-    thinkplot.Plot(years, results.fittedvalues, linewidth=2)
+    thinkplot.Scatter(years, values, s=15, label=label)
+    thinkplot.Plot(years, results.fittedvalues, label='model')
 
 
 def PlotResiduals(model, results):
@@ -150,6 +149,76 @@ def PlotResidualPercentiles(model, results, index=1, num_bins=20):
         percentiles = [cdf.Percentile(percent) for cdf in cdfs]
         label = '%dth' % percent
         thinkplot.Plot(means, percentiles, label=label)
+
+
+def SimulateResults(daily, iters=101):
+    model, results = RunLinearModel(daily)
+    
+    result_seq = []
+    for i in range(iters):
+        series = (results.fittedvalues + 
+                  thinkstats2.Resample(results.resid.values))
+        df = pandas.DataFrame(dict(ppg=series, days=daily.days))
+        _, fake_results = RunLinearModel(df)
+        result_seq.append(fake_results)
+
+    return result_seq
+
+
+def GeneratePredictions(result_seq, years, add_resid=False):
+    n = len(years)
+    inter = np.ones(n)
+    predict_df = pandas.DataFrame(dict(Intercept=inter, years=years))
+    
+    size = len(result_seq), n
+    array = np.zeros(size)
+
+    for i, fake_results in enumerate(result_seq):
+        predict = fake_results.predict(predict_df)
+        if add_resid:
+            predict += np.random.choice(fake_results.resid.values, n, 
+                                        replace=True)
+        array[i,] = predict
+
+    array = np.sort(array, axis=0)
+    return array
+
+
+
+def PercentileRow(array, p):
+    """Selects the row from a sorted array that maps to percentile p.
+
+    p: float 0--100
+
+    returns: NumPy array (one row)
+    """
+    rows, cols = array.shape
+    index = int(rows * p / 100)
+    return array[index,]
+
+
+def PlotPredictions(daily, years, iters=101, percent=90):
+
+    thinkplot.Scatter(daily.years, daily.ppg, alpha=0.1)
+
+    result_seq = SimulateResults(daily, iters=iters)
+    p = (100 - percent) / 2
+
+    predictions = GeneratePredictions(result_seq, years, add_resid=True)
+    low = PercentileRow(predictions, p)
+    high = PercentileRow(predictions, 100-p)
+    thinkplot.FillBetween(years, low, high, alpha=0.5, color='gray')
+
+    predictions = GeneratePredictions(result_seq, years, add_resid=False)
+    low = PercentileRow(predictions, p)
+    high = PercentileRow(predictions, 100-p)
+    thinkplot.FillBetween(years, low, high)
+
+    thinkplot.Save(root='timeseries4',
+                   title='predictions',
+                   xlabel='years',
+                   xlim=[years[0]-0.1, years[-1]+0.1],
+                   ylabel='price per gram ($)')
 
 
 def GroupByDayOfWeek(transactions):
@@ -223,15 +292,65 @@ def CompareStates():
     thinkplot.Scatter(ma_high.days, ma_high.ppg, alpha=0.05, color='red')
 
 
+def GroupByQualityAndDay(transactions):
+    """
+    """
+    grouped = transactions.groupby('quality')
+    dailies = {}
+    for name, group in grouped:
+        dailies[name] = GroupByDay(group)        
+
+    return dailies
+
+
+def Correlate(dailies):
+    df = pandas.DataFrame()
+    for name, daily in dailies.items():
+        df[name] = daily.ppg
+
+    print(df.corr())
+    return df.corr()
+        
+
+def CorrelateResid(dailies):
+    df = pandas.DataFrame()
+    for name, daily in dailies.items():
+        model, results = RunLinearModel(daily)
+        df[name] = results.resid
+
+    print(df.corr())
+    return df.corr()
+
+
+def TestCorrelateResid(dailies, iters=101):
+
+    t = []
+    names = ['high', 'medium', 'low']
+    for name in names:
+        daily = dailies[name]
+        t.append(SimulateResults(daily, iters=iters))
+
+    corr = CorrelateResid(dailies)
+
+    arrays = []
+    for result_seq in zip(*t):
+        df = pandas.DataFrame()
+        for name, results in zip(names, result_seq):
+            df[name] = results.resid
+
+        opp_sign = corr * df.corr() < 0
+        arrays.append((opp_sign.astype(int)))
+
+    print(np.sum(arrays))
+
 
 def main(name, data_dir='.'):
     transactions = ReadData()
 
-    grouped = transactions.groupby('quality')
-
-    dailies = {}
-    for name, group in grouped:
-        dailies[name] = GroupByDay(group)        
+    dailies = GroupByQualityAndDay(transactions)
+    Correlate(dailies)
+    CorrelateResid(dailies)
+    TestCorrelateResid(dailies)
 
     PlotDailies(dailies)
 
@@ -240,19 +359,24 @@ def main(name, data_dir='.'):
 
         print(name)
         regression.SummarizeResults(results)
-        
-        if name == 'high':
-            PlotFittedValues(model, results, label=name)
-            thinkplot.Save(root='timeseries2',
-                           title='fitted values',
-                           xlabel='years',
-                           ylabel='price per gram ($)')
 
-            PlotResidualPercentiles(model, results)
-            thinkplot.Save(root='timeseries3',
-                           title='residuals',
-                           xlabel='years',
-                           ylabel='price per gram ($)')
+    daily = dailies['high']
+    years = np.linspace(0, 5, 101)
+    PlotPredictions(daily, years)
+
+    model, results = RunLinearModel(daily)
+    PlotFittedValues(model, results, label='high')
+    thinkplot.Save(root='timeseries2',
+                   title='fitted values',
+                   xlabel='years',
+                   xlim=[-0.1, 3.8],
+                   ylabel='price per gram ($)')
+
+    PlotResidualPercentiles(model, results)
+    thinkplot.Save(root='timeseries3',
+                   title='residuals',
+                   xlabel='years',
+                   ylabel='price per gram ($)')
 
 
 if __name__ == '__main__':
