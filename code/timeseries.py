@@ -58,15 +58,27 @@ def GroupByDay(transactions, func=np.mean):
     grouped = transactions[['date', 'ppg']].groupby('date')
     daily = grouped.aggregate(func)
 
-#    dates = pandas.date_range(daily.index.min(), daily.index.max())
-#    daily = daily.reindex(dates)
-
     daily['date'] = daily.index
     start = daily.date[0]
-    one_day = np.timedelta64(1, 'D')
-    daily['days'] = ((daily.date - start) / one_day).astype(int)
+    one_year = np.timedelta64(1, 'Y')
+    daily['years'] = (daily.date - start) / one_year
 
     return daily
+
+
+def GroupByQualityAndDay(transactions):
+    """Divides transactions by quality and computes mean daily price.
+
+    transaction: DataFrame of transactions
+    
+    returns: map from quality to time series of ppg
+    """
+    grouped = transactions.groupby('quality')
+    dailies = {}
+    for name, group in grouped:
+        dailies[name] = GroupByDay(group)        
+
+    return dailies
 
 
 def PlotDailies(dailies):
@@ -75,22 +87,15 @@ def PlotDailies(dailies):
     dailies: map from name to DataFrame
     """
     thinkplot.PrePlot(rows=3)
-
-    i = 1
-    for name, daily in dailies.items():
-        thinkplot.SubPlot(i)
-
-        thinkplot.Config(ylim=[0, 20],
-                         title='price per gram ($)' if i==1 else '')
-
-        thinkplot.Scatter(daily.index, daily.ppg,
-                          s=10, label=name)
-
-        if i == 3: 
+    for i, (name, daily) in enumerate(dailies.items()):
+        thinkplot.SubPlot(i+1)
+        title = 'price per gram ($)' if i==0 else ''
+        thinkplot.Config(ylim=[0, 20], title=title)
+        thinkplot.Scatter(daily.index, daily.ppg, s=10, label=name)
+        if i == 2: 
             pyplot.xticks(rotation=30)
         else:
             thinkplot.Config(xticks=[])
-        i += 1
 
     thinkplot.Save(root='timeseries1')
 
@@ -102,8 +107,20 @@ def RunLinearModel(daily):
 
     returns: model, results
     """
-    daily['years'] = daily.days / 365.0
     model = smf.ols('ppg ~ years', data=daily)
+    results = model.fit()
+    return model, results
+
+
+def RunQuadraticModel(daily):
+    """Runs a linear model of prices versus years.
+
+    daily: DataFrame of daily prices
+
+    returns: model, results
+    """
+    daily['years2'] = daily.years**2
+    model = smf.ols('ppg ~ years + years2', data=daily)
     results = model.fit()
     return model, results
 
@@ -151,24 +168,46 @@ def PlotResidualPercentiles(model, results, index=1, num_bins=20):
         thinkplot.Plot(means, percentiles, label=label)
 
 
-def SimulateResults(daily, iters=101):
-    model, results = RunLinearModel(daily)
+def SimulateResults(daily, iters=101, func=RunLinearModel):
+    """Run simulations based on resampling residuals.
+
+    daily: DataFrame of daily prices
+    iters: number of simulations
+    func: function that fits a model to the data
+
+    returns: list of result objects
+    """
+    model, results = func(daily)
     
     result_seq = []
     for i in range(iters):
         series = (results.fittedvalues + 
                   thinkstats2.Resample(results.resid.values))
-        df = pandas.DataFrame(dict(ppg=series, days=daily.days))
-        _, fake_results = RunLinearModel(df)
+        df = pandas.DataFrame(dict(ppg=series, years=daily.years))
+        _, fake_results = func(df)
         result_seq.append(fake_results)
 
     return result_seq
 
 
 def GeneratePredictions(result_seq, years, add_resid=False):
+    """Generates an array of predicted values from a list of model results.
+
+    When add_resid is False, predictions represent sampling error only.
+
+    When add_resid is True, they also include residual error (which is
+    more relevant to prediction).
+    
+    result_seq: list of model results
+    years: sequence of times (in years) to make predictions for
+    add_resid: boolean, whether to add in resampled residuals
+
+    returns: array with one row per model result, one column per timestep
+    """
     n = len(years)
     inter = np.ones(n)
-    predict_df = pandas.DataFrame(dict(Intercept=inter, years=years))
+    predict_df = pandas.DataFrame(dict(Intercept=inter, 
+                                       years=years, years2=years**2))
     
     size = len(result_seq), n
     array = np.zeros(size)
@@ -184,6 +223,22 @@ def GeneratePredictions(result_seq, years, add_resid=False):
     return array
 
 
+def GenerateSimplePrediction(results, years):
+    """Generates a simple prediction.
+
+    results: results object
+    years: sequence of times (in years) to make predictions for
+
+    returns: sequence of predicted values
+    """
+    n = len(years)
+    inter = np.ones(n)
+    d = dict(Intercept=inter, years=years, years2=years**2)
+    predict_df = pandas.DataFrame(d)
+    predict = results.predict(predict_df)
+    return predict
+
+
 
 def PercentileRow(array, p):
     """Selects the row from a sorted array that maps to percentile p.
@@ -197,28 +252,29 @@ def PercentileRow(array, p):
     return array[index,]
 
 
-def PlotPredictions(daily, years, iters=101, percent=90):
+def PlotPredictions(daily, years, iters=101, percent=90, func=RunLinearModel):
+    """Plots actual data and predictions.
 
+    daily: DataFrame of daily prices
+    years: sequence of times (in years) to make predictions for
+    iters: number of simulations
+    percent: what percentile range to show
+    func: function that fits a model to the data
+    """
     thinkplot.Scatter(daily.years, daily.ppg, alpha=0.1)
 
-    result_seq = SimulateResults(daily, iters=iters)
+    result_seq = SimulateResults(daily, iters=iters, func=func)
     p = (100 - percent) / 2
 
     predictions = GeneratePredictions(result_seq, years, add_resid=True)
     low = PercentileRow(predictions, p)
     high = PercentileRow(predictions, 100-p)
-    thinkplot.FillBetween(years, low, high, alpha=0.5, color='gray')
+    thinkplot.FillBetween(years, low, high, alpha=0.3, color='gray')
 
     predictions = GeneratePredictions(result_seq, years, add_resid=False)
     low = PercentileRow(predictions, p)
     high = PercentileRow(predictions, 100-p)
-    thinkplot.FillBetween(years, low, high)
-
-    thinkplot.Save(root='timeseries4',
-                   title='predictions',
-                   xlabel='years',
-                   xlim=[years[0]-0.1, years[-1]+0.1],
-                   ylabel='price per gram ($)')
+    thinkplot.FillBetween(years, low, high, alpha=0.5, color='gray')
 
 
 def GroupByDayOfWeek(transactions):
@@ -227,12 +283,6 @@ def GroupByDayOfWeek(transactions):
     thinkplot.Cdfs(cdfs.ppg)
 
 
-
-
-def Get2001(ppg):
-    year11 = ppg[121:121+365]
-    year11
-    year11.date[121], year11.date[121+364]
 
 
 def PlotRollingMean():
@@ -287,23 +337,18 @@ def Autocorrelation():
 def CompareStates():
     high = transactions[transactions.quality=='high']
     ca_high = high[high.state=='CA']
-    thinkplot.Scatter(ca_high.days, ca_high.ppg, alpha=0.05)
+    thinkplot.Scatter(ca_high.years, ca_high.ppg, alpha=0.05)
     ma_high = high[high.state=='MA']
-    thinkplot.Scatter(ma_high.days, ma_high.ppg, alpha=0.05, color='red')
-
-
-def GroupByQualityAndDay(transactions):
-    """
-    """
-    grouped = transactions.groupby('quality')
-    dailies = {}
-    for name, group in grouped:
-        dailies[name] = GroupByDay(group)        
-
-    return dailies
+    thinkplot.Scatter(ma_high.years, ma_high.ppg, alpha=0.05, color='red')
 
 
 def Correlate(dailies):
+    """Compute the correlation matrix between prices for difference qualities.
+
+    dailies: map from quality to time series of ppg
+
+    returns: correlation matrix
+    """
     df = pandas.DataFrame()
     for name, daily in dailies.items():
         df[name] = daily.ppg
@@ -313,6 +358,12 @@ def Correlate(dailies):
         
 
 def CorrelateResid(dailies):
+    """Compute the correlation matrix between residuals.
+
+    dailies: map from quality to time series of ppg
+
+    returns: correlation matrix
+    """
     df = pandas.DataFrame()
     for name, daily in dailies.items():
         model, results = RunLinearModel(daily)
@@ -323,6 +374,11 @@ def CorrelateResid(dailies):
 
 
 def TestCorrelateResid(dailies, iters=101):
+    """Tests observed correlations.
+
+    dailies: map from quality to time series of ppg
+    iters: number of simulations
+    """
 
     t = []
     names = ['high', 'medium', 'low']
@@ -348,24 +404,24 @@ def main(name, data_dir='.'):
     transactions = ReadData()
 
     dailies = GroupByQualityAndDay(transactions)
+    PlotDailies(dailies)
+
+
     Correlate(dailies)
     CorrelateResid(dailies)
     TestCorrelateResid(dailies)
 
-    PlotDailies(dailies)
 
     for name, daily in dailies.items():
         model, results = RunLinearModel(daily)
-
         print(name)
         regression.SummarizeResults(results)
 
-    daily = dailies['high']
-    years = np.linspace(0, 5, 101)
-    PlotPredictions(daily, years)
+    name = 'high'
+    daily = dailies[name]
 
     model, results = RunLinearModel(daily)
-    PlotFittedValues(model, results, label='high')
+    PlotFittedValues(model, results, label=name)
     thinkplot.Save(root='timeseries2',
                    title='fitted values',
                    xlabel='years',
@@ -377,6 +433,46 @@ def main(name, data_dir='.'):
                    title='residuals',
                    xlabel='years',
                    ylabel='price per gram ($)')
+    
+    years = np.linspace(0, 5, 101)
+    predict = GenerateSimplePrediction(results, years)
+    thinkplot.Plot(years, predict)
+    thinkplot.Show()
+
+    PlotPredictions(daily, years)
+    thinkplot.Save(root='timeseries4',
+                   title='predictions',
+                   xlabel='years',
+                   xlim=[years[0]-0.1, years[-1]+0.1],
+                   ylabel='price per gram ($)')
+
+    # TODO: move the quadratic model to chap12ex_soln
+    print(name)
+    model, results = RunQuadraticModel(daily)
+    regression.SummarizeResults(results)
+    PlotFittedValues(model, results, label=name)
+    thinkplot.Save(root='timeseries5',
+                   title='fitted values',
+                   xlabel='years',
+                   xlim=[-0.1, 3.8],
+                   ylabel='price per gram ($)')
+
+    PlotResidualPercentiles(model, results)
+    thinkplot.Save(root='timeseries6',
+                   title='residuals',
+                   xlabel='years',
+                   ylabel='price per gram ($)')
+
+    years = np.linspace(0, 5, 101)
+    PlotPredictions(daily, years, func=RunQuadraticModel)
+    thinkplot.Save(root='timeseries7',
+                   title='predictions',
+                   xlabel='years',
+                   xlim=[years[0]-0.1, years[-1]+0.1],
+                   ylabel='price per gram ($)')
+
+
+
 
 
 if __name__ == '__main__':

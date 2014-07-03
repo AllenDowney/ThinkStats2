@@ -1485,8 +1485,12 @@ you have it, launch the Python interpreter and run:
 >>> pyplot.show()
 \end{verbatim}
 
-If you have {\tt matplotlib} you should see a simple pie chart;
-otherwise you will have to install it.
+If you have {\tt matplotlib} you should see a simple pie chart.
+If not, the figure might be hidden under another window, or you
+might have to install {\tt matplotlib}.  Installing these packages
+one at a time can be difficult, so I recommend using a Python
+distribution that contains the ones we need for this book;
+see Section~\ref{code}.
 \index{matplotlib}
 \index{bar plot}
 \index{plot!bar}
@@ -2126,9 +2130,10 @@ To renormalize, call {\tt Normalize}:
 Pmf objects provide a {\tt Copy} method so you can make
 and modify a copy without affecting the original.
 
-My notation for PMFs can be confusing, so here it is: I use Pmf
-for the name of the class, {\tt pmf} as a variable name, and ``PMF''
-to refer to the mathematical concept of a probability mass function.
+My notation for PMFs can be confusing, so here it is: I use Pmf for
+the name of the class, {\tt pmf} for an instance of the class, and
+``PMF'' to refer to the mathematical concept of a probability mass
+function.
 
 
 \section{Plotting PMFs}
@@ -2174,8 +2179,7 @@ size.  Based on this figure, first babies seem to be less likely than
 others to arrive on time (week 39) and more likely to be a late (weeks
 41 and 42).
 
-Whether you plot PMFs as bar graphs or step functions, I'll leave
-that up to you.
+Whether you plot PMFs as bar graphs or step functions is up to you.
 The code that generates this figure is in {\tt probability.py}.
 Note: {\tt pyplot} provides a function called {\tt hist} that
 takes a sequence of values, computes the histogram and plots it.
@@ -2217,7 +2221,7 @@ generally a good idea if you intend to compare two figures.
 Histograms and PMFs are useful while you are exploring data and
 trying to identify patterns and relationships.
 Once you have an idea what is going on, a good next step is to
-design a visualization that makes the patterns your have identified
+design a visualization that makes the patterns you have identified
 as clear as possible.
 \index{exploratory data analysis}
 \index{visualization}
@@ -2595,9 +2599,9 @@ at different times; also, many teams included runners at different
 levels of ability. \index{bias!selection} \index{selection bias}
 
 As a result, runners were spread out along the course with little
-relationship between speed and location.  When I started running my
-leg, the runners near me were (pretty much) a random sample of the
-runners in the race.
+relationship between speed and location.  When I joined the race, the
+runners near me were (pretty much) a random sample of the runners in
+the race.
 
 So where does the bias come from?  During my time on the course, the
 chance of overtaking a runner, or being overtaken, is proportional to
@@ -7054,6 +7058,7 @@ fitted line seems like a good model of the relationship.
 
 
 \section{Residuals}
+\label{residuals}
 
 Another useful test is to plot the residuals.
 {\tt thinkstats2} provides a function that computes residuals:
@@ -7117,7 +7122,7 @@ and draw samples, with replacement, from the observed sample.
 def SamplingDistributions(live, iters=101):
     t = []
     for _ in range(iters):
-        sample = thinkstats2.SampleRows(live, len(live), replace=True)
+        sample = thinkstats2.ResampleRows(live)
         ages = sample.agepreg
         weights = sample.totalwgt_lb
         estimates = thinkstats2.LeastSquares(ages, weights)
@@ -7127,12 +7132,21 @@ def SamplingDistributions(live, iters=101):
     return inters, slopes
 \end{verbatim}
 
-{\tt SamplingDistributions} takes a DataFrame with one row
-per live birth, and {\tt iters}, the number of experiments to simulate.
-It uses {\tt SampleRows} to resample the observed pregnancies,
-then uses the simulated sample to estimate the parameters.
-It returns sequences
-of estimated intercepts and estimated slopes.
+{\tt SamplingDistributions} takes a DataFrame with one row per live
+birth, and {\tt iters}, the number of experiments to simulate.  It
+uses {\tt ResampleRows} to resample the observed pregnancies.  We've
+already seen {\tt SampleRows}, which chooses random rows from a
+DataFrame.  {\tt thinkstats2} also provides {\tt ResampleRows}, which
+handles the case when the new sample is the same size as the original:
+
+\begin{verbatim}
+def ResampleRows(df):
+    return SampleRows(df, len(df), replace=True)
+\end{verbatim}
+
+After resampling, we use the simulated sample to estimate parameters.
+The result is two sequences: the estimated intercepts and estimated
+slopes.
 
 I summarize the sampling distributions by printing the standard
 error and confidence interval:
@@ -7425,16 +7439,10 @@ generate sampling distributions, standard errors, and confidence
 intervals.  As an example, I will estimate mean birth weight with
 and without sample weights.
 
-We've already seen {\tt SampleRows}, which chooses random rows
-from a DataFrame.  {\tt thinkstats2} also provide {\tt ResampleRows},
-which handles the case when the new sample is the same size as the original:
-
-\begin{verbatim}
-def ResampleRows(df):
-    return SampleRows(df, len(df), replace=True)
-\end{verbatim}
-
-Now we need to do the same thing using sample weights.
+In Section~\ref{regest}, we saw {\tt ResampleRows}, which chooses
+rows from a DataFrame, giving each row the same probability.
+Now we need to do the same thing using probabilities
+proportional to sample weights.
 {\tt ResampleRowsWeighted} takes a DataFrame, resamples rows according
 to the weights in {\tt finalwgt}, and returns a DataFrame containing
 the resampled rows:
@@ -7661,7 +7669,7 @@ is less than $0.001$, as expected.
 {\tt results.rsquared} contains $R^2$, which is $0.0047$.  {\tt
   results} also provides \verb"f_pvalue", which is the p-value
 associated with the model as a whole, similar to testing whether $R^2$
-is statitically significant.
+is statistically significant.
 
 And {\tt results} provides {\tt resid}, a sequence of residuals, and
 {\tt fittedvalues}, a sequence of fitted values corresponding to
@@ -7813,6 +7821,7 @@ than either alone (but not by much).
 
 
 \section{Non-linear relationships}
+\label{nonlinear}
 
 Remembering that the contribution of {\tt agepreg} might be non-linear,
 we might consider adding a variable to capture more of this
@@ -8247,6 +8256,7 @@ iterative solver like Newton's method (see
 
 
 \section{Implementation}
+\label{implementation}
 
 {\tt statsmodels} provides an implementation of logistic regression
 called {\tt logit}, named for the function that converts from
@@ -8342,6 +8352,7 @@ $R^2$ is a little higher, but that could be due to chance.
 
 
 \section{Accuracy}
+\label{accuracy}
 
 In the office pool scenario,
 we are most interested in the accuracy of the model:
@@ -8638,40 +8649,64 @@ def GroupByDay(transactions, func=np.mean):
     grouped = transactions[['date', 'ppg']].groupby('date')
     daily = grouped.aggregate(func)
 
-    dates = pandas.date_range(daily.index.min(), daily.index.max())
-    daily = daily.reindex(dates)
-
     daily['date'] = daily.index
     start = daily.date[0]
-    one_day = np.timedelta64(1, 'D')
-    daily['days'] = ((daily.date - start) / one_day).astype(int)
+    one_year = np.timedelta64(1, 'Y')
+    daily['years'] = (daily.date - start) / one_year
 
     return daily
 \end{verbatim}
 
-From {\tt transactions} we select {\tt date} and {\tt ppg}, then
-group by {\tt date}.  The result, {\tt grouped}, is a map from
-each date to a DataFrame that contains the prices reported
-on that date.  {\tt aggregate} is a DataFrameGroupBy that iterates
-through the groups and applies a function to each column of the
-group; in this case there is only one column, {\tt ppg}.  So the
-result of {\tt aggregate} is a DataFrame with one row for each
-date and one column, {\tt ppg}.
+The parameter, {\tt transactions}, is a DataFrame that contains at
+least the columns {\tt date} and {\tt ppg}.  We select these two
+columns, then group by {\tt date}.
 
-At this point {\tt daily} contains rows for each date with at
-least one reported transaction, but since there are days with no
-transactions, there are gaps.  To make the time series easier to work
-with, ???  What if we don't?
+The result, {\tt grouped}, is a map from each date to a DataFrame that
+contains prices reported on that date.  {\tt aggregate} is a
+DataFrameGroupBy method that iterates through the groups and applies a
+function to each column of the group; in this case there is only one
+column, {\tt ppg}.  So the result of {\tt aggregate} is a DataFrame
+with one row for each date and one column, {\tt ppg}.
 
+Dates in these DataFrames are stored as NumPy {\tt datetime64}
+objects, which are represented as 64-bit integers, in nanoseconds.
+For some of the analyses coming up, it will be convenient to
+work with time in more human-friendly units, like years.  So
+{\tt GroupByDay} adds a column named {\tt date} by copying
+the {\tt index}, then adds {\tt years}, which contains the number
+of years since the first transaction as a floating-point number.
+
+The resulting DataFrame has columns {\tt ppg}, {\tt date}, and
+{\tt years}.
+
+\section{Plotting}
+
+The result from {\tt GroupByQualityAndDay} is a map from each quality
+to a DataFrame of daily prices.  Here's the code I use to plot
+the three time series:
 
 \begin{verbatim}
+    thinkplot.PrePlot(rows=3)
+    for i, (name, daily) in enumerate(dailies.items()):
+        thinkplot.SubPlot(i+1)
+        title = 'price per gram ($)' if i==0 else ''
+        thinkplot.Config(ylim=[0, 20], title=title)
+        thinkplot.Scatter(daily.index, daily.ppg, s=10, label=name)
+        if i == 2: 
+            pyplot.xticks(rotation=30)
+        else:
+            thinkplot.Config(xticks=[])
 \end{verbatim}
 
-\begin{verbatim}
-\end{verbatim}
+{\tt PrePlot} with {\tt rows=3} means that we are planning to
+make three subplots, laid out in three rows.  The loop iterates
+through the DataFrames and creates a scatter plot for each.  It is
+also common to plot time series with line segments between the points,
+but in this case there are many data points and prices are highly
+variable, so adding lines would not help.
 
-
-
+Since the labels on the x-axis are dates, I use {\tt pyplot.xticks}
+to rotate the ``ticks'' 30 degrees, making them more readable.
 
 \begin{figure}
 % timeseries.py
@@ -8681,6 +8716,92 @@ quality cannabis.}
 \label{timeseries1}
 \end{figure}
 
+Figure~\ref{timeseries1} shows the result.  One apparent feature in
+these plots is a gap around November 2013.  It's possible that data
+collection was not active during this time, or the data might not
+be available.  We will consider ways to deal with missing data like
+this.
+
+Visually, it looks like the price of high quality cannabis is
+declining during this period, and the price of medium quality
+might be increasing.  The price of low quality might also be
+increasing, and it seems to be more volatile.  Keep in mind
+that the quality data is reported by participants in the study,
+so trends over time might reflect changes in how participants
+apply these categories.
+
+
+\section{Linear regression}
+
+Although there are methods specific to time series
+analysis, for many problems a simple way to get started is by
+applying general-purpose tools like linear regression.  The following
+function takes a DataFrame of daily prices and computes a
+least squares fit, returning the model and results objects
+from StatsModels:
+
+\begin{verbatim}
+def RunLinearModel(daily):
+    model = smf.ols('ppg ~ years', data=daily)
+    results = model.fit()
+    return model, results
+\end{verbatim}
+
+Then we can iterate through the qualities and fit a model to
+each:
+
+\begin{verbatim}
+    for name, daily in dailies.items():
+        model, results = RunLinearModel(daily)
+        print(name)
+        regression.SummarizeResults(results)
+\end{verbatim}
+
+Here are the results:
+
+\begin{verbatim}
+high
+Intercept     13.4    (0)
+years        -0.708   (3.69e-160)
+R^2 0.4441
+
+medium
+Intercept     8.88    (0)
+years         0.283   (1.82e-15)
+R^2 0.0499
+
+low
+Intercept     5.36    (3.15e-130)
+years         0.568   (2.76e-09)
+R^2 0.0296
+\end{verbatim}
+
+The estimated slopes indicate that the price of high quality cannabis
+dropped by about 71 cents per year during the observed interval; for
+medium quality it increased by 28 cents per year, and for low quality
+it increase by 57 cents per year.  These estimated slopes are
+all statistically significant with very small p-values.
+
+The $R^2$ value for high quality cannabis is 0.44, which means
+that time as an explanatory variable accounts for 44\% of the observed
+variability in price.  For the other qualities, the change in price
+is smaller, and variability in prices is higher, so the values
+of $R^2$ are much smaller (although still statistically significant).
+
+The following code plots the observed prices and the fitted values:
+
+\begin{verbatim}
+def PlotFittedValues(model, results, label=''):
+    years = model.exog[:,1]
+    values = model.endog
+    thinkplot.Scatter(years, values, s=15, label=label)
+    thinkplot.Plot(years, results.fittedvalues, label='model')
+\end{verbatim}
+
+As we saw in Section~\ref{implementation}, {\tt model} contains
+{\tt exog} and {\tt endog}, NumPy arrays with the exogenous
+(explanatory) and endogenous (dependent) variables.
+
 \begin{figure}
 % timeseries.py
 \centerline{\includegraphics[height=2.5in]{figs/timeseries2.pdf}}
@@ -8689,12 +8810,141 @@ and a linear least squares fit.}
 \label{timeseries2}
 \end{figure}
 
+{\tt PlotFittedValues} makes a scatter plot of data points and a line
+plot of the fitted values.  Figure~\ref{timeseries2} shows the results
+for high quality cannabis.  The model seems like a good linear fit
+for the data, but it's not clear that the long-term trend
+is linear.  Visually, it seem like there is a change at around 2
+years, with decreases in the rate of decline and variability.
+
+We can check for non-linearity by plotting the residuals, as we
+did in Section~\ref{residuals}.  First, I extract the exogenous
+variable, {\tt years}, and the residuals, and store them in
+a DataFrame:
+
+\begin{verbatim}
+    exog = model.exog[:,1]
+    resid = results.resid.values
+    df = pandas.DataFrame(dict(exog=exog, resid=resid))
+\end{verbatim}
+
+Next, I divide the x-axis (years) into bins using {\tt digitize}
+and {\tt groupby}, which we saw in Section~\ref{characterizing}:
+
+\begin{verbatim}
+    bins = np.linspace(np.min(exog), np.max(exog), num_bins)
+    indices = np.digitize(exog, bins)
+    groups = df.groupby(indices)
+\end{verbatim}
+
+Then for each bin, I compute the average of {\tt exog} and the
+distribution of {\tt resid}:
+
+\begin{verbatim}
+    means = [group.exog.mean() for _, group in groups][1:-1]
+    cdfs = [thinkstats2.Cdf(group.resid) for _, group in groups][1:-1]
+\end{verbatim}
+
+Finally, I plot the 25th, 50th, and 75th percentiles of the
+residuals:
+
+\begin{verbatim}
+    thinkplot.PrePlot(3)
+    for percent in [75, 50, 25]:
+        percentiles = [cdf.Percentile(percent) for cdf in cdfs]
+        label = '%dth' % percent
+        thinkplot.Plot(means, percentiles, label=label)
+\end{verbatim}
+
 \begin{figure}
 % timeseries.py
 \centerline{\includegraphics[height=2.5in]{figs/timeseries3.pdf}}
 \caption{Residuals of the linear fit.}
 \label{timeseries3}
 \end{figure}
+
+The result is in Figure~\ref{timeseries3}.  If the long-term trend
+is actually linear, the 50th percentile curve should be flat, but it
+clearly falls between 0.5 and 1.5 years, and then climbs after that,
+which indicates that there is a secondary trend that is not captured
+by the model.
+
+This model can be improved by adding a quadratic term, {\tt years**2},
+as an explanatory variable, as we did
+in Section~\ref{nonlinear}.  You'll have a chance to explore this
+option in the exercises at the end of this chapter.  But for now
+I will stick with the linear model.
+
+
+\section{Prediction}  
+
+We can use the fitted model to predict prices in the future.
+As we saw in Section~\ref{accuracy}, RegressionResults provides {\tt predict},
+which takes a DataFrame containing the explanatory variables and
+returns a sequence of predictions.  Here's the code:
+
+\begin{verbatim}
+def GenerateSimplePrediction(results, years):
+    n = len(years)
+    inter = np.ones(n)
+    d = dict(Intercept=inter, years=years)
+    predict_df = pandas.DataFrame(d)
+    predict = results.predict(predict_df)
+    return predict
+\end{verbatim}
+
+{\tt results} is a RegressionResults object; {\tt years} is the
+sequence of time values we want predictions for.  The function
+constructs a DataFrame, passes it to {\tt predict}, and
+returns the result.
+
+If all we want is a single, best-guess prediction, that's all
+we need.  But for most purposes it is important to quantify error.
+In other words, we want to know how accurate the prediction is likely
+to be.
+
+There are three sources of error we should take into account:
+
+\begin{itemize}
+
+\item Sampling error: The prediction is based on the parameters of
+the model, but the estimated parameters depend on random variation
+in the sample.  If we ran the experiment again, we would expect
+the estimates to vary.
+
+\item Random variation:  Even if the estimates parameters are
+perfect, the observed data varies randomly around the long-term
+trend, and we expect this variation to continue in the future.
+
+\item Modeling error: We have already seen evidence that the long-term
+trend is not linear, so predictions based on a linear model will
+eventually fail.  
+
+\end{itemize}
+
+Another source of error to consider is unexpected future events.
+Agricultural prices are affected by weather, and all prices are
+affected by politics and law.  As I write this, cannabis is legal in
+two states, and legal for medical purpose in 20 more.  If more states
+legalize it, the price is likely to go down.  On the other hand, if
+the federal government cracks down, the price might go up.
+You can think of these unpredictable changes as a fourth kind
+of error, or as a variety of model error.
+
+Either way, modeling errors and unexpected future events are hard to
+quantify.  They are what Donald Rumsfeld would call ``unknown
+unknowns'' (see
+\url{https://en.wikipedia.org/wiki/There_are_known_knowns}).  Sampling
+error and random variation are easier to deal with, so let's do that.
+
+To quantify sampling error, I'll use resampling, as we did in
+Section~\ref{regest}.  In that example, we resampled the data;
+that is, we selected random rows from the DataFrame of observations.
+
+
+
+
+
 
 \begin{figure}
 % timeseries.py

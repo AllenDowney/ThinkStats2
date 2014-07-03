@@ -83,19 +83,6 @@ def MakeBabyBoom():
 
     thinkplot.Save(root='analytic_interarrivals')
 
-    n = len(diffs)
-    lam = 44 / 24 * 60.0
-    sample = [random.expovariate(lam) for _ in range(n)]
-    model = thinkstats2.Cdf(sample, label='model')
-    
-    thinkplot.PrePlot(2)
-    thinkplot.Cdfs([cdf, model], complement=True)
-    thinkplot.Save(root='analytic_interarrivals_model',
-                   title='Time between births',
-                   xlabel='minutes',
-                   ylabel='CCDF',
-                   yscale='log')
-
 
 def MakeParetoCdf():
     """Generates a plot of the Pareto CDF."""

@@ -338,7 +338,7 @@ class _DictWrapper(object):
 
     def Total(self):
         """Returns the total of the frequencies/probabilities in the map."""
-        total = np.sum(self.d.values())
+        total = sum(self.d.values())
         return total
 
     def MaxLike(self):

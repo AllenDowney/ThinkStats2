@@ -1,7 +1,7 @@
 """This file contains code for use with "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2010 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
@@ -106,6 +106,7 @@ def PrePlot(num=None, rows=1, cols=1, plot=1):
                 (1, 2): (14, 6),
                 (2, 2): (10, 10),
                 (2, 3): (10, 14),
+                (3, 1): (8, 10),
                 }
 
     if (rows, cols) in size_map:
@@ -198,7 +199,7 @@ def UnderrideColor(options):
     return options
 
 
-def Plot(xs, ys, style='', **options):
+def Plot(xs, ys=None, style='', **options):
     """Plots a line.
 
     Args:
@@ -209,7 +210,10 @@ def Plot(xs, ys, style='', **options):
     """
     options = UnderrideColor(options)
     options = Underride(options, linewidth=3, alpha=0.8)
-    pyplot.plot(xs, ys, style, **options)
+    if ys is None:
+        pyplot.plot(xs, style, **options)
+    else:
+        pyplot.plot(xs, ys, style, **options)
 
 
 def FillBetween(xs, y1, y2=None, where=None, **options):
