@@ -429,7 +429,7 @@ class Pmf(_DictWrapper):
         """
         p = percentage / 100.0
         total = 0
-        for val, prob in self.Items():
+        for val, prob in sorted(self.Items()):
             total += prob
             if total >= p:
                 return val
@@ -1337,7 +1337,7 @@ class Pdf(object):
     def Density(self, x):
         """Evaluates this Pdf at x.
 
-        Returns: float probability density
+        Returns: float or NumPy array of probability density
         """
         raise UnimplementedMethodException()
 
@@ -1417,7 +1417,7 @@ class GaussianPdf(Pdf):
 
         xs: scalar or sequence of floats
 
-        Returns: float probability density
+        returns: float or NumPy array of probability density
         """
         return scipy.stats.norm.pdf(xs, self.mu, self.sigma)
 
@@ -1450,7 +1450,7 @@ class ExponentialPdf(Pdf):
 
         xs: scalar or sequence of floats
 
-        Returns: float probability density
+        returns: float or NumPy array of probability density
         """
         return scipy.stats.expon.pdf(xs, scale=1.0/self.lam)
 
@@ -1483,7 +1483,7 @@ class EstimatedPdf(Pdf):
     def Density(self, xs):
         """Evaluates this Pdf at xs.
 
-        Returns: float probability density
+        returns: float or NumPy array of probability density
         """
         return self.kde.evaluate(xs)
 
