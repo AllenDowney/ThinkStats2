@@ -100,6 +100,14 @@ def main():
     thinkplot.Show(xlabel='household income',
                    ylabel='CDF')
 
+    sample = np.power(10, log_sample)
+    mean, median = density.Summarize(sample)
+
+    cdf = thinkstats2.Cdf(sample)
+
+    pdf = thinkstats2.EstimatedPdf(sample)
+
+
 
 if __name__ == "__main__":
     main()
