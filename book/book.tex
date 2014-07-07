@@ -8563,12 +8563,12 @@ investigate the effect of policy decisions, like legalization, on
 markets.  I find this project appealing because it is an example that
 uses data to address important political questions, like drug policy.
 
-It is also an example many people find interesting, so I hope you
-will find this chapter entertaining.  But I'll take this opportunity
-to reiterate the importance of maintaining a professional attitude
-to data analysis.  Whether and which drugs should be illegal are
-difficult public policy questions; our decisions should be
-informed by accurate data reported honestly.
+It is also an example many people find interesting, so I hope you will
+find this chapter entertaining.  But I'll take this opportunity to
+reiterate the importance of maintaining a professional attitude to
+data analysis.  Whether and which drugs should be illegal are
+important and difficult public policy questions; our decisions should
+be informed by accurate data reported honestly.
 
 The code for this chapter is in {\tt timeseries.py}.  For information
 about downloading and working with this code, see Section~\ref{code}.
@@ -8576,7 +8576,7 @@ about downloading and working with this code, see Section~\ref{code}.
 
 \section{Importing and cleaning}
 
-I downloaded the data Jones collected from
+I downloaded Jones's data from
 \url{http://zmjones.com/static/data/mj-clean.csv} and read it
 into a pandas DataFrame:
 
@@ -8719,26 +8719,24 @@ quality cannabis.}
 Figure~\ref{timeseries1} shows the result.  One apparent feature in
 these plots is a gap around November 2013.  It's possible that data
 collection was not active during this time, or the data might not
-be available.  We will consider ways to deal with missing data like
-this.
+be available.  We will consider ways to deal with this missing data
+later.
 
 Visually, it looks like the price of high quality cannabis is
-declining during this period, and the price of medium quality
-might be increasing.  The price of low quality might also be
-increasing, and it seems to be more volatile.  Keep in mind
-that the quality data is reported by participants in the study,
-so trends over time might reflect changes in how participants
-apply these categories.
+declining during this period, and the price of medium quality is
+increasing.  The price of low quality might also be increasing, but it
+is harder to tell, since it seems to be more volatile.  Keep in mind
+that the quality data is reported by volunteers, so trends over time
+might reflect changes in how participants apply these categories.
 
 
 \section{Linear regression}
 
-Although there are methods specific to time series
-analysis, for many problems a simple way to get started is by
-applying general-purpose tools like linear regression.  The following
-function takes a DataFrame of daily prices and computes a
-least squares fit, returning the model and results objects
-from StatsModels:
+Although there are methods specific to time series analysis, for many
+problems a simple way to get started is by applying general-purpose
+tools like linear regression.  The following function takes a
+DataFrame of daily prices and computes a least squares fit, returning
+the model and results objects from StatsModels:
 
 \begin{verbatim}
 def RunLinearModel(daily):
@@ -8759,28 +8757,18 @@ each:
 
 Here are the results:
 
-\begin{verbatim}
-high
-Intercept     13.4    (0)
-years        -0.708   (3.69e-160)
-R^2 0.4441
-
-medium
-Intercept     8.88    (0)
-years         0.283   (1.82e-15)
-R^2 0.0499
-
-low
-Intercept     5.36    (3.15e-130)
-years         0.568   (2.76e-09)
-R^2 0.0296
-\end{verbatim}
+\begin{tabular}{|l|l|c|} \hline
+intercept & slope & $R^2$ \\ \hline
+13.450 (0) & -0.708 (3.7e-160) & 0.444 \\
+8.879 (0) & 0.283 (1.8e-15) & 0.050 \\
+5.362 (3.1e-130) & 0.568 (2.8e-09) & 0.030 \\
+\hline \end{tabular}
 
 The estimated slopes indicate that the price of high quality cannabis
 dropped by about 71 cents per year during the observed interval; for
 medium quality it increased by 28 cents per year, and for low quality
-it increase by 57 cents per year.  These estimated slopes are
-all statistically significant with very small p-values.
+it increase by 57 cents per year.  These estimates are
+statistically significant with very small p-values.
 
 The $R^2$ value for high quality cannabis is 0.44, which means
 that time as an explanatory variable accounts for 44\% of the observed
@@ -8813,95 +8801,163 @@ and a linear least squares fit.}
 {\tt PlotFittedValues} makes a scatter plot of data points and a line
 plot of the fitted values.  Figure~\ref{timeseries2} shows the results
 for high quality cannabis.  The model seems like a good linear fit
-for the data, but it's not clear that the long-term trend
-is linear.  Visually, it seem like there is a change at around 2
-years, with decreases in the rate of decline and variability.
+for the data; nevertheless, linear regression is not the most 
+appropriate choice for this data:
 
-We can check for non-linearity by plotting the residuals, as we
-did in Section~\ref{residuals}.  First, I extract the exogenous
-variable, {\tt years}, and the residuals, and store them in
-a DataFrame:
+\begin{itemize}
+
+\item First, there is no reason to expect the long-term trend to be a
+  line or any other simple function.  In general, prices are
+  determined by supply and demand, both of which vary over time in
+  unpredictable ways.
+
+\item Second, the linear regression model gives equal weight to all
+  data, recent and past.  For purposes of prediction, we should
+  probably give more weight to recent data.
+
+\item Finally, one of the assumptions of linear regression is that the
+  residuals are uncorrelated noise.  With time series data, this
+  assumption is often false.
+
+\end{itemize}
+
+The next section presents an alternative that is more appropriate
+for time series data.
+
+
+\section{Moving averages}
+
+Most time series analysis is based on the modeling assumption that the
+observed series is the sum of three components:
+
+\begin{itemize}
+
+\item Trend: A smooth function that captures persistent changes.
+
+\item Seasonality: Periodic variation, possibly including daily,
+weekly, monthly, or yearly cycles.
+
+\item Noise: Random variation around the long-term trend.
+
+\end{itemize}
+
+Regression is one way to extract the trend from a series, as we
+saw in the previous section.  But if the trend is not a simple
+function, a good alternative is a {\bf moving average}.  A moving
+average divides the series into overlapping regions, called {\bf windows},
+and computes the average of the values in each window.
+
+One of the simplest moving averages is the {\bf rolling mean}, which
+computes the mean of the values in each window.  For example, if
+the window size is 3, the rolling mean computes the mean of
+values 0 through 2, 1 through 3, 2 through 4, etc.
+
+pandas provides \verb"rolling_mean", which takes a Series and a
+window size and returns a new Series.
 
 \begin{verbatim}
-    exog = model.exog[:,1]
-    resid = results.resid.values
-    df = pandas.DataFrame(dict(exog=exog, resid=resid))
+>>> series = np.arange(10)
+array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
+
+>>> pandas.rolling_mean(series, 3)
+array([ nan,  nan,   1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.])
 \end{verbatim}
 
-Next, I divide the x-axis (years) into bins using {\tt digitize}
-and {\tt groupby}, which we saw in Section~\ref{characterizing}:
+The first two values are {\tt nan}; the next value is the mean of
+the first three elements, 0, 1, and 2.  The next value is the mean
+of 1, 2, and 3.  And so on.
+
+Before we can apply \verb"rolling_mean" to the cannabis data, we
+have to deal with missing values.  There are a few days in the
+observed interval with no reported transactions for one or more
+quality categories, and a period in 2013 when data collection was
+not active.
+
+In the DataFrames we have used so far, these dates are absent;
+the index skips days with no data.  For the analysis that follows,
+we need to represent this missing data explicitly.  We can do
+that by {\bf reindexing} the DataFrame:
+ 
+\begin{verbatim}
+    dates = pandas.date_range(daily.index.min(), daily.index.max())
+    reindexed = daily.reindex(dates)
+\end{verbatim}
+
+The first line computes a date range that include every day from the
+beginning to the end of the observed interval.  The second line
+creates a new DataFrame with all of the data from {\tt daily}, but
+including rows for all dates, filled with {\tt nan}.
+
+Now we can plot the rolling mean like this:
 
 \begin{verbatim}
-    bins = np.linspace(np.min(exog), np.max(exog), num_bins)
-    indices = np.digitize(exog, bins)
-    groups = df.groupby(indices)
+    roll_mean = pandas.rolling_mean(reindexed.ppg, 30)
+    thinkplot.Plot(roll_mean.index, roll_mean)
 \end{verbatim}
 
-Then for each bin, I compute the average of {\tt exog} and the
-distribution of {\tt resid}:
-
-\begin{verbatim}
-    means = [group.exog.mean() for _, group in groups][1:-1]
-    cdfs = [thinkstats2.Cdf(group.resid) for _, group in groups][1:-1]
-\end{verbatim}
-
-Finally, I plot the 25th, 50th, and 75th percentiles of the
-residuals:
-
-\begin{verbatim}
-    thinkplot.PrePlot(3)
-    for percent in [75, 50, 25]:
-        percentiles = [cdf.Percentile(percent) for cdf in cdfs]
-        label = '%dth' % percent
-        thinkplot.Plot(means, percentiles, label=label)
-\end{verbatim}
+The window size is 30, so each value in \verb"roll_mean" is
+the mean of 30 values from {\tt reindexed.ppg}.  
 
 \begin{figure}
 % timeseries.py
-\centerline{\includegraphics[height=2.5in]{figs/timeseries3.pdf}}
-\caption{Residuals of the linear fit.}
-\label{timeseries3}
+\centerline{\includegraphics[height=2.5in]{figs/timeseries10.pdf}}
+\caption{Daily price and a rolling mean (left) and exponentially-weighted
+moving average (right).}
+\label{timeseries10}
 \end{figure}
 
-The result is in Figure~\ref{timeseries3}.  If the long-term trend
-is actually linear, the 50th percentile curve should be flat, but it
-clearly falls between 0.5 and 1.5 years, and then climbs after that,
-which indicates that there is a secondary trend that is not captured
-by the model.
+Figure~\ref{timeseries10} (left)
+shows the result. 
+The rolling mean seems to do a good job of smoothing out the noise and
+extracting the trend.  The first 29 values are {\tt nan}, and wherever
+there's a missing value, it's followed by another 29 {\tt nan}s.
+There are ways to fill in these gaps, but they are a minor nuisance.
 
-This model can be improved by adding a quadratic term, {\tt years**2},
-as an explanatory variable, as we did
-in Section~\ref{nonlinear}.  You'll have a chance to explore this
-option in the exercises at the end of this chapter.  But for now
-I will stick with the linear model.
+An alternative is the exponentially-weighted moving average (EWMA),
+which has two advantages.  First, as the name suggests, it computes
+a weighted average where the most recent value has the highest weight,
+and the weights for previous values drop off exponentially.
+Second, the pandas implementation of EWMA handles missing values
+better.
+
+\begin{verbatim}
+    ewma = pandas.ewma(reindexed.ppg, span=30)
+    thinkplot.Plot(ewma.index, ewma)
+\end{verbatim}
+
+The {\bf span} parameter corresponds roughly to the window size of
+a moving average; it controls how fast the weights drop off, so it
+determines the number of points that make a non-negligible contribution
+to each average.
+
+Figure~\ref{timeseries10} (right) shows the EWMA for the same data.
+If is very similar to the rolling mean, where they are both defined,
+but it has no missing values, which makes it easier to work with.  The
+values are noisy at the beginning of the time series, because they are
+based on fewer data points.
+
+\begin{verbatim}
+\end{verbatim}
+
+
+
+
+A {\bf moving average} is 
+
+
+
+Note about online implementation.
+
+
+
+\section{Missing data}
+
+
+\section{Autocorrelation}
+
 
 
 \section{Prediction}  
-
-We can use the fitted model to predict prices in the future.
-As we saw in Section~\ref{accuracy}, RegressionResults provides {\tt predict},
-which takes a DataFrame containing the explanatory variables and
-returns a sequence of predictions.  Here's the code:
-
-\begin{verbatim}
-def GenerateSimplePrediction(results, years):
-    n = len(years)
-    inter = np.ones(n)
-    d = dict(Intercept=inter, years=years)
-    predict_df = pandas.DataFrame(d)
-    predict = results.predict(predict_df)
-    return predict
-\end{verbatim}
-
-{\tt results} is a RegressionResults object; {\tt years} is the
-sequence of time values we want predictions for.  The function
-constructs a DataFrame, passes it to {\tt predict}, and
-returns the result.
-
-If all we want is a single, best-guess prediction, that's all
-we need.  But for most purposes it is important to quantify error.
-In other words, we want to know how accurate the prediction is likely
-to be.
 
 There are three sources of error we should take into account:
 
@@ -8923,13 +8979,6 @@ eventually fail.
 \end{itemize}
 
 Another source of error to consider is unexpected future events.
-Agricultural prices are affected by weather, and all prices are
-affected by politics and law.  As I write this, cannabis is legal in
-two states, and legal for medical purpose in 20 more.  If more states
-legalize it, the price is likely to go down.  On the other hand, if
-the federal government cracks down, the price might go up.
-You can think of these unpredictable changes as a fourth kind
-of error, or as a variety of model error.
 
 Either way, modeling errors and unexpected future events are hard to
 quantify.  They are what Donald Rumsfeld would call ``unknown
@@ -9810,4 +9859,87 @@ In Python, sampling with replacement can be implemented with
 to choose an element from a sequence.  Sampling without replacement
 is provided by {\tt random.sample}.
 \index{random module}
+
+We can check for non-linearity by plotting the residuals, as we
+did in Section~\ref{residuals}.  First, I extract the exogenous
+variable, {\tt years}, and the residuals, and store them in
+a DataFrame:
+
+\begin{verbatim}
+    exog = model.exog[:,1]
+    resid = results.resid.values
+    df = pandas.DataFrame(dict(exog=exog, resid=resid))
+\end{verbatim}
+
+Next, I divide the x-axis (years) into bins using {\tt digitize}
+and {\tt groupby}, which we saw in Section~\ref{characterizing}:
+
+\begin{verbatim}
+    bins = np.linspace(np.min(exog), np.max(exog), num_bins)
+    indices = np.digitize(exog, bins)
+    groups = df.groupby(indices)
+\end{verbatim}
+
+Then for each bin, I compute the average of {\tt exog} and the
+distribution of {\tt resid}:
+
+\begin{verbatim}
+    means = [group.exog.mean() for _, group in groups][1:-1]
+    cdfs = [thinkstats2.Cdf(group.resid) for _, group in groups][1:-1]
+\end{verbatim}
+
+Finally, I plot the 25th, 50th, and 75th percentiles of the
+residuals:
+
+\begin{verbatim}
+    thinkplot.PrePlot(3)
+    for percent in [75, 50, 25]:
+        percentiles = [cdf.Percentile(percent) for cdf in cdfs]
+        label = '%dth' % percent
+        thinkplot.Plot(means, percentiles, label=label)
+\end{verbatim}
+
+\begin{figure}
+% timeseries.py
+\centerline{\includegraphics[height=2.5in]{figs/timeseries3.pdf}}
+\caption{Residuals of the linear fit.}
+\label{timeseries3}
+\end{figure}
+
+The result is in Figure~\ref{timeseries3}.  If the long-term trend
+is actually linear, the 50th percentile curve should be flat, but it
+clearly falls between 0.5 and 1.5 years, and then climbs after that,
+which indicates that there is a secondary trend that is not captured
+by the model.
+
+This model can be improved by adding a quadratic term, {\tt years**2},
+as an explanatory variable, as we did
+in Section~\ref{nonlinear}.  You'll have a chance to explore this
+option in the exercises at the end of this chapter.  But for now
+I will stick with the linear model.
+
+We can use the fitted model to predict prices in the future.
+As we saw in Section~\ref{accuracy}, RegressionResults provides {\tt predict},
+which takes a DataFrame containing the explanatory variables and
+returns a sequence of predictions.  Here's the code:
+
+\begin{verbatim}
+def GenerateSimplePrediction(results, years):
+    n = len(years)
+    inter = np.ones(n)
+    d = dict(Intercept=inter, years=years)
+    predict_df = pandas.DataFrame(d)
+    predict = results.predict(predict_df)
+    return predict
+\end{verbatim}
+
+{\tt results} is a RegressionResults object; {\tt years} is the
+sequence of time values we want predictions for.  The function
+constructs a DataFrame, passes it to {\tt predict}, and
+returns the result.
+
+If all we want is a single, best-guess prediction, that's all
+we need.  But for most purposes it is important to quantify error.
+In other words, we want to know how accurate the prediction is likely
+to be.
 

@@ -93,13 +93,24 @@ class Brewer(object):
         return cls.color_iter
 
 
-def PrePlot(num=None, rows=1, cols=1, plot=1):
+def PrePlot(num=None, rows=None, cols=None):
     """Takes hints about what's coming.
 
     num: number of lines that will be plotted
+    rows: number of rows of subplots
+    cols: number of columns of subplots
     """
     if num:
         Brewer.InitializeIter(num)
+
+    if rows is None and cols is None:
+        return
+
+    if rows is not None and cols is None:
+        cols = 1
+
+    if cols is not None and rows is None:
+        rows = 1
 
     # resize the image, depending on the number of rows and cols
     size_map = {(1, 1): (8, 6),
@@ -115,7 +126,7 @@ def PrePlot(num=None, rows=1, cols=1, plot=1):
 
     # create the first subplot
     if rows > 1 or cols > 1:
-        pyplot.subplot(rows, cols, plot)
+        pyplot.subplot(rows, cols, 1)
         global SUBPLOT_ROWS, SUBPLOT_COLS
         SUBPLOT_ROWS = rows
         SUBPLOT_COLS = cols

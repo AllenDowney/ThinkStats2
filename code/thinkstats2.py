@@ -2469,14 +2469,17 @@ def ReadStataDct(dct_file):
     return dct
 
 
-def Resample(xs):
+def Resample(xs, n=None):
     """Draw a sample from xs with the same length as xs.
 
     xs: sequence
+    n: sample size (default: len(xs))
 
     returns: NumPy array
     """
-    return np.random.choice(xs, len(xs), replace=True)
+    if n is None:
+        n = len(xs)
+    return np.random.choice(xs, n, replace=True)
 
 
 def SampleRows(df, nrows, replace=False):
