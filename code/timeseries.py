@@ -56,8 +56,8 @@ def GroupByDay(transactions, func=np.mean):
 
     returns: DataFrame of daily prices
     """
-    grouped = transactions[['date', 'ppg']].groupby('date')
-    daily = grouped.aggregate(func)
+    groups = transactions[['date', 'ppg']].groupby('date')
+    daily = groups.aggregate(func)
 
     daily['date'] = daily.index
     start = daily.date[0]
@@ -74,9 +74,9 @@ def GroupByQualityAndDay(transactions):
     
     returns: map from quality to time series of ppg
     """
-    grouped = transactions.groupby('quality')
+    groups = transactions.groupby('quality')
     dailies = {}
-    for name, group in grouped:
+    for name, group in groups:
         dailies[name] = GroupByDay(group)        
 
     return dailies
@@ -92,7 +92,7 @@ def PlotDailies(dailies):
         thinkplot.SubPlot(i+1)
         title = 'price per gram ($)' if i==0 else ''
         thinkplot.Config(ylim=[0, 20], title=title)
-        thinkplot.Scatter(daily.index, daily.ppg, s=10, label=name)
+        thinkplot.Scatter(daily.ppg, s=10, label=name)
         if i == 2: 
             pyplot.xticks(rotation=30)
         else:
@@ -184,13 +184,12 @@ def SimulateResults(daily, iters=101, func=RunLinearModel):
     returns: list of result objects
     """
     model, results = func(daily)
+    fake = daily.copy()
     
     result_seq = []
     for i in range(iters):
-        series = (results.fittedvalues + 
-                  thinkstats2.Resample(results.resid.values))
-        df = pandas.DataFrame(dict(ppg=series, years=daily.years))
-        _, fake_results = func(df)
+        fake.ppg = results.fittedvalues + thinkstats2.Resample(results.resid)
+        _, fake_results = func(fake)
         result_seq.append(fake_results)
 
     return result_seq
@@ -282,12 +281,6 @@ def PlotPredictions(daily, years, iters=101, percent=90, func=RunLinearModel):
     thinkplot.FillBetween(years, low, high, alpha=0.5, color='gray')
 
 
-def GroupByDayOfWeek(transactions):
-    grouped = transactions[['dayofweek', 'ppg']].groupby('dayofweek')
-    cdfs = grouped.aggregate(thinkstats2.Cdf)
-    thinkplot.Cdfs(cdfs.ppg)
-
-
 def PlotWindows():
     """Makes a plot showing the shapes of windows for rolling means.
 
@@ -320,7 +313,6 @@ def Correlate(dailies):
     for name, daily in dailies.items():
         df[name] = daily.ppg
 
-    print(df.corr())
     return df.corr()
         
 
@@ -336,7 +328,6 @@ def CorrelateResid(dailies):
         model, results = RunLinearModel(daily)
         df[name] = results.resid
 
-    print(df.corr())
     return df.corr()
 
 
@@ -368,11 +359,13 @@ def TestCorrelateResid(dailies, iters=101):
 
 
 def RunModels(dailies):
-    # TODO: generate table
+    """Runs linear regression for each group in dailies.
+
+    dailies: map from group name to DataFrame
+    """
     rows = []
     for name, daily in dailies.items():
         model, results = RunLinearModel(daily)
-        #regression.SummarizeResults(results)
         intercept, slope = results.params
         p1, p2 = results.pvalues
         r2 = results.rsquared
@@ -380,17 +373,20 @@ def RunModels(dailies):
         row = s % (intercept, p1, slope, p2, r2)
         rows.append(row)
 
+    # print results in a LaTeX table
     print(r'\begin{tabular}{|c|c|c|}')
+    print(r'\hline')
     print(r'intercept & slope & $R^2$ \\ \hline')
     for row in rows:
         print(row)
-    print(r'\hline \end{tabular}')
+    print(r'\hline')
+    print(r'\end{tabular}')
 
 
 def FillMissing(daily, span=30):
     """Fills missing values with an exponentially weighted moving average.
 
-    Return frames has added columns ewma and resid.
+    Resulting DataFrame has new columns 'ewma' and 'resid'.
 
     daily: DataFrame of daily prices
     span: window size (sort of) passed to ewma
@@ -398,112 +394,174 @@ def FillMissing(daily, span=30):
     returns: new DataFrame of daily prices
     """
     dates = pandas.date_range(daily.index.min(), daily.index.max())
-    filled = daily.reindex(dates)
+    reindexed = daily.reindex(dates)
 
-    ewma = pandas.ewma(filled.ppg, span=span)
+    ewma = pandas.ewma(reindexed.ppg, span=span)
 
-    resid = (filled.ppg - ewma).dropna()
-    fake_data = ewma + thinkstats2.Resample(resid, len(filled))
-    filled.ppg.fillna(fake_data, inplace=True)
+    resid = (reindexed.ppg - ewma).dropna()
+    fake_data = ewma + thinkstats2.Resample(resid, len(reindexed))
+    reindexed.ppg.fillna(fake_data, inplace=True)
 
-    filled['ewma'] = ewma
-    filled['resid'] = filled.ppg - ewma
-    return filled
+    reindexed['ewma'] = ewma
+    reindexed['resid'] = reindexed.ppg - ewma
+    return reindexed
 
 
-def AddWeeklySignal(daily):
-    """
+def AddWeeklySeasonality(daily):
+    """Adds a weekly pattern.
+
+    daily: DataFrame of daily prices
+
+    returns: new DataFrame of daily prices
     """
     frisat = (daily.index.dayofweek==4) | (daily.index.dayofweek==5)
     fake = daily.copy()
-    fake.ppg[frisat] += np.random.uniform(0, 2, frisat.sum())
+    fake.ppg[frisat] += np.random.uniform(2, 4, frisat.sum())
     return fake
 
 
-def PlotAutoCorrelation(dailies, add_weekly=False):
+def PrintSerialCorrelations(dailies):
     """
     """
-    thinkplot.PrePlot(3)
+    filled = {}
     for name, daily in dailies.items():
+        filled[name] = FillMissing(daily, span=30)
 
-        if add_weekly:
-            daily = AddWeeklySignal(daily)
+    rows = []
+    for lag in [1, 7, 30, 365]:
+        row = [str(lag)]
+        for name, daily in filled.items():            
+            corr = SerialCorrelation(daily.resid, lag)
+            row.append('%.2g' % corr)
+        rows.append(row)
 
-        filled = FillMissing(daily, name)
+    print(r'\begin{tabular}{|c|c|c|c|}')
+    print(r'\hline')
+    print(r'lag & high & medium & low \\ \hline')
+    for row in rows:
+        print(' & '.join(row) + r' \\')
+    print(r'\hline')
+    print(r'\end{tabular}')
 
-        acf = smtsa.acf(filled.resid, nlags=40)
-        lags = np.arange(0, len(acf))
-        print(acf[7])
-        print(SerialCorrelation(filled.resid, -7))
-        thinkplot.Plot(lags[1:], acf[1:], label=name)
+    daily = filled['high']
+    acf = smtsa.acf(daily.resid, nlags=365, unbiased=True)
+    print('%0.3f, %0.3f, %0.3f, %0.3f, %0.3f' % 
+          (acf[0], acf[1], acf[7], acf[30], acf[365]))
 
 
 def SerialCorrelation(series, lag=1):
-    corr = thinkstats2.Corr(series, series.shift(lag))
+    """Computes the serial correlation of a series.
+
+    series: Series
+    lag: integer number of intervals to shift
+
+    returns: float correlation
+    """
+    xs = series[lag:]
+    ys = series.shift(lag)[lag:]
+    corr = thinkstats2.Corr(xs, ys)
     return corr
 
 
+def SimulateAutocorrelation(daily, iters=1001, nlags=40):
+    # run simulations
+    t = []
+    for i in range(iters):
+        filled = FillMissing(daily, span=30)
+        resid = thinkstats2.Resample(filled.resid)
+        acf = smtsa.acf(resid, nlags=nlags, unbiased=True)[1:]
+        t.append(np.abs(acf))
+
+    # put the results in an array and sort the columns
+    size = iters, len(acf)
+    array = np.zeros(size)
+    for i, acf in enumerate(t):
+        array[i,] = acf
+    array = np.sort(array, axis=0)
+
+    # find the bounds that cover 95% of the distribution
+    high = PercentileRow(array, 97.5)
+    low = -high
+    lags = range(1, nlags+1)
+    thinkplot.FillBetween(lags, low, high, alpha=0.2, color='gray')
+
+
+def PlotAutoCorrelation(dailies, nlags=40, add_weekly=False):
+    """
+    """
+    thinkplot.PrePlot(3)
+    daily = dailies['high']
+    SimulateAutocorrelation(daily)
+
+    for name, daily in dailies.items():
+
+        if add_weekly:
+            daily = AddWeeklySeasonality(daily)
+
+        filled = FillMissing(daily, span=30)
+
+        acf = smtsa.acf(filled.resid, nlags=nlags, unbiased=True)
+        lags = np.arange(len(acf))
+        thinkplot.Plot(lags[1:], acf[1:], label=name)
+
+
 def MakeAcfPlot(dailies):
-    ylim = [-0.2, 0.2]
+    axis = [0, 41, -0.2, 0.2]
 
     thinkplot.PrePlot(cols=2)
     PlotAutoCorrelation(dailies, add_weekly=False)
-    thinkplot.Config(ylim=ylim, 
+    thinkplot.Config(axis=axis, 
                      loc='lower right',
                      ylabel='correlation',
-                     xlabel='lag (days)')
+                     xlabel='lag (day)')
 
     thinkplot.SubPlot(2)
     PlotAutoCorrelation(dailies, add_weekly=True)
     thinkplot.Save(root='timeseries9',
-                   ylim=ylim,
+                   axis=axis,
                    loc='lower right',
                    xlabel='lag (days)')
 
 
-def PlotRollingMean(daily):
+def PlotRollingMean(daily, name):
+    """Plots rolling mean and EWMA.
+
+    daily: DataFrame of daily prices
+    """
     dates = pandas.date_range(daily.index.min(), daily.index.max())
     reindexed = daily.reindex(dates)
 
     thinkplot.PrePlot(cols=2)
-    thinkplot.Scatter(reindexed.index, reindexed.ppg, alpha=0.1)
+    thinkplot.Scatter(reindexed.ppg, s=15, alpha=0.1, label=name)
     roll_mean = pandas.rolling_mean(reindexed.ppg, 30)
-    thinkplot.Plot(roll_mean.index, roll_mean, label='rolling mean')
+    thinkplot.Plot(roll_mean, label='rolling mean')
     pyplot.xticks(rotation=30)
     thinkplot.Config(ylabel='price per gram ($)')
 
     thinkplot.SubPlot(2)
-    thinkplot.Scatter(reindexed.index, reindexed.ppg, alpha=0.1)
+    thinkplot.Scatter(reindexed.ppg, s=15, alpha=0.1, label=name)
     ewma = pandas.ewma(reindexed.ppg, span=30)
-    thinkplot.Plot(ewma.index, ewma, label='EWMA')
+    thinkplot.Plot(ewma, label='EWMA')
     pyplot.xticks(rotation=30)
     thinkplot.Save(root='timeseries10')
 
 
-def main(name, data_dir='.'):
-    transactions = ReadData()
+def PlotFilled(daily, name):
+    """Plots the EWMA and filled data.
 
-    dailies = GroupByQualityAndDay(transactions)
-    #PlotDailies(dailies)
-    #RunModels(dailies)
-
-    name = 'high'
-    daily = dailies[name]
-    PlotRollingMean(daily)
-    return
-
-    FillMissing(daily, name, plot=True)
-
-    thinkplot.Scatter(filled.index, filled.ppg, s=15, label=name)
-    thinkplot.Plot(filled.index, filled.ewma, label='EWMA')
+    daily: DataFrame of daily prices
+    """
+    filled = FillMissing(daily, span=30)
+    thinkplot.Scatter(filled.ppg, s=15, alpha=0.3, label=name)
+    thinkplot.Plot(filled.ewma, label='EWMA', alpha=0.4)
     pyplot.xticks(rotation=30)
     thinkplot.Save(root='timeseries8',
                    ylabel='price per gram ($)')
     
-    
-    MakeAcfPlot(dailies)
-    return
 
+def PlotLinearModel(daily, name):
+    """
+    """
     model, results = RunLinearModel(daily)
     PlotFittedValues(model, results, label=name)
     thinkplot.Save(root='timeseries2',
@@ -523,13 +581,34 @@ def main(name, data_dir='.'):
     thinkplot.Plot(years, predict)
     thinkplot.Show()
 
+
+def main(name):
+    thinkstats2.RandomSeed(18)
+    transactions = ReadData()
+
+    dailies = GroupByQualityAndDay(transactions)
+    #PlotDailies(dailies)
+    #RunModels(dailies)
+    #PrintSerialCorrelations(dailies)
+    #MakeAcfPlot(dailies)
+
+    name = 'high'
+    daily = dailies[name]
+
+    #PlotLinearModel(daily, name)
+    #PlotRollingMean(daily, name)
+    #PlotFilled(daily, name)
+
+    years = np.linspace(0, 5, 101)
     PlotPredictions(daily, years)
+    xlim = years[0]-0.1, years[-1]+0.1
     thinkplot.Save(root='timeseries4',
                    title='predictions',
                    xlabel='years',
-                   xlim=[years[0]-0.1, years[-1]+0.1],
+                   xlim=xlim,
                    ylabel='price per gram ($)')
 
+    return
     # TODO: move the quadratic model to chap12ex_soln
     print(name)
     model, results = RunQuadraticModel(daily)

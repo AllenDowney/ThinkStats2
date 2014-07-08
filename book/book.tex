@@ -1008,8 +1008,9 @@ In addition it uses several special codes:
 Special values encoded as numbers are {\em dangerous} because if they
 are not handled properly, they can easily generate bogus results, like
 a 99-pound baby.  The {\tt replace} method replaces these values with
-{\tt NaN}, a special floating-point value that represents ``not a
-number.''
+{\tt np.nan}, a special floating-point value that represents ``not a
+number.''  The {\tt inplace} flag tells {\tt replace} to modify the
+existing series rather than create a new one.
 
 As part of the IEEE floating-point standard, all mathematical
 operations return {\tt nan} if either argument is {\tt nan}:
@@ -2667,7 +2668,7 @@ the PMF of these values for first babies and others.  \index{National
 % cumulative.py
 \centerline{\includegraphics[height=2.5in]{figs/nsfg_birthwgt_pmf.pdf}}
 \caption{PMF of birth weights.  This figure shows a limitation
-of PMFs: they are hard to compare.}
+of PMFs: they are hard to compare visually.}
 \label{nsfg_birthwgt_pmf}
 \end{figure}
 
@@ -2916,10 +2917,10 @@ corresponding value, {\tt x}; that is, the {\bf inverse CDF} of {\tt p}.
 \end{itemize}
 
 Because {\tt xs} and {\tt ps} are sorted, these operations use the
-bisection algorithm, which is efficient; the run time is proportional
+binary search algorithm, which is efficient; the run time is proportional
 to the logarithm of the number of values; see
-\url{http://wikipedia.org/wiki/Time_complexity}.
-\index{bisection algorithm}
+\url{https://en.wikipedia.org/wiki/Binary_search_algorithm}.
+\index{binary search algorithm}
 
 \begin{figure}
 % cumulative.py
@@ -3006,7 +3007,7 @@ the mean.
 \index{spread}
 
 Once you have computed a CDF, it is easy to compute percentiles
-and percentile ranks.  {\tt Cdf} provides these two methods:
+and percentile ranks.  The {\tt Cdf} class provides these two methods:
 
 \begin{itemize}
 
@@ -3066,7 +3067,7 @@ Here's the code to compute it:
 \end{verbatim}
 
 {\tt cdf} is the distribution of all birthweights.  {\tt sample}
-is a random sample of 100 birthweights, chosen with replacement;
+is a random sample of 100 birthweights, chosen with {\bf replacement};
 that is, the same value could be chosen more than once.
 
 \begin{figure}
@@ -3202,6 +3203,11 @@ the 75th and 25th percentiles.
 \item quantile: A sequence of values that correspond to equally-spaced
 percentile ranks; for example, quartiles are
 the 25th, 50th and 75th percentiles.
+
+\item replacement: A property of a sampling process. ``With replacement''
+means that the same value can be chosen more than once; ``without
+replacement'' means that once a value is chosen, it is removed from
+the population.
 
 \end{itemize}
 
@@ -3627,7 +3633,7 @@ Among the data they collected are the weights in kilograms of
 
 The repository for this book contains {\tt CDBRFS08.ASC.gz},
 a fixed-width ASCII file that contains data from the BRFSS,
-and {\tt brfss.py}, which reads the file and analyses the data.
+and {\tt brfss.py}, which reads the file and analyzes the data.
 
 \begin{figure}
 % brfss.py
@@ -4207,7 +4213,7 @@ distribution and then makes an EstimatedPdf to fit it:
 \end{verbatim}
 
 \verb"sample" is a list of 100 random heights.
-\verb"sample_pdf" is a {\tt Pdf} object that containts the estimated
+\verb"sample_pdf" is a {\tt Pdf} object that contains the estimated
 KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
 evaluating the density at a sequence of equally spaced values.
 
@@ -4228,7 +4234,7 @@ Estimating a density function with KDE is useful for several purposes:
 
 \item[Interpolation]: An estimated PDF is a way to get from a sample
   to a model of the population.  If you have reason to believe that
-  the population distribution smooth, you can use KDE to interpolate
+  the population distribution is smooth, you can use KDE to interpolate
   the density for values that don't appear in the sample.
 
 \item[Simulation]: If your sample is an input to a simulation, it
@@ -4256,14 +4262,13 @@ to each other.
 \index{PMF}
 
 We started with PMFs, which represent the probabilities for a discrete
-set of values.  To get from a PMF to a CDF, you can compute a cumulative
-sum.  To be more strictly correct, a discrete CDF should be called a
-cumulative mass function (CMF), but as far as I can tell no one uses
-that term.  \index{CDF}
-To get from a CDF to a PMF, you can compute differences in cumulative
-probabilities.
+set of values.  To get from a PMF to a CDF, you add up the probability
+masses to get cumulative probabilities.  
+To get from a CDF back to a PMF, you compute differences in cumulative
+probabilities.  We'll see the implementation of these operations
+in the next few sections.
 
-Similarly, a PDF is the derivative of a continuous CDF; or, equivalently,
+A PDF is the derivative of a continuous CDF; or, equivalently,
 a CDF is the integral of a PDF.  But remember that a PDF maps from
 values to probability densities; to get a probability, you have to
 integrate.
@@ -4288,6 +4293,11 @@ approximation of the PDF.  You can get a better approximation using
 numerical integration.  \index{discretize}
 \index{quantize}
 \index{bin}
+
+One final note: to be strictly correct, a discrete CDF should be
+called a cumulative mass function (CMF), but as far as I can tell no
+one uses that term.  \index{CDF}
+
 
 
 \section{Hist implementation}
@@ -4384,7 +4394,7 @@ But the values in a CDF are ordered and the values in a \verb"_DictWrapper"
 are not.  Also, it is often useful to compute the inverse CDF; that
 is, the mapping from cumulative probability to value.  So the
 implementaion I chose is two sorted lists.  That way I can use
-bisection to do a forward or inverse mapping in logarithmic time.
+binary search to do a forward or inverse mapping in logarithmic time.
 
 The {\tt Cdf} constructor can take as a parameter a sequence of values
 or a pandas Series, a dictionary that maps from values to
@@ -4419,8 +4429,9 @@ and returns its cumulative probability:
         return p
 \end{verbatim}
 
-And here is the implementation of {\tt Value}, which takes a cumulative
-probability and returns the corresponding value:
+The {\tt bisect} module provides an implementation of binary search.
+And here is the implementation of {\tt Value}, which takes a
+cumulative probability and returns the corresponding value:
 
 \begin{verbatim}
     def Value(self, p):
@@ -4444,7 +4455,7 @@ and pass a Pmf, it computes differences by calling {\tt Cdf.Items}:
         return zip(self.xs, a-b)
 \end{verbatim}
 
-{\tt np.roll} shift the elements of {\tt a} to the right, and ``rolls''
+{\tt np.roll} shifts the elements of {\tt a} to the right, and ``rolls''
 the last one back to the beginning.  We replace the first element of
 {\tt b} with 0 and then compute the difference {\tt a-b}.  The result
 is a NumPy array of probabilities.
@@ -4495,9 +4506,9 @@ recognize as variance.  The definition of variance gives a hint about
 why these statistics are called moments.  If we place a mass along a
 number line at each value, $x_i$, and then spin the number line around
 the mean, the moment of inertia of the spinning masses is the variance
-of the values.  If you are not familiar with moment of intertia, see
+of the values.  If you are not familiar with moment of inertia, see
 \url{http://en.wikipedia.org/wiki/Moment_of_inertia}.  \index{moment
-  of intertia}.
+  of inertia}.
 
 When you report moment-based statistics, it is important to think
 about the units.  For example, if the values $x_i$ are in cm, the
@@ -4505,9 +4516,9 @@ first raw moment is also in cm.  But the second moment is in
 cm$^2$, the third moment is in cm$^3$, and so on.
 
 Because of these units, moments are hard to interpret by themselves.
-For the second moment, we solve the problem by computing the square
-root of variance, known as the standard deviation, which is in the
-same units as $x_i$.
+That's why, for the second moment, it is common to report standard
+deviation, which is the square root of variance, so it is in the same
+units as $x_i$.
 
 
 \section{Skewness}
@@ -4752,7 +4763,7 @@ chapter we look at relationships between variables.  Two variables are
 related if knowing one gives you information about the other.  For
 example, height and weight are related; people who are taller tend to
 be heavier.  Of course, it is not a perfect relationship: there
-are short, heavy people and tall, light people.  But if you are
+are short heavy people and tall light ones.  But if you are
 trying to guess someone's weight, you will be more accurate if you
 know their height than if you don't.
 
@@ -4800,7 +4811,7 @@ def SampleRows(df, nrows, replace=False):
 {\tt df} is the DataFrame, {\tt nrows} is the number of rows to choose,
 and {\tt replace} is a boolean indicating whether sampling should be
 done with replacement; in other words, whether the same row could be
-chosen more than one.
+chosen more than once.
 
 {\tt thinkplot} provides {\tt Scatter}, which makes scatter plots:
 %
@@ -4873,7 +4884,7 @@ the points partly transparent:
 %
 Figure~\ref{scatter2} (left) shows the result.  Overlapping data
 points look darker, so darkness is proportional to density.  In this
-version of the plot we can two details that were not apparent before:
+version of the plot we can see two details that were not apparent before:
 vertical clusters at several heights and a horizontal line near 90 kg
 or 200 pounds.  Since this data is based on self-reports in pounds,
 the most likely explanation is that some respondents reported
@@ -4896,7 +4907,7 @@ how many data points fall in it.  {\tt thinkplot} provides
 %
 Figure~\ref{scatter2} (right) shows the result.  An advantage of a
 hexbin is that it shows the shape of the relationship well, and it is
-efficient for large datasets, but in time and in the size of the file
+efficient for large datasets, both in time and in the size of the file
 it generates.  A drawback is that it makes the outliers invisible.
 
 The moral of this story is that it is
@@ -4907,11 +4918,10 @@ without introducing misleading artifacts.
 \section{Characterizing relationships}
 \label{characterizing}
 
-Scatter plots provide a general impression of the relationship
-between variables, but there are other visualizations that provide
-more insight into the nature of the relationship.  One option is
-to use one variable to bin the data and plot percentiles of the
-other variable.
+Scatter plots provide a general impression of the relationship between
+variables, but there are other visualizations that provide more
+insight into the nature of the relationship.  One option is to bin one
+variable and plot percentiles of the other.
 
 NumPy and pandas provide functions for binning data:
 
@@ -4931,8 +4941,8 @@ listed in {\tt subset}.
 {\tt digitize} computes the index of the bin that contains each value
 in {\tt df.htm3}.  The result is a NumPy array of integer indices.
 Values that fall below the lowest bin are mapped to index 0.  Values
-above the highest bin are mapped to {\tt len(bins)}.  So
-{\tt indices} is one element longer than {\tt bins}.
+above the highest bin are mapped to {\tt len(bins)}.
+%So {\tt indices} is one element longer than {\tt bins}.
 
 \begin{figure}
 % scatter.py
@@ -4941,9 +4951,10 @@ above the highest bin are mapped to {\tt len(bins)}.  So
 \label{scatter3}
 \end{figure}
 
-{\tt groupby} is a pandas method that divides a DataFrame into groups.
-The result is an object that iterates over the groups.  So, for example,
-we can print the number of rows in each group:
+{\tt groupby} is a DataFrame method that returns a GroupBy object;
+used in a {\tt for} loop, {\tt groups} iterates the names of the groups
+and the DataFrames that represent them.  So, for example, we can
+print the number of rows in each group like this:
 
 \begin{verbatim}
 for i, group in groups:
@@ -5021,8 +5032,8 @@ variance 1.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-If $X$ is normally distributed, so is $Z$; but if $X$ is skewed or has
-outliers, so does $Z$.  In that case it is more robust to use
+If $X$ is normally distributed, so is $Z$.  But if $X$ is skewed or has
+outliers, so does $Z$; in those cases, it is more robust to use
 percentile ranks.  If we compute a new variable, $R$, so that $r_i$ is
 the percentile rank of $x_i$, the distribution of $R$ is uniform
 between 0 and 100, regardless of the distribution of $X$.
@@ -5231,7 +5242,8 @@ def SpearmanCorr(xs, ys):
 
 I convert the arguments to pandas Series objects so I can use
 {\tt rank}, which computes the rank for each value and returns
-a Series.  Then I use {\tt Corr} to compute the 
+a Series.  Then I use {\tt Corr} to compute the correlation
+of the ranks.
 
 Or I could use {\tt Series.corr} directly and specify
 Spearman's method:
@@ -5253,16 +5265,18 @@ reasons for the difference, including:
 nonlinear, Pearson's correlation tends to underestimate the strength
 of the relationship, and 
 
-\item Pearson's correlation can affected (in either direction)
+\item Pearson's correlation can be affected (in either direction)
 if one of the distributions is skewed or contains outliers.  Spearman's
 rank correlation is immune to these effects.
 
 \end{itemize}
 
 In the BRFSS example, we know that the distribution of weights is
-roughly lognormal, so we could eliminate the effect of skewness
-by computing Pearson's
-correlation between height and the log of weight.
+roughly lognormal; under a log transform is it approximates a normal
+distribution, so it has no skew.
+So another way to eliminate the effect of skewness is to
+compute Pearson's
+correlation with log-weight and height:
 \index{lognormal distribution}
 \index{distribution!lognormal}
 
@@ -5382,9 +5396,9 @@ relationship between two variables.
 their variance is 1.
 \index{standardize}
 
-\item standard score: A value that has been standardized so it expressed
-in terms of standard deviations from the mean.
-\index{standard score}
+\item standard score: A value that has been standardized so that it is
+  expressed in standard deviations from the mean.
+  \index{standard score}
 
 \item covariance: A measure of the tendency of two variables
 to vary together.
@@ -5393,7 +5407,7 @@ to vary together.
 \item rank: The index where an element appears in a sorted list.
 \index{rank}
 
-\item randomized controlled trial: An experimental design in which subject
+\item randomized controlled trial: An experimental design in which subjects
 are divided into groups at random, and different groups are given different
 treatments.
 \index{randomized controlled trial}
@@ -7610,6 +7624,7 @@ The code for this chapter is in {\tt regression.py}.  For information
 about downloading and working with this code, see Section~\ref{code}.
 
 \section{StatsModels}
+\label{statsmodels}
 
 In the previous chapter I presented {\tt thinkstats2.LeastSquares}, an
 implementation of simple linear regression intended to be easy to
@@ -8627,17 +8642,18 @@ an equally-spaced series by computing the mean daily price per gram.
 
 \begin{verbatim}
 def GroupByQualityAndDay(transactions):
-    grouped = transactions.groupby('quality')
+    groups = transactions.groupby('quality')
     dailies = {}
-    for name, group in grouped:
+    for name, group in groups:
         dailies[name] = GroupByDay(group)        
 
     return dailies
 \end{verbatim}
 
-{\tt groupby} is a DataFrame method that returns a DataFrameGroupBy
-object, which is a map from each group name to a DataFrame that
-contains the elements in the group.  Since the values of {\tt quality}
+{\tt groupby} is a DataFrame method that returns a GroupBy
+object; used in a for loop, {\tt groups} iterates the names of the groups
+and the DataFrames that represent them.
+Since the values of {\tt quality}
 are {\tt low}, {\tt medium}, and {\tt high}, we get three groups with
 those names.
 
@@ -8731,6 +8747,7 @@ might reflect changes in how participants apply these categories.
 
 
 \section{Linear regression}
+\label{timeregress}
 
 Although there are methods specific to time series analysis, for many
 problems a simple way to get started is by applying general-purpose
@@ -8931,44 +8948,236 @@ determines the number of points that make a non-negligible contribution
 to each average.
 
 Figure~\ref{timeseries10} (right) shows the EWMA for the same data.
-If is very similar to the rolling mean, where they are both defined,
+It is similar to the rolling mean, where they are both defined,
 but it has no missing values, which makes it easier to work with.  The
 values are noisy at the beginning of the time series, because they are
 based on fewer data points.
 
-\begin{verbatim}
-\end{verbatim}
-
-
-
-
-A {\bf moving average} is 
-
-
-
-Note about online implementation.
-
-
 
 \section{Missing data}
+
+Now that we have characterized the trend of the time series, the
+next step is to investigate seasonality, which is periodic behavior.
+Time series data based on human behavior often exhibits daily,
+weekly, monthly, or yearly cycles.  In the next section I present
+methods to test for seasonality, but they don't work well with
+missing data, so we have to solve that problem first.
+
+A simple and common way to fill missing data is to use a moving
+average.  The Series method {\tt fillna} does just what we want:
+
+\begin{verbatim}
+    reindexed.ppg.fillna(ewma, inplace=True)
+\end{verbatim}
+
+Wherever {\tt reindexed.ppg} is {\tt nan}, {\tt fillna} replaces
+it with the corresponding value from {\tt ewma}.  The {\tt inplace}
+flag tells {\tt fillna} to modify the existing Series rather than
+create a new one.
+
+A drawback of this method is that it understates the noise in the
+series; we can solve that problem by adding in resampled residuals:
+
+\begin{verbatim}
+    resid = (reindexed.ppg - ewma).dropna()
+    fake_data = ewma + thinkstats2.Resample(resid, len(reindexed))
+    reindexed.ppg.fillna(fake_data, inplace=True)
+\end{verbatim}
+
+{\tt resid} contains the residual values, not including days
+when {\tt ppg} is {\tt nan}.  \verb"fake_data" contains the
+sum of the moving average and a random sample of residuals.
+Finally, {\tt fillna} replaces {\tt nan} with values from
+\verb"fake_data".
+
+\begin{figure}
+% timeseries.py
+\centerline{\includegraphics[height=2.5in]{figs/timeseries8.pdf}}
+\caption{Daily price with filled data.}
+\label{timeseries8}
+\end{figure}
+
+Figure~\ref{timeseries8} shows the result.  The filled data is visually
+similar to the actual values.  Since the resampled residuals are
+random, the results are different every time; later we'll see how
+to characterize the error created by missing values.
+
+
+\section{Serial correlation}
+
+As prices vary from day to day, you might expect to see patterns.
+If the price is above the long-term trend on Monday,
+you might expect it to be above the trend for a few more days; and
+if it's below the trend, you might expect it to stay below.  A pattern
+like this is called {\bf serial
+correlation}, because each value is correlated with the next one
+in the series.
+
+To compute serial correlation, we can shift one of the time series
+by an interval called a {\bf lag}, and the compute the correlation
+of the shifted series with the original:
+
+\begin{verbatim}
+def SerialCorrelation(series, lag=1):
+    xs = series[lag:]
+    ys = series.shift(lag)[lag:]
+    corr = thinkstats2.Corr(xs, ys)
+    return corr
+\end{verbatim}
+
+After the shift, the first {\tt lag} values are {\tt nan}, so
+I use a slice to remove them before computing {\tt Corr}.
+
+With lag=1, the serial correlations for the price data are
+-0.022 for high quality, -0.015 for medium, and 0.036 for low.
+These values are small, indicating that there is little or
+no one-day serial correlation in this series.
+
+To check for weekly, monthly, and yearly seasonality, I ran
+the analysis again with different lags.  Here are the results:
+
+\begin{tabular}{|c|c|c|c|}
+\hline
+lag & high & medium & low \\ \hline
+1 & -0.029 & -0.014 & 0.034 \\
+7 & 0.02 & -0.042 & -0.0097 \\
+30 & 0.014 & -0.0064 & -0.013 \\
+365 & 0.045 & 0.015 & 0.033 \\
+\hline
+\end{tabular}
+
+Based on these results, it looks like there are no seasonal patterns
+in this data, at least not with these lags.
+
 
 
 \section{Autocorrelation}
 
+Serial correlation is the correlation of a series with a shifted
+version of itself, also known as {\bf autocorrelation}.  If you think
+a series might have some serial correlation, but you don't know which
+lags to test, you can test them all!
+
+StatsModels, which we used for linear regression in
+Section~\ref{statsmodels}, also provides functions for time series
+analysis, including {\tt acf}, which computes the
+{\bf autocorrelation function}:
+
+\begin{verbatim}
+    import statsmodels.tsa.stattools as smtsa
+    acf = smtsa.acf(filled.resid, nlags=365, unbiased=True)
+\end{verbatim}
+
+{\tt acf} computes the serial correlation of the series with all
+lags from 0 through {\tt nlags}.  The {\tt unbiased} flag tells
+{\tt acf} to correct the estimates for the sample size.  The result
+is an array of correlations.  If we select daily prices for high
+quality, and extract correlations for lags 1, 7, 30, and 365, we can
+confirm that {\tt acf} and {\tt SerialCorrelation} yield approximately
+the same results:
+
+\begin{verbatim}
+>>> acf[0], acf[1], acf[7], acf[30], acf[365]
+1.000, -0.029, 0.020, 0.014, 0.044
+\end{verbatim}
+
+With {\tt lag=0}, {\tt acf} computes the correlation of the series
+with itself, which is always 1.
+
+\begin{figure}
+% timeseries.py
+\centerline{\includegraphics[height=2.5in]{figs/timeseries9.pdf}}
+\caption{Autocorrelation function for daily prices (left), and
+daily prices with a simulated weekly seasonality (right).}
+\label{timeseries9}
+\end{figure}
+
+Figure~\ref{timeseries9} (left) shows autocorrelation functions for
+the three quality categories, with {\tt nlags=40}.  The gray region
+shows the normal variability we would expect if there is no actual
+autocorrelation; anything that falls outside this range is
+statistically significant, with a p-value less than 5\%.  Since
+the false positive rate is 5\%, and
+we are computing 120 correlations (40 lags for each of 3 times series),
+we expect to see about 6 points outside this region.  In fact, there
+are 7.  We can conclude that there are no apparent autocorrelations
+in these series that could not be explained by chance.
+
+I computed the gray regions by resampling the residuals.  You
+can see my code in {\tt timeseries.py}; the function is called
+{\tt SimulateAutocorrelation}.
+
+To see what the autocorrelation function looks like when there is
+a seasonal component, I generated simulated data by adding a weekly
+cycle.  Assuming that demand for cannabis is higher on weekends,
+we might expect the price to be higher.  For example, suppose
+that on Friday and Saturday, we add a random amount to the price,
+chosen from a uniform distribution from \$0 to \$2.
+
+\begin{verbatim}
+def AddWeeklySeasonality(daily):
+    frisat = (daily.index.dayofweek==4) | (daily.index.dayofweek==5)
+    fake = daily.copy()
+    fake.ppg[frisat] += np.random.uniform(0, 2, frisat.sum())
+    return fake
+\end{verbatim}
+
+{\tt frisat} is a boolean Series, {\tt True} if the day of the
+week is Friday or Saturday.  {\tt fake} is a new DataFrame, initially
+a copy of {\tt daily}, which we modify by adding random values
+to {\tt ppg}.
+
+Figure~\ref{timeseries9} (right) shows autocorrelation functions for
+prices with this simulated seasonality added in.  As expected, the
+correlations are highest when the lag is 7 or a multiple of 7.  For
+high and medium quality, the new correlations are statistically
+significant.  For low quality they are not, because residuals in this
+category are large; the effect would have to be bigger
+to be visible through the noise.
 
 
 \section{Prediction}  
+
+Time series analysis can be used to investigate, and sometimes
+explain, the behavior of systems that vary in time.  It can also
+make predictions.  In particular, price predictions
+can help people choose the best time to buy or sell.
+
+The linear regressions we used in Section~\ref{timeregress} can be
+used for prediction.  The RegressionResults class provides {\tt
+  predict}, which takes a DataFrame containing the explanatory
+variables and returns a sequence of predictions.  Here's the code:
+
+\begin{verbatim}
+def GenerateSimplePrediction(results, years):
+    n = len(years)
+    inter = np.ones(n)
+    d = dict(Intercept=inter, years=years)
+    predict_df = pandas.DataFrame(d)
+    predict = results.predict(predict_df)
+    return predict
+\end{verbatim}
+
+{\tt results} is a RegressionResults object; {\tt years} is the
+sequence of time values we want predictions for.  The function
+constructs a DataFrame, passes it to {\tt predict}, and
+returns the result.
+
+If all we want is a single, best-guess prediction, that's all
+we need.  But for most purposes it is important to quantify error.
+In other words, we want to know how accurate the prediction is likely
+to be.
 
 There are three sources of error we should take into account:
 
 \begin{itemize}
 
-\item Sampling error: The prediction is based on the parameters of
-the model, but the estimated parameters depend on random variation
-in the sample.  If we ran the experiment again, we would expect
+\item Sampling error: The prediction is based on estimated
+parameters, which depend on random variation
+in the sample.  If we run the experiment again, we expect
 the estimates to vary.
 
-\item Random variation:  Even if the estimates parameters are
+\item Random variation:  Even if the estimated parameters are
 perfect, the observed data varies randomly around the long-term
 trend, and we expect this variation to continue in the future.
 
@@ -8979,20 +9188,37 @@ eventually fail.
 \end{itemize}
 
 Another source of error to consider is unexpected future events.
+Agricultural prices are affected by weather, and all prices are
+affected by politics and law.  As I write this, cannabis is legal in
+two states and legal for medical purposes in 20 more.  If more states
+legalize it, the price is likely to go down.  But if
+the federal government cracks down, the price might go up.
 
-Either way, modeling errors and unexpected future events are hard to
+Modeling errors and unexpected future events are hard to
 quantify.  They are what Donald Rumsfeld would call ``unknown
 unknowns'' (see
 \url{https://en.wikipedia.org/wiki/There_are_known_knowns}).  Sampling
 error and random variation are easier to deal with, so let's do that.
 
 To quantify sampling error, I'll use resampling, as we did in
-Section~\ref{regest}.  In that example, we resampled the data;
-that is, we selected random rows from the DataFrame of observations.
+Section~\ref{regest}.  As always, the goal is to use the actual
+observations to simulate what would happen if we ran the experiment
+again.  The simulations are based on the assumption that the estimated
+parameters are correct, but the random residuals could have been
+different.  Here is a function that runs the simulations:
 
+\begin{verbatim}
+xxx
+\end{verbatim}
 
+{\tt daily} is a DataFrame containing the observed prices;
+{\tt iters} is the number of simulations to run.
 
+{\tt SimulateResults} uses {\tt RunLinearModel}, from
+Section~\ref{timeregress}, to estimate the slope and intercept
+of the observed values.
 
+Each time through the loop, we generate 
 
 
 \begin{figure}
@@ -9001,6 +9227,27 @@ that is, we selected random rows from the DataFrame of observations.
 \caption{Predictions based on the linear fit.}
 \label{timeseries4}
 \end{figure}
+
+
+
+
+\section{Exercises}
+
+\begin{exercise}
+Quadratic model
+\end{exercise}
+
+\begin{exercise}
+Test serial correlation for significance.
+\end{exercise}
+
+\begin{exercise}
+\end{exercise}
+
+\begin{exercise}
+\end{exercise}
+
+\section{Glossary}
 
 
 

@@ -12,6 +12,7 @@ import math
 import matplotlib
 import matplotlib.pyplot as pyplot
 import numpy as np
+import pandas
 
 # customize some matplotlib attributes
 #matplotlib.rc('figure', figsize=(4, 3))
@@ -221,6 +222,11 @@ def Plot(xs, ys=None, style='', **options):
     """
     options = UnderrideColor(options)
     options = Underride(options, linewidth=3, alpha=0.8)
+
+    if ys is None and isinstance(xs, pandas.Series):
+        ys = xs.values
+        xs = xs.index
+
     if ys is None:
         pyplot.plot(xs, style, **options)
     else:
@@ -255,7 +261,7 @@ def Bar(xs, ys, **options):
     pyplot.bar(xs, ys, **options)
 
 
-def Scatter(xs, ys, **options):
+def Scatter(xs, ys=None, **options):
     """Makes a scatter plot.
 
     xs: x values
@@ -264,6 +270,11 @@ def Scatter(xs, ys, **options):
     """
     options = Underride(options, color='blue', alpha=0.2, 
                         s=30, edgecolors='none')
+
+    if ys is None and isinstance(xs, pandas.Series):
+        ys = xs.values
+        xs = xs.index
+
     pyplot.scatter(xs, ys, **options)
 
 
