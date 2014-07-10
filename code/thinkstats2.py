@@ -2205,14 +2205,18 @@ def Corr(xs, ys):
     return corr
 
 
-def SerialCorr(xs):
-    """Computes the serial correlation of a sequence.
+def SerialCorr(series, lag=1):
+    """Computes the serial correlation of a series.
 
-    xs: sequence of numbers
+    series: Series
+    lag: integer number of intervals to shift
 
-    returns: float correlation coefficient
+    returns: float correlation
     """
-    return Corr(xs[:-1], xs[1:])
+    xs = series[lag:]
+    ys = series.shift(lag)[lag:]
+    corr = Corr(xs, ys)
+    return corr
 
 
 def SpearmanCorr(xs, ys):
