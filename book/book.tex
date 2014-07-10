@@ -36,7 +36,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.11}
+\newcommand{\theversion}{2.0.12}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -367,7 +367,7 @@ reading a stack of old textbooks.  As a result, most books
 contain the same material in pretty much the same order.  Often there
 are phrases, and errors, that propagate from one book to the next;
 Stephen Jay Gould pointed out an example in his essay, ``The Case of
-the Creeping Fox Terrier.''\footnote{A breed of dog that is about half
+the Creeping Fox Terrier Clone.''\footnote{A breed of dog that is about half
   the size of a Hyracotherium (see
   \url{http://wikipedia.org/wiki/Hyracotherium}).}
 
@@ -456,15 +456,15 @@ packages installed:
 \begin{itemize}
 
 \item pandas for representing and analyzing data,
-  \url{http://pandas.pydata.org/}.
+  \url{http://pandas.pydata.org/};
 
-\item NumPy for basic numerical computation, \url{http://www.numpy.org/}.
+\item NumPy for basic numerical computation, \url{http://www.numpy.org/};
 
 \item SciPy for scientific computation including statistics,
-  \url{http://www.scipy.org/}.
+  \url{http://www.scipy.org/};
 
 \item StatsModels for regression and other statistical analysis,
-\url{http://statsmodels.sourceforge.net/}. 
+\url{http://statsmodels.sourceforge.net/}; and
 
 \item matplotlib for visualization, \url{http://matplotlib.org/}.
 
@@ -566,6 +566,10 @@ Pearson's correlation.
 
 \item Michael Kearney sent me many excellent suggestions.
 
+\item Ben Small caught an error in the preface.
+
+\item Alex Birch made a number of helpful suggestions.
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -590,8 +594,8 @@ Pearson's correlation.
 \chapter{Data science for programmers}
 \label{intro}
 
-The thesis of this book is that data, combined with practical
-methods, can answer questions and guide decisions under uncertainty.
+The thesis of this book is that data combined with practical
+methods can answer questions and guide decisions under uncertainty.
 
 As an example, I present a case study motivated by a question
 I heard when my wife and I were expecting our first child: do first
@@ -6115,6 +6119,7 @@ conclude that the null hypothesis is unlikely to be true.
 
 
 \section{HypothesisTest}
+\label{hypotest}
 \index{mean, difference in}
 
 {\tt thinkstats2} provides {\tt HypothesisTest}, a
@@ -6843,8 +6848,8 @@ members of the population to the two groups.
 An alternative is to use the sample to estimate the distribution for
 the population, then draw a random sample from that distribution.
 This process is called {\bf resampling}.  There are several ways to
-implement the resampling, but one of the simplest is to draw a sample,
-with replacement, from the observed values, as in Section~\ref{power}.
+implement resampling, but one of the simplest is to draw a sample
+with replacement from the observed values, as in Section~\ref{power}.
 
 Write a class named {\tt DiffMeansResample} that inherits from
 {\tt DiffMeansPermute} and overrides {\tt RunModel} to implement
@@ -8774,12 +8779,15 @@ each:
 
 Here are the results:
 
+\begin{center}
 \begin{tabular}{|l|l|c|} \hline
 intercept & slope & $R^2$ \\ \hline
 13.450 (0) & -0.708 (3.7e-160) & 0.444 \\
 8.879 (0) & 0.283 (1.8e-15) & 0.050 \\
 5.362 (3.1e-130) & 0.568 (2.8e-09) & 0.030 \\
-\hline \end{tabular}
+\hline
+\end{tabular}
+\end{center}
 
 The estimated slopes indicate that the price of high quality cannabis
 dropped by about 71 cents per year during the observed interval; for
@@ -8877,7 +8885,7 @@ window size and returns a new Series.
 array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9])
 
 >>> pandas.rolling_mean(series, 3)
-array([ nan,  nan,   1.,   2.,   3.,   4.,   5.,   6.,   7.,   8.])
+array([ nan,  nan,   1,   2,   3,   4,   5,   6,   7,   8])
 \end{verbatim}
 
 The first two values are {\tt nan}; the next value is the mean of
@@ -8893,7 +8901,7 @@ not active.
 In the DataFrames we have used so far, these dates are absent;
 the index skips days with no data.  For the analysis that follows,
 we need to represent this missing data explicitly.  We can do
-that by {\bf reindexing} the DataFrame:
+that by ``reindexing'' the DataFrame:
  
 \begin{verbatim}
     dates = pandas.date_range(daily.index.min(), daily.index.max())
@@ -8930,7 +8938,7 @@ extracting the trend.  The first 29 values are {\tt nan}, and wherever
 there's a missing value, it's followed by another 29 {\tt nan}s.
 There are ways to fill in these gaps, but they are a minor nuisance.
 
-An alternative is the exponentially-weighted moving average (EWMA),
+An alternative is the {\bf exponentially-weighted moving average} (EWMA),
 which has two advantages.  First, as the name suggests, it computes
 a weighted average where the most recent value has the highest weight,
 and the weights for previous values drop off exponentially.
@@ -8976,7 +8984,13 @@ flag tells {\tt fillna} to modify the existing Series rather than
 create a new one.
 
 A drawback of this method is that it understates the noise in the
-series; we can solve that problem by adding in resampled residuals:
+series; we can solve that problem by adding in resampled
+residuals\footnote{A note on vocabulary: in this book I am using
+``resampling'' in the statistical sense, which is drawing a random
+sample from a population that is, itself, a sample.  In the context
+of time series analysis, it has another meaning, changing the
+time between measurements in a series.  I don't use the second
+meaning in this book, but you might encounter it.}:
 
 \begin{verbatim}
     resid = (reindexed.ppg - ewma).dropna()
@@ -9006,19 +9020,19 @@ to characterize the error created by missing values.
 \section{Serial correlation}
 
 As prices vary from day to day, you might expect to see patterns.
-If the price is above the long-term trend on Monday,
-you might expect it to be above the trend for a few more days; and
-if it's below the trend, you might expect it to stay below.  A pattern
+If the price is high on Monday,
+you might expect it to be high for a few more days; and
+if it's low, you might expect it to stay low.  A pattern
 like this is called {\bf serial
 correlation}, because each value is correlated with the next one
 in the series.
 
 To compute serial correlation, we can shift one of the time series
-by an interval called a {\bf lag}, and the compute the correlation
+by an interval called a {\bf lag}, and then compute the correlation
 of the shifted series with the original:
 
 \begin{verbatim}
-def SerialCorrelation(series, lag=1):
+def SerialCorr(series, lag=1):
     xs = series[lag:]
     ys = series.shift(lag)[lag:]
     corr = thinkstats2.Corr(xs, ys)
@@ -9028,7 +9042,28 @@ def SerialCorrelation(series, lag=1):
 After the shift, the first {\tt lag} values are {\tt nan}, so
 I use a slice to remove them before computing {\tt Corr}.
 
-With lag=1, the serial correlations for the price data are
+%high 0.480121816154
+%medium 0.164600078362
+%low 0.103373620131
+
+If we apply {\tt SerialCorr} to the raw price data with lag 1, we find
+serial correlation 0.48 for the high quality category, 0.16 for
+medium and 0.10 for low.  In any time series with a long-term trend,
+we expect to see strong serial correlations; for example, if prices
+are falling, we expect to see values above the mean in the first
+half of the series and values below the mean in the second half.
+
+It is more interesting to see if the correlation persists if you
+subtract away the trend.  For example, we can compute the residual
+of the EWMA and then compute its serial correlation:
+
+\begin{verbatim}
+    ewma = pandas.ewma(reindexed.ppg, span=30)
+    resid = reindexed.ppg - ewma
+    corr = SerialCorr(resid, 1)
+\end{verbatim}
+
+With lag=1, the serial correlations for the de-trended data are
 -0.022 for high quality, -0.015 for medium, and 0.036 for low.
 These values are small, indicating that there is little or
 no one-day serial correlation in this series.
@@ -9036,6 +9071,7 @@ no one-day serial correlation in this series.
 To check for weekly, monthly, and yearly seasonality, I ran
 the analysis again with different lags.  Here are the results:
 
+\begin{center}
 \begin{tabular}{|c|c|c|c|}
 \hline
 lag & high & medium & low \\ \hline
@@ -9045,10 +9081,12 @@ lag & high & medium & low \\ \hline
 365 & 0.045 & 0.015 & 0.033 \\
 \hline
 \end{tabular}
+\end{center}
 
-Based on these results, it looks like there are no seasonal patterns
-in this data, at least not with these lags.
-
+In the next section we'll test whether these correlations are
+statistically significant (they are not), but at this point we can
+tentatively conclude that there are no substantial seasonal patterns
+in these series, at least not with these lags.
 
 
 \section{Autocorrelation}
@@ -9060,8 +9098,8 @@ lags to test, you can test them all!
 
 StatsModels, which we used for linear regression in
 Section~\ref{statsmodels}, also provides functions for time series
-analysis, including {\tt acf}, which computes the
-{\bf autocorrelation function}:
+analysis, including {\tt acf}, which computes the {\bf autocorrelation
+  function}:
 
 \begin{verbatim}
     import statsmodels.tsa.stattools as smtsa
@@ -9073,7 +9111,7 @@ lags from 0 through {\tt nlags}.  The {\tt unbiased} flag tells
 {\tt acf} to correct the estimates for the sample size.  The result
 is an array of correlations.  If we select daily prices for high
 quality, and extract correlations for lags 1, 7, 30, and 365, we can
-confirm that {\tt acf} and {\tt SerialCorrelation} yield approximately
+confirm that {\tt acf} and {\tt SerialCorr} yield approximately
 the same results:
 
 \begin{verbatim}
@@ -9129,7 +9167,7 @@ to {\tt ppg}.
 
 Figure~\ref{timeseries9} (right) shows autocorrelation functions for
 prices with this simulated seasonality added in.  As expected, the
-correlations are highest when the lag is 7 or a multiple of 7.  For
+correlations are highest when the lag is a multiple of 7.  For
 high and medium quality, the new correlations are statistically
 significant.  For low quality they are not, because residuals in this
 category are large; the effect would have to be bigger
@@ -9140,8 +9178,7 @@ to be visible through the noise.
 
 Time series analysis can be used to investigate, and sometimes
 explain, the behavior of systems that vary in time.  It can also
-make predictions.  In particular, price predictions
-can help people choose the best time to buy or sell.
+make predictions.
 
 The linear regressions we used in Section~\ref{timeregress} can be
 used for prediction.  The RegressionResults class provides {\tt
@@ -9198,7 +9235,8 @@ Modeling errors and unexpected future events are hard to
 quantify.  They are what Donald Rumsfeld would call ``unknown
 unknowns'' (see
 \url{https://en.wikipedia.org/wiki/There_are_known_knowns}).  Sampling
-error and random variation are easier to deal with, so let's do that.
+error and random variation are easier to deal with, so we'll do
+that first.
 
 To quantify sampling error, I'll use resampling, as we did in
 Section~\ref{regest}.  As always, the goal is to use the actual
@@ -9208,7 +9246,17 @@ parameters are correct, but the random residuals could have been
 different.  Here is a function that runs the simulations:
 
 \begin{verbatim}
-xxx
+def SimulateResults(daily, iters=101):
+    model, results = RunLinearModel(daily)
+    fake = daily.copy()
+    
+    result_seq = []
+    for i in range(iters):
+        fake.ppg = results.fittedvalues + Resample(results.resid)
+        _, fake_results = RunLinearModel(fake)
+        result_seq.append(fake_results)
+
+    return result_seq
 \end{verbatim}
 
 {\tt daily} is a DataFrame containing the observed prices;
@@ -9218,42 +9266,279 @@ xxx
 Section~\ref{timeregress}, to estimate the slope and intercept
 of the observed values.
 
-Each time through the loop, we generate 
+Each time through the loop, we generate a ``fake'' dataset by resampling
+the residuals and adding them to the fitted values.  Then we run
+a linear model on the fake data and store the RegressionResults
+object.
 
+The next step is to use the simulated results to generate predictions:
+
+\begin{verbatim}
+def GeneratePredictions(result_seq, years, add_resid=False):
+    n = len(years)
+    d = dict(Intercept=np.ones(n), years=years, years2=years**2)
+    predict_df = pandas.DataFrame(d)
+    
+    size = len(result_seq), n
+    array = np.zeros(size)
+
+    for i, fake_results in enumerate(result_seq):
+        predict = fake_results.predict(predict_df)
+        if add_resid:
+            predict += thinkstats2.Resample(fake_results.resid, n)
+        array[i,] = predict
+
+    array = np.sort(array, axis=0)
+    return array
+\end{verbatim}
+
+{\tt GeneratePredictions} takes the sequence of results from the
+previous step, as well as {\tt years}, which is a sequence of
+floats that specifies the interval we should generate predictions for,
+and \verb"add_resid", which indicates whether we should add resampled
+residuals to the straight-line prediction.
 
 \begin{figure}
 % timeseries.py
 \centerline{\includegraphics[height=2.5in]{figs/timeseries4.pdf}}
-\caption{Predictions based on the linear fit.}
+\caption{Predictions based on linear fits, showing variation due
+to sampling error and prediction error.}
 \label{timeseries4}
 \end{figure}
 
+The last step is to plot the predictions; the code for that is
+in {\tt timeseries.py}.  Figure~\ref{timeseries4} shows the result.
+The dark gray region represents a 90\% confidence interval for
+the sampling error; that is, uncertainty about the estimated
+slope and intercept due to sampling.  It is generated by calling
+{\tt GeneratePredictions} with \verb"add_resid=False".
 
+The lighter region shows
+a 90\% confidence interval for prediction error, which is the
+sum of sampling error and random variation.  It is generated by calling
+{\tt GeneratePredictions} with \verb"add_resid=True".
+
+These regions quantify sampling error and random variation, but
+not modeling error.  In general modeling error is hard to quantify,
+but in this case we can address at least one source of error,
+unpredictable external events.
+
+The regression model is based on the assumption that the system
+is {\bf stationary}; that is, that the parameters of the model
+don't change over time.
+Specifically, it assumes that the slope and
+intercept are constant, as well as the distribution of residuals.
+
+But looking at the moving averages in Figure~\ref{timeseries10}, it
+seems like the slope changes at least once during the observed
+interval, and the variance of the residuals seems bigger in the first
+half than the second.
+
+As a result, the parameters we get depend on the interval we
+observe.  To see how much effect this has on the predictions,
+we can extend {\tt SimulateResults} to use intervals of observation
+with different start and end dates.  My implementation is in
+{\tt timeseries.py}.
+
+\begin{figure}
+% timeseries.py
+\centerline{\includegraphics[height=2.5in]{figs/timeseries5.pdf}}
+\caption{Predictions based on linear fits, showing
+variation due to the interval of observation.}
+\label{timeseries5}
+\end{figure}
+
+Figure~\ref{timeseries5} shows the result for the medium quality
+category.  The lightest gray area shows a confidence interval that
+includes uncertainty due to sampling error, random variation, and
+variation in the interval of observation.
+
+The model based on the entire interval has positive slope, indicating
+that prices were increasing.  But the most recent interval shows signs
+of decreasing prices, so models based on the most recent data have
+negative slope.  As a result, the widest confidence interval includes
+the possibility of decreasing prices over the next year.
+
+
+\section{Further reading}
+
+Time series analysis is a big topic; this chapter has only scratched
+the surface.  An important tool for working with time series data
+is autoregression, which I did not cover here, mostly because it turns
+out not to be useful for the example data I worked with.
+
+But once you
+have learned the material in this chapter, you are well prepared
+to learn about autoregression.  One resource I recommend is
+Phillipp Janert's book, {\it Data Analysis with Open Source Tools},
+O'Reilly Media, 2011.  His chapter on time series analysis picks up
+where this one leaves off.
 
 
 \section{Exercises}
 
+My solutions to these exercises are in \verb"chap12ex_soln.py".
+
 \begin{exercise}
-Quadratic model
+The linear model I used in this chapter has the obvious drawback
+that it is linear, and there is no reason to expect prices to
+change linearly over time.
+We can add flexibility to the model by adding a quadratic term,
+as we did in Section~\ref{nonlinear}.  
+
+Use a quadratic model to fit the time series of daily prices,
+and use the model to generate predictions.  You will have to
+write a version of {\tt RunLinearModel} that runs that quadratic
+model, but after that you should be able to reuse code in
+{\tt timeseries.py} to generate predictions.
 \end{exercise}
 
 \begin{exercise}
-Test serial correlation for significance.
+Write definition for a class named {\tt SerialCorrelationTest}
+that extends {\tt HypothesisTest} from Section~\ref{hypotest}.
+It should take a series and a lag as data, compute the serial
+correlation of the series with the given lag, and then compute
+the p-value of the observed correlation.
+
+Use this class to test whether the serial correlation in raw
+price data is statistically significant.  Also test the residuals
+of the linear model and (if you did the previous exercise),
+the quadratic model.
 \end{exercise}
 
 \begin{exercise}
+There are several ways to extend the EWMA model to generate predictions.
+One of the simplest is something like this:
+
+\begin{enumerate}
+
+\item Compute the EWMA of the time series and use the last point
+as an intercept, {\tt inter}.
+
+\item Compute the EWMA of differences between successive elements in
+the time series and use the last point as a slope, {\tt slope}.
+
+\item To predict values at future times, compute {\tt inter + slope * dt},
+where {\tt dt} is the difference between the time of the prediction and
+the time of the last observation.
+
+\end{enumerate}
+
+Use this method to generate predictions for a year after the last
+observation.  A few hints:
+
+\begin{itemize}
+
+\item Use {\tt timeseries.FillMissing} to fill in missing values
+before running this analysis.  That way the time between consecutive
+elements is consistent.
+
+\item Use {\tt Series.diff} to compute differences between successive
+elements.
+
+\item Use {\tt reindex} to extend the DataFrame index into the future.
+
+\item Use {\tt fillna} to put your predicted values into the DataFrame.
+
+\end{itemize}
+
 \end{exercise}
 
-\begin{exercise}
-\end{exercise}
 
 \section{Glossary}
 
+\begin{itemize}
 
+\item time series: A dataset where each value is associated with
+a timestamp, often a series of measurements and the times they
+were collected.
+
+\item window: A sequence of consecutive values in a time series,
+often used to compute a moving average.
+
+\item moving average: One of several statistics intended to estimate
+the underlying trend in a time series by computing averages (of
+some kind) for a series of overlapping windows.
+
+\item rolling mean: A moving average based on the mean value in
+each window.
+
+\item exponentially-weighted moving average (EWMA): A moving
+average based on a weighted mean that gives the highest weight
+to the most recent values, and exponentially decreasing weights
+to earlier values.
+
+\item span: A parameter of EWMA that determines how quickly the
+weights decrease.
+
+\item serial correlation: Correlation between a time series and
+a shifted or lagged version of itself.
+
+\item lag: The size of the shift in a serial correlation or
+autocorrelation.
+
+\item autocorrelation: A more general term for a serial correlation
+with any amount of lag.
+
+\item autocorrelation function: A function that maps from lag to
+serial correlation.
+
+\item stationary: A model is stationary if the parameters and the
+distribution of residuals does not change over time.
+
+\end{itemize}
 
 
 
 \chapter{Survival analysis}
+
+{\bf Survival analysis} is a way to describe how long things last.
+The most common application is human lifetimes, but it also
+applies to ``survival'' of mechanical and electronic systems,
+or the time until any kind of event.
+
+If you, or someone you know, has been diagnosed with a life-threatening
+disease, you might have been told a ``5-year survival rate,'' which
+is the probability of surviving five years after diagnosis.  This
+estimate, and related statistics, are the product of survival analysis.
+
+The code in this chapter is in {\tt survival.py}.
+  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+
+\section{Survival curves}
+
+The fundamental concept in survival analysis is the {\bf survival
+  curve}, $S(t)$, which is a function that maps from a duration, $t$, to the
+probability of surviving longer than $t$.  If you know the distribution
+of durations, or lifetimes, finding the survival curve is easy;
+it's just the complement of the CDF:
+%
+\[ S(t) = 1 - \CDF(t) \]
+%
+where $CDF(t)$ is the probability of a lifetime less than or equal
+to $t$.
+
+Unfortunately, in many real-world scenarios, we can't measure the
+distribution of lifetimes or the survival curve directly.  We have
+to infer it.
+
+For example, suppose you are following a cohort of patients to see how
+long they survive after diagnosis.  Not all patients are diagnosed
+on the same day, so at any point in time, some patients have survived
+longer than others.  If some patients have died, their survival times
+are known.  For patients who are still alive, survival times are
+unknown, but we have a lower bound.
+
+If we wait until all patients are dead, we can compute the survival
+curve, but if we are evaluating the effectiveness of a new treatment,
+we can't wait that long!  We need a way to estimate survival curves
+using incomplete information.
+
+
+
+
 
 
 \chapter{Operations on distributions}
