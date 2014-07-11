@@ -2,8 +2,9 @@
 % Probability and Statistics for Programmers''
 % Copyright 2014  Allen B. Downey.
 
-% License: Creative Commons Attribution-NonCommercial 3.0 Unported License.
-% http://creativecommons.org/licenses/by-nc/3.0/
+% License: Creative Commons 
+% Attribution-NonCommercial-ShareAlike 4.0 International
+% http://creativecommons.org/licenses/by-nc-sa/4.0/
 %
 
 %\documentclass[10pt,b5paper]{book}
@@ -36,7 +37,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.12}
+\newcommand{\theversion}{2.0.13}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -208,8 +209,10 @@ Needham MA 02492
 \end{flushleft}
 
 Permission is granted to copy, distribute, and/or modify this document
-under the terms of the Creative Commons Attribution-NonCommercial 3.0 Unported
-License, which is available at \url{http://creativecommons.org/licenses/by-nc/3.0/}.
+under the terms of the Creative Commons
+Attribution-NonCommercial-ShareAlike 4.0 International License, which
+is available at
+\url{http://creativecommons.org/licenses/by-nc-sa/4.0/}.
 
 The original form of this book is \LaTeX\ source code.  Compiling this
 code has the effect of generating a device-independent representation
@@ -244,9 +247,10 @@ Copyright 2014 Allen B. Downey
 \vspace{0.25in}
 
 Permission is granted to copy, distribute, and/or modify this document
-under the terms of the Creative Commons Attribution-NonCommercial 3.0
+under the terms of the Creative Commons 
+Attribution-NonCommercial-ShareAlike 4.0 International
 Unported License, which is available at
-\url{http://creativecommons.org/licenses/by-nc/3.0/}.
+\url{http://creativecommons.org/licenses/by-nc-sa/4.0/}.
 
 \setcounter{chapter}{-1}
 
@@ -6165,7 +6169,7 @@ computes the size of the effect in the sample.
 {\tt PValue} computes the probability of the apparent effect under
 the null hypothesis.  It takes as a parameter {\tt iters}, which is
 the number of simulations to run.  The first line generates simulated
-data, computes test statistics, and stored them in
+data, computes test statistics, and stores them in
 \verb"test_stats".
 The result is
 the fraction of elements in \verb"test_stats" that
@@ -6196,7 +6200,7 @@ class CoinTest(thinkstats2.HypothesisTest):
         return data
 \end{verbatim}
 
-The parameter, {\tt data}, is a pair
+The parameter, {\tt data}, is a pair of
 integers: the number of heads and tails.  The test statistic is
 the absolute difference between them, so {\tt self.actual}
 is 30.
@@ -7058,7 +7062,7 @@ grasp easily.
 
 Instead of presenting the intercept at $x=0$, it
 is often helpful to present the intercept at the mean of $x$.  In
-this case the mean age is about 25 years and the expected weight
+this case the mean age is about 25 years and the mean baby weight
 for a 25 year old mother is 7.3 pounds.  The slope is 0.27 ounces
 per year, or 0.17 pounds per decade.
 
@@ -9493,17 +9497,16 @@ distribution of residuals does not change over time.
 \chapter{Survival analysis}
 
 {\bf Survival analysis} is a way to describe how long things last.
-The most common application is human lifetimes, but it also
-applies to ``survival'' of mechanical and electronic systems,
-or the time until any kind of event.
+It is often used to study human lifetimes, but it
+also applies to ``survival'' of mechanical and electronic systems, or
+more generally to intervals in time before an event.
 
-If you, or someone you know, has been diagnosed with a life-threatening
+If you or someone you know has been diagnosed with a life-threatening
 disease, you might have been told a ``5-year survival rate,'' which
 is the probability of surviving five years after diagnosis.  This
-estimate, and related statistics, are the product of survival analysis.
+estimate, and related statistics, are the results of survival analysis.
 
-The code in this chapter is in {\tt survival.py}.
-  For information
+The code in this chapter is in {\tt survival.py}.  For information
 about downloading and working with this code, see Section~\ref{code}.
 
 
@@ -9520,9 +9523,164 @@ it's just the complement of the CDF:
 where $CDF(t)$ is the probability of a lifetime less than or equal
 to $t$.
 
-Unfortunately, in many real-world scenarios, we can't measure the
-distribution of lifetimes or the survival curve directly.  We have
-to infer it.
+For example, in the NSFG dataset, we know the duration of 11189
+completed pregnancies.  We can read this data and compute the CDF:
+
+\begin{verbatim}
+    preg = nsfg.ReadFemPreg()
+    complete = preg.query('outcome in [1, 3, 4]').prglngth
+    cdf = thinkstats2.Cdf(complete, label='cdf')
+\end{verbatim}
+
+The outcome codes {\tt 1, 3, 4} indicate live birth, stillbirth,
+and miscarriage.  For this analysis I am excluding induced abortions,
+ectopic pregnancies, and pregnancies that were in progress when
+the respondent was interviewed.
+
+The DataFrame method {\tt query} takes a boolean expression and
+evaluates it for each row, selecting the rows that yield True.
+
+\begin{figure}
+% survival.py
+\centerline{\includegraphics[height=2.5in]{figs/survival1.pdf}}
+\caption{Cdf and survival function for pregnancy length (top),
+hazard function (bottom).}
+\label{survival1}
+\end{figure}
+
+Figure~\ref{survival1} (top) shows the CDF of pregnancy length
+and its complement, the survival function.  To represent the
+survival function, I define an object that wraps a Cdf and 
+adapts the interface:
+
+\begin{verbatim}
+class SurvivalFunction(object):
+    def __init__(self, cdf, label=''):
+        self.cdf = cdf
+        self.label = label or cdf.label
+
+    @property
+    def ts(self):
+        return self.cdf.xs
+
+    @property
+    def ss(self):
+        return 1 - self.cdf.ps
+\end{verbatim}
+
+{\tt SurvivalFunction} provides two properties: {\tt ts}, which
+is the sequence of lifetimes, and {\tt ss}, which is the survival
+function.  We can instantiate a {\tt SurvivalFunction} by passing
+the CDF of lifetimes:
+
+\begin{verbatim}
+sf = SurvivalFunction(cdf)
+\end{verbatim}
+
+{\tt SurvivalFunction} also provides \verb"__getitem__" and
+{\tt Prob}, which evaluate the survival function:
+
+\begin{verbatim}
+    def __getitem__(self, t):
+        return self.Prob(t)
+
+    def Prob(self, t):
+        return 1 - self.cdf.Prob(t)
+\end{verbatim}
+
+For example, {\tt sf[13]} is the fraction of pregnancies that
+proceed past the first trimester:
+
+\begin{verbatim}
+>>> sf[13]
+0.86022
+>>> cdf[13]
+0.13978
+\end{verbatim}
+
+About 86\% of pregnancies proceed past the first trimester;
+about 14\% do not.
+
+{\tt SurvivalFunction} provides {\tt Render}, so we can
+plot {\tt sf} using the functions in {\tt thinkplot}:
+
+\begin{verbatim}
+    thinkplot.Plot(sf)
+\end{verbatim}
+
+Figure~\ref{survival1} (top) shows the result.  The curve is nearly
+flat between 13 and 26 weeks, which shows that few pregnancies
+end in the second trimester.  And the curve is steepest around 39
+weeks, which is the most common pregnancy length.
+
+
+\section{Hazard function}
+
+From the survival function we can derive the {\bf hazard function};
+for pregnancy lengths, the hazard function maps from
+a time, $t$, to the
+fraction of pregnancies that survive
+until $t$ and then end at {\tt t}.  To be more precise:
+%
+\[ \lambda(t) = \frac{S(t) - S(t+1)}{S(t)} \]
+%
+The numerator is the fraction of lifetimes that end at $t$, which
+is also $PMF(t)$.
+
+{\tt SurvivalFunction} provides {\tt MakeHazard}, which calculates
+the hazard function:
+
+\begin{verbatim}
+    def MakeHazard(self, label=''):
+        ss = self.ss
+        lams = {}
+        for i, t in enumerate(self.ts[:-1]):
+            hazard = (ss[i] - ss[i+1]) / ss[i]
+            lams[t] = hazard
+
+        return HazardFunction(lams, label=label)
+\end{verbatim}
+
+The {\tt HazardFunction} object is a wrapper for a pandas
+Series:
+
+\begin{verbatim}
+class HazardFunction(object):
+
+    def __init__(self, d, label=''):
+        self.series = pandas.Series(d)
+        self.label = label
+\end{verbatim}
+
+{\tt HazardFunction} provides \verb"__getitem__", so we can evaluate
+it like this:
+
+\begin{verbatim}
+>>> hf = sf.MakeHazard()
+>>> hf[39]
+0.49689
+\end{verbatim}
+
+So of all pregnancies that proceed until the week 39, about
+50\% end in week 39.
+
+Figure~\ref{survival1} {bottom} shows the hazard function for
+pregnancy lengths.  For times after week 42, the hazard function
+is erratic because it is based on a small number of cases.
+Other than that the shape of the curve is as expected: it is
+highest around 39 weeks, and a little higher in the first
+trimester than in the second.
+
+The hazard function is useful in its own right, but it is also an
+important tool for estimating survival curves, as we'll see in the
+next section.
+
+\section{Estimating survival curves}
+
+I someone gives you the CDF of lifetimes, it is easy to compute the
+survival and hazard functions.  Unfortunately, in many real-world
+scenarios, we can't measure the distribution of lifetimes directly.
+We have to infer it.
 
 For example, suppose you are following a cohort of patients to see how
 long they survive after diagnosis.  Not all patients are diagnosed
@@ -9535,6 +9693,52 @@ If we wait until all patients are dead, we can compute the survival
 curve, but if we are evaluating the effectiveness of a new treatment,
 we can't wait that long!  We need a way to estimate survival curves
 using incomplete information.
+
+As a more cheerful example, I will use NSFG data to quantify how
+long the respondents ``survival'' until they get married for the
+first time.  The range of respondents' ages is 14 to 44 years, so
+the dataset provides a snapshot of women at different stages in their
+lives, in the same way that a medical cohort might include patients
+at difference stages of disease.
+
+For women who have ever been married, the dataset includes the date
+of their first marriage and their age at the time.
+For women who have not been married, we know their age when interviewed,
+but have no way of knowing when or if they will get married.
+
+Since we know the age at first marriage for {\em some} women, it
+might be tempting to exclude the rest and compute the CDF of
+the known data.  That would not be a good idea.  The result would
+be doubly misleading because (1) older women would be overrepresented,
+because they are more likely to be married when interviewed,
+and (2) married women would be overrepresented!  In fact, this
+analysis would lead to the conclusion that all women get married,
+which is obviously not the case.
+
+In this example it is not only desirable but necessary to include
+observations of unmarried women, which brings us to one of the central
+computations in survival analysis, {\bf Kaplan-Meier estimation}.
+
+Outline of the algorithm...
+
+
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+\begin{verbatim}
+\end{verbatim}
+
+
 
 
 
