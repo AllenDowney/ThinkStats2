@@ -211,21 +211,26 @@ def UnderrideColor(options):
     return options
 
 
-def Plot(xs, ys=None, style='', **options):
+def Plot(obj, ys=None, style='', **options):
     """Plots a line.
 
     Args:
-      xs: sequence of x values
+      obj: sequence of x values, or Series, or anything with Render()
       ys: sequence of y values
       style: style string passed along to pyplot.plot
       options: keyword args passed to pyplot.plot
     """
     options = UnderrideColor(options)
-    options = Underride(options, linewidth=3, alpha=0.8)
+    label = getattr(obj, 'label', '')
+    options = Underride(options, linewidth=3, alpha=0.8, label=label)
 
-    if ys is None and isinstance(xs, pandas.Series):
-        ys = xs.values
-        xs = xs.index
+    xs = obj
+    if ys is None:
+        if hasattr(obj, 'Render'):
+            xs, ys = obj.Render()
+        if isinstance(obj, pandas.Series):
+            ys = obj.values
+            xs = obj.index
 
     if ys is None:
         pyplot.plot(xs, style, **options)

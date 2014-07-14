@@ -871,7 +871,7 @@ class Cdf(object):
 
         if obj is None:
             self.xs = []
-            self.ps = []
+            self.ps = np.asarray([])
             if ps is not None:
                 logging.warning("Cdf: can't pass ps without also passing xs.")
             return
@@ -879,7 +879,7 @@ class Cdf(object):
             # if the caller provides xs and ps, we're done            
             if ps is not None:
                 self.xs = obj
-                self.ps = ps
+                self.ps = np.asarray(ps)
                 return
 
         # caller has provided a single value
@@ -913,7 +913,7 @@ class Cdf(object):
         raise UnimplementedMethodException()
 
     def __eq__(self, other):
-        return (self.xs == other.xs) and (self.ps == other.ps)
+        return np.all(self.xs == other.xs) and np.all(self.ps == other.ps)
 
     def Copy(self, label=None):
         """Returns a copy of this Cdf.

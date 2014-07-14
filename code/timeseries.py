@@ -426,19 +426,19 @@ def PrintSerialCorrelations(dailies):
 
     dailies: map from category name to DataFrame of daily prices
     """
-    filled = {}
+    filled_dailies = {}
     for name, daily in dailies.items():
-        filled[name] = FillMissing(daily, span=30)
+        filled_dailies[name] = FillMissing(daily, span=30)
 
     # print serial correlations for raw price data
-    for name, filled in filled.items():            
+    for name, filled in filled_dailies.items():            
         corr = thinkstats2.SerialCorr(filled.ppg, lag=1)
         print(name, corr)
 
     rows = []
     for lag in [1, 7, 30, 365]:
         row = [str(lag)]
-        for name, filled in filled.items():            
+        for name, filled in filled_dailies.items():            
             corr = thinkstats2.SerialCorr(filled.resid, lag)
             row.append('%.2g' % corr)
         rows.append(row)
@@ -451,7 +451,7 @@ def PrintSerialCorrelations(dailies):
     print(r'\hline')
     print(r'\end{tabular}')
 
-    filled = filled['high']
+    filled = filled_dailies['high']
     acf = smtsa.acf(filled.resid, nlags=365, unbiased=True)
     print('%0.3f, %0.3f, %0.3f, %0.3f, %0.3f' % 
           (acf[0], acf[1], acf[7], acf[30], acf[365]))

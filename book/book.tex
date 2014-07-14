@@ -9664,7 +9664,7 @@ it like this:
 So of all pregnancies that proceed until the week 39, about
 50\% end in week 39.
 
-Figure~\ref{survival1} {bottom} shows the hazard function for
+Figure~\ref{survival1} (bottom) shows the hazard function for
 pregnancy lengths.  For times after week 42, the hazard function
 is erratic because it is based on a small number of cases.
 Other than that the shape of the curve is as expected: it is
@@ -9715,32 +9715,193 @@ and (2) married women would be overrepresented!  In fact, this
 analysis would lead to the conclusion that all women get married,
 which is obviously not the case.
 
+\section{Kaplan-Meier estimation}
+
 In this example it is not only desirable but necessary to include
 observations of unmarried women, which brings us to one of the central
 computations in survival analysis, {\bf Kaplan-Meier estimation}.
 
-Outline of the algorithm...
+The general idea is that we can use the data to estimate the hazard
+function, then convert the hazard function to a survival function.
+To estimate the hazard function, we consider, for each age,
+(1) the number of women who got married at that age and (2) the number
+of women ``at risk'' of getting married, which includes all women
+who were not married at an earlier age.
 
-
-
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
-
-\begin{verbatim}
-\end{verbatim}
+Here's the code:
 
 \begin{verbatim}
+def EstimateHazardFunction(complete, ongoing, label=''):
+
+    n = len(complete)
+    hist_complete = thinkstats2.Hist(complete)
+    sf_complete = SurvivalFunction(thinkstats2.Cdf(complete))
+
+    m = len(ongoing)
+    sf_ongoing = SurvivalFunction(thinkstats2.Cdf(ongoing))
+
+    lams = {}
+    for t, ended in sorted(hist_complete.Items()):
+        at_risk = ended + n * sf_complete[t] + m * sf_ongoing[t]
+        lams[t] = ended / at_risk
+
+    return HazardFunction(lams, label=label)
 \end{verbatim}
+
+{\tt complete} is the set of complete observations; in this case,
+the ages when respondents got married.  {\tt ongoing} is the set
+of incomplete observations; that is, the ages of unmarried women
+when they were interviewed.
+
+First, we precompute \verb"hist_complete", which is the Hist
+of ages when women were married, \verb"sf_complete", the
+survival function for married women, and \verb"sf_ongoing",
+the survival function for unmarried women.
+
+The loop iterates through the ages when respondents got married.
+For each value of {\tt t}, we have {\tt ended}, which is the number
+of women who got married at age {\tt t}.  Then we compute
+\verb"at_risk", which is the total number of respondents we
+have data about at age {\tt t};  \verb"at_risk" is the sum
+of:
+
+\begin{itemize}
+
+\item {\tt ended}, the number of respondents married at age {\tt t},
+
+\item \verb"n * sf_complete[t]", the number of respondents
+married after age {\tt t}.
+
+\item \verb"m * sf_ongoing[t]", the number of unmarried respondents
+interviewed after age {\tt t}, and therefore known not to
+have been married at or before age {\tt t}.
+
+\end{itemize}
+
+The estimated value of the hazard function at time {\tt t} is
+\verb"ended / at_risk".  {\tt lams} is a dictionary that maps
+from {\tt t} to $\lambda(t)$.  The result is a {\tt HazardFunction}
+object.
+
+To test this function, we have to do some data cleaning and transformation.
+First, we read the respondent file and replace invalid values of
+{\tt cmmarrhx}, which contains the ``century-month'' when the
+respondent was first married; that is, the number of months since
+December 1899.
 
 \begin{verbatim}
+    resp = chap01ex_soln.ReadFemResp()
+    resp.cmmarrhx.replace([9997, 9998, 9999], np.nan, inplace=True)
+\end{verbatim}
+
+Then we compute each respondents age when first married and age when
+interviewed:
+
+\begin{verbatim}
+    resp['agemarry'] = (resp.cmmarrhx - resp.cmbirth) / 12.0
+    resp['age'] = (resp.cmintvw - resp.cmbirth) / 12.0
+\end{verbatim}
+
+{\tt cmbirth} is the century-month when the respondent was born;
+{\tt cmintvw} is the century-month of the NSFG interview.  Next
+we extract the {\tt complete} and {\tt ongoing} datasets:
+
+\begin{verbatim}
+    complete = resp[resp.evrmarry==1].agemarry
+    ongoing = resp[resp.evrmarry==0].age
+\end{verbatim}
+
+{\tt evrmarry} indicates whether the respondent had ever been
+married prior to the date of interview.  Then we compute the
+hazard function.
+
+\begin{verbatim}
+    hf = EstimateHazardFunction(complete, ongoing)
 \end{verbatim}
 
 
+\section{Estimating the survival function}
+
+Once we have the hazard function, we can estimate the survival function.
+The chance of surviving past time {\tt t} is the chance of surviving
+all times up through {\tt t}, which is the cumulative product of
+the complementary hazard function:
+
+\[ [1-\lambda(0)] [1-\lambda(1)] ... [1-\lambda(t)] \]
+
+The {\tt HazardFunction} class provides {\tt MakeSurvival}, which
+computes this product:
+
+\begin{verbatim}
+# class HazardFunction:
+
+    def MakeSurvival(self):
+        ts = self.series.index
+        ss = (1 - self.series).cumprod()
+        cdf = thinkstats2.Cdf(ts, 1-ss)
+        sf = SurvivalFunction(cdf)
+        return sf
+\end{verbatim}
+
+{\tt ts} is the sequence of times where we estimate the hazard
+function.  {\tt ss} is the cumulative product of the complementary
+hazard function, so it is the survival function.
+
+Because of the way {\tt SurvivalFunction} is implemented, we have
+to compute the complement of {\tt ss}, make a Cdf, and then instantiate
+a SurvivalFunction object.
+
+\begin{figure}
+% survival.py
+\centerline{\includegraphics[height=2.5in]{figs/survival2.pdf}}
+\caption{Hazard function for age at first marriage (top) and
+survival function (bottom).}
+\label{survival2}
+\end{figure}
+
+Figure~\ref{survival2} shows the estimated hazard function (top) and
+survival function (bottom).  The hazard function is low in the teens,
+higher in the 20s, and declining in the 30s.  It increases again in
+the 40s, but that is an artifact of the estimation process; as the
+number of respondents ``at risk'' decreases, a small number of
+women getting married yields a large estimated hazard.
+
+The survival function provides a clearer picture.  Between 35 and 45,
+the curve is nearly flat, indicating that women who do not marry
+before age 35 are unlikely to get married.
+
+A curve like this was the basis of a famous magazine article in 1986;
+{\it Newsweek} reported that a 40-year old unmarried woman was ``more
+likely to be killed by a terrorist'' than get married.  These
+statistics were widely reported and became part of popular culture,
+but they were wrong then (because they were based on faulty analysis)
+and turned out to be even more wrong (because of cultural changes that
+were already in progress and continued).  In 2006, {\it Newsweek} ran
+an another article admitting that they were wrong.
+
+I encourage you to read more about this article, the statistics it was
+based on, and the reaction.  It should remind you of the ethical
+obligation to perform statistical analysis with care, interpret the
+results with appropriate skepticism, and present them to the public
+accurately and honestly.
 
 
+\section{Confidence intervals}
+
+Kaplan-Meier analysis yields a single estimate of the survival
+curve, but it is also important to
+quantify the uncertainty of the estimate.  As usual, there are
+three possible sources of error: sampling error, measurement error,
+and modeling error.
+
+In this example, measurement error is probably small.  The analysis is
+based on 
+
+
+
+\section{Cohort effects}
+
+One of the challenges of 
 
 
 

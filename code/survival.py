@@ -5,12 +5,15 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+from __future__ import print_function, division
+
 import numpy as np
 import pandas
 
 import nsfg
 import thinkstats2
 import thinkplot
+import chap01ex_soln
 
 """
 
@@ -104,7 +107,7 @@ class HazardFunction(object):
         """
         return self.series.index, self.series.values
 
-    def MakeSurvival(self):
+    def MakeSurvival(self, label=''):
         """Makes the survival function.
 
         returns: SurvivalFunction
@@ -112,7 +115,7 @@ class HazardFunction(object):
         ts = self.series.index
         ss = (1 - self.series).cumprod()
         cdf = thinkstats2.Cdf(ts, 1-ss)
-        sf = SurvivalFunction(cdf)
+        sf = SurvivalFunction(cdf, label=label)
         return sf
 
     def MakeSurvival2(self):
@@ -166,7 +169,7 @@ def PlotConditionalSurvival(durations):
         label = 't0=%d' % t0
         thinkplot.Plot(sf, label=label)
 
-        print t0, sf.Mean()
+        print(t0, sf.Mean())
 
     thinkplot.Show()
 
@@ -219,31 +222,30 @@ def PlotHazard(complete, ongoing):
     thinkplot.Show(xlabel='t (weeks)')
 
 
-def EstimateHazardFunction(complete, ongoing):
+def EstimateHazardFunction(complete, ongoing, label=''):
     """Estimates the hazard function by Kaplan-Meier.
 
     http://en.wikipedia.org/wiki/Kaplan%E2%80%93Meier_estimator
 
     complete: list of complete lifetimes
     ongoing: list of ongoing lifetimes
+    label: string
     """
     # pmf and sf of complete lifetimes
     n = len(complete)
-    pmf_complete = thinkstats2.Pmf(complete)
+    hist_complete = thinkstats2.Hist(complete)
     sf_complete = SurvivalFunction(thinkstats2.Cdf(complete))
 
     # sf for ongoing lifetimes
     m = len(ongoing)
-    sf_curr = SurvivalFunction(thinkstats2.Cdf(ongoing))
+    sf_ongoing = SurvivalFunction(thinkstats2.Cdf(ongoing))
 
     lams = {}
-    for t, s in sf_complete.Items():
-        ended = n * pmf_complete[t]
-        at_risk = ended + n * s + m * sf_curr[t]
-        print t, ended, at_risk
+    for t, ended in sorted(hist_complete.Items()):
+        at_risk = ended + n * sf_complete[t] + m * sf_ongoing[t]
         lams[t] = ended / at_risk
 
-    return HazardFunction(lams)
+    return HazardFunction(lams, label=label)
 
 
 def PlotMarriageData():
@@ -258,30 +260,36 @@ def PlotMarriageData():
     complete = resp[resp.evrmarry==1].agemarry
     ongoing = resp[resp.evrmarry==0].age
 
-    hf = survival.EstimateHazardFunction(complete, ongoing)
-    sf = hf.MakeSurvival()
+    hf = EstimateHazardFunction(complete, ongoing, label='hazard')
+    sf = hf.MakeSurvival(label='survival')
 
+    thinkplot.PrePlot(rows=2)
     thinkplot.Plot(hf)
+    thinkplot.Config()
+
+    thinkplot.SubPlot(2)
     thinkplot.Plot(sf)
+    thinkplot.Save(root='survival2',
+                   xlabel='age (years)',
+                   ylim=[0, 1])
     
 
-
 def main():
-
+    PlotMarriageData()
+    return
+    
     preg = nsfg.ReadFemPreg()
-    print 'Number of pregnancies', len(preg)
+    print('Number of pregnancies', len(preg))
 
     complete = preg.query('outcome in [1, 3, 4]').prglngth
-    print 'Number of complete pregnancies', len(complete)
+    print('Number of complete pregnancies', len(complete))
     ongoing = preg[preg.outcome==6].prglngth
-    print 'Number of ongoing pregnancies', len(ongoing)
+    print('Number of ongoing pregnancies', len(ongoing))
 
     PlotSurvival(complete)
     thinkplot.Save(root='survival1',
                    xlabel='t (weeks)')
 
-
-    
 
     #PlotHazard(complete, ongoing)
     #PlotConditionalSurvival(complete)
