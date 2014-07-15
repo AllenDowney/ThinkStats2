@@ -14,8 +14,8 @@ import nsfg
 import thinkstats2
 
 
-def ReadFemResp(dct_file = '2002FemResp.dct',
-                dat_file = '2002FemResp.dat.gz',
+def ReadFemResp(dct_file='2002FemResp.dct',
+                dat_file='2002FemResp.dat.gz',
                 nrows=None):
     """Reads the NSFG respondent data.
 

@@ -249,7 +249,7 @@ def FillBetween(xs, y1, y2=None, where=None, **options):
       options: keyword args passed to pyplot.fill_between
     """
     options = UnderrideColor(options)
-    options = Underride(options, linewidth=0, alpha=0.6)
+    options = Underride(options, linewidth=0, alpha=0.5)
     pyplot.fill_between(xs, y1, y2, where, **options)
 
 

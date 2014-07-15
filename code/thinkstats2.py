@@ -870,7 +870,7 @@ class Cdf(object):
                 self.label = obj.label
 
         if obj is None:
-            self.xs = []
+            self.xs = np.asarray([])
             self.ps = np.asarray([])
             if ps is not None:
                 logging.warning("Cdf: can't pass ps without also passing xs.")
@@ -878,7 +878,7 @@ class Cdf(object):
         else:
             # if the caller provides xs and ps, we're done            
             if ps is not None:
-                self.xs = obj
+                self.xs = np.asarray(obj)
                 self.ps = np.asarray(ps)
                 return
 
@@ -893,7 +893,13 @@ class Cdf(object):
         else:
             dw = Hist(obj)
 
-        self.xs, freqs = zip(*sorted(dw.Items()))
+        if len(dw) == 0:
+            self.xs = np.asarray([])
+            self.ps = np.asarray([])
+            return
+
+        xs, freqs = zip(*sorted(dw.Items()))
+        self.xs = np.asarray(xs)
         self.ps = np.cumsum(freqs, dtype=np.float)
         self.ps /= self.ps[-1]
 
@@ -995,6 +1001,7 @@ class Cdf(object):
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
 
+        # TODO: consider replacing this with numpy.searchsorted
         index = bisect.bisect_left(self.ps, p)
         return self.xs[index]
 
@@ -2519,10 +2526,39 @@ def ResampleRowsWeighted(df, column='finalwgt'):
     returns: DataFrame
     """
     weights = df[column]
-    cdf = thinkstats2.Pmf(weights.iteritems()).MakeCdf()
+    cdf = Pmf(weights.iteritems()).MakeCdf()
     indices = cdf.Sample(len(weights))
     sample = df.loc[indices]
     return sample
+
+
+def PercentileRow(array, p):
+    """Selects the row from a sorted array that maps to percentile p.
+
+    p: float 0--100
+
+    returns: NumPy array (one row)
+    """
+    rows, cols = array.shape
+    index = int(rows * p / 100)
+    return array[index,]
+
+
+def PercentileRows(ys_seq, percents):
+    """
+    """
+    nrows = len(ys_seq)
+    ncols = len(ys_seq[0])
+    array = np.zeros((nrows, ncols))
+
+    for i, ys in enumerate(ys_seq):
+        array[i,] = ys
+
+    array = np.sort(array, axis=0)
+
+    rows = [PercentileRow(array, p) for p in percents]
+    return rows
+
 
 
 def Smooth(xs, sigma=2, **options):
