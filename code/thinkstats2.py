@@ -2510,6 +2510,21 @@ def ResampleRows(df):
     return SampleRows(df, len(df), replace=True)
 
 
+def ResampleRowsWeighted(df, column='finalwgt'):
+    """Resamples a DataFrame using probabilities proportional to given column.
+
+    df: DataFrame
+    column: string column name to use as weights
+
+    returns: DataFrame
+    """
+    weights = df[column]
+    cdf = thinkstats2.Pmf(weights.iteritems()).MakeCdf()
+    indices = cdf.Sample(len(weights))
+    sample = df.loc[indices]
+    return sample
+
+
 def Smooth(xs, sigma=2, **options):
     """Smooths a NumPy array with a Gaussian filter.
 
