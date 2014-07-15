@@ -248,20 +248,43 @@ def EstimateHazardFunction(complete, ongoing, label=''):
     return HazardFunction(lams, label=label)
 
 
-def PlotMarriageData():
+def ReadData():
     resp = chap01ex_soln.ReadFemResp()
     resp.cmmarrhx.replace([9997, 9998, 9999], np.nan, inplace=True)
 
     resp['agemarry'] = (resp.cmmarrhx - resp.cmbirth) / 12.0
-    cdf = thinkstats2.Cdf(resp.agemarry)
     resp['age'] = (resp.cmintvw - resp.cmbirth) / 12.0
-    cdf = thinkstats2.Cdf(resp.age)
 
+    return resp
+
+
+def ResampleSurvival(resp, iters=101):
+    
+    sf_seq = []
+    for i in range(iters):
+        sample = thinkstats2.ResampleRowsWeighted(resp)
+        hf, sf = EstimateSurvival(sample)
+        sf_seq.append(sf)
+
+    ts = sf.ts
+    ss_seq = [sf.ss for sf in sf_seq]
+
+    low, median, high = thinkstats2.PercentileRows(ss_seq, [5, 50, 95])
+
+
+def EstimateSurvival(resp):
     complete = resp[resp.evrmarry==1].agemarry
     ongoing = resp[resp.evrmarry==0].age
 
     hf = EstimateHazardFunction(complete, ongoing, label='hazard')
     sf = hf.MakeSurvival(label='survival')
+
+    return hf, sf
+
+
+
+def PlotMarriageData(resp):
+    hf, sf = EstimateSurvival(resp)
 
     thinkplot.PrePlot(rows=2)
     thinkplot.Plot(hf)
@@ -275,7 +298,8 @@ def PlotMarriageData():
     
 
 def main():
-    PlotMarriageData()
+    resp = ReadData()
+    PlotMarriageData(resp)
     return
     
     preg = nsfg.ReadFemPreg()
