@@ -139,6 +139,10 @@ class HazardFunction(object):
         return sf
 
     def Extend(self, other):
+        """Extends this hazard function by copying the tail from another.
+
+        other: HazardFunction
+        """
         last = self.series.index[-1]
         more = other.series[other.series.index > last]
         self.series = pandas.concat([self.series, more])
@@ -273,26 +277,34 @@ def CleanData(resp):
     resp['decade'] = (pandas.DatetimeIndex(dates).year - 1900) // 10
 
 
-def EstimateSurvivalByDecade(resp):
+def AddLabelsByDecade(groups, **options):
+    """Draws fake points in order to add labels to the legend.
+
+    groups: GroupBy object
+    """
+    thinkplot.PrePlot(len(groups))
+    for name, group in groups:
+        label = '%d0s' % name
+        thinkplot.Plot([15], [1], label=label, **options)
+
+
+def EstimateSurvivalByDecade(groups, **options):
     """Groups respondents by decade and plots survival curves.
 
-    resp: DataFrame of respondents
+    groups: GroupBy object
     """
-    groups = resp.groupby('decade')
     thinkplot.PrePlot(len(groups))
     for name, group in groups:
         print(name, len(group))
         hf, sf = EstimateSurvival(group)
-        label = '%d0s' % name
-        thinkplot.Plot(sf, label=label)
+        thinkplot.Plot(sf, **options)
 
 
-def PlotPredictionsByDecade(resp):
+def PlotPredictionsByDecade(groups, **options):
     """Groups respondents by decade and plots survival curves.
 
-    resp: DataFrame of respondents
+    groups: GroupBy object
     """
-    groups = resp.groupby('decade')
     hfs = []
     for name, group in groups:
         hf, sf = EstimateSurvival(group)
@@ -303,7 +315,7 @@ def PlotPredictionsByDecade(resp):
         if i > 0:
             hf.Extend(hfs[i-1])
         sf = hf.MakeSurvival()
-        thinkplot.Plot(sf, alpha=0.3)
+        thinkplot.Plot(sf, **options)
 
 
 def ResampleSurvival(resp, iters=101):
@@ -328,6 +340,8 @@ def ResampleSurvival(resp, iters=101):
     thinkplot.FillBetween(ts, low, high, color='gray', label='90% CI')
     thinkplot.Save(root='survival3',
                    xlabel='age (years)',
+                   ylabel='prob unmarried',
+                   xlim=[12, 46],
                    ylim=[0, 1])
 
 
@@ -341,8 +355,8 @@ def EstimateSurvival(resp):
     complete = resp[resp.evrmarry == 1].agemarry
     ongoing = resp[resp.evrmarry == 0].age
 
-    hf = EstimateHazardFunction(complete, ongoing, label='hazard')
-    sf = hf.MakeSurvival(label='survival')
+    hf = EstimateHazardFunction(complete, ongoing)
+    sf = hf.MakeSurvival()
 
     return hf, sf
 
@@ -362,6 +376,7 @@ def PlotMarriageData(resp):
     thinkplot.Plot(sf)
     thinkplot.Save(root='survival2',
                    xlabel='age (years)',
+                   ylabel='prob unmarried',
                    ylim=[0, 1])
 
 
@@ -381,31 +396,137 @@ def PlotPregnancyData():
                    xlabel='t (weeks)')
 
 
-def main():
-    resp1 = chap01ex_soln.ReadFemResp()
+def ReadFemResp(dct_file='2002FemResp.dct',
+                dat_file='2002FemResp.dat.gz',
+                **options):
+    """Reads the NSFG respondent data.
 
-    #CleanData(resp1)
-    #ResampleSurvival(resp1)
-    #PlotMarriageData(resp1)
+    dct_file: string file name
+    dat_file: string file name
+
+    returns: DataFrame
+    """
+    dct = thinkstats2.ReadStataDct(dct_file)
+    df = dct.ReadFixedWidth(dat_file, compression='gzip', **options)
+    CleanData(df)
+    return df
 
 
-    resp2 = chap01ex_soln.ReadFemResp('2006_2010_FemRespSetup.dct',
-                                      '2006_2010_FemResp.dat.gz')
+def ReadFemResp2002():
+    """Reads respondent data from NSFG Cycle 6.
 
-    resp = pandas.concat([resp1, resp2])
+    returns: DataFrame
+    """
+    usecols = ['cmmarrhx', 'cmdivorcx', 'cmbirth', 'cmintvw', 
+               'evrmarry', 'finalwgt']
+    resp = ReadFemResp(usecols=usecols)
     CleanData(resp)
+    return resp
+
+
+def ReadFemResp2010():
+    """Reads respondent data from NSFG Cycle 7.
+
+    returns: DataFrame
+    """
+    usecols = ['cmmarrhx', 'cmdivorcx', 'cmbirth', 'cmintvw',
+               'evrmarry', 'wgtq1q16']
+    resp = ReadFemResp('2006_2010_FemRespSetup.dct',
+                        '2006_2010_FemResp.dat.gz',
+                        usecols=usecols)
+    resp['finalwgt'] = resp.wgtq1q16
+    CleanData(resp)
+    return resp
+
+
+def ReadFemResp1995():
+    """Reads respondent data from NSFG Cycle 5.
+
+    returns: DataFrame
+    """
+    dat_file = '1995FemRespData.dat.gz'
+    names = ['a_doi', 'timesmar', 'mardat01', 'bdaycenm', 'post_wt']
+    colspecs = [(12359, 12363),
+                (3538, 3540),
+                (11758, 11762),
+                (13, 16),
+                (12349, 12359)]
+    df = pandas.read_fwf(dat_file, 
+                         compression='gzip', 
+                         colspecs=colspecs, 
+                         names=names)
+
+    df['cmmarrhx'] = df.mardat01
+    df['cmbirth'] = df.bdaycenm
+    df['cmintvw'] = df.a_doi
+    df['finalwgt'] = df.post_wt
+
+    df.timesmar.replace([98, 99], np.nan, inplace=True)
+    df['evrmarry'] = (df.timesmar > 0).astype(int)
+
+    CleanData(df)
+    return df
+
+
+def PlotResampledByDecade(resps, iters=11, predict_flag=False, omit=None):
+    """Plots survival curves for resampled data.
+
+    resps: list of DataFrames
+    iters: number of resamples to plot
+    predict_flag: whether to also plot predictions
+    """
+    for i in range(iters):
+        samples = [thinkstats2.ResampleRowsWeighted(resp) 
+                   for resp in resps]
+        sample = pandas.concat(samples, ignore_index=True)
+        print(len(sample))
+        groups = sample.groupby('decade')
+
+        if omit:
+            groups = [(name, group) for name, group in groups 
+                      if name not in omit]
+
+        if i == 0:
+            AddLabelsByDecade(groups, alpha=0.7)
+
+        if predict_flag:
+            PlotPredictionsByDecade(groups, alpha=0.1)
+            EstimateSurvivalByDecade(groups, alpha=0.1)
+        else:
+            EstimateSurvivalByDecade(groups, alpha=0.2)
+
+
+def main():
+    thinkstats2.RandomSeed(17)
     
-    PlotPredictionsByDecade(resp)
-    EstimateSurvivalByDecade(resp)
-    thinkplot.Save(root='survival5',
+    PlotPregnancyData()
+
+    # make the plots based on Cycle 6
+    resp6 = ReadFemResp2002()
+
+    PlotMarriageData(resp6)
+    ResampleSurvival(resp6)
+
+    # read Cycles 5 and 7
+    resp5 = ReadFemResp1995()
+    resp7 = ReadFemResp2010()
+
+    # plot resampled survival functions by decade
+    resps = [resp5, resp6, resp7]
+    PlotResampledByDecade(resps)
+    thinkplot.Save(root='survival4',
                    xlabel='age (years)',
+                   ylabel='prob unmarried',
+                   xlim=[13, 45],
                    ylim=[0, 1])
 
-    return
-
-
-    #PlotHazard(complete, ongoing)
-    #PlotConditionalSurvival(complete)
+    # plot resampled survival functions by decade, with predictions
+    PlotResampledByDecade(resps, predict_flag=True, omit=[5])
+    thinkplot.Save(root='survival5',
+                   xlabel='age (years)',
+                   ylabel='prob unmarried',
+                   xlim=[13, 45],
+                   ylim=[0, 1])
 
 
 if __name__ == '__main__':

@@ -2440,11 +2440,11 @@ class FixedWidthVariables(object):
 
         returns: DataFrame
         """
-        frame = pandas.read_fwf(filename,
-                                colspecs=self.colspecs, 
-                                names=self.names,
-                                **options)
-        return frame
+        df = pandas.read_fwf(filename,
+                             colspecs=self.colspecs, 
+                             names=self.names,
+                             **options)
+        return df
 
 
 def ReadStataDct(dct_file):
@@ -2500,7 +2500,7 @@ def SampleRows(df, nrows, replace=False):
     nrows: number of rows
     replace: whether to sample with replacement
 
-    returns: DataFrame
+    returns: DataDf
     """
     indices = np.random.choice(df.index, nrows, replace=replace)
     sample = df.loc[indices]

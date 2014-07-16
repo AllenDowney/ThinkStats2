@@ -9619,10 +9619,9 @@ weeks, which is the most common pregnancy length.
 \section{Hazard function}
 
 From the survival function we can derive the {\bf hazard function};
-for pregnancy lengths, the hazard function maps from
-a time, $t$, to the
-fraction of pregnancies that survive
-until $t$ and then end at {\tt t}.  To be more precise:
+for pregnancy lengths, the hazard function maps from a time, $t$, to
+the fraction of pregnancies that survive until $t$ and then end at
+{\tt t}.  To be more precise:
 %
 \[ \lambda(t) = \frac{S(t) - S(t+1)}{S(t)} \]
 %
@@ -9953,12 +9952,10 @@ confidence interval based on weighted resampling.}
 
 Figure~\ref{survival3} shows the result along with the survival
 function we estimated in the previous section.  The confidence
-interval takes into account the sampling weights, but the
-estimated survival curve does not.  Apparently the
-sampling weights have a substantial effect on the estimate,
-which is why the curve does
-not lie within the confidence interval.
-
+interval takes into account the sampling weights, unlike the estimated
+curve.  The discrepancy between them indicates that the sampling
+weights have a substantial effect on the estimate, so we will have
+to keep that in mind.
 
 
 \section{Cohort effects}
@@ -9974,12 +9971,25 @@ If the relevant characteristics of the repondents are not changing
 over time, that's fine, but in this case it seems likely that marriage
 patterns are different for women born in different generations.
 We can investigate this effect by grouping respondents according
-to their decade of birth.  A group like this, defined by date of
-birth or similar events, is called a {\bf cohort}, and differences
-between such groups are called {\bf cohort effects}.
+to their decade of birth.  Groups like this, defined by date of
+birth or similar events, are called {\bf cohorts}, and differences
+between the groups are called {\bf cohort effects}.
 
-I use {\tt cmbirth} to identify the decade of birth for each
-respondent:
+To investigate cohort effects in the NSFG marriage data, I gathered
+the Cycle 6 data from 2002 used throughout this book;
+the Cycle 7 data from 2006--2010 used in Section\ref{replication};
+and the Cycle 5 data from 1995.  In total these datasets include
+30,769 respondents.
+
+\begin{verbatim}
+    resp5 = ReadFemResp1995()
+    resp6 = ReadFemResp2002()
+    resp7 = ReadFemResp2010()
+    resps = [resp5, resp6, resp7]
+\end{verbatim}
+
+For each DataFrame, {\tt resp}, I use {\tt cmbirth} to compute the
+decade of birth for each respondent:
 
 \begin{verbatim}
     month0 = pandas.to_datetime('1899-12-15')
@@ -9988,16 +9998,42 @@ respondent:
     resp['decade'] = (pandas.DatetimeIndex(dates).year - 1900) // 10
 \end{verbatim}
 
-Then {\tt } generates survival curves for each decade:
+{\tt cmbirth} is encoded as the integer number of months since
+December 1899; {\tt month0} represents that date as a Timestamp
+object.  For each birth date, we instantiate a {\tt DateOffset} that
+contains the ``century-month'' and add it to {\tt month0}; the result
+is a sequence of Timestamps, which is converted to a {\tt
+  DateTimeIndex}.  Then we get the {\tt year} and compute the
+decade.
+
+To take into account the sampling weights, and also to show
+variability due to sampling error, I resample the data 11 times,
+group respondents by decade of birth, and plot survival curves:
+
+\begin{verbatim}
+    for i in range(iters):
+        samples = [thinkstats2.ResampleRowsWeighted(resp) 
+                   for resp in resps]
+        sample = pandas.concat(samples, ignore_index=True)
+        groups = sample.groupby('decade')
+
+        EstimateSurvivalByDecade(groups, alpha=0.2)
+\end{verbatim}
+
+Data from the three NSFG cycles use different sampling weights,
+so I resample each of them separately and then use {\tt concat}
+to merge them into a single DataFrame.  The option \verb"ignore_index"
+tells {\tt concat} not to match up respondents by index; instead
+it creates a new index from 0 to 30768.
+
+The next step is to group the respondents by decade; then {\tt
+  EstimateSurvivalByDecade} generates survival curves for each decade:
 
 \begin{verbatim}
 def EstimateSurvivalByDecade(resp):
-    groups = resp.groupby('decade')
     for name, group in groups:
-        print(name, len(group))
         hf, sf = EstimateSurvival(group)
-        label = '%d0s' % name
-        thinkplot.Plot(sf, label=label)
+        thinkplot.Plot(sf)
 \end{verbatim}
 
 \begin{figure}
@@ -10007,45 +10043,140 @@ def EstimateSurvivalByDecade(resp):
 \label{survival4}
 \end{figure}
 
-Figure~\ref{survival4} shows the result, including data from
-the 2002 and 2006--2010 NSFG (see Section\ref{replication}).
-Women born in the 50s married earliest, with each successive cohort
-marrying later and later.
+Figure~\ref{survival4} shows the results.  Several patterns are
+visible in this plot:
 
-The shapes of the curves are
-similar, with one exception: the 60s cohort was marrying more
-slowly than the 50s cohort until they turned 25; between 25 and 30,
-they caught up with their predecessors, and the rest of the curves
-are nearly identical.  Women born in the 60s turned 25 between 
-1985 and 1995.
+\begin{itemize}
 
-Remembering that the {\it Newsweek} article I mentioned was published
-in 1986, it is tempting to imagine that the article triggered a
-marriage boom.  That explanation would be too pat, but it it possible
-that the article and the reaction to it were indicative of a mood
-that affected the behavior of this cohort.
+\item Women born in the 50s married earliest, with each successive
+  cohort marrying later and later, at least until age 25 or so.
 
-The estimated survival curves for successive cohorts get shorter
-because of missing data.  Women born in the 1970s were 40, at the
-oldest, during the most recent NSFG, so their curve ends at age 40.
-Similarly, the curve for the 80s cohort ends at age 30, but so far
-they are substantially less likely to get married than their
-predecessors.  And, based on early returns, the 90s cohort is off to
-an even slower start.
+\item Women born in the 60s follow a surprising pattern.  Prior
+to age 25, they were marrying at slower rates than their predecessors.
+After age 25, they were marrying faster: by age 32 they had overtaken
+the 60s cohort, and at age 44 they are substantially more likely to
+have married.
+
+Women born in the 60s turned 25 between 1985 and 1995.  Remembering
+that the {\it Newsweek} article I mentioned was published in 1986, it
+is tempting to imagine that the article triggered a marriage boom.
+That explanation would be too pat, but it it possible that the article
+and the reaction to it were indicative of a mood that affected the
+behavior of this cohort.
+
+\item The pattern of the 70s cohort is similar.  They are less
+likely than their predecessors to be married before age 25, but
+at age 35 they have caught up with both of the previous cohorts.
+
+\item Women both in the 80s are even less likely to marry before
+age 25.  What happens after that is not clear; for more data, we
+have to wait for the next cycle.
+
+\end{itemize}
+
+But in the meantime we can make some predictions.
 
 
 \section{Extrapolation}
 
+The survival curve for the 70s cohort ends at about age 38;
+for the 80s cohort is ends at age 28, and for the 90s cohort
+we hardly have any data at all.
+
+We can extrapolate these curves by ``borrowing'' data from the
+previous cohort.  
+HazardFunction provides a method, {\tt Extend}, that
+copies the tail from a another longer HazardFunction:
+
+\begin{verbatim}
+    def Extend(self, other):
+        last = self.series.index[-1]
+        more = other.series[other.series.index > last]
+        self.series = pandas.concat([self.series, more])
+\end{verbatim}
+
+As we saw in Section~\ref{???}, the HazardFunction contains a Series
+that maps from $t$ to $\lambda(t)$.  {\tt Extend} finds {\tt last},
+which is the last index in {\tt self}, selects the values from
+{\tt other} that come later than {\tt last}, and appends them
+onto {\tt self.series}.
+
+Now we can extend the HazardFunction for each cohort with values
+from the predecessor:
+
+\begin{verbatim}
+def PlotPredictionsByDecade(groups):
+    hfs = []
+    for name, group in groups:
+        hf, sf = EstimateSurvival(group)
+        hfs.append(hf)
+
+    thinkplot.PrePlot(len(hfs))
+    for i, hf in enumerate(hfs):
+        if i > 0:
+            hf.Extend(hfs[i-1])
+        sf = hf.MakeSurvival()
+        thinkplot.Plot(sf)
+\end{verbatim}
+
+{\tt groups} is a GroupBy object with respondents grouped by decade of
+birth.  The first loop computes the HazardFunction for each group.
+
+The second loop extends each HazardFunction with values from
+its predecessor, which might contain values from the previous
+group, and so on.  Then it converts each HazardFunction to
+a SurvivalFunction and plots it.
+
+\begin{figure}
+% survival.py
+\centerline{\includegraphics[height=2.5in]{figs/survival5.pdf}}
+\caption{Survival functions for respondents born during different decades,
+with predictions for the later cohorts.}
+\label{survival5}
+\end{figure}
+
+Figure~\ref{survival5} shows the results; I've excluded the 50s cohort
+to make the predictions more visible.  These results suggest that by
+age 40, the most recent cohorts will converge with the 60s cohort,
+with fewer than 20\% never married.
+
 
 \section{Exercises}
 
+My solutions to these exercises are in \verb"chap13ex_soln.py".
+
 \begin{exercise}
+In NSFG Cycles 6 and 7, the variable {\tt cmdivorcx} contains the
+date of divorce for the respondent's first marriage, if applicable,
+encoded in century-months.
+
+Compute the duration of marriages that have ended in divorce, and
+the duration, so far, of marriages that are ongoing.  Estimate the
+hazard and survival function for the duration of marriage.
+
+Use resampling to take into account sampling weights, and plot
+data from several resamples to visualize sampling error.
+
+Consider dividing the respondents into groups by decade of birth,
+and possibly by age at first marriage.
 \end{exercise}
 
 
 \section{Glossary}
 
 \begin{itemize}
+
+\item survival analysis: A set of methods for describing and
+  predicting lifetimes, or more generally time until an event occurs.
+
+\item survival curve: A function that maps from a time, $t$, to the
+  probability of surviving past $t$.
+
+\item hazard function: A function that maps from $t$ to the fraction
+of people alive at $t$ who die at $t$.
+
+\item Kaplan-Meier estimation: An algorithm for estimating hazard and
+survival functions.
 
 \item cohort: a group of subject defined by an event, like date of
 birth, in a particular interval of time.
