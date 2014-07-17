@@ -88,6 +88,40 @@ class SurvivalFunction(object):
 
         return HazardFunction(lams, label=label)
 
+    def MakePmf(self, filler=None):
+        """Makes a PMF of lifetimes.
+
+        filler: value to replace missing values
+
+        returns: Pmf
+        """
+        pmf = thinkstats2.Pmf()
+        for val, prob in self.cdf.Items():
+            pmf.Set(val, prob)
+
+        cutoff = self.cdf.ps[-1]
+        if filler is not None:
+            pmf[filler] = 1-cutoff
+
+        return pmf
+
+    def RemainingLifetime(self, filler=None, func=thinkstats2.Pmf.Mean):
+        """Computes remaining lifetime as a function of age.
+
+        func: function from conditional Pmf to expected liftime
+
+        returns: Series that maps from age to remaining lifetime
+        """
+        pmf = self.MakePmf(filler=filler)
+        d = {}
+        for t in sorted(pmf.Values())[:-1]:
+            pmf[t] = 0
+            pmf.Normalize()
+            d[t] = func(pmf) - t
+            print(t, d[t])
+
+        return pandas.Series(d)
+
 
 class HazardFunction(object):
     """Represents a hazard function."""
@@ -230,7 +264,7 @@ def PlotHazard(complete, ongoing):
     # plot the survival function
     sf = hf.MakeSurvival()
     sf2 = hf.MakeSurvival2()
-    print(sf.cdf == sf2.cdf)
+
     thinkplot.Plot(sf, label='S(t)')
     thinkplot.Show(xlabel='t (weeks)')
 
@@ -378,14 +412,14 @@ def PlotMarriageData(resp):
                    xlabel='age (years)',
                    ylabel='prob unmarried',
                    ylim=[0, 1])
+    return sf
 
 
-def PlotPregnancyData():
+def PlotPregnancyData(preg):
     """Plots survival and hazard curves based on pregnancy lengths.
+    
+    preg:
     """
-    preg = nsfg.ReadFemPreg()
-    print('Number of pregnancies', len(preg))
-
     complete = preg.query('outcome in [1, 3, 4]').prglngth
     print('Number of complete pregnancies', len(complete))
     ongoing = preg[preg.outcome==6].prglngth
@@ -394,6 +428,36 @@ def PlotPregnancyData():
     PlotSurvival(complete)
     thinkplot.Save(root='survival1',
                    xlabel='t (weeks)')
+
+    hf = EstimateHazardFunction(complete, ongoing)
+    sf = hf.MakeSurvival()
+    return sf
+
+
+def PlotRemainingLifetime(sf1, sf2):
+    """Plots remaining lifetimes for pregnancy and age at first marriage.
+
+    sf1: SurvivalFunction for pregnancy length
+    sf2: SurvivalFunction for age at first marriage
+    """
+    thinkplot.PrePlot(cols=2)
+    rem_life1 = sf1.RemainingLifetime()
+    thinkplot.Plot(rem_life1)
+    thinkplot.Config(title='pregnancy length',
+                     xlabel='weeks',
+                     ylabel='mean remaining weeks')
+
+    thinkplot.SubPlot(2)
+    func = lambda pmf: pmf.Percentile(50)
+    rem_life2 = sf2.RemainingLifetime(filler=np.inf, func=func)
+    thinkplot.Plot(rem_life2)
+    thinkplot.Config(title='age at first marriage',
+                     ylim=[0, 15],
+                     xlim=[11, 31],
+                     xlabel='age (years)',
+                     ylabel='median remaining years')
+
+    thinkplot.Save(root='survival6')
 
 
 def ReadFemResp(dct_file='2002FemResp.dct',
@@ -499,13 +563,17 @@ def PlotResampledByDecade(resps, iters=11, predict_flag=False, omit=None):
 def main():
     thinkstats2.RandomSeed(17)
     
-    PlotPregnancyData()
+    preg = nsfg.ReadFemPreg()
+    sf1 = PlotPregnancyData(preg)
 
     # make the plots based on Cycle 6
     resp6 = ReadFemResp2002()
 
-    PlotMarriageData(resp6)
+    sf2 = PlotMarriageData(resp6)
     ResampleSurvival(resp6)
+
+    PlotRemainingLifetime(sf1, sf2)
+    return
 
     # read Cycles 5 and 7
     resp5 = ReadFemResp1995()

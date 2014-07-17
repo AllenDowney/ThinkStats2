@@ -2388,6 +2388,8 @@ def Skewness(xs):
 
 def Median(xs):
     """Computes the median (50th percentile) of a sequence.
+
+    xs: sequence or anything else that can initialize a Cdf
     """
     cdf = Cdf(xs)
     return cdf.Value(0.5)

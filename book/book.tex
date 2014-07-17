@@ -4330,6 +4330,8 @@ methods {\tt Set}, {\tt Incr}, {\tt Mult}, and {\tt Remove}.  These
 methods are all implemented with dictionary operations.  For example:
 
 \begin{verbatim}
+# class _DictWrapper
+
     def Incr(self, x, term=1):
         self.d[x] = self.d.get(x, 0) + term
 
@@ -4367,6 +4369,8 @@ be normalized.
 probabilities and divides through by a factor:
 
 \begin{verbatim}
+# class Pmf
+
     def Normalize(self, fraction=1.0):
         total = self.Total()
         if total == 0.0:
@@ -4429,6 +4433,7 @@ Here is the implementation of {\tt Prob}, which takes a value
 and returns its cumulative probability: 
 
 \begin{verbatim}
+# class Cdf
     def Prob(self, x):
         if x < self.xs[0]:
             return 0.0
@@ -4442,6 +4447,7 @@ And here is the implementation of {\tt Value}, which takes a
 cumulative probability and returns the corresponding value:
 
 \begin{verbatim}
+# class Cdf
     def Value(self, p):
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
@@ -4456,6 +4462,7 @@ and pass a Pmf, it computes differences by calling {\tt Cdf.Items}:
 \index{Pmf}
 
 \begin{verbatim}
+# class Cdf
     def Items(self):
         a = self.ps
         b = np.roll(a, 1)
@@ -6614,7 +6621,7 @@ which is the probability of each value in the pooled distribution.
 Here's the code that computes the test statistic:
 
 \begin{verbatim}
-#class PregLengthTest:
+# class PregLengthTest:
 
     def TestStatistic(self, data):
         firsts, others = data
@@ -9504,20 +9511,21 @@ also applies to ``survival'' of mechanical and electronic systems, or
 more generally to intervals in time before an event.
 
 If you or someone you know has been diagnosed with a life-threatening
-disease, you might have been told a ``5-year survival rate,'' which
-is the probability of surviving five years after diagnosis.  This
-estimate, and related statistics, are the results of survival analysis.
+disease, you might have seen a ``5-year survival rate,'' which
+is the probability of surviving five years after diagnosis.  That
+estimate and related statistics are the result of survival analysis.
 
 The code in this chapter is in {\tt survival.py}.  For information
 about downloading and working with this code, see Section~\ref{code}.
 
 
 \section{Survival curves}
+\label{survival}
 
 The fundamental concept in survival analysis is the {\bf survival
   curve}, $S(t)$, which is a function that maps from a duration, $t$, to the
 probability of surviving longer than $t$.  If you know the distribution
-of durations, or lifetimes, finding the survival curve is easy;
+of durations, or ``lifetimes'', finding the survival curve is easy;
 it's just the complement of the CDF:
 %
 \[ S(t) = 1 - \CDF(t) \]
@@ -9526,7 +9534,7 @@ where $CDF(t)$ is the probability of a lifetime less than or equal
 to $t$.
 
 For example, in the NSFG dataset, we know the duration of 11189
-completed pregnancies.  We can read this data and compute the CDF:
+complete pregnancies.  We can read this data and compute the CDF:
 
 \begin{verbatim}
     preg = nsfg.ReadFemPreg()
@@ -9576,13 +9584,15 @@ function.  We can instantiate a {\tt SurvivalFunction} by passing
 the CDF of lifetimes:
 
 \begin{verbatim}
-sf = SurvivalFunction(cdf)
+    sf = SurvivalFunction(cdf)
 \end{verbatim}
 
 {\tt SurvivalFunction} also provides \verb"__getitem__" and
 {\tt Prob}, which evaluate the survival function:
 
 \begin{verbatim}
+# class SurvivalFunction
+
     def __getitem__(self, t):
         return self.Prob(t)
 
@@ -9617,6 +9627,7 @@ weeks, which is the most common pregnancy length.
 
 
 \section{Hazard function}
+\label{hazard}
 
 From the survival function we can derive the {\bf hazard function};
 for pregnancy lengths, the hazard function maps from a time, $t$, to
@@ -9626,12 +9637,14 @@ the fraction of pregnancies that survive until $t$ and then end at
 \[ \lambda(t) = \frac{S(t) - S(t+1)}{S(t)} \]
 %
 The numerator is the fraction of lifetimes that end at $t$, which
-is also $PMF(t)$.
+is also $\PMF(t)$, where $\PMF$ is the distribution of lifetimes.
 
 {\tt SurvivalFunction} provides {\tt MakeHazard}, which calculates
 the hazard function:
 
 \begin{verbatim}
+# class SurvivalFunction
+
     def MakeHazard(self, label=''):
         ss = self.ss
         lams = {}
@@ -9653,6 +9666,10 @@ class HazardFunction(object):
         self.label = label
 \end{verbatim}
 
+{\tt d} can be a dictionary or any other type that can initialize
+a Series, including another Series.  {\tt label} is a string used
+to identify the HazardFunction when plotted.
+
 {\tt HazardFunction} provides \verb"__getitem__", so we can evaluate
 it like this:
 
@@ -9662,7 +9679,7 @@ it like this:
 0.49689
 \end{verbatim}
 
-So of all pregnancies that proceed until the week 39, about
+So of all pregnancies that proceed until week 39, about
 50\% end in week 39.
 
 Figure~\ref{survival1} (bottom) shows the hazard function for
@@ -9676,10 +9693,11 @@ The hazard function is useful in its own right, but it is also an
 important tool for estimating survival curves, as we'll see in the
 next section.
 
+
 \section{Estimating survival curves}
 
-I someone gives you the CDF of lifetimes, it is easy to compute the
-survival and hazard functions.  Unfortunately, in many real-world
+If someone gives you the CDF of lifetimes, it is easy to compute the
+survival and hazard functions.  But in many real-world
 scenarios, we can't measure the distribution of lifetimes directly.
 We have to infer it.
 
@@ -9696,31 +9714,32 @@ we can't wait that long!  We need a way to estimate survival curves
 using incomplete information.
 
 As a more cheerful example, I will use NSFG data to quantify how
-long the respondents ``survival'' until they get married for the
+long respondents ``survive'' until they get married for the
 first time.  The range of respondents' ages is 14 to 44 years, so
 the dataset provides a snapshot of women at different stages in their
 lives, in the same way that a medical cohort might include patients
 at difference stages of disease.
 
-For women who have ever been married, the dataset includes the date
+For women who have been married, the dataset includes the date
 of their first marriage and their age at the time.
 For women who have not been married, we know their age when interviewed,
 but have no way of knowing when or if they will get married.
 
 Since we know the age at first marriage for {\em some} women, it
 might be tempting to exclude the rest and compute the CDF of
-the known data.  That would not be a good idea.  The result would
-be doubly misleading because (1) older women would be overrepresented,
+the known data.  That is a bad idea.  The result would
+be doubly misleading: (1) older women would be overrepresented,
 because they are more likely to be married when interviewed,
 and (2) married women would be overrepresented!  In fact, this
 analysis would lead to the conclusion that all women get married,
 which is obviously not the case.
 
+
 \section{Kaplan-Meier estimation}
 
 In this example it is not only desirable but necessary to include
 observations of unmarried women, which brings us to one of the central
-computations in survival analysis, {\bf Kaplan-Meier estimation}.
+algorithms in survival analysis, {\bf Kaplan-Meier estimation}.
 
 The general idea is that we can use the data to estimate the hazard
 function, then convert the hazard function to a survival function.
@@ -9762,9 +9781,7 @@ the survival function for unmarried women.
 The loop iterates through the ages when respondents got married.
 For each value of {\tt t}, we have {\tt ended}, which is the number
 of women who got married at age {\tt t}.  Then we compute
-\verb"at_risk", which is the total number of respondents we
-have data about at age {\tt t};  \verb"at_risk" is the sum
-of:
+the number of women ``at risk'', which is the sum of:
 
 \begin{itemize}
 
@@ -9774,28 +9791,51 @@ of:
 married after age {\tt t}.
 
 \item \verb"m * sf_ongoing[t]", the number of unmarried respondents
-interviewed after age {\tt t}, and therefore known not to
-have been married at or before age {\tt t}.
+interviewed after {\tt t}, and therefore known not to
+have been married at or before {\tt t}.
 
 \end{itemize}
 
-The estimated value of the hazard function at time {\tt t} is
+The estimated value of the hazard function at {\tt t} is
 \verb"ended / at_risk".  {\tt lams} is a dictionary that maps
 from {\tt t} to $\lambda(t)$.  The result is a {\tt HazardFunction}
 object.
 
-To test this function, we have to do some data cleaning and transformation.
+
+\section{The marriage curve}
+
+To test this function, we have to do some data cleaning and
+transformation.  The NSFG variables we need are:
+
+\begin{itemize}
+
+\item {\tt cmbirth}: The respondent's date of birth, known for
+all respondents.
+
+\item {\tt cmintvw}: The date the respondent was interviewed,
+known for all respondents.
+
+\item {\tt cmmarrhx}: The date the respondent was first married,
+if applicable and known.
+
+{\tt evrmarry}: 1 if the respondent had been
+married prior to the date of interview, 0 otherwise.
+
+\end{itemize}
+
+The first three variables are encoded in ``century-months''; that is, the
+integer number of months since December 1899.  So century-month
+1 is January 1900.
+
 First, we read the respondent file and replace invalid values of
-{\tt cmmarrhx}, which contains the ``century-month'' when the
-respondent was first married; that is, the number of months since
-December 1899.
+{\tt cmmarrhx}:
 
 \begin{verbatim}
     resp = chap01ex_soln.ReadFemResp()
     resp.cmmarrhx.replace([9997, 9998, 9999], np.nan, inplace=True)
 \end{verbatim}
 
-Then we compute each respondents age when first married and age when
+Then we compute each respondents age when married and age when
 interviewed:
 
 \begin{verbatim}
@@ -9803,22 +9843,30 @@ interviewed:
     resp['age'] = (resp.cmintvw - resp.cmbirth) / 12.0
 \end{verbatim}
 
-{\tt cmbirth} is the century-month when the respondent was born;
-{\tt cmintvw} is the century-month of the NSFG interview.  Next
-we extract the {\tt complete} and {\tt ongoing} datasets:
+Next
+we extract {\tt complete}, which is the age at marriage for
+women who have been married, and {\tt ongoing}, which is the
+age at interview for women who have not:
 
 \begin{verbatim}
     complete = resp[resp.evrmarry==1].agemarry
     ongoing = resp[resp.evrmarry==0].age
 \end{verbatim}
 
-{\tt evrmarry} indicates whether the respondent had ever been
-married prior to the date of interview.  Then we compute the
+Finally we compute the
 hazard function.
 
 \begin{verbatim}
     hf = EstimateHazardFunction(complete, ongoing)
 \end{verbatim}
+
+Figure~\ref{survival2} (top) shows the estimated hazard function;
+it is low in the teens,
+higher in the 20s, and declining in the 30s.  It increases again in
+the 40s, but that is an artifact of the estimation process; as the
+number of respondents ``at risk'' decreases, a small number of
+women getting married yields a large estimated hazard.  The survival
+function will smooth out this noise.
 
 
 \section{Estimating the survival function}
@@ -9844,8 +9892,8 @@ computes this product:
         return sf
 \end{verbatim}
 
-{\tt ts} is the sequence of times where we estimate the hazard
-function.  {\tt ss} is the cumulative product of the complementary
+{\tt ts} is the sequence of times where the hazard function is
+estimated.  {\tt ss} is the cumulative product of the complementary
 hazard function, so it is the survival function.
 
 Because of the way {\tt SurvivalFunction} is implemented, we have
@@ -9860,14 +9908,9 @@ survival function (bottom).}
 \label{survival2}
 \end{figure}
 
-Figure~\ref{survival2} shows the estimated hazard function (top) and
-survival function (bottom).  The hazard function is low in the teens,
-higher in the 20s, and declining in the 30s.  It increases again in
-the 40s, but that is an artifact of the estimation process; as the
-number of respondents ``at risk'' decreases, a small number of
-women getting married yields a large estimated hazard.
-
-The survival function provides a clearer picture.  Between 35 and 45,
+Figure~\ref{survival2} (bottom) shows the result.  The survival
+curve is steepest between 25 and 35, when most women get married.
+Between 35 and 45,
 the curve is nearly flat, indicating that women who do not marry
 before age 35 are unlikely to get married.
 
@@ -9889,16 +9932,14 @@ accurately and honestly.
 
 \section{Confidence intervals}
 
-Kaplan-Meier analysis yields a single estimate of the survival
-curve, but it is also important to
-quantify the uncertainty of the estimate.  As usual, there are
-three possible sources of error: measurement error, sampling error,
-and modeling error.
+Kaplan-Meier analysis yields a single estimate of the survival curve,
+but it is also important to quantify the uncertainty of the estimate.
+As usual, there are three possible sources of error: measurement
+error, sampling error, and modeling error.
 
-In this example, measurement error is probably small.  In general,
-people know when they were born, whether they've been married, and
-when.  And they can be expected to report this information
-accurately.
+In this example, measurement error is probably small.  People
+generally know when they were born, whether they've been married, and
+when.  And they can be expected to report this information accurately.
 
 We can quantify sampling error by resampling.  Here's the code:
 
@@ -9917,9 +9958,10 @@ def ResampleSurvival(resp, iters=101):
     thinkplot.FillBetween(ts, low, high)
 \end{verbatim}
 
-{\tt ResampleSurvival} takes a DataFrame of respondents and {\tt iters},
-the number of times to resample.  It computes {\tt ts}, which is the
-array of ages where we will evaluate the survival functions.
+{\tt ResampleSurvival} takes {\tt resp}, a DataFrame of respondents,
+and {\tt iters}, the number of times to resample.  It computes {\tt
+  ts}, which is the sequence of ages where we will evaluate the survival
+functions.
 
 Inside the loop, {\tt ResampleSurvival}:
 
@@ -9929,18 +9971,16 @@ Inside the loop, {\tt ResampleSurvival}:
 which we saw in Section~\ref{weighted}.
 
 \item Calls {\tt EstimateSurvival}, which uses the process in the
-previous sections to estimate the survival curve, and
+previous sections to estimate the hazard and survival curves, and
 
-\item Evaluates the survival curve at each
-age in {\tt ts}.  
+\item Evaluates the survival curve at each age in {\tt ts}.
 
 \end{itemize}
 
-So \verb"ss_seq" is a sequence of evaluated
-survival curves.
-{\tt PercentileRows} takes this sequence and computes the 5th
-and 95th percentiles, returning a 90\% confidence interval for
-the survival curve.
+\verb"ss_seq" is a sequence of evaluated survival curves.
+{\tt PercentileRows} takes this sequence and computes the 5th and 95th
+percentiles, returning a 90\% confidence interval for the survival
+curve.
 
 \begin{figure}
 % survival.py
@@ -9954,7 +9994,7 @@ Figure~\ref{survival3} shows the result along with the survival
 function we estimated in the previous section.  The confidence
 interval takes into account the sampling weights, unlike the estimated
 curve.  The discrepancy between them indicates that the sampling
-weights have a substantial effect on the estimate, so we will have
+weights have a substantial effect on the estimate -- we will have
 to keep that in mind.
 
 
@@ -10001,14 +10041,14 @@ decade of birth for each respondent:
 {\tt cmbirth} is encoded as the integer number of months since
 December 1899; {\tt month0} represents that date as a Timestamp
 object.  For each birth date, we instantiate a {\tt DateOffset} that
-contains the ``century-month'' and add it to {\tt month0}; the result
+contains the century-month and add it to {\tt month0}; the result
 is a sequence of Timestamps, which is converted to a {\tt
-  DateTimeIndex}.  Then we get the {\tt year} and compute the
-decade.
+  DateTimeIndex}.  Finally, we extract {\tt year} and compute
+decades.
 
 To take into account the sampling weights, and also to show
-variability due to sampling error, I resample the data 11 times,
-group respondents by decade of birth, and plot survival curves:
+variability due to sampling error, I resample the data,
+group respondents by decade, and plot survival curves:
 
 \begin{verbatim}
     for i in range(iters):
@@ -10021,13 +10061,12 @@ group respondents by decade of birth, and plot survival curves:
 \end{verbatim}
 
 Data from the three NSFG cycles use different sampling weights,
-so I resample each of them separately and then use {\tt concat}
+so I resample them separately and then use {\tt concat}
 to merge them into a single DataFrame.  The option \verb"ignore_index"
 tells {\tt concat} not to match up respondents by index; instead
 it creates a new index from 0 to 30768.
 
-The next step is to group the respondents by decade; then {\tt
-  EstimateSurvivalByDecade} generates survival curves for each decade:
+{\tt EstimateSurvivalByDecade} plots survival curves for each cohort:
 
 \begin{verbatim}
 def EstimateSurvivalByDecade(resp):
@@ -10044,17 +10083,17 @@ def EstimateSurvivalByDecade(resp):
 \end{figure}
 
 Figure~\ref{survival4} shows the results.  Several patterns are
-visible in this plot:
+visible:
 
 \begin{itemize}
 
-\item Women born in the 50s married earliest, with each successive
-  cohort marrying later and later, at least until age 25 or so.
+\item Women born in the 50s married earliest, with successive
+  cohorts marrying later and later, at least until age 25 or so.
 
 \item Women born in the 60s follow a surprising pattern.  Prior
 to age 25, they were marrying at slower rates than their predecessors.
-After age 25, they were marrying faster: by age 32 they had overtaken
-the 60s cohort, and at age 44 they are substantially more likely to
+After age 25, they were marrying faster.  By age 32 they had overtaken
+the 50s cohort, and at age 44 they are substantially more likely to
 have married.
 
 Women born in the 60s turned 25 between 1985 and 1995.  Remembering
@@ -10068,13 +10107,13 @@ behavior of this cohort.
 likely than their predecessors to be married before age 25, but
 at age 35 they have caught up with both of the previous cohorts.
 
-\item Women both in the 80s are even less likely to marry before
+\item Women born in the 80s are even less likely to marry before
 age 25.  What happens after that is not clear; for more data, we
-have to wait for the next cycle.
+have to wait for the next cycle of the NSFG.
 
 \end{itemize}
 
-But in the meantime we can make some predictions.
+In the meantime we can make some predictions.
 
 
 \section{Extrapolation}
@@ -10084,24 +10123,25 @@ for the 80s cohort is ends at age 28, and for the 90s cohort
 we hardly have any data at all.
 
 We can extrapolate these curves by ``borrowing'' data from the
-previous cohort.  
-HazardFunction provides a method, {\tt Extend}, that
-copies the tail from a another longer HazardFunction:
+previous cohort.  HazardFunction provides a method, {\tt Extend}, that
+copies the tail from another longer HazardFunction:
 
 \begin{verbatim}
+# class HazardFunction
+
     def Extend(self, other):
         last = self.series.index[-1]
         more = other.series[other.series.index > last]
         self.series = pandas.concat([self.series, more])
 \end{verbatim}
 
-As we saw in Section~\ref{???}, the HazardFunction contains a Series
+As we saw in Section~\ref{hazard}, the HazardFunction contains a Series
 that maps from $t$ to $\lambda(t)$.  {\tt Extend} finds {\tt last},
-which is the last index in {\tt self}, selects the values from
+which is the last index in {\tt self.series}, selects values from
 {\tt other} that come later than {\tt last}, and appends them
 onto {\tt self.series}.
 
-Now we can extend the HazardFunction for each cohort with values
+Now we can extend the HazardFunction for each cohort, using values
 from the predecessor:
 
 \begin{verbatim}
@@ -10135,10 +10175,149 @@ with predictions for the later cohorts.}
 \label{survival5}
 \end{figure}
 
-Figure~\ref{survival5} shows the results; I've excluded the 50s cohort
+Figure~\ref{survival5} shows the results; I've removed the 50s cohort
 to make the predictions more visible.  These results suggest that by
 age 40, the most recent cohorts will converge with the 60s cohort,
 with fewer than 20\% never married.
+
+
+\section{Expected remaining lifetime}
+
+Given a survival curve, we can compute the expected remaining
+lifetime as a function of current age.  For example, given the
+survival function of pregnancy length from Section~\ref{survival},
+we can compute the expected time until delivery.
+
+The first step is to extract the PMF of lifetimes.  {\tt SurvivalFunction}
+provides a method that does that:
+
+\begin{verbatim}
+# class SurvivalFunction
+
+    def MakePmf(self, filler=None):
+        pmf = thinkstats2.Pmf()
+        for val, prob in self.cdf.Items():
+            pmf.Set(val, prob)
+
+        cutoff = self.cdf.ps[-1]
+        if filler is not None:
+            pmf[filler] = 1-cutoff
+
+        return pmf
+\end{verbatim}
+
+Remember that the SurvivalFunction contains the Cdf of lifetimes.
+The loop copies the values and probabilities from the Cdf into
+a Pmf.
+
+{\tt cutoff} is the highest probability in the Cdf, which is 1
+if the Cdf is complete, and otherwise less than 1.  
+If the Cdf is incomplete, we plug in the provided value, {\tt filler},
+to cap it off.
+
+The Cdf of pregnancy lengths is complete, so we don't have to worry
+about this detail yet.
+
+The next step is to compute the expected remaining lifetime, where
+``expected'' usually means ``average.''  {\tt SurvivalFunction}
+provides a method that does that, too:
+
+\begin{verbatim}
+# class SurvivalFunction
+
+    def RemainingLifetime(self, filler=None, func=thinkstats2.Pmf.Mean):
+        pmf = self.MakePmf(filler=filler)
+        d = {}
+        for t in sorted(pmf.Values())[:-1]:
+            pmf[t] = 0
+            pmf.Normalize()
+            d[t] = func(pmf) - t
+
+        return pandas.Series(d)
+\end{verbatim}
+
+{\tt RemainingLifetime} takes {\tt filler}, which is passed along
+to {\tt MakePmf}, and {\tt func} which is the function used to
+summarize the distribution of remaining lifetimes.
+
+{\tt pmf} is the Pmf of lifetimes extracted from the SurvivalFunction.
+{\tt d} is a dictionary that contains the results, a map from
+current age, {\tt t}, to expected remaining lifetime.
+
+The loop iterates through the values in the Pmf.  For each value
+of {\tt t} it computes the conditional distribution of lifetimes,
+given that the lifetime exceeds {\tt t}.  It does that by removing
+values from the Pmf one at a time and renormalizing the remaining
+values.
+
+Then it uses {\tt func} to summarize the conditional distribution.
+In this example the result is the mean pregnancy length, given that
+the length exceeds {\tt t}.  By subtracting {\tt t} we get the
+mean remaining pregnancy length.
+
+\begin{figure}
+% survival.py
+\centerline{\includegraphics[height=2.5in]{figs/survival6.pdf}}
+\caption{Expected remaining lifetime for pregnancy length (left) and
+years until first marriage (right).}
+\label{survival6}
+\end{figure}
+
+Figure~\ref{survival6} (left) shows the expecting remaining pregnancy
+length as a function of the current duration.  For example, during
+Week 0, the expected remaining duration is about 34 weeks.  That's
+less than full term (39 weeks) because terminations of pregnancy
+in the first trimester bring the average down.
+
+The curve drops slowly during the first trimester.  After 13 weeks,
+the expected remaining lifetime has dropped by only 9 weeks, to
+25.  After that the curve drops faster, by about a week per week.
+
+Between Week 37 and 42, the curve levels off between 1 and 2 weeks.
+At any time during this period, the expected remaining lifetime is the
+same; with each week that passes, the destination gets no closer.
+Processes with this property are called ``memoryless,'' because
+the past has no effect on the predictions.
+This behavior is the mathematical basis of the infuriating mantra
+of obstetrics nurses: ``any day now.''
+
+Figure~\ref{survival6} (right) shows the median remaining time until
+first marriage, as a function of age.  For an 11 year-old girl, the
+median time until first marriage is about 14 years.  The median falls
+until age 22 when the median remaining time is about 7 years.  But
+after that it increases again: by age 30 it is back where it started,
+at 14 years.
+
+For this example I computed median, rather than mean, because the
+Cdf is incomplete; the survival curve projects that about 20\%
+of respondents will not marry before age 44.  The age of
+first marriage for these women is unknown, and might be non-existent,
+so we can't compute a mean.
+
+I deal with these unknown values by replacing them with {\tt np.inf},
+a special value that represents infinity.  That makes the mean
+infinity for all ages, but the median is well-defined as long as
+more than 50\% of the remaining lifetimes are finite, which is true
+until age 30.  After that it is hard to define a meaningful
+expected remaining lifetime.
+
+Here's the code that computes and plots these functions:
+
+\begin{verbatim}
+    rem_life1 = sf1.RemainingLifetime()
+    thinkplot.Plot(rem_life1)
+
+    func = lambda pmf: pmf.Percentile(50)
+    rem_life2 = sf2.RemainingLifetime(filler=np.inf, func=func)
+    thinkplot.Plot(rem_life2)
+\end{verbatim}
+
+{\tt sf1} is the survival function for pregnancy length;
+in this case we can use the default values for {\tt RemainingLifetime}.
+
+{\tt sf2} is the survival function for age at first marriage;
+{\tt func} is a function that takes a Pmf and computes its
+median (50th percentile).
 
 
 \section{Exercises}
