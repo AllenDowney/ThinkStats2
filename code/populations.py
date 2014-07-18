@@ -66,7 +66,7 @@ def MakeFigures():
     thinkplot.PrePlot(cols=2)
 
     mu, sigma = log_pops.mean(), log_pops.std()
-    xs, ps = thinkstats2.RenderGaussianCdf(mu, sigma, low=0, high=8)
+    xs, ps = thinkstats2.RenderNormalCdf(mu, sigma, low=0, high=8)
     thinkplot.Plot(xs, ps, label='model', color='0.8')
 
     thinkplot.Cdf(cdf_log) 

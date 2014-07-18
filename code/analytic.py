@@ -115,28 +115,28 @@ def MakeParetoCdf2():
                    legend=False)
     
 
-def MakeGaussianCdf():
-    """Generates a plot of the gaussian CDF."""
+def MakeNormalCdf():
+    """Generates a plot of the normal CDF."""
     
     thinkplot.PrePlot(3)
 
     mus = [1.0, 2.0, 3.0]
     sigmas = [0.5, 0.4, 0.3]
     for mu, sigma in zip(mus, sigmas):
-        xs, ps = thinkstats2.RenderGaussianCdf(mu=mu, sigma=sigma, 
+        xs, ps = thinkstats2.RenderNormalCdf(mu=mu, sigma=sigma, 
                                                low=-1.0, high=4.0)
         label = 'mu=%g, sigma=%g' % (mu, sigma)
         thinkplot.Plot(xs, ps, label=label)
 
-    thinkplot.Save(root='analytic_gaussian_cdf',
-                   title='Gaussian CDF',
+    thinkplot.Save(root='analytic_normal_cdf',
+                   title='Normal CDF',
                    xlabel='x',
                    ylabel='CDF',
                    loc=2)
     
     
-def MakeGaussianModel(weights):
-    """Plot the CDF of birthweights with a gaussian model."""
+def MakeNormalModel(weights):
+    """Plot the CDF of birthweights with a normal model."""
     
     # estimate parameters: trimming outliers yields a better fit
     mu, var = thinkstats2.TrimmedMeanVar(weights, p=0.01)
@@ -145,7 +145,7 @@ def MakeGaussianModel(weights):
     # plot the model
     sigma = math.sqrt(var)
     print('Sigma', sigma)
-    xs, ps = thinkstats2.RenderGaussianCdf(mu, sigma, low=0, high=12.5)
+    xs, ps = thinkstats2.RenderNormalCdf(mu, sigma, low=0, high=12.5)
 
     thinkplot.Plot(xs, ps, label='model', color='0.8')
 
@@ -212,7 +212,7 @@ def main():
 
     MakeParetoCdf()
     MakeParetoCdf2()
-    MakeGaussianCdf()
+    MakeNormalCdf()
 
     # test the distribution of birth weights for normality
     preg = nsfg.ReadFemPreg()
@@ -221,7 +221,7 @@ def main():
     weights = preg.totalwgt_lb.dropna()
     term_weights = full_term.totalwgt_lb.dropna()
 
-    MakeGaussianModel(weights)
+    MakeNormalModel(weights)
     MakeNormalPlot(weights, term_weights)
 
     

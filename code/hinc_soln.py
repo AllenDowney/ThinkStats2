@@ -121,7 +121,7 @@ def MakeFigures(df):
     std = 0.35
     print(median, std)
 
-    xs, ps = thinkstats2.RenderGaussianCdf(median, std, low=3.5, high=5.5)
+    xs, ps = thinkstats2.RenderNormalCdf(median, std, low=3.5, high=5.5)
     thinkplot.Plot(xs, ps, label='model', color='0.8')
 
     thinkplot.Cdf(cdf_log) 

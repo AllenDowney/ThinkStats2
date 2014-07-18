@@ -1394,11 +1394,11 @@ class Pdf(object):
         return zip(*self.Render())
 
 
-class GaussianPdf(Pdf):
-    """Represents the PDF of a Gaussian distribution."""
+class NormalPdf(Pdf):
+    """Represents the PDF of a Normal distribution."""
 
     def __init__(self, mu=0, sigma=1, label=''):
-        """Constructs a Gaussian Pdf with given mu and sigma.
+        """Constructs a Normal Pdf with given mu and sigma.
 
         mu: mean
         sigma: standard deviation
@@ -1409,7 +1409,7 @@ class GaussianPdf(Pdf):
         self.label = label
 
     def __str__(self):
-        return 'GaussianPdf(%f, %f)' % (self.mu, self.sigma)
+        return 'NormalPdf(%f, %f)' % (self.mu, self.sigma)
 
     def GetLinspace(self):
         """Get a linspace for plotting.
@@ -1590,7 +1590,7 @@ def SampleSum(dists, n):
     return pmf
 
 
-def EvalGaussianPdf(x, mu, sigma):
+def EvalNormalPdf(x, mu, sigma):
     """Computes the unnormalized PDF of the normal distribution.
 
     x: value
@@ -1602,8 +1602,8 @@ def EvalGaussianPdf(x, mu, sigma):
     return scipy.stats.norm.pdf(x, mu, sigma)
 
 
-def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
-    """Makes a PMF discrete approx to a Gaussian distribution.
+def MakeNormalPmf(mu, sigma, num_sigmas, n=201):
+    """Makes a PMF discrete approx to a Normal distribution.
     
     mu: float mean
     sigma: float standard deviation
@@ -1617,7 +1617,7 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
     high = mu + num_sigmas * sigma
 
     for x in np.linspace(low, high, n):
-        p = EvalGaussianPdf(x, mu, sigma)
+        p = EvalNormalPdf(x, mu, sigma)
         pmf.Set(x, p)
     pmf.Normalize()
     return pmf
@@ -1694,8 +1694,8 @@ def MakeExponentialPmf(lam, high, n=200):
     return pmf
 
 
-def StandardGaussianCdf(x):
-    """Evaluates the CDF of the standard Gaussian distribution.
+def StandardNormalCdf(x):
+    """Evaluates the CDF of the standard Normal distribution.
     
     See http://en.wikipedia.org/wiki/Normal_distribution
     #Cumulative_distribution_function
@@ -1709,8 +1709,8 @@ def StandardGaussianCdf(x):
     return (math.erf(x / ROOT2) + 1) / 2
 
 
-def EvalGaussianCdf(x, mu=0, sigma=1):
-    """Evaluates the CDF of the gaussian distribution.
+def EvalNormalCdf(x, mu=0, sigma=1):
+    """Evaluates the CDF of the normal distribution.
     
     Args:
         x: float
@@ -1725,8 +1725,8 @@ def EvalGaussianCdf(x, mu=0, sigma=1):
     return scipy.stats.norm.cdf(x, loc=mu, scale=sigma)
 
 
-def EvalGaussianCdfInverse(p, mu=0, sigma=1):
-    """Evaluates the inverse CDF of the gaussian distribution.
+def EvalNormalCdfInverse(p, mu=0, sigma=1):
+    """Evaluates the inverse CDF of the normal distribution.
 
     See http://en.wikipedia.org/wiki/Normal_distribution#Quantile_function  
 
@@ -1740,8 +1740,7 @@ def EvalGaussianCdfInverse(p, mu=0, sigma=1):
     Returns:
         float
     """
-    x = ROOT2 * scipy.special.erfinv(2 * p - 1)
-    return mu + x * sigma
+    return scipy.stats.norm.ppf(p, loc=mu, scale=sigma)
 
 
 def EvalLognormalCdf(x, mu=0, sigma=1):
@@ -1772,8 +1771,8 @@ def RenderExpoCdf(lam, low, high, n=50):
     return xs, ps
 
 
-def RenderGaussianCdf(mu, sigma, low, high, n=50):
-    """Generates sequences of xs and ps for a Gaussian CDF.
+def RenderNormalCdf(mu, sigma, low, high, n=50):
+    """Generates sequences of xs and ps for a Normal CDF.
 
     mu: parameter
     sigma: parameter
@@ -2345,7 +2344,7 @@ def CorrelatedGenerator(rho):
         yield x
 
 
-def CorrelatedGaussianGenerator(mu, sigma, rho):
+def CorrelatedNormalGenerator(mu, sigma, rho):
     """Generates normal variates with serial correlation.
 
     mu: mean of variate
@@ -2390,6 +2389,8 @@ def Median(xs):
     """Computes the median (50th percentile) of a sequence.
 
     xs: sequence or anything else that can initialize a Cdf
+
+    returns: float
     """
     cdf = Cdf(xs)
     return cdf.Value(0.5)
@@ -2397,6 +2398,10 @@ def Median(xs):
 
 def IQR(xs):
     """Computes the interquartile of a sequence.
+
+    xs: sequence or anything else that can initialize a Cdf
+
+    returns: pair of floats
     """
     cdf = Cdf(xs)
     return cdf.Value(0.25), cdf.Value(0.75)
@@ -2560,7 +2565,6 @@ def PercentileRows(ys_seq, percents):
 
     rows = [PercentileRow(array, p) for p in percents]
     return rows
-
 
 
 def Smooth(xs, sigma=2, **options):

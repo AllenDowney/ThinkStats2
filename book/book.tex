@@ -37,7 +37,7 @@
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.13}
+\newcommand{\theversion}{2.0.14}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1600,9 +1600,9 @@ in the legend when the Hist is plotted.
 
 Figure~\ref{first_wgt_lb_hist} shows the result.  The most common
 value, called the {\bf mode}, is 7 pounds.  The distribution is
-approximately bell-shaped, which is the shape of the {\bf Gaussian} or
-distribution, also called a {\bf normal} distribution.  But unlike a
-true Gaussian distribution, this distribution is asymmetric; it has
+approximately bell-shaped, which is the shape of the {\bf normal}
+distribution, also called a {\bf Gaussian} distribution.  But unlike a
+true normal distribution, this distribution is asymmetric; it has
 a {\bf tail} that extends farther to the left than to the right.
 
 Figure~\ref{first_wgt_oz_hist} shows the histogram of
@@ -1998,8 +1998,8 @@ that shows this mapping.
 most frequent values.
 \index{mode}
 
-\item Gaussian distribution: An idealization of a bell-shaped distribution;
-also known as a normal distribution. 
+\item normal distribution: An idealization of a bell-shaped distribution;
+also known as a Gaussian distribution. 
 \index{Gaussian distribution}
 \index{normal distribution}
 
@@ -2680,7 +2680,7 @@ of PMFs: they are hard to compare visually.}
 \label{nsfg_birthwgt_pmf}
 \end{figure}
 
-Overall, these distributions resemble the bell shape of a Gaussian
+Overall, these distributions resemble the bell shape of a normal
 distribution, with many values near the mean and a few values much
 higher and lower.
 
@@ -3221,7 +3221,7 @@ the population.
 
 
 \chapter{Modeling distributions}
-\label{analytic}
+\label{modeling}
 \index{analytic distribution}
 \index{distribution!analytic}
 \index{empirical distribution}
@@ -3419,11 +3419,11 @@ specifies the mean, and {\tt scale}, which specifies the
 standard deviation.
 
 {\tt thinkstats2} makes this function a little easier to use
-by providing {\tt GaussianCdf}, which takes parameters {\tt mu}
+by providing {\tt EvalNormalCdf}, which takes parameters {\tt mu}
 and {\tt sigma} and evaluates the CDF at {\tt x}:
 
 \begin{verbatim}
-def EvalGaussianCdf(x, mu=0, sigma=1):
+def EvalNormalCdf(x, mu=0, sigma=1):
     return scipy.stats.norm.cdf(x, loc=mu, scale=sigma)
 \end{verbatim}
 
@@ -4105,10 +4105,10 @@ definitions of {\tt Density} and {\tt GetLinspace}.  {\tt Pdf} provides
 {\tt Render} and {\tt MakePmf}.
 
 For example, {\tt thinkstats2} provides a class named {\tt
-  GaussianPdf} that evaluates the Gaussian density function.
+  NormalPdf} that evaluates the normal density function.
 
 \begin{verbatim}
-class GaussianPdf(Pdf):
+class NormalPdf(Pdf):
 
     def __init__(self, mu=0, sigma=1, label=''):
         self.mu = mu
@@ -4123,13 +4123,13 @@ class GaussianPdf(Pdf):
         return np.linspace(low, high, 101)
 \end{verbatim}
 
-The GaussianPdf object contains the parameters {\tt mu} and
+The NormalPdf object contains the parameters {\tt mu} and
 {\tt sigma}.  {\tt Density} uses
-{\tt scipy.stats.norm}, which is an object that represents a Gaussian
+{\tt scipy.stats.norm}, which is an object that represents a normal
 distribution and provides {\tt cdf} and {\tt pdf}, among other
 methods (see Section~\ref{normal}).
 
-The following example creates a GaussianPdf with the mean and variance
+The following example creates a NormalPdf with the mean and variance
 of adult female heights, in cm, from the BRFSS (see
 Section~\ref{brfss}).  Then it computes the density of the
 distribution at a location one standard deviation from the mean.
@@ -4137,7 +4137,7 @@ distribution at a location one standard deviation from the mean.
 \begin{verbatim}
 >>> mean, var = 163, 52.8
 >>> std = math.sqrt(var)
->>> pdf = thinkstats2.GaussianPdf(mean, std)
+>>> pdf = thinkstats2.NormalPdf(mean, std)
 >>> pdf.Density(mean + std)
 0.0333001
 \end{verbatim}
@@ -4147,7 +4147,7 @@ Again, a probability density doesn't mean much by itself.  But if
 we plot the Pdf, we can see the shape of the distribution:
 
 \begin{verbatim}
->>> thinkplot.Pdf(pdf, label='Gaussian')
+>>> thinkplot.Pdf(pdf, label='normal')
 >>> thinkplot.Show()
 \end{verbatim}
 
@@ -4171,7 +4171,7 @@ and {\tt n}.
 \begin{figure}
 % pdf_example.py
 \centerline{\includegraphics[height=2.2in]{figs/pdf_example.pdf}}
-\caption{A Gaussian PDF that models adult female height in the U.S.,
+\caption{A normal PDF that models adult female height in the U.S.,
 and the kernel density estimate of a sample with $n=1000$.}
 \label{pdf_example}
 \end{figure}
@@ -4207,10 +4207,12 @@ and computes a kernel density estimate.  The result is a
 method.
 
 {\tt Density} takes a value, calls \verb"gaussian_kde.evaluate",
-and returns the resulting density.
+and returns the resulting density\footnote{The word ``Gaussian'' appears
+in the name because it uses a Gaussian filter to smooth
+the KDE.}.  
 \index{density}
 
-Here's an example that generates a sample from a Gaussian
+Here's an example that generates a sample from a normal
 distribution and then makes an EstimatedPdf to fit it:
 \index{numpy}
 
@@ -4225,7 +4227,7 @@ distribution and then makes an EstimatedPdf to fit it:
 KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
 evaluating the density at a sequence of equally spaced values.
 
-Figure~\ref{pdf_example} shows the Gaussian density function and a KDE
+Figure~\ref{pdf_example} shows the normal density function and a KDE
 based on a sample of 1000 random heights.  The estimate is a good
 match for the original distribution.
 
@@ -5685,6 +5687,7 @@ section.
 
 
 \section{Sampling distributions}
+\label{gorilla}
 
 Suppose you are a scientist studying gorillas in a wildlife
 preserve.  You want to know the average weight of the adult
@@ -9507,10 +9510,10 @@ distribution of residuals does not change over time.
 
 {\bf Survival analysis} is a way to describe how long things last.
 It is often used to study human lifetimes, but it
-also applies to ``survival'' of mechanical and electronic systems, or
+also applies to ``survival'' of mechanical and electronic components, or
 more generally to intervals in time before an event.
 
-If you or someone you know has been diagnosed with a life-threatening
+If someone you know has been diagnosed with a life-threatening
 disease, you might have seen a ``5-year survival rate,'' which
 is the probability of surviving five years after diagnosis.  That
 estimate and related statistics are the result of survival analysis.
@@ -9732,7 +9735,7 @@ be doubly misleading: (1) older women would be overrepresented,
 because they are more likely to be married when interviewed,
 and (2) married women would be overrepresented!  In fact, this
 analysis would lead to the conclusion that all women get married,
-which is obviously not the case.
+which is obviously incorrect.
 
 
 \section{Kaplan-Meier estimation}
@@ -10007,7 +10010,7 @@ whose age was at least {\tt t} when they were interviewed.
 So the leftmost part of the curve includes data from all respondents,
 but the rightmost part includes only the oldest respondents.
 
-If the relevant characteristics of the repondents are not changing
+If the relevant characteristics of the respondents are not changing
 over time, that's fine, but in this case it seems likely that marriage
 patterns are different for women born in different generations.
 We can investigate this effect by grouping respondents according
@@ -10088,7 +10091,7 @@ visible:
 \begin{itemize}
 
 \item Women born in the 50s married earliest, with successive
-  cohorts marrying later and later, at least until age 25 or so.
+  cohorts marrying later and later, at least until age 30 or so.
 
 \item Women born in the 60s follow a surprising pattern.  Prior
 to age 25, they were marrying at slower rates than their predecessors.
@@ -10099,7 +10102,7 @@ have married.
 Women born in the 60s turned 25 between 1985 and 1995.  Remembering
 that the {\it Newsweek} article I mentioned was published in 1986, it
 is tempting to imagine that the article triggered a marriage boom.
-That explanation would be too pat, but it it possible that the article
+That explanation would be too pat, but it is possible that the article
 and the reaction to it were indicative of a mood that affected the
 behavior of this cohort.
 
@@ -10276,17 +10279,29 @@ the expected remaining lifetime has dropped by only 9 weeks, to
 Between Week 37 and 42, the curve levels off between 1 and 2 weeks.
 At any time during this period, the expected remaining lifetime is the
 same; with each week that passes, the destination gets no closer.
-Processes with this property are called ``memoryless,'' because
+Processes with this property are called {\bf memoryless}, because
 the past has no effect on the predictions.
 This behavior is the mathematical basis of the infuriating mantra
 of obstetrics nurses: ``any day now.''
 
 Figure~\ref{survival6} (right) shows the median remaining time until
 first marriage, as a function of age.  For an 11 year-old girl, the
-median time until first marriage is about 14 years.  The median falls
-until age 22 when the median remaining time is about 7 years.  But
-after that it increases again: by age 30 it is back where it started,
+median time until first marriage is about 14 years.  The curve decreases
+until age 22 when the median remaining time is about 7 years.
+After that it increases again: by age 30 it is back where it started,
 at 14 years.
+
+Based on this data, young women have decreasing remaining
+"lifetimes".  Mechanical components with this property are called {\bf NBUE}
+for "new better than used in expectation," meaning that a new part is
+expected to last longer.
+
+Women older than 22 have increasing remaining time until first
+marriage.  Components with this property are UBNE for "used better
+than new in expectation."  That is, the older the part, the longer it
+is expected to last.  Newborns and cancer patients are also {\bf UBNE};
+their life expectancy increases the longer they live.  Also, people
+learning to ride a motorcycle.
 
 For this example I computed median, rather than mean, because the
 Cdf is incomplete; the survival curve projects that about 20\%
@@ -10365,89 +10380,301 @@ birth, in a particular interval of time.
 
 \end{itemize}
 
-\chapter{Operations on distributions}
-\label{operations}
 
-\section{Random Variables}
-\index{random variable} \index{variable!random}
+\chapter{Analytic methods}
+\label{analysis}
 
-A {\bf random variable} represents a process that generates a random
-number.  Random variables are usually written with a capital letter,
-like $X$.  You can think of a random variable as a random number
-generator.
-\index{cumulative distribution function}
-\index{CDF}
+This book has focused on computational methods like simulation and
+resampling, but some of the problems we solved also have
+analytic solutions, which can be much faster.
 
-For example, here is a definition for a class that represents
-random variables:
+I present some of these methods in this chapter, and explain
+how they work.  At the end of the chapter, I make some suggestions
+for integrating computational and analytic methods for exploratory
+data analysis.
+
+The code in this chapter is in {\tt normal.py}.  For information
+about downloading and working with this code, see Section~\ref{code}.
+
+
+\section{Why normal?}
+\label{why_normal}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+As an example, let's review the problem from Section~\ref{gorilla}:
+
+\begin{quotation}
+\noindent Suppose you are a scientist studying gorillas in a wildlife
+preserve.  Having weighed 9 gorillas, you find $\xbar=90$ kg and
+sample standard deviation, $S=7.5$ kg.  If you use $\xbar$ to estimate
+the population mean, what is the standard error of the estimate?
+\end{quotation}
+
+To answer that question, we are going to compute the sampling
+distribution of $\xbar$.  In Section~\ref{gorilla} we approximated
+the sampling distribution by simulating the experiment (weighing
+9 gorillas), computing $\xbar$ for each simulated experiment, and
+accumulating the distribution of estimates.
+
+The result is an
+approximation of the sampling distribution.  The standard deviation
+of the sampling distribution is the standard error, which turned
+out to be about 2.5 kg.  The interval between the 5th and 95th percentile
+of the sampling distribution is a 90\% confidence interval.
+
+Now we'll do the same calculation analytically.  To do that, we
+can take advantage of the fact that the weights of adult female
+gorillas are roughly normally distributed.  Normal distributions
+have two properties that make them amenable for analysis:
+they are
+closed under linear transformation and convolution.  To explain what
+that means, I will need some notation.
+\index{analysis}
+\index{random variable}
+\index{variable!random}
+
+If the distribution of a quantity, X, is
+normal with parameters $\mu$ and $\sigma$, you can write
 %
+\[ X \sim \normal (\mu, \sigma^{2})\]
+%
+where the symbol $\sim$ means ``is distributed'' and the script letter
+$\normal$ stands for ``normal.''
+
+%The other analytic distributions in this chapter are sometimes
+%written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
+%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
+%\sigma^2)$.
+
+A linear transformation of $X$ is something like $X' = a X + b$, where
+$a$ and $b$ are real numbers.\index{linear transformation}
+A family of distributions is closed under
+linear transformation if $X'$ is in the same family as $X$.  The normal
+distribution has this property; if $X \sim \normal (\mu,
+\sigma^2)$,
+%
+\begin{equation}
+ X' \sim \normal (a \mu + b, a^{2} \sigma^2)
+\label{eqn1}
+\end{equation}
+%
+Normal distributions are also closed under addition.  
+If $Z = X + Y$ and
+$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
+$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$ then
+%
+\[ Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
+%
+The other distributions we have looked at do not have these
+properties.
+\index{convolution}
+
+In the special case $Z = X + X$, we have
+%
+\[ Z \sim \normal (2 \mu_X, 2 \sigma_X^2) \]
+%
+and in general if we draw $n$ values of $X$ and add them up, we have
+%
+\begin{equation}
+ Z \sim \normal (n \mu_X, n \sigma_X^2)
+\label{eqn2}
+\end{equation}
+
+\section{Sampling distributions}
+
+Now we have everything we need to compute the sampling distribution
+of $\xbar$.  If we assume, temporarily, that $\xbar$ is an accurate
+estimate of the population mean, $\mu$, and $S^2$ is an accurate
+estimate of the population variance, $\sigma^2$, then the
+distribution of weights is
+%
+\[ X \sim \normal (\mu, \sigma^2)\]
+%
+Remember that we compute $\xbar$ by weighing $n$ gorillas, adding up
+the total weight, and dividing by $n$.
+If we weigh $n$ gorillas, the total weight, $Y$, is distributed
+%
+\[ Y \sim \normal (n \mu, n \sigma^2) \]
+%
+using Equation~\ref{eqn1}.  And if we divide by $n$, the sample mean,
+$Z$, is distributed
+%
+\[ Z \sim \normal (\mu, \sigma^2/n) \]
+%
+using Equation~\ref{eqn2} with $a = 1/n$.
+
+The distribution of $Z$ is the sampling distribution of $\xbar$.
+The mean of $Z$ is $\mu$, which shows that $\xbar$ is an unbiased
+estimate of $\mu$.  The variance of the sampling distribution
+is $\sigma^2 / n$.
+
+And the standard deviation of the sampling distribution, which is
+the standard error of the estimate, is $\sigma / \sqrt{n}$.  In
+the example, $\sigma$ is 7.5 kg and $n$ is 9, so the standard error is
+2.5 kg.  That result is consistent with what we computed by simulation,
+but much faster to compute!
+
+We can also use the sampling distribution to compute confidence
+intervals.  A 90\% confidence interval for $\xbar$ is the interval
+between the 5th and 95th percentiles of $Z$.  Since $Z$ is normally
+distributed, we can compute percentiles by evaluating the inverse
+CDF.
+
+There is no closed form for the CDF of the normal distribution,
+or its inverse, but there are fast numerical methods, and they
+are implemented in SciPy, as we saw in Section~\ref{normal}.
+{\tt thinkstats2} provides a wrapper function that makes the
+function a little easier to use:
+
 \begin{verbatim}
-class RandomVariable(object):
-    """Parent class for all random variables."""
+def EvalNormalCdfInverse(p, mu=0, sigma=1):
+    return scipy.stats.norm.ppf(p, loc=mu, scale=sigma)
 \end{verbatim}
 
-And here is a random variable with an exponential distribution:
+Given a probability, {\tt p}, it returns the corresponding
+percentile from a normal distribution with parameters {\tt mu}
+and {\tt sigma}.  For the sampling distribution of $\xbar$,
+we can compute the 5th and 95th percentiles like this:
+
+\begin{verbatim}
+>>> thinkstats2.EvalNormalCdfInverse(0.05, mu=90, sigma=2.5)
+85.888
+
+>>> thinkstats2.EvalNormalCdfInverse(0.95, mu=90, sigma=2.5)
+94.112
+\end{verbatim}
+
+So if we run the experiment many times, we expect the
+estimate, $\xbar$, to fall in the range $(85.9, 94.1)$ about
+90\% of the time.
+
+Lot of things in the real world are normally distributed, at least
+approximately.  So the methods in this section have many applications.
+That would be good enough, but with the Central Limit Theorem, things
+are even better!
+
+
+\section{Central limit theorem}
+\label{CLT}
+\index{Central Limit Theorem}
+
+As we saw in the previous sections, if we add values drawn from normal
+distributions, the distribution of the sum is normal.
+  \index{sum}
+\index{normal distribution} \index{distribution!normal}
+\index{Gaussian distribution} \index{distribution!Gaussian}
+
+Most other distributions don't have this property;
+if we add values drawn from other distributions, the sum does not
+generally have one of the analytic distributions we have seen.
+
+But it turns out that if we add up a large number of values from
+almost any distribution, the distribution of the sum converges to
+normal.
+
+More specifically, if the distribution of the values has mean and
+standard deviation $\mu$ and $\sigma$, the distribution of the sum is
+approximately $\normal(n \mu, n \sigma^2)$.
+
+This is called the {\bf Central Limit Theorem} (CLT).  It is one of the
+most useful tools for statistical analysis, but it comes with
+caveats:
+
+\begin{itemize}
+
+\item The values have to be drawn independently.  If they are
+correlated, the CLT doesn't apply.
+\index{independent}
+
+\item The values have to come from the same distribution (although
+  this requirement can be relaxed).
+\index{identical}
+
+\item The values have to be drawn
+  from a distribution with finite mean and variance, so most Pareto
+  distributions are out.
+\index{mean}
+\index{variance}
+\index{Pareto distribution}
+\index{distribution!Pareto}
 \index{exponential distribution}
 \index{distribution!exponential}
-%
-\begin{verbatim}
-class Exponential(RandomVariable):
-    def __init__(self, lam):
-        self.lam = lam
 
-    def Generate(self):
-        return random.expovariate(self.lam)
+\item The number of values you need before you see convergence depends
+  on the skewness of the distribution.  Sums from an exponential
+  distribution converge for small sample sizes.  Sums from a
+  lognormal distribution require larger sizes.
+\index{lognormal distribution}
+\index{distribution!lognormal}
+
+\end{itemize}
+
+The Central Limit Theorem explains, at least in part, the prevalence
+of normal distributions in the natural world.  Many characteristics of
+animals and other life forms are affected by genetic
+and environmental factors whose effect is additive.  The characteristics
+we measure are the sum of a large number of small effects, so their
+distribution tends to be normal.
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+To test the Central Limit Theorem, I will compute distributions
+of sums.  In general, there are three ways to compute the distribution
+of a sum:
+
+\begin{itemize}
+
+\item We can draw random samples from the distributions, add them
+up, and accumulate the distribution of the sums, or
+
+\item Given two Pmfs, we can enumerate all pairs of values and
+compute their sums and probabilities,
+
+\item We can {\bf convolve} the two distributions.
+
+\end{itemize}
+
+I present these methods in the following sections.
+
+
+\section{Random samples}
+
+Suppose we are given a Cdf of a distribution that is not necessarily
+normal.  We would like to know the distribution of the sum of a sample
+with size {\tt n}.  The simplest way to compute it is to draw random
+samples and add them up:
+
+\begin{verbatim}
 \end{verbatim}
 
-The \verb"__init__" method takes the parameter, $\lambda$, and stores
-it as an attribute.  The {\tt Generate} method returns a random value
-from the exponential distribution with that parameter.  \index{init
-  method} \index{method!init}
-
-Each time you invoke {\tt Generate}, you get a different value.  The
-value you get is called a {\bf random variate}, which is why many
-function names in the {\tt random} module include the word ``variate.''
-\index{random variate}
-\index{variate!random}
-
-If I were just generating exponential variates, I would not bother to
-define a new class; I would use {\tt random.expovariate}.  But for
-other distributions it might be useful to use RandomVariable objects.
-For example, the Erlang distribution is an analytic distribution with
-parameters $\lambda$ and $k$ (see
-\url{http://wikipedia.org/wiki/Erlang_distribution}).
-\index{Erlang distribution}
-\index{distribution!Erlang}
-
-One way to generate values from an Erlang distribution is to add
-$k$ values from an exponential distribution with the same $\lambda$.
-Here's an implementation:
-%
-\begin{verbatim}
-class Erlang(RandomVariable):
-    def __init__(self, lam, k):
-        self.lam = lam
-        self.k = k
-        self.expo = Exponential(lam)
-
-    def Generate(self):
-        total = 0
-        for i in range(self.k):
-            total += self.expo.Generate()
-        return total
-\end{verbatim}
-
-The \verb"__init__" method creates an Exponential object with the
-given parameter; then {\tt Generate} uses it.  In general,
-\verb"__init__" can take any set of parameters and the {\tt
-  Generate} function can implement any random process.
+Distribution of sum of pregnancy lengths
 
 
-\section{Functions of random variables}
-\index{random variables}
-\index{CDF}
 
-Suppose we have two random variables, $X$ and $Y$, represented
+\section{Adding Pmfs}
+\index{Pmf}
+
+Suppose we have two Pmfs that represent the distributions of
+two quantities.  To compute the distribution of the sum,
+
+Differences of sums of pregnancy lengths
+
+
+
+
+\section{Convolution}
+
+Example?
+
+
+
+
+random variables, $X$ and $Y$, represented
 by RandomVariable objects.
 How can we compute the distribution of the sum $Z = X + Y$?
 \index{random variable}
@@ -10458,13 +10685,7 @@ One option is to write a RandomVariable object that generates
 the sum:
 %
 \begin{verbatim}
-class Sum(RandomVariable):
-    def __init__(X, Y):
-        self.X = X
-        self.Y = Y
 
-    def Generate():
-        return X.Generate() + Y.Generate()
 \end{verbatim}
 
 Given any RandomVariables, $X$ and $Y$, we can create a Sum
@@ -10500,127 +10721,10 @@ Write a similar function that computes the PMF of $Z = max(X, Y)$.
 
 
 
-\section{Why normal?}
-\label{why_normal}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-I said earlier that normal distributions are amenable to analysis,
-but I didn't say why.  One reason is that they are
-closed under linear transformation and convolution.  To explain what
-that means, it will help to introduce some notation.
-\index{analysis}
-\index{random variable}
-\index{variable!random}
-
-If the distribution of a random variable, X, is
-normal with parameters $\mu$ and $\sigma$, you can write
-%
-\[ X \sim \normal (\mu, \sigma^{2})\]
-%
-where the symbol $\sim$ means ``is distributed'' and the script letter
-$\normal$ stands for ``normal.''
-
-%The other analytic distributions in this chapter are sometimes
-%written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
-%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
-%\sigma^2)$.
-
-A linear transformation of $X$ is something like $X' = a X + b$, where
-$a$ and $b$ are real numbers.\index{linear transformation}
-A family of distributions is closed under
-linear transformation if $X'$ is in the same family as $X$.  The normal
-distribution has this property; if $X \sim \normal (\mu,
-\sigma^2)$,
-
-\[ X' \sim \normal (a \mu + b, a^{2} \sigma^2)\]
-
-Normal distributions are also closed under addition.  
-If $Z = X + Y$ and
-$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
-$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$ then
-%
-\[ Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
-%
-The other distributions we have looked at do not have these
-properties.
-\index{convolution}
 
 
 
-\section{Central limit theorem}
-\label{CLT}
-\index{Central Limit Theorem}
 
-So far we have seen:
-
-\begin{itemize}
-
-\item If we add values drawn from normal distributions, the distribution
-of the sum is normal.
-\index{sum}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-\item If we add values drawn from other distributions, the sum does not
-generally have one of the analytic distributions we have seen.
-
-\end{itemize}
-
-But it turns out that if we add up a large number of values from
-almost any distribution, the distribution of the sum converges to
-normal.
-
-More specifically, if the distribution of the values has mean and
-standard deviation $\mu$ and $\sigma$, the distribution of the sum is
-approximately $\normal(n \mu, n \sigma^2)$.
-
-This is called the {\bf Central Limit Theorem}.  It is one of the
-most useful tools for statistical analysis, but it comes with
-caveats:
-
-\begin{itemize}
-
-\item The values have to be drawn independently.
-\index{independent}
-
-\item The values have to come from the same distribution (although
-  this requirement can be relaxed).
-\index{identical}
-
-\item The values have to be drawn
-  from a distribution with finite mean and variance, so most Pareto
-  distributions are out.
-\index{mean}
-\index{variance}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{exponential distribution}
-\index{distribution!exponential}
-
-\item The number of values you need before you see convergence depends
-  on the skewness of the distribution.  Sums from an exponential
-  distribution converge for small sample sizes.  Sums from a
-  lognormal distribution require much larger sizes.
-\index{lognormal distribution}
-\index{distribution!lognormal}
-
-\end{itemize}
-
-The Central Limit Theorem explains, at least in part, the prevalence
-of normal distributions in the natural world.  Most characteristics of
-animals and other life forms are affected by a large number of genetic
-and environmental factors whose effect is additive.  The characteristics
-we measure are the sum of a large number of small effects, so their
-distribution tends to be normal.
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
 
 \begin{exercise}
 If I draw a sample, $x_{1} .. x_{n}$, independently from a
@@ -10664,6 +10768,150 @@ Hint: look at the distribution of the log of the products.
 \index{product}
 
 \end{exercise}
+
+
+\section{Difference in means test}
+\index{resampling}
+
+Anyone reading this book who has prior training in statistics probably
+laughed when they saw Figure~\ref{length_deltas_cdf}, because I used a
+lot of computer power to simulate something I could have figured out
+analytically.
+\index{analysis}
+\index{pregnancy length}
+\index{length!pregnancy}
+
+Obviously mathematical analysis is not the focus of this book.  I am
+willing to use computers to do things the ``dumb'' way, because I
+think it is easier for beginners to understand simulations, and easier
+to demonstrate that they are correct.  So as long as the simulations
+don't take too long to run, I don't feel guilty for skipping the
+analysis.
+
+However, there are times when a little analysis can save a lot of
+computing, and Figure~\ref{length_deltas_cdf} is one of those times.
+\index{mean, difference in}
+
+Remember that we were testing the observed difference in the mean between
+pregnancy lengths for $n = 4413$ first babies and $m = 4735$ others.  We formed
+the pooled distribution for all babies, drew samples with sizes $n$ and
+$m$, and computed the difference in sample means.
+\index{sample mean}
+
+Instead, we could directly compute the distribution of the difference
+in sample means.  To get started, let's think about what a sample mean
+is: we draw $n$ samples from a distribution, add them up, and
+divide by n.  If the distribution has mean $\mu$ and variance
+$\sigma^2$, then by the Central Limit Theorem, we know that the sum of
+the samples is $\normal (n \mu, n \sigma^2)$.
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
+
+To figure out the distribution of the sample means, we have to invoke
+one of the properties of the normal distribution: if X~is
+$\normal (\mu, \sigma^2)$,
+
+\[ aX~+~b~\sim~\normal(a \mu~+~b, a^{2} \sigma^2)\]
+
+When we divide by n, $a = 1/n$ and $b = 0$, so
+%
+\[ X/n~\sim~\normal(\mu /n, \sigma^2/ n^{2}) \]
+%
+So the distribution of the sample mean is $\normal (\mu, \sigma^2/n)$.
+
+To get the distribution of the difference between two sample means,
+we invoke another property of the normal distribution: if $X_{1}$ is
+$\normal (\mu_{1}, \sigma_{1}^{2})$ and $X_{2}$ is
+$\normal (\mu_{2}, \sigma_{2}^{2})$,
+%
+\[ aX_1 + bX_2 \sim \normal(a\mu_1 + b\mu_2, 
+                                 a^2\sigma_1^2 + b^2\sigma_2^2) \]
+%
+So as a special case:
+%
+\[ X_1 - X_2 \sim \normal(\mu_1 - \mu_2, 
+                               \sigma_1^2 + \sigma_2^2) \]
+%
+Putting it all together, we conclude that the sample in
+Figure~\ref{length_deltas_cdf} is drawn from 
+$\normal (0, f \sigma^2)$, where $f = 1/n~+~1/m$.  Plugging in
+n = 4413 and m = 4735, we expect the difference of sample means to be
+$\normal (0, 0.0032)$.
+\index{p-value}
+
+We can use {\tt erf.NormalCdf} to compute the p-value of the observed 
+difference in the means:
+%
+\begin{verbatim}
+delta = 0.078
+sigma = math.sqrt(0.0032)
+left = erf.NormalCdf(-delta, 0.0, sigma)
+right = 1 - erf.NormalCdf(delta, 0.0, sigma)
+\end{verbatim}
+
+The sum of the left and right tails is the p-value, 0.168, which is
+pretty close to what we estimated by resampling, 0.166. 
+You can download the code I used in this section from
+\url{http://thinkstats2.com/hypothesis_analytic.py}
+\index{{\tt hypothesis\_analytic.py}}
+
+
+
+\section{Chi-squared test}
+
+
+\section{Discussion}
+
+  These methods
+have several advantages over analysis: 
+
+\begin{itemize}
+
+\item They are easier to explain and understand.  For example, one of
+  the most difficult topics in an introductory statistics class is
+  hypothesis testing.  Many students don't really understand what
+  p-values are.  I think the approach I presented in
+  Chapter~\ref{testing} -- simulating the null hypothesis and
+  computing test statistics -- makes the fundamental idea clearer.
+
+\item They are robust and versatile.  Analytic methods are often based
+  on assumptions that might not hold in practice.  Computational
+  methods require fewer assumptions, and can be adapted and extended
+  more easily.
+
+\item They are debuggable.  Analytic methods are often like a black
+  box: you plug in numbers and they spit out results.  But it's easy
+  to make subtle errors, hard to be confident that the results are
+  right, and hard to find the problem if they are not.  Computational
+  methods lend themselves to incremental development and testing,
+  which fosters confidence in the results.
+
+\end{itemize}
+
+But there is one drawback: computational methods can be slow.
+In general, I recommend the following process:
+
+\begin{enumerate}
+
+\item Use computational methods during exploration.  When you get to a
+  satisfactory answer, if the run time is acceptable, stop.
+
+\item If run time is not acceptable, look for opportunities to
+  optimize.  Using analytic methods is one of several methods of
+  optimization.
+
+\item If replacing a computational module with an analytic module is
+  appropriate, use the computational model to establish regression
+  tests, which provide mutual validation between the computational and
+  analytic results.
+
+\end{enumerate}
+
+
+
+
 
 \section{Exercises}
 
@@ -10713,7 +10961,7 @@ that make their mean and variance similar.
 
 Generate random numbers from these distributions and compute the
 distribution of their sums.  Use the tests from
-Chapter~\ref{analytic} to see if the sum can be modeled by an
+Chapter~\ref{modeling} to see if the sum can be modeled by an
 analytic distribution.
 
 \end{exercise}
@@ -11042,93 +11290,6 @@ obligated to investigate.  According to their web page:
 
 
 
-\section{Efficient resampling}
-\index{resampling}
-
-Anyone reading this book who has prior training in statistics probably
-laughed when they saw Figure~\ref{length_deltas_cdf}, because I used a
-lot of computer power to simulate something I could have figured out
-analytically.
-\index{analysis}
-\index{pregnancy length}
-\index{length!pregnancy}
-
-Obviously mathematical analysis is not the focus of this book.  I am
-willing to use computers to do things the ``dumb'' way, because I
-think it is easier for beginners to understand simulations, and easier
-to demonstrate that they are correct.  So as long as the simulations
-don't take too long to run, I don't feel guilty for skipping the
-analysis.
-
-However, there are times when a little analysis can save a lot of
-computing, and Figure~\ref{length_deltas_cdf} is one of those times.
-\index{mean, difference in}
-
-Remember that we were testing the observed difference in the mean between
-pregnancy lengths for $n = 4413$ first babies and $m = 4735$ others.  We formed
-the pooled distribution for all babies, drew samples with sizes $n$ and
-$m$, and computed the difference in sample means.
-\index{sample mean}
-
-Instead, we could directly compute the distribution of the difference
-in sample means.  To get started, let's think about what a sample mean
-is: we draw $n$ samples from a distribution, add them up, and
-divide by n.  If the distribution has mean $\mu$ and variance
-$\sigma^2$, then by the Central Limit Theorem, we know that the sum of
-the samples is $\normal (n \mu, n \sigma^2)$.
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-To figure out the distribution of the sample means, we have to invoke
-one of the properties of the normal distribution: if X~is
-$\normal (\mu, \sigma^2)$,
-
-\[ aX~+~b~\sim~\normal(a \mu~+~b, a^{2} \sigma^2)\]
-
-When we divide by n, $a = 1/n$ and $b = 0$, so
-%
-\[ X/n~\sim~\normal(\mu /n, \sigma^2/ n^{2}) \]
-%
-So the distribution of the sample mean is $\normal (\mu, \sigma^2/n)$.
-
-To get the distribution of the difference between two sample means,
-we invoke another property of the normal distribution: if $X_{1}$ is
-$\normal (\mu_{1}, \sigma_{1}^{2})$ and $X_{2}$ is
-$\normal (\mu_{2}, \sigma_{2}^{2})$,
-%
-\[ aX_1 + bX_2 \sim \normal(a\mu_1 + b\mu_2, 
-                                 a^2\sigma_1^2 + b^2\sigma_2^2) \]
-%
-So as a special case:
-%
-\[ X_1 - X_2 \sim \normal(\mu_1 - \mu_2, 
-                               \sigma_1^2 + \sigma_2^2) \]
-%
-Putting it all together, we conclude that the sample in
-Figure~\ref{length_deltas_cdf} is drawn from 
-$\normal (0, f \sigma^2)$, where $f = 1/n~+~1/m$.  Plugging in
-n = 4413 and m = 4735, we expect the difference of sample means to be
-$\normal (0, 0.0032)$.
-\index{p-value}
-
-We can use {\tt erf.NormalCdf} to compute the p-value of the observed 
-difference in the means:
-%
-\begin{verbatim}
-delta = 0.078
-sigma = math.sqrt(0.0032)
-left = erf.NormalCdf(-delta, 0.0, sigma)
-right = 1 - erf.NormalCdf(delta, 0.0, sigma)
-\end{verbatim}
-
-The sum of the left and right tails is the p-value, 0.168, which is
-pretty close to what we estimated by resampling, 0.166. 
-You can download the code I used in this section from
-\url{http://thinkstats2.com/hypothesis_analytic.py}
-\index{{\tt hypothesis\_analytic.py}}
-
 \section{Significance}
 
 In the previous exercise, you compared the gestation period for first
@@ -11298,4 +11459,79 @@ If all we want is a single, best-guess prediction, that's all
 we need.  But for most purposes it is important to quantify error.
 In other words, we want to know how accurate the prediction is likely
 to be.
+
+\section{Random Variables}
+\index{random variable} \index{variable!random}
+
+A {\bf random variable} represents a process that generates a random
+number.  Random variables are usually written with a capital letter,
+like $X$.  You can think of a random variable as a random number
+generator.
+\index{cumulative distribution function}
+\index{CDF}
+
+For example, here is a definition for a class that represents
+random variables:
+%
+\begin{verbatim}
+class RandomVariable(object):
+    """Parent class for all random variables."""
+\end{verbatim}
+
+And here is a random variable with an exponential distribution:
+\index{exponential distribution}
+\index{distribution!exponential}
+%
+\begin{verbatim}
+class Exponential(RandomVariable):
+    def __init__(self, lam):
+        self.lam = lam
+
+    def Generate(self):
+        return random.expovariate(self.lam)
+\end{verbatim}
+
+The \verb"__init__" method takes the parameter, $\lambda$, and stores
+it as an attribute.  The {\tt Generate} method returns a random value
+from the exponential distribution with that parameter.  \index{init
+  method} \index{method!init}
+
+Each time you invoke {\tt Generate}, you get a different value.  The
+value you get is called a {\bf random variate}, which is why many
+function names in the {\tt random} module include the word ``variate.''
+\index{random variate}
+\index{variate!random}
+
+If I were just generating exponential variates, I would not bother to
+define a new class; I would use {\tt random.expovariate}.  But for
+other distributions it might be useful to use RandomVariable objects.
+For example, the Erlang distribution is an analytic distribution with
+parameters $\lambda$ and $k$ (see
+\url{http://wikipedia.org/wiki/Erlang_distribution}).
+\index{Erlang distribution}
+\index{distribution!Erlang}
+
+One way to generate values from an Erlang distribution is to add
+$k$ values from an exponential distribution with the same $\lambda$.
+Here's an implementation:
+%
+\begin{verbatim}
+class Erlang(RandomVariable):
+    def __init__(self, lam, k):
+        self.lam = lam
+        self.k = k
+        self.expo = Exponential(lam)
+
+    def Generate(self):
+        total = 0
+        for i in range(self.k):
+            total += self.expo.Generate()
+        return total
+\end{verbatim}
+
+The \verb"__init__" method creates an Exponential object with the
+given parameter; then {\tt Generate} uses it.  In general,
+\verb"__init__" can take any set of parameters and the {\tt
+  Generate} function can implement any random process.
+
 

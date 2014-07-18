@@ -77,12 +77,12 @@ def MakePdfExample():
     std = math.sqrt(var)
 
     # make a PDF and compute a density, FWIW
-    pdf = thinkstats2.GaussianPdf(mean, std)
+    pdf = thinkstats2.NormalPdf(mean, std)
     print(pdf.Density(mean + std))
 
     # make a PMF and plot it
     thinkplot.PrePlot(2)
-    thinkplot.Pdf(pdf, label='Gaussian')
+    thinkplot.Pdf(pdf, label='normal')
 
     # make a sample, make an estimated PDF, and plot it
     sample = [random.gauss(mean, std) for i in range(100)]

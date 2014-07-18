@@ -243,9 +243,9 @@ class Test(unittest.TestCase):
         for x in pmf.Values():
             self.assertAlmostEqual(pmf[x], pmf2[x])
 
-    def testGaussianPdf(self):
-        pdf = thinkstats2.GaussianPdf(mu=1, sigma=2)
-        self.assertEqual(len(str(pdf)), 31)
+    def testNormalPdf(self):
+        pdf = thinkstats2.NormalPdf(mu=1, sigma=2)
+        self.assertEqual(len(str(pdf)), 29)
         self.assertAlmostEqual(pdf.Density(3), 0.12098536226)
 
         pmf = pdf.MakePmf()
@@ -285,18 +285,23 @@ class Test(unittest.TestCase):
         pmf = pdf.MakePmf(low=0, high=6)
         self.assertAlmostEqual(pmf[0.0], 0.0050742294053582942)
         
-    def testEvalGaussianCdf(self):
-        p = thinkstats2.EvalGaussianCdf(0)
+    def testEvalNormalCdf(self):
+        p = thinkstats2.EvalNormalCdf(0)
         self.assertAlmostEqual(p, 0.5)
 
-        p = thinkstats2.EvalGaussianCdf(2, 2, 3)
+        p = thinkstats2.EvalNormalCdf(2, 2, 3)
         self.assertAlmostEqual(p, 0.5)
 
-        p = thinkstats2.EvalGaussianCdf(1000, 0, 1)
+        p = thinkstats2.EvalNormalCdf(1000, 0, 1)
         self.assertAlmostEqual(p, 1.0)
 
-        p = thinkstats2.EvalGaussianCdf(-1000, 0, 1)
+        p = thinkstats2.EvalNormalCdf(-1000, 0, 1)
         self.assertAlmostEqual(p, 0.0)
+
+        x = thinkstats2.EvalNormalCdfInverse(0.95, 0, 1)
+        self.assertAlmostEqual(x, 1.64485362695)
+        x = thinkstats2.EvalNormalCdfInverse(0.05, 0, 1)
+        self.assertAlmostEqual(x, -1.64485362695)
 
     def testCov(self):
         t = [0, 4, 7, 3, 8, 1, 6, 2, 9, 5]

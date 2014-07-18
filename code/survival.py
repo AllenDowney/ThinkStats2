@@ -27,6 +27,8 @@ Outcome codes from http://www.icpsr.umich.edu/nsfg6/Controller?displayPage=label
 6	CURRENT PREGNANCY	352
 """
 
+FORMATS = ['pdf', 'eps', 'png']
+
 class SurvivalFunction(object):
     """Represents a survival function."""
 
@@ -376,7 +378,8 @@ def ResampleSurvival(resp, iters=101):
                    xlabel='age (years)',
                    ylabel='prob unmarried',
                    xlim=[12, 46],
-                   ylim=[0, 1])
+                   ylim=[0, 1],
+                   formats=FORMATS)
 
 
 def EstimateSurvival(resp):
@@ -411,7 +414,8 @@ def PlotMarriageData(resp):
     thinkplot.Save(root='survival2',
                    xlabel='age (years)',
                    ylabel='prob unmarried',
-                   ylim=[0, 1])
+                   ylim=[0, 1],
+                   formats=FORMATS)
     return sf
 
 
@@ -427,7 +431,8 @@ def PlotPregnancyData(preg):
 
     PlotSurvival(complete)
     thinkplot.Save(root='survival1',
-                   xlabel='t (weeks)')
+                   xlabel='t (weeks)',
+                   formats=FORMATS)
 
     hf = EstimateHazardFunction(complete, ongoing)
     sf = hf.MakeSurvival()
@@ -457,7 +462,8 @@ def PlotRemainingLifetime(sf1, sf2):
                      xlabel='age (years)',
                      ylabel='median remaining years')
 
-    thinkplot.Save(root='survival6')
+    thinkplot.Save(root='survival6',
+                   formats=FORMATS)
 
 
 def ReadFemResp(dct_file='2002FemResp.dct',
@@ -573,7 +579,6 @@ def main():
     ResampleSurvival(resp6)
 
     PlotRemainingLifetime(sf1, sf2)
-    return
 
     # read Cycles 5 and 7
     resp5 = ReadFemResp1995()
@@ -586,7 +591,8 @@ def main():
                    xlabel='age (years)',
                    ylabel='prob unmarried',
                    xlim=[13, 45],
-                   ylim=[0, 1])
+                   ylim=[0, 1],
+                   formats=FORMATS)
 
     # plot resampled survival functions by decade, with predictions
     PlotResampledByDecade(resps, predict_flag=True, omit=[5])
@@ -594,7 +600,8 @@ def main():
                    xlabel='age (years)',
                    ylabel='prob unmarried',
                    xlim=[13, 45],
-                   ylim=[0, 1])
+                   ylim=[0, 1],
+                   formats=FORMATS)
 
 
 if __name__ == '__main__':
