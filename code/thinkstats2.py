@@ -1755,7 +1755,7 @@ def EvalLognormalCdf(x, mu=0, sigma=1):
     return scipy.stats.lognorm.cdf(x, loc=mu, scale=sigma)
 
 
-def RenderExpoCdf(lam, low, high, n=50):
+def RenderExpoCdf(lam, low, high, n=101):
     """Generates sequences of xs and ps for an exponential CDF.
 
     lam: parameter
@@ -1771,7 +1771,7 @@ def RenderExpoCdf(lam, low, high, n=50):
     return xs, ps
 
 
-def RenderNormalCdf(mu, sigma, low, high, n=50):
+def RenderNormalCdf(mu, sigma, low, high, n=101):
     """Generates sequences of xs and ps for a Normal CDF.
 
     mu: parameter
@@ -2032,7 +2032,7 @@ def NormalProbabilityPlot(sample, label='', fit_color='0.8'):
     """Makes a normal probability plot with a fitted line.
 
     sample: sequence of numbers
-    label: string
+    label: string label for the data
     fit_color: color string for the fitted line
     """
     xs, ys = NormalProbability(sample)
@@ -2355,7 +2355,6 @@ def CorrelatedNormalGenerator(mu, sigma, rho):
     """
     for x in CorrelatedGenerator(rho):
         yield x * sigma + mu
-
 
 
 def RawMoment(xs, k):

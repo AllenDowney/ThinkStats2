@@ -10386,7 +10386,7 @@ birth, in a particular interval of time.
 
 This book has focused on computational methods like simulation and
 resampling, but some of the problems we solved also have
-analytic solutions, which can be much faster.
+analytic solutions that can be much faster.
 
 I present some of these methods in this chapter, and explain
 how they work.  At the end of the chapter, I make some suggestions
@@ -10408,35 +10408,43 @@ As an example, let's review the problem from Section~\ref{gorilla}:
 
 \begin{quotation}
 \noindent Suppose you are a scientist studying gorillas in a wildlife
-preserve.  Having weighed 9 gorillas, you find $\xbar=90$ kg and
+preserve.  Having weighed 9 gorillas, you find sample mean $\xbar=90$ kg and
 sample standard deviation, $S=7.5$ kg.  If you use $\xbar$ to estimate
 the population mean, what is the standard error of the estimate?
 \end{quotation}
 
-To answer that question, we are going to compute the sampling
+To answer that question, we'll compute the sampling
 distribution of $\xbar$.  In Section~\ref{gorilla} we approximated
 the sampling distribution by simulating the experiment (weighing
 9 gorillas), computing $\xbar$ for each simulated experiment, and
 accumulating the distribution of estimates.
 
-The result is an
-approximation of the sampling distribution.  The standard deviation
-of the sampling distribution is the standard error, which turned
-out to be about 2.5 kg.  The interval between the 5th and 95th percentile
-of the sampling distribution is a 90\% confidence interval.
+The result is an approximation of the sampling distribution.  We can use
+the sampling distribution to compute standard errors and confidence
+intervals:
 
-Now we'll do the same calculation analytically.  To do that, we
-can take advantage of the fact that the weights of adult female
-gorillas are roughly normally distributed.  Normal distributions
-have two properties that make them amenable for analysis:
-they are
-closed under linear transformation and convolution.  To explain what
-that means, I will need some notation.
-\index{analysis}
-\index{random variable}
+\begin{enumerate}
+
+\item The standard deviation of the sampling distribution is the
+  standard error of the estimate; in the example, it is about
+  2.5 kg.
+
+\item The interval between the 5th and 95th percentile of the sampling
+  distribution is a 90\% confidence interval.  If we run the
+  experiment many times, we expect the estimate to fall in this
+  interval 90\% of the time.
+
+\end{enumerate}
+
+Now we'll do the same calculation analytically.  To do that, we can
+take advantage of the fact that the weights of adult female gorillas
+are roughly normally distributed.  Normal distributions have two
+properties that make them amenable for analysis: they are closed under
+linear transformation and addition.  To explain what that means, I
+need some notation.  \index{analysis} \index{random variable}
 \index{variable!random}
 
-If the distribution of a quantity, X, is
+If the distribution of a quantity, $X$, is
 normal with parameters $\mu$ and $\sigma$, you can write
 %
 \[ X \sim \normal (\mu, \sigma^{2})\]
@@ -10466,7 +10474,10 @@ If $Z = X + Y$ and
 $X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
 $Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$ then
 %
-\[ Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \]
+\begin{equation}
+\label{eqn3}
+Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2)
+\end{equation}
 %
 The other distributions we have looked at do not have these
 properties.
@@ -10483,13 +10494,14 @@ and in general if we draw $n$ values of $X$ and add them up, we have
 \label{eqn2}
 \end{equation}
 
+
 \section{Sampling distributions}
 
 Now we have everything we need to compute the sampling distribution
 of $\xbar$.  If we assume, temporarily, that $\xbar$ is an accurate
 estimate of the population mean, $\mu$, and $S^2$ is an accurate
 estimate of the population variance, $\sigma^2$, then the
-distribution of weights is
+distribution of gorilla weights is
 %
 \[ X \sim \normal (\mu, \sigma^2)\]
 %
@@ -10511,10 +10523,10 @@ The mean of $Z$ is $\mu$, which shows that $\xbar$ is an unbiased
 estimate of $\mu$.  The variance of the sampling distribution
 is $\sigma^2 / n$.
 
-And the standard deviation of the sampling distribution, which is
-the standard error of the estimate, is $\sigma / \sqrt{n}$.  In
-the example, $\sigma$ is 7.5 kg and $n$ is 9, so the standard error is
-2.5 kg.  That result is consistent with what we computed by simulation,
+And the standard deviation of the sampling distribution, which is the
+standard error of the estimate, is $\sigma / \sqrt{n}$.  In the
+example, $\sigma$ is 7.5 kg and $n$ is 9, so the standard error is 2.5
+kg.  That result is consistent with what we estimated by simulation,
 but much faster to compute!
 
 We can also use the sampling distribution to compute confidence
@@ -10523,11 +10535,11 @@ between the 5th and 95th percentiles of $Z$.  Since $Z$ is normally
 distributed, we can compute percentiles by evaluating the inverse
 CDF.
 
-There is no closed form for the CDF of the normal distribution,
-or its inverse, but there are fast numerical methods, and they
+There is no closed form for the CDF of the normal distribution
+or its inverse, but there are fast numerical methods and they
 are implemented in SciPy, as we saw in Section~\ref{normal}.
 {\tt thinkstats2} provides a wrapper function that makes the
-function a little easier to use:
+SciPy function a little easier to use:
 
 \begin{verbatim}
 def EvalNormalCdfInverse(p, mu=0, sigma=1):
@@ -10537,7 +10549,7 @@ def EvalNormalCdfInverse(p, mu=0, sigma=1):
 Given a probability, {\tt p}, it returns the corresponding
 percentile from a normal distribution with parameters {\tt mu}
 and {\tt sigma}.  For the sampling distribution of $\xbar$,
-we can compute the 5th and 95th percentiles like this:
+we compute the 5th and 95th percentiles like this:
 
 \begin{verbatim}
 >>> thinkstats2.EvalNormalCdfInverse(0.05, mu=90, sigma=2.5)
@@ -10551,10 +10563,75 @@ So if we run the experiment many times, we expect the
 estimate, $\xbar$, to fall in the range $(85.9, 94.1)$ about
 90\% of the time.
 
-Lot of things in the real world are normally distributed, at least
-approximately.  So the methods in this section have many applications.
-That would be good enough, but with the Central Limit Theorem, things
-are even better!
+
+\section{Representing normal distributions}
+
+To make these calculations easier, I have defined a class called
+{\tt Normal} that represents a normal distribution and encodes
+the equations in the previous sections.  Here's what it looks
+like:
+
+\begin{verbatim}
+class Normal(object):
+
+    def __init__(self, mu, sigma2):
+        self.mu = mu
+        self.sigma2 = sigma2
+
+    def __str__(self):
+        return 'N(%g, %g)' % (self.mu, self.sigma2)
+\end{verbatim}
+
+So we can instantiate a Normal that represents the distribution
+of gorilla weights:
+
+\begin{verbatim}
+>>> dist = Normal(90, 7.5**2)
+>>> dist
+N(90, 56.25)
+\end{verbatim}
+
+{\tt Normal} provides {\tt Sum}, which takes a sample size, {\tt n}
+and returns the distribution of the sum of {\tt n} values, using
+Equation~\ref{eqn2}:
+
+\begin{verbatim}
+    def Sum(self, n):
+        return Normal(n * self.mu, n * self.sigma2)
+\end{verbatim}
+
+Normal also knows how to multiply and divide by a scalar, using
+Equation~\ref{eqn1}:
+
+\begin{verbatim}
+    def __mul__(self, factor):
+        return Normal(factor * self.mu, factor**2 * self.sigma2)
+
+    def __div__(self, divisor):
+        return 1 / divisor * self
+\end{verbatim}
+
+So we can compute the sampling distribution of the mean with sample
+size 9:
+
+\begin{verbatim}
+>>> dist_xbar = dist.Sum(9) / 9
+>>> dist_xbar.sigma
+2.5
+\end{verbatim}
+
+The standard deviation of the sampling distribution is 2.5 kg, as we
+saw in the previous section.  Finally, Normal provides {\tt
+  Percentile}, which we can use to compute a confidence interval:
+
+\begin{verbatim}
+>>> dist_xbar.Percentile(5), dist_xbar.Percentile(95)
+85.888 94.113
+\end{verbatim}
+
+And that's the same answer we got before.  We'll use the Normal
+class again later, but before we go on, we need one more bit of
+analysis.
 
 
 \section{Central limit theorem}
@@ -10563,30 +10640,30 @@ are even better!
 
 As we saw in the previous sections, if we add values drawn from normal
 distributions, the distribution of the sum is normal.
+Most other distributions don't have this property;
+if we add values drawn from other distributions, the sum does not
+generally have an analytic distribution.
   \index{sum}
 \index{normal distribution} \index{distribution!normal}
 \index{Gaussian distribution} \index{distribution!Gaussian}
 
-Most other distributions don't have this property;
-if we add values drawn from other distributions, the sum does not
-generally have one of the analytic distributions we have seen.
-
-But it turns out that if we add up a large number of values from
+But if we add up {\tt n} values from
 almost any distribution, the distribution of the sum converges to
-normal.
+normal as {\tt n} increases.
 
 More specifically, if the distribution of the values has mean and
 standard deviation $\mu$ and $\sigma$, the distribution of the sum is
 approximately $\normal(n \mu, n \sigma^2)$.
 
-This is called the {\bf Central Limit Theorem} (CLT).  It is one of the
+This result is the {\bf Central Limit Theorem} (CLT).  It is one of the
 most useful tools for statistical analysis, but it comes with
 caveats:
 
 \begin{itemize}
 
 \item The values have to be drawn independently.  If they are
-correlated, the CLT doesn't apply.
+correlated, the CLT doesn't apply (although this is seldom a problem
+in practice).
 \index{independent}
 
 \item The values have to come from the same distribution (although
@@ -10594,7 +10671,7 @@ correlated, the CLT doesn't apply.
 \index{identical}
 
 \item The values have to be drawn
-  from a distribution with finite mean and variance, so most Pareto
+  from a distribution with finite mean and variance.  So most Pareto
   distributions are out.
 \index{mean}
 \index{variance}
@@ -10603,18 +10680,18 @@ correlated, the CLT doesn't apply.
 \index{exponential distribution}
 \index{distribution!exponential}
 
-\item The number of values you need before you see convergence depends
+\item The rate of convergence depends
   on the skewness of the distribution.  Sums from an exponential
-  distribution converge for small sample sizes.  Sums from a
+  distribution converge for small {\tt n}.  Sums from a
   lognormal distribution require larger sizes.
 \index{lognormal distribution}
 \index{distribution!lognormal}
 
 \end{itemize}
 
-The Central Limit Theorem explains, at least in part, the prevalence
+The Central Limit Theorem explains the prevalence
 of normal distributions in the natural world.  Many characteristics of
-animals and other life forms are affected by genetic
+living things are affected by genetic
 and environmental factors whose effect is additive.  The characteristics
 we measure are the sum of a large number of small effects, so their
 distribution tends to be normal.
@@ -10623,240 +10700,247 @@ distribution tends to be normal.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-To test the Central Limit Theorem, I will compute distributions
-of sums.  In general, there are three ways to compute the distribution
-of a sum:
 
-\begin{itemize}
+\section{Testing CLT}
 
-\item We can draw random samples from the distributions, add them
-up, and accumulate the distribution of the sums, or
-
-\item Given two Pmfs, we can enumerate all pairs of values and
-compute their sums and probabilities,
-
-\item We can {\bf convolve} the two distributions.
-
-\end{itemize}
-
-I present these methods in the following sections.
-
-
-\section{Random samples}
-
-Suppose we are given a Cdf of a distribution that is not necessarily
-normal.  We would like to know the distribution of the sum of a sample
-with size {\tt n}.  The simplest way to compute it is to draw random
-samples and add them up:
+To see how the Central Limit Theorem works, and when it doesn't,
+let's try some experiments.  First, we'll try
+an exponential distribution:
 
 \begin{verbatim}
+def MakeExpoSamples(beta=2.0, iters=1000):
+    samples = []
+    for n in [1, 10, 100]:
+        sample = [np.sum(np.random.exponential(beta, n))
+                  for _ in range(iters)]
+        samples.append((n, sample))
+    return samples
 \end{verbatim}
 
-Distribution of sum of pregnancy lengths
+{\tt MakeExpoSamples} generates samples of sums of exponential values
+(I'll use ``exponential values'' as shorthand for ``values from an
+exponential distribution'').
+{\tt beta} is the parameter of the distribution; {\tt iters}
+is the number of sums to generate.
 
+To explain this function, I'll start from the inside and work my way
+out.  Each time we call {\tt np.random.exponential}, we get a sequence
+of {\tt n} exponential values and compute its sum.  {\tt sample}
+is a list of these sums, with length {\tt iters}.
 
+It is easy to get {\tt n} and {\tt iters} confused:  {\tt n} is the
+number of terms in each sum;  {\tt iters} is the number of sums we
+compute in order to characterize the distribution of sums.
 
-\section{Adding Pmfs}
-\index{Pmf}
+\begin{figure}
+% normal.py
+\centerline{\includegraphics[height=3in]{figs/normal1.pdf}}
+\caption{Distributions of sums of exponential values (top row) and
+lognormal values (bottom row).}
+\label{normal1}
+\end{figure}
 
-Suppose we have two Pmfs that represent the distributions of
-two quantities.  To compute the distribution of the sum,
+The return value is a list of {\tt (n, sample)} pairs.  For
+each pair, we make a normal probability plot:
 
-Differences of sums of pregnancy lengths
-
-
-
-
-\section{Convolution}
-
-Example?
-
-
-
-
-random variables, $X$ and $Y$, represented
-by RandomVariable objects.
-How can we compute the distribution of the sum $Z = X + Y$?
-\index{random variable}
-\index{variable!random}
-\index{sum}
-
-One option is to write a RandomVariable object that generates
-the sum:
-%
 \begin{verbatim}
+def NormalPlotSamples(samples, plot=1, ylabel=''):
+    for n, sample in samples:
+        thinkplot.SubPlot(plot)
+        thinkstats2.NormalProbabilityPlot(sample)
 
+        thinkplot.Config(title='n=%d' % n, ylabel=ylabel)
+        plot += 1
 \end{verbatim}
 
-Given any RandomVariables, $X$ and $Y$, we can create a Sum
-object that represents $Z$.  Then we can use a sample from $Z$ to
-approximate $\CDF_{Z}$.
+{\tt NormalPlotSamples} takes the list of pairs from {\tt
+  MakeExpoSamples} and generates a row of normal probability plots.
 
-This approach is simple and versatile, but not very efficient; we
-have to generate a large sample to estimate $\CDF_{Z}$ accurately, and
-even then it is not exact.
+Figure~\ref{normal1} (top row) shows
+the results.  With {\tt n=1}, the distribution of the sum is still
+exponential, so the normal probability plot is not a straight line.
+But with {\tt n=10} the distribution of the sum is approximately
+normal, and with {\tt n=100} it is all but indistinguishable from
+normal.
 
+Figure~\ref{normal1} (bottom row) shows similar results for a
+lognormal distribution.  Lognormal distributions are generally more
+skewed than exponential distributions, so the distribution of sums
+takes longer to converge.  With {\tt n=10} the normal
+probability plot is nowhere near straight, but with {\tt n=100}
+it is approximately normal.
 
+\begin{figure}
+% normal.py
+\centerline{\includegraphics[height=3in]{figs/normal2.pdf}}
+\caption{Distributions of sums of Pareto values (top row) and
+correlated exponential values (bottom row).}
+\label{normal2}
+\end{figure}
 
-\begin{exercise}
+Pareto distributions are even more skewed than lognormal.  Depending
+on the parameters, many Pareto distributions do not have finite mean
+and variance.  As a result, the Central Limit Theorem does not apply.
+Figure~\ref{normal2} (top row) shows distributions of sums of
+Pareto values.  Even with {\tt n=100} the normal probability plot
+is far from straight.
 
-%TODO: do this as an example
-If you are given Pmf objects, you can compute the distribution of
-the sum by enumerating all pairs of values:
-\index{Pmf object}
-%
+I also mentioned that CLT does not apply if the values are correlated.
+To test that, I'll generate correlated values from an exponential
+distribution.  The algorithm for generating correlated values is
+(1) generate correlated normal values, (2) use the normal CDF
+to transform the values to uniform, and (3) use the inverse
+exponential CDF to transform the uniform values to exponential.
+
+{\tt GenerateCorrelated} returns an iterator of {\tt n} normal values
+with serial correlation {\tt rho}:
+
 \begin{verbatim}
-for x in pmf_x.Values():
-    for y in pmf_y.Values():
-        z = x + y
+def GenerateCorrelated(rho, n):
+    x = random.gauss(0, 1)
+    yield x
+
+    sigma = math.sqrt(1 - rho**2)
+    for _ in range(n-1):
+        x = random.gauss(x * rho, sigma)
+        yield x
 \end{verbatim}
 
-Write a function that takes $PMF_{X}$ and
-$PMF_{Y}$ and returns a new Pmf that represents the distribution of
-the sum $Z = X + Y$.
+The first value is a standard normal value.  Each subsequent value
+depends on it predecessor: if the previous value is $x$, the mean of
+the next value is $x$, with variance {\tt 1-rho**2}.  Note that {\tt
+  random.gauss} takes the standard deviation as the second argument,
+not variance.
+  
+{\tt GenerateExpoCorrelated}
+takes the resulting sequence and transforms it to exponential:
 
-Write a similar function that computes the PMF of $Z = max(X, Y)$.
-
-\end{exercise}
-
-
-
-
-
-
-
-
-\begin{exercise}
-If I draw a sample, $x_{1} .. x_{n}$, independently from a
-distribution with finite mean $\mu$ and variance $\sigma^2$, what is
-the distribution of the sample mean:
-%
-\[ \xbar = \frac{1}{n} \sum x_i \]
-%
-As $n$ increases, what happens to the variance of the sample mean?
-Hint: review Section~\ref{why_normal}.
-
-\end{exercise}
-
-\begin{exercise}
-
-%TODO: do this one as an example
-
-Choose a distribution (one of exponential, lognormal or Pareto) and
-choose values for the parameter(s).  Generate samples with sizes
-2, 4, 8, etc., and compute the distribution of their sums.  Use
-a normal probability plot to see if the distribution is approximately
-normal.  How many terms do you have to add to see convergence?
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{convergence}
-
-\end{exercise}
-
-
-\begin{exercise}
-
-% TODO: do this one as an example
-Instead of the distribution of sums, compute the distribution of
-products; what happens as the number of terms increases?
-Hint: look at the distribution of the log of the products.
-\index{logarithm}
-\index{product}
-
-\end{exercise}
-
-
-\section{Difference in means test}
-\index{resampling}
-
-Anyone reading this book who has prior training in statistics probably
-laughed when they saw Figure~\ref{length_deltas_cdf}, because I used a
-lot of computer power to simulate something I could have figured out
-analytically.
-\index{analysis}
-\index{pregnancy length}
-\index{length!pregnancy}
-
-Obviously mathematical analysis is not the focus of this book.  I am
-willing to use computers to do things the ``dumb'' way, because I
-think it is easier for beginners to understand simulations, and easier
-to demonstrate that they are correct.  So as long as the simulations
-don't take too long to run, I don't feel guilty for skipping the
-analysis.
-
-However, there are times when a little analysis can save a lot of
-computing, and Figure~\ref{length_deltas_cdf} is one of those times.
-\index{mean, difference in}
-
-Remember that we were testing the observed difference in the mean between
-pregnancy lengths for $n = 4413$ first babies and $m = 4735$ others.  We formed
-the pooled distribution for all babies, drew samples with sizes $n$ and
-$m$, and computed the difference in sample means.
-\index{sample mean}
-
-Instead, we could directly compute the distribution of the difference
-in sample means.  To get started, let's think about what a sample mean
-is: we draw $n$ samples from a distribution, add them up, and
-divide by n.  If the distribution has mean $\mu$ and variance
-$\sigma^2$, then by the Central Limit Theorem, we know that the sum of
-the samples is $\normal (n \mu, n \sigma^2)$.
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
-
-To figure out the distribution of the sample means, we have to invoke
-one of the properties of the normal distribution: if X~is
-$\normal (\mu, \sigma^2)$,
-
-\[ aX~+~b~\sim~\normal(a \mu~+~b, a^{2} \sigma^2)\]
-
-When we divide by n, $a = 1/n$ and $b = 0$, so
-%
-\[ X/n~\sim~\normal(\mu /n, \sigma^2/ n^{2}) \]
-%
-So the distribution of the sample mean is $\normal (\mu, \sigma^2/n)$.
-
-To get the distribution of the difference between two sample means,
-we invoke another property of the normal distribution: if $X_{1}$ is
-$\normal (\mu_{1}, \sigma_{1}^{2})$ and $X_{2}$ is
-$\normal (\mu_{2}, \sigma_{2}^{2})$,
-%
-\[ aX_1 + bX_2 \sim \normal(a\mu_1 + b\mu_2, 
-                                 a^2\sigma_1^2 + b^2\sigma_2^2) \]
-%
-So as a special case:
-%
-\[ X_1 - X_2 \sim \normal(\mu_1 - \mu_2, 
-                               \sigma_1^2 + \sigma_2^2) \]
-%
-Putting it all together, we conclude that the sample in
-Figure~\ref{length_deltas_cdf} is drawn from 
-$\normal (0, f \sigma^2)$, where $f = 1/n~+~1/m$.  Plugging in
-n = 4413 and m = 4735, we expect the difference of sample means to be
-$\normal (0, 0.0032)$.
-\index{p-value}
-
-We can use {\tt erf.NormalCdf} to compute the p-value of the observed 
-difference in the means:
-%
 \begin{verbatim}
-delta = 0.078
-sigma = math.sqrt(0.0032)
-left = erf.NormalCdf(-delta, 0.0, sigma)
-right = 1 - erf.NormalCdf(delta, 0.0, sigma)
+def GenerateExpoCorrelated(rho, n):
+    normal = list(GenerateCorrelated(rho, n))
+    uniform = scipy.stats.norm.cdf(normal)
+    expo = scipy.stats.expon.ppf(uniform)
+    return expo
 \end{verbatim}
 
-The sum of the left and right tails is the p-value, 0.168, which is
-pretty close to what we estimated by resampling, 0.166. 
-You can download the code I used in this section from
-\url{http://thinkstats2.com/hypothesis_analytic.py}
-\index{{\tt hypothesis\_analytic.py}}
+{\tt normal} is a list of correlated normal values.  {\tt uniform}
+is a sequence of uniform values between 0 and 1.  {\tt expo} is
+a correlated sequence of exponential values.
+{\tt ppf} stands for ``percent point function,'' which is another
+name for the inverse CDF.
 
+Figure~\ref{normal2} (bottom row) shows distributions of sums of
+correlated exponential values with {\tt rho=0.9}.  The correlation
+slows the rate of convergence; nevertheless, with {\tt n=100} the
+normal probability plot is nearly straight.  So even though CLT
+does not strictly apply when the values are correlated, moderate
+correlations are seldom a problem in practice.
+
+These experiments are meant to show how the Central Limit Theorem
+works, and what happens when it doesn't.  Now let's see how we can
+use it.
+
+
+\section{Applying CLT}
+
+To see why the Central Limit Theorem is useful, let's get back
+to the example in Section~\ref{testdiff}: testing the apparent
+difference in mean pregnancy length for first babies and others.
+As we've seen several times, the apparent difference is about
+0.078 weeks:
+
+\begin{verbatim}
+>>> live, firsts, others = first.MakeFrames()
+>>> delta = firsts.prglngth.mean() - others.prglngth.mean()
+0.078
+\end{verbatim}
+
+Remember the logic of hypothesis testing: we compute a p-value, which
+is the probability of the observed difference under the null
+hypothesis; if it is small, we conclude that the observed difference
+is unlikely to be due to chance.
+
+In this example, the null hypothesis is that the distribution of
+pregnancy lengths is the same for first babies and others.  
+So we can compute the sampling distribution of the observed means
+like this:
+
+\begin{verbatim}
+    dist1 = SamplingDistMean(live.prglngth, len(firsts))
+    dist2 = SamplingDistMean(live.prglngth, len(others))
+\end{verbatim}
+
+Both samples are drawn from the same distribution, which is the
+pool of all live births.  
+{\tt SamplingDistMean} takes this sequence of
+values and the sample size:
+
+\begin{verbatim}
+def SamplingDistMean(data, n):
+    mean, var = data.mean(), data.var()
+    dist = Normal(mean, var)
+    return dist.Sum(n) / n
+\end{verbatim}
+
+It returns the
+sampling distribution of the mean of {\tt n} values drawn from
+{\tt data}:
+
+{\tt mean} and {\tt var} are the sample mean and variance of
+{\tt data}.  We approximate the distribution of the data with
+a normal distribution, {\tt dist}.  In this example, remember
+that the data are not normally distributed, so this approximation
+is not very good.  
+
+But then we compute {\tt dist.Sum(n) / n}, which is the sampling
+distribution of the mean of {\tt n} values.  Even if the data are
+not normally distributed, the sampling distribution of the mean
+is, by the Central Limit Theorem.
+
+Next, we compute the sampling distribution of the difference
+in the means.  The {\tt Normal} class knows how to perform
+subtraction using Equation~\ref{eqn3}:
+
+\begin{verbatim}
+    def __sub__(self, other):
+        return Normal(self.mu - other.mu,
+                      self.sigma2 + other.sigma2)
+\end{verbatim}
+
+So we can compute the sampling distribution of the difference:
+
+\begin{verbatim}
+>>> dist = dist1 - dist2
+N(0, 0.0032)
+\end{verbatim}
+
+The mean is 0, since we expect two samples from the same distribution
+to have the same mean, on average.  The variance of the sampling
+distribution is 0.0032.
+
+We can use {\tt Prob} to compute the probability of a
+difference as large as {\tt delta} under the null hypothesis:
+
+\begin{verbatim}
+>>> 1 - dist.Prob(delta)
+0.084
+\end{verbatim}
+
+Which means that the p-value for a one-sided test is 0.84.  For
+a two-sided test we would also compute
+
+\begin{verbatim}
+>>> dist.Prob(-delta)
+0.084
+\end{verbatim}
+
+Which is the same because the normal distribution is symmetric.
+The sum of the tails is 0.168, which is consistent with the estimate
+in Section~\ref{testdiff}, 0.17.
+
+
+
+\section{Correlation test}
 
 
 \section{Chi-squared test}
@@ -10915,54 +10999,26 @@ In general, I recommend the following process:
 
 \section{Exercises}
 
-\begin{exercise}
-Write a definition for a class that represents a random variable
-with a Gumbel distribution (see \url{http://wikipedia.org/wiki/Gumbel_distribution}).
-\index{Gumbel distribution}
-\index{distribution!Gumbel}
 
+\begin{exercise}
+Find the confidence interval for the difference in means.
 \end{exercise}
 
 
 \begin{exercise}
-Suppose I draw two values from a distribution; what is the distribution
-of the larger value?  Write a RandomVariable class called {\tt Max}
-that generates values from $Z = max(X, Y)$.
-\index{max}
 
-As the number of values increases, the distribution of the maximum
-converges on one of the extreme value distributions; see
-\url{http://wikipedia.org/wiki/Gumbel_distribution}.
-\index{Gumbel distribution}
-\index{distribution!Gumbel}
+% TODO: do this one as an example
+Instead of the distribution of sums, compute the distribution of
+products; what happens as the number of terms increases?
+Hint: look at the distribution of the log of the products.
+\index{logarithm}
+\index{product}
 
 \end{exercise}
 
-\begin{exercise}
-If 
-$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
-$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$, what 
-is the distribution of Z = aX + bY?
 
-\end{exercise}
 
 \begin{exercise}
-Let's see what happens when we add values from
-other distributions.  Choose a pair of distributions (any two of
-exponential, normal, lognormal, and Pareto) and choose parameters
-that make their mean and variance similar.
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Pareto distribution}
-\index{distribution!Pareto}
-\index{lognormal distribution}
-\index{distribution!lognormal}
-\index{sum}
-
-Generate random numbers from these distributions and compute the
-distribution of their sums.  Use the tests from
-Chapter~\ref{modeling} to see if the sum can be modeled by an
-analytic distribution.
 
 \end{exercise}
 

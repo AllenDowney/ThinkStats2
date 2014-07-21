@@ -352,6 +352,7 @@ def main():
     ht = CorrelationPermute(data)
     p_value = ht.PValue()
     print('\nage weight correlation')
+    print('n=', len(live2))
     PrintTest(p_value, ht)
 
     # run the dice test
