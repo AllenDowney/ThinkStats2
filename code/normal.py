@@ -230,12 +230,23 @@ def MakeCorrelatedSamples(rho=0.9, iters=1000):
 
 
 def SamplingDistMean(data, n):
+    """Computes the sampling distribution of the mean.
+
+    data: sequence of values representing the population
+    n: sample size
+
+    returns: Normal object
+    """
     mean, var = data.mean(), data.var()
     dist = Normal(mean, var)
     return dist.Sum(n) / n
 
 
 def PlotPregLengths(live, firsts, others):
+    """Plots sampling distribution of difference in means.
+
+    live, firsts, others: DataFrames
+    """
     print('prglngth example')
     delta = firsts.prglngth.mean() - others.prglngth.mean()
     print(delta)
@@ -246,16 +257,7 @@ def PlotPregLengths(live, firsts, others):
     print('null hypothesis', dist)
     print(dist.Prob(-delta), 1 - dist.Prob(delta))
 
-    thinkplot.PrePlot(2)
     thinkplot.Plot(dist, label='null hypothesis')
-
-    dist1 = SamplingDistMean(firsts.prglngth, len(firsts))
-    dist2 = SamplingDistMean(others.prglngth, len(others))
-    dist = dist1 - dist2
-    print('estimated params', dist)
-    print(dist.Percentile(5), dist.Percentile(95))
-
-    thinkplot.Plot(dist, label='estimated params')
     thinkplot.Save(root='normal3',
                    xlabel='difference in means (weeks)',
                    ylabel='CDF')
@@ -274,6 +276,12 @@ class CorrelationPermute(hypothesis.CorrelationPermute):
 
 
 def ResampleCorrelations(live):
+    """Tests the correlation between birth weight and mother's age.
+
+    live: DataFrame for live births
+
+    returns: sample size, observed correlation, CDF of resampled correlations
+    """
     live2 = live.dropna(subset=['agepreg', 'totalwgt_lb'])
     data = live2.agepreg.values, live2.totalwgt_lb.values
     ht = CorrelationPermute(data)
@@ -282,16 +290,24 @@ def ResampleCorrelations(live):
 
 
 def StudentCdf(n):
+    """Computes the CDF correlations from uncorrelated variables.
+
+    n: sample size
+
+    returns: Cdf
+    """
     ts = np.linspace(-3, 3, 101)
     ps = scipy.stats.t.cdf(ts, df=n-2)
-    rs = ts / np.sqrt(n - 2 - ts**2)
+    rs = ts / np.sqrt(n - 2 + ts**2)
     return thinkstats2.Cdf(rs, ps)
 
 
-def main():
-    thinkstats2.RandomSeed(17)
+def TestCorrelation(live):
+    """Tests correlation analytically.
 
-    live, firsts, others = first.MakeFrames()
+    live: DataFrame for live births
+
+    """
     n, r, cdf = ResampleCorrelations(live)
 
     model = StudentCdf(n)
@@ -299,22 +315,43 @@ def main():
                    alpha=0.3, label='Student t')
     thinkplot.Cdf(cdf, label='sample')
 
-    thinkplot.Show()
+    thinkplot.Save(root='normal4',
+                   xlabel='correlation',
+                   ylabel='CDF')
 
     t = r * math.sqrt((n-2) / (1-r))
     p_value = 1 - scipy.stats.t.cdf(t, df=n-2)
     print(r, p_value)
-    return
 
-    print('Gorilla example')
-    dist = Normal(90, 7.5**2)
-    print(dist)
-    dist_xbar = dist.Sum(9) / 9
-    print(dist_xbar.sigma)
-    print(dist_xbar.Percentile(5), dist_xbar.Percentile(95))
 
-    PlotPregLengths(live, firsts, others)
+def ChiSquaredCdf(n):
+    xs = np.linspace(0, 25, 101)
+    ps = scipy.stats.chi2.cdf(xs, df=n-1)
+    return thinkstats2.Cdf(xs, ps)
 
+
+def TestChiSquared():
+    data = [8, 9, 19, 5, 8, 11]
+    dt = hypothesis.DiceChiTest(data)
+    p_value = dt.PValue(iters=1000)
+    n, chi2, cdf = len(data), dt.actual, dt.test_cdf
+
+    model = ChiSquaredCdf(n)
+    thinkplot.Plot(model.xs, model.ps, color='gray',
+                   alpha=0.3, label='chi squared')
+    thinkplot.Cdf(cdf, label='sample')
+
+    thinkplot.Save(root='normal5',
+                   xlabel='chi-squared statistic',
+                   ylabel='CDF',
+                   loc='lower right')
+
+    # compute the p-value
+    p_value = 1 - scipy.stats.chi2.cdf(chi2, df=n-1)
+    print(chi2, p_value)
+
+
+def MakeCltPlots():
     thinkplot.PrePlot(num=3, rows=2, cols=3)
     samples = MakeExpoSamples()
     NormalPlotSamples(samples, plot=1, ylabel='sum of expo values')
@@ -333,6 +370,24 @@ def main():
     samples = MakeCorrelatedSamples()
     NormalPlotSamples(samples, plot=4, ylabel='sum of correlated expo values')
     thinkplot.Save(root='normal2', legend=False)
+
+def main():
+    thinkstats2.RandomSeed(17)
+
+    MakeCltPlots()
+
+    print('Gorilla example')
+    dist = Normal(90, 7.5**2)
+    print(dist)
+    dist_xbar = dist.Sum(9) / 9
+    print(dist_xbar.sigma)
+    print(dist_xbar.Percentile(5), dist_xbar.Percentile(95))
+
+    live, firsts, others = first.MakeFrames()
+    TestCorrelation(live)
+    PlotPregLengths(live, firsts, others)
+
+    TestChiSquared()
 
 
 

@@ -3842,7 +3842,7 @@ are often the result of generative processes with positive feedback
 \index{analysis}
 
 Also, analytic distributions lend themselves to mathematical
-analysis, as we will see in Chapter~\ref{operations}.
+analysis, as we will see in Chapter~\ref{analysis}.
 
 But it is important to remember that all models are imperfect.
 Data from the real world never fit an analytic distribution perfectly.
@@ -5652,7 +5652,7 @@ def Estimate2(n=7, m=1000):
 Again, {\tt n} is the sample size and {\tt m} is the number of times
 we play the game.  {\tt np.var} computes $S^2$ by default and
 $S_{n-1}^2$ if you provide the argument {\tt ddof=1}, which stands for
-``delta degrees of freedom.''  I won't explain that now, but you can read
+``delta degrees of freedom.''  I won't explain that term, but you can read
 about it at
 \url{http://en.wikipedia.org/wiki/Degrees_of_freedom_(statistics)}.
 
@@ -6467,6 +6467,7 @@ It only means that it is unlikely to have occurred by chance.
 
 
 \section{Testing proportions}
+\label{casino}
 \index{Chi-square test}
 
 Suppose you run a casino and you suspect that a customer is
@@ -6538,6 +6539,7 @@ significant.
 
 
 \section{Chi-squared tests}
+\label{casino2}
 
 In the previous section we used total deviation as the test statistic.
 But for testing proportions it is more common to use the chi-squared
@@ -10842,6 +10844,7 @@ use it.
 
 
 \section{Applying CLT}
+\label{usingCLT}
 
 To see why the Central Limit Theorem is useful, let's get back
 to the example in Section~\ref{testdiff}: testing the apparent
@@ -10862,7 +10865,7 @@ is unlikely to be due to chance.
 
 In this example, the null hypothesis is that the distribution of
 pregnancy lengths is the same for first babies and others.  
-So we can compute the sampling distribution of the observed means
+So we can compute the sampling distribution of the mean
 like this:
 
 \begin{verbatim}
@@ -10870,10 +10873,10 @@ like this:
     dist2 = SamplingDistMean(live.prglngth, len(others))
 \end{verbatim}
 
-Both samples are drawn from the same distribution, which is the
-pool of all live births.  
-{\tt SamplingDistMean} takes this sequence of
-values and the sample size:
+Both sampling distributions are based on the same population, which is
+the pool of all live births.  {\tt SamplingDistMean} takes this
+sequence of values and the sample size, and returns a Normal object
+representing the sampling distribution:
 
 \begin{verbatim}
 def SamplingDistMean(data, n):
@@ -10882,20 +10885,15 @@ def SamplingDistMean(data, n):
     return dist.Sum(n) / n
 \end{verbatim}
 
-It returns the
-sampling distribution of the mean of {\tt n} values drawn from
-{\tt data}:
-
-{\tt mean} and {\tt var} are the sample mean and variance of
+{\tt mean} and {\tt var} are the mean and variance of
 {\tt data}.  We approximate the distribution of the data with
-a normal distribution, {\tt dist}.  In this example, remember
-that the data are not normally distributed, so this approximation
-is not very good.  
+a normal distribution, {\tt dist}.  
 
-But then we compute {\tt dist.Sum(n) / n}, which is the sampling
-distribution of the mean of {\tt n} values.  Even if the data are
-not normally distributed, the sampling distribution of the mean
-is, by the Central Limit Theorem.
+In this example, the data are not normally distributed, so this
+approximation is not very good.  But then we compute {\tt dist.Sum(n)
+  / n}, which is the sampling distribution of the mean of {\tt n}
+values.  Even if the data are not normally distributed, the sampling
+distribution of the mean is, by the Central Limit Theorem.
 
 Next, we compute the sampling distribution of the difference
 in the means.  The {\tt Normal} class knows how to perform
@@ -10907,17 +10905,18 @@ subtraction using Equation~\ref{eqn3}:
                       self.sigma2 + other.sigma2)
 \end{verbatim}
 
-So we can compute the sampling distribution of the difference:
+So can compute the sampling distribution of the difference like this:
 
 \begin{verbatim}
 >>> dist = dist1 - dist2
 N(0, 0.0032)
 \end{verbatim}
 
-The mean is 0, since we expect two samples from the same distribution
-to have the same mean, on average.  The variance of the sampling
-distribution is 0.0032.
+The mean is 0, which makes sense because we expect two samples from
+the same distribution to have the same mean, on average.  The variance
+of the sampling distribution is 0.0032.
 
+{\tt Normal} provides {\tt Prob}, which evaluates the normal CDF.
 We can use {\tt Prob} to compute the probability of a
 difference as large as {\tt delta} under the null hypothesis:
 
@@ -10942,14 +10941,140 @@ in Section~\ref{testdiff}, 0.17.
 
 \section{Correlation test}
 
+In Section~\ref{corrtest} we used a permutation test for the correlation
+between birth weight and mother's age, and found that it is
+statistically significant, with p-value less than 0.001.
+
+Now we can do the same thing analytically.  The method is based
+on this mathematical result: given two variables that are normally distributed
+and uncorrelated, if we generate a sample with size $n$,
+compute Pearson's correlation, $r$, and then compute the transformed
+correlation
+%
+\[ t = r \sqrt{\frac{n-2}{1-r^2}} \]
+%
+the distribution of $t$ is Student's t-distribution with parameter
+$n-2$.  The t-distribution is an analytic distribution; the CDF can
+be computed efficiently using gamma functions.
+
+We can use this result to compute the sampling distribution of
+correlation under the null hypothesis; that is, if we generate
+uncorrelated sequences of normal values, what is the distribution of
+their correlation?  {\tt StudentCdf} takes the sample size, {\tt n}, and
+returns the sampling distribution of correlation:
+
+\begin{verbatim}
+def StudentCdf(n):
+    ts = np.linspace(-3, 3, 101)
+    ps = scipy.stats.t.cdf(ts, df=n-2)
+    rs = ts / np.sqrt(n - 2 + ts**2)
+    return thinkstats2.Cdf(rs, ps)
+\end{verbatim}
+
+{\tt ts} is a NumPy array of values for $t$, the transformed
+correlation.  {\tt ps} contains the corresponding probabilities,
+computed using the CDF of the Student's t-distribution implemented in
+SciPy.  The parameter of the t-distribution, {\tt df}, stands for
+``degrees of freedom.''  I won't explain that term, but you can read
+about it at
+\url{http://en.wikipedia.org/wiki/Degrees_of_freedom_(statistics)}.
+
+\begin{figure}
+% normal.py
+\centerline{\includegraphics[height=2.5in]{figs/normal4.pdf}}
+\caption{Sampling distribution of correlations for uncorrelated
+normal variables.}
+\label{normal4}
+\end{figure}
+
+To get from {\tt ts} to the correlation coefficients, {\tt rs},
+we apply the inverse transform,
+%
+\[ r = t / \sqrt{n - 2 + t^2} \]
+%
+The result is the sampling distribution of $r$ under the null hypothesis.
+Figure~\ref{normal4} shows this distribution along with the distribution
+we generated in Section~\ref{corrtest} by resampling.  They are nearly
+identical.  Although the actual distributions are not normal, 
+Pearson's coefficient of correlation is based on sample means
+and variances.  By the Central Limit Theorem, these moment-based
+statistics are normally distributed even if the data are not.
+
+From Figure~\ref{normal4}, we can see that the
+observed correlation, 0.07, is unlikely to occur if the variables
+are actually uncorrelated.
+Using the analytic distribution, we can compute just how unlikely:
+
+\begin{verbatim}
+    t = r * math.sqrt((n-2) / (1-r))
+    p_value = 1 - scipy.stats.t.cdf(t, df=n-2)
+\end{verbatim}
+
+We compute the value of {\tt t} that corresponds to {\tt r=0.07}, and
+then evaluate the t-distribution at {\tt t}.  The result is {\tt
+  6.4e-12}.  This example demonstrates an advantage of the analytic
+method: we can compute very small p-values.  But in practice it
+usually doesn't matter.
+
 
 \section{Chi-squared test}
+
+In Section~\ref{casino2} we used the chi-squared statistic to
+test whether a die is crooked.  The chi-squared statistic measures
+the total squared deviation from the expected values in a table:
+%
+\[ \goodchi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
+%
+One reason the chi-square statistic is a popular choice is that
+its sampling distribution under the null hypothesis is analytic;
+by a remarkable coincidence\footnote{Not really.}, it is called
+the chi-squared distribution.  Like the t-distribution, the
+chi-squared CDF can be computed efficiently using gamma functions.
+
+\begin{figure}
+% normal.py
+\centerline{\includegraphics[height=2.5in]{figs/normal5.pdf}}
+\caption{Sampling distribution of chi-squared statistics for
+a fair six-sided die.}
+\label{normal5}
+\end{figure}
+
+SciPy provides an implementation of the chi-squared distribution:
+
+\begin{verbatim}
+def ChiSquaredCdf(n):
+    xs = np.linspace(0, 25, 101)
+    ps = scipy.stats.chi2.cdf(xs, df=n-1)
+    return thinkstats2.Cdf(xs, ps)
+\end{verbatim}
+
+Figure~\ref{normal5} shows the analytic result along with the
+distribution we got by resampling.  They are very similar,
+especially in the tail, which is the part we usually care most
+about.
+
+We can use this distribution to compute the p-value of the
+observed test statistic, {\tt chi2}:
+
+\begin{verbatim}
+    p_value = 1 - scipy.stats.chi2.cdf(chi2, df=n-1)
+\end{verbatim}
+
+The result is 0.041, which is consistent with the result
+from Section~\ref{casino2}.
+
+The parameter of the chi-squared distribution is ``degrees of
+freedom'' again.  In this case the correct parameter is {\tt n-1},
+where {\tt n} is the size of the table, 6.  Choosing this parameter
+can be tricky; to be honest, I am never confident that I have it
+right until I generate something like Figure~\ref{normal5} to compare
+the analytic results to the resampling results.
 
 
 \section{Discussion}
 
-  These methods
-have several advantages over analysis: 
+This book focuses on computational methods like resampling and
+permutation.  These methods have several advantages over analysis:
 
 \begin{itemize}
 
@@ -10974,43 +11099,61 @@ have several advantages over analysis:
 
 \end{itemize}
 
-But there is one drawback: computational methods can be slow.
-In general, I recommend the following process:
+But there is one drawback: computational methods can be slow.  Taking
+into account these pros and cons, I recommend the following process:
 
 \begin{enumerate}
 
-\item Use computational methods during exploration.  When you get to a
-  satisfactory answer, if the run time is acceptable, stop.
+\item Use computational methods during exploration.  If you find a
+  satisfactory answer and the run time is acceptable, you can stop.
 
 \item If run time is not acceptable, look for opportunities to
   optimize.  Using analytic methods is one of several methods of
   optimization.
 
-\item If replacing a computational module with an analytic module is
-  appropriate, use the computational model to establish regression
-  tests, which provide mutual validation between the computational and
+\item If replacing a computational method with an analytic method is
+  appropriate, use the computational model as a basis of comparison, 
+  providing mutual validation between the computational and
   analytic results.
 
 \end{enumerate}
 
-
-
+For the vast majority of problems I have worked on, I didn't have
+to go past Step 1.
 
 
 \section{Exercises}
 
 
 \begin{exercise}
-Find the confidence interval for the difference in means.
-\end{exercise}
+In Section~\ref{lognormal}, we saw that the distribution
+of adult weights is approximately lognormal.  One possible
+explanation is that the weight a person
+gains each year is proportional to their current weight.
+In that case, adult weight is the product of a large number
+of multiplicative factors:
+%
+\[ w = w_0 f_1 f_2 ... f_n  \]
+%
+where $w$ is adult weight, $w_0$ is birth weight, and $f_i$
+is the weight gain factor for year $i$.
 
+Since the log of a product is the sum of the logs of the
+factors,
+%
+\[ \log w = \log w_0 + \log f_1 + \log f_2 + ... + \log f_n \]
+%
+By the Central Limit Theorem, the distribution of $\log w$ is
+approximately normal, for large $n$, so the distribution of $w$ is
+lognormal.
 
-\begin{exercise}
+To model this phenomenon, choose a distribution for $f$ that seems
+reasonable, then generate a sample of adult weights by choosing a
+random value from the distribution of birthweights, choosing a
+sequence of factors from the distribution of $f$, and computing the
+product.  What value of $n$
+is needed to converge to a lognormal distribution?
 
-% TODO: do this one as an example
-Instead of the distribution of sums, compute the distribution of
-products; what happens as the number of terms increases?
-Hint: look at the distribution of the log of the products.
 \index{logarithm}
 \index{product}
 
@@ -11019,9 +11162,21 @@ Hint: look at the distribution of the log of the products.
 
 
 \begin{exercise}
+In Section~\ref{usingCLT} we used the Central Limit Theorem to find
+the sampling distribution of the difference in means, $\delta$, under
+the null hypothesis that both samples are drawn from the same
+population.
 
+We can also use this distribution to find the standard error of the
+estimate and confidence intervals, but
+that would only be approximately correct.  To be more precise,
+we should compute the sampling distribution of $\delta$ under the
+alternate hypothesis that the samples are drawn from different
+populations.
+
+Compute this distribution and use it to calculate the standard error
+and a 90\% confidence interval for the difference in means.
 \end{exercise}
-
 
 
 \printindex
