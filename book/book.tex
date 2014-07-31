@@ -501,10 +501,6 @@ the Franklin W. Olin College of Engineering.
 
 
 
-%\section*{Acknowledgements}
-
-
-
 \section*{Contributor List}
 
 If you have a suggestion or correction, please send email to 
@@ -639,11 +635,10 @@ evidence usually fails, because:
 
 \begin{itemize}
 
-\item Small number of observations: If the gestation period is longer
+\item Small number of observations: If pregnancy length is longer
   for first babies, the difference is probably small compared to
   natural variation.  In that case, we might have to compare a large
   number of pregnancies to be sure that a difference exists.
-\index{sample size}
 
 \item Selection bias: People who join a discussion of this question
   might be interested because their first babies were late.  In that
@@ -714,8 +709,8 @@ which is intended to gather ``information on family life, marriage and
 divorce, pregnancy, infertility, use of contraception, and men's and
 women's health. The survey results are used ... to plan health services and
 health education programs, and to do statistical studies of families,
-fertility, and health.''\footnote{See
-  \url{http://cdc.gov/nchs/nsfg.htm}.}
+fertility, and health.''  See
+  \url{http://cdc.gov/nchs/nsfg.htm}.
 \index{National Survey of Family Growth}
 \index{NSFG}
 
@@ -738,21 +733,24 @@ January 2002 to March 2003.  \index{cycle}
 
 The goal of the survey is to draw conclusions about a {\bf
   population}; the target population of the NSFG is people in the
-United States aged 15-44.  \index{population}
+United States aged 15-44.  Ideally surveys would collect data from
+every member of the population, but that's seldom possible.  Instead
+we collect data from a subset of the population called a {\bf sample}.
+The people who participate in a survey are called {\bf respondents}.
+\index{population}
 
-The people who participate in a survey are called {\bf respondents}; a
-group of respondents is called a {\bf cohort}.  In general,
+In general,
 cross-sectional studies are meant to be {\bf representative}, which
 means that every member of the target population has an equal chance
-of participating.  Of course that ideal is hard to achieve in
+of participating.  That ideal is hard to achieve in
 practice, but people who conduct surveys come as close as they can.
 \index{respondent} \index{representative}
 
 The NSFG is not representative; instead it is deliberately {\bf
   oversampled}.  The designers of the study recruited three
 groups---Hispanics, African-Americans and teenagers---at rates higher
-than their representation in the U.S. population.  The reason for
-oversampling is to make sure that the number of respondents in each of
+than their representation in the U.S. population, in order to
+make sure that the number of respondents in each of
 these groups is large enough to draw valid statistical inferences.
 \index{oversampling}
 
@@ -761,7 +759,7 @@ to draw conclusions about the general population based on statistics
 from the survey.  We will come back to this point later.
 
 When working with this kind of data, it is important to be familiar
-with the {\bf codebook} which documents the design of the study, the
+with the {\bf codebook}, which documents the design of the study, the
 survey questions, and the encoding of the responses.  The codebook and
 user's guide for the NSFG data are available from
 \url{http://www.cdc.gov/nchs/nsfg/nsfg_cycle6.htm}
@@ -770,8 +768,7 @@ user's guide for the NSFG data are available from
 \section{Importing the data}
 
 The code and data used in this book are available from
-\url{https://github.com/AllenDowney/ThinkStats2}.
-  For information
+\url{https://github.com/AllenDowney/ThinkStats2}.  For information
 about downloading and working with this code, see Section~\ref{code}.
 
 Once you download the code, you should have a file called {\tt
@@ -779,17 +776,17 @@ Once you download the code, you should have a file called {\tt
 file, run some tests, and print a message like, ``All tests passed.''
 
 Let's see what it does.  Pregnancy data from Cycle 6 of the NSFG is in
-a file called {\tt 2002FemPreg.dat.gz}.  As the suffixes suggest, it
+a file called {\tt 2002FemPreg.dat.gz}; it
 is a gzip-compressed data file in plain text (ASCII), with fixed width
-columns.  Each line in the file contains data about one pregnancy.
+columns.  Each line in the file is a {\bf record} that
+contains data about one pregnancy.
 
 The format of the file is documented in {\tt 2002FemPreg.dct}, which
 is a Stata dictionary file.  Stata is a statistical software system;
 a ``dictionary'' in this context is a list of variable names, types,
 and indices that identify where in each line to find each variable.
 
-For example, here are a few lines from the dictionary in {\tt
-  2002FemPreg.dct}:
+For example, here are a few lines from {\tt 2002FemPreg.dct}:
 %
 \begin{verbatim}
 infile dictionary {
@@ -803,23 +800,24 @@ string that represents the respondent ID; {\tt pregorder} is a
 one-byte integer that indicates which pregnancy this record
 describes for this respondent.
 
-The code you downloaded includes {\tt thinkstats2.py} which is a library
-that contains many classes and functions used in this book.  {\tt
-  thinkstats2.py} provides functions to read the Stata dictionary and
-the NSFG data file.  Here's how it's used in {\tt nsfg.py}:
+The code you downloaded includes {\tt thinkstats2.py} which is a Python
+module
+that contains many classes and functions used in this book,
+including functions that read the Stata dictionary and
+the NSFG data file.  Here's how they are used in {\tt nsfg.py}:
 
 \begin{verbatim}
-def ReadFemPreg(dct_file = '2002FemPreg.dct',
-                dat_file = '2002FemPreg.dat.gz'):
+def ReadFemPreg(dct_file='2002FemPreg.dct',
+                dat_file='2002FemPreg.dat.gz'):
     dct = thinkstats2.ReadStataDct(dct_file)
     df = dct.ReadFixedWidth(dat_file, compression='gzip')
     CleanFremPreg(df)
     return df
 \end{verbatim}
 
-{\tt thinkstats2.ReadStataDct} takes the name of the dictionary file
-and returns a {\tt FixedWidthVariables} object, which contains the
-information from the dictionary file and provides {\tt
+{\tt ReadStataDct} takes the name of the dictionary file
+and returns {\tt dct}, a {\tt FixedWidthVariables} object that contains the
+information from the dictionary file.  {\tt dct} provides {\tt
   ReadFixedWidth}, which reads the data file.
 
 
@@ -827,13 +825,19 @@ information from the dictionary file and provides {\tt
 \label{dataframe}
 
 The result of {\tt ReadFixedWidth} is a DataFrame, which is the
-fundamental data structure provided by pandas.  A DataFrame contains a
+fundamental data structure provided by pandas, which is a Python
+data and statistics package we'll use throughout this book.
+A DataFrame contains a
 row for each record, in this case one row per pregnancy, and a column
 for each variable.
 
 In addition to the data, a DataFrame also contains the variable
 names and their types, and it provides methods for accessing and modifying
 the data.
+
+If you print {\tt df} you get a truncated view of the rows and
+columns, and the shape of the DataFrame, which is 13593
+rows/records and 243 columns/variables.
 
 \begin{verbatim}
 >>> import nsfg
@@ -843,12 +847,8 @@ the data.
 [13593 rows x 243 columns]
 \end{verbatim}
 
-If you print {\tt df} you get a truncated view of the rows and
-columns, and the shape of the DataFrame, which is 13593
-rows/records and 243 columns/variables.
-
-The DataFrame attribute {\tt columns} returns a sequence of column
-names:
+The attribute {\tt columns} returns a sequence of column
+names as Unicode strings:
 
 \begin{verbatim}
 >>> df.columns
@@ -864,7 +864,7 @@ now we'll treat it like a list:
 'pregordr'
 \end{verbatim}
 
-To access a column from a DataFrame, you can use the variable
+To access a column from a DataFrame, you can use the column
 name as a key:
 
 \begin{verbatim}
@@ -891,8 +891,9 @@ corresponding values:
 Name: pregordr, Length: 13593, dtype: int64
 \end{verbatim}
 
-The indices are the integers from 0 to 13593.  In this case
-the elements are also integers.
+In this example the indices are integers from 0 to 13593, but in
+general they can be any sortable type.  The elements
+are also integers, but they can be any type.
 
 The last line includes the variable name, Series length, and data type;
 {\tt int64} is one of the types provided by NumPy.  If you run
@@ -1014,7 +1015,7 @@ In addition it uses several special codes:
 \end{verbatim}
 
 Special values encoded as numbers are {\em dangerous} because if they
-are not handled properly, they can easily generate bogus results, like
+are not handled properly, they can generate bogus results, like
 a 99-pound baby.  The {\tt replace} method replaces these values with
 {\tt np.nan}, a special floating-point value that represents ``not a
 number.''  The {\tt inplace} flag tells {\tt replace} to modify the
@@ -1053,7 +1054,7 @@ Not dot notation, like this:
 \end{verbatim}
 
 The version with dot notation adds an attribute to the DataFrame
-object, but that attribute is not treated as a new column!
+object, but that attribute is not treated as a new column.
 
 
 \section{Validation}
@@ -1071,15 +1072,15 @@ tables that summarize each variable.  Here is the table for
 
 \begin{verbatim}
 value	label	 	        Total
-1	LIVE BIRTH	 	9148
-2	INDUCED ABORTION	1862
-3	STILLBIRTH	 	 120
-4	MISCARRIAGE	 	1921
-5	ECTOPIC PREGNANCY	 190
-6	CURRENT PREGNANCY	 352
+1	LIVE BIRTH              9148
+2	INDUCED ABORTION        1862
+3	STILLBIRTH               120
+4	MISCARRIAGE             1921
+5	ECTOPIC PREGNANCY        190
+6	CURRENT PREGNANCY        352
 \end{verbatim}
 
-The {\tt Series} class provides the method \verb"value_counts", which
+The {\tt Series} class provides a method, \verb"value_counts", that
 counts the number of times each value appears.  If we select the {\tt
   outcome} Series from the DataFrame, we can use \verb"value_counts"
 to compare with the published data:
@@ -1104,12 +1105,12 @@ table for \verb"birthwgt_lb"
 
 \begin{verbatim}
 value	label                  Total
-.	INAPPLICABLE	 	4449
-0-5	UNDER 6 POUNDS	 	1125
-6	6 POUNDS	 	2223
-7	7 POUNDS	 	3049
-8	8 POUNDS	 	1889
-9-95	9 POUNDS OR MORE	 799
+.	INAPPLICABLE            4449
+0-5	UNDER 6 POUNDS          1125
+6	6 POUNDS                2223
+7	7 POUNDS                3049
+8	8 POUNDS                1889
+9-95	9 POUNDS OR MORE         799
 \end{verbatim}
 
 And here are the value counts:
@@ -1137,8 +1138,8 @@ And here are the value counts:
 
 The counts for 6, 7, and 8 pounds check out, and if you add
 up the counts for 0-5 and 9-95, they check out, too.  But
-if you look more closely, you notice one value that is almost
-certainly an error, a 51 pound baby!
+if you look more closely, you notice one value that has to be
+an error, a 51 pound baby!
 
 To deal with this error, I added a line to {\tt CleanFemPreg}:
 
@@ -1146,11 +1147,11 @@ To deal with this error, I added a line to {\tt CleanFemPreg}:
 df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
 \end{verbatim}
 
-This statement replaces invalid values with {\tt NaN}.
+This statement replaces invalid values with {\tt np.nan}.
 The expression in brackets yields a Series of type {\tt bool}, 
 where True indicates that the condition is true.  When a boolean
 Series is used as an index, it selects only the elements that
-satisfy the condition; in this case, it replaces them with {\tt NaN}.
+satisfy the condition.
 
 
 \section{Interpretation}
@@ -1160,44 +1161,44 @@ same time: the level of statistics and the level of context.
 
 As an example, let's look at the sequence of outcomes for a few
 respondents.  Because of the way the data files are organized, we have
-to do some processing to match up each pregnancy record with a respondent.
+to do some processing to collect the pregnancy data for each respondent.
 Here's a function that does that:
-
-% TODO: clean this up by using caseid as the index
 
 \begin{verbatim}
 def MakePregMap(df):
-    d = {}
+    d = defaultdict(list)
     for index, caseid in df.caseid.iteritems():
-        d.setdefault(caseid, []).append(index)
+        d[caseid].append(index)
     return d
 \end{verbatim}
 
 {\tt df} is the DataFrame with pregnancy data.  The {\tt iteritems}
-method creates an iterator that enumerates the index (row number)
+method enumerates the index (row number)
 and {\tt caseid} for each pregnancy.
 
 {\tt d} is a dictionary that maps from each case ID to a list of
-indices.  Using {\tt d} we can look up a respondent and get the
+indices.  If you are not familiar with {\tt defaultdict}, it is in
+the Python {\tt collections} module.
+Using {\tt d}, we can look up a respondent and get the
 indices of that respondent's pregnancies.
 
 This example looks up one respondent and prints a list of outcomes
 for her pregnancies:
 
 \begin{verbatim}
-    caseid = 10229
-    indices = preg_map[caseid]
-    print(caseid, preg.outcome[indices].values)
+>>> caseid = 10229
+>>> indices = preg_map[caseid]
+>>> preg.outcome[indices].values
+[4 4 4 4 4 4 1]
 \end{verbatim}
 
-Using a list as an index into {\tt preg.outcome} selects the
-indicated values and yields a Series.  Instead of printing the
+{\tt indices} is the list of indices for pregnancies corresponding
+to respondent {\tt 10229}.
+ 
+Using this list as an index into {\tt preg.outcome} selects the
+indicated rows and yields a Series.  Instead of printing the
 whole Series, I selected the {\tt values} attribute, which is
-a NumPy array.  The result looks like this:
-
-\begin{verbatim}
-10229 [4 4 4 4 4 4 1]
-\end{verbatim}
+a NumPy array.  
 
 The outcome code {\tt 1} indicates a live birth. Code {\tt 4} indicates
 a miscarriage; that is, a pregnancy that ended spontaneously, usually
@@ -1261,9 +1262,6 @@ You can use {\tt nsfg.MakePregMap} to make a dictionary that maps
 from each {\tt caseid} to a list of indices into the pregnancy
 DataFrame.
 
-Similarly, you might want to make a dictionary that maps from each
-{\tt caseid} to an index into the respondent DataFrame.
-
 A solution to this exercise is in \verb"chap01ex_soln.py"
 \end{exercise}
 
@@ -1313,7 +1311,7 @@ the data, or agree to certain terms of use.  Be persistent!
 
 \item {\bf population}: A group we are interested in studying.
   ``Population'' often refers to a
-  group of people, but the term is used for other kinds of things,
+  group of people, but the term is used for other subjects,
   too.
 \index{population}
 
@@ -1330,11 +1328,12 @@ time, collecting data from the same group repeatedly.
 \index{longitudinal study}
 \index{study!longitudinal}
 
+\item {\bf record}: In a dataset, a collection of information about
+a single person or other subject.
+\index{record}
+
 \item {\bf respondent}: A person who responds to a survey.
 \index{respondent}
-
-\item {\bf cohort}: A group of respondents.
-\index{cohort}
 
 \item {\bf sample}: The subset of a population used to collect data.
 \index{sample}
@@ -1347,10 +1346,6 @@ of the population has the same chance of being in the sample.
 of a sub-population in order to avoid errors due to small sample
 sizes.
 \index{oversampling}
-
-\item {\bf record}: In a database, a collection of information about
-a single person or other object of study.
-\index{record}
 
 \item {\bf raw data}: Values collected and recorded with little or no
 checking, calculation or interpretation.
@@ -1405,36 +1400,40 @@ counter = Counter(t)
 \end{verbatim}
 
 The result is a {\tt Counter} object, which is a subclass of
-dictionary.  For details, see
-\url{https://docs.python.org/2/library/collections.html#collections.Counter}.
+dictionary.
 
-Or in pandas, we can use the
-Series method \verb"value_counts", which we saw in the previous
-chapter.
+Another option is to use the pandas method \verb"value_counts", which
+we saw in the previous chapter.  But for this book I created a class,
+{\tt Hist}, that represents histograms and provides the methods
+that operate on them.
 
 
 \section{Representing histograms}
 \index{histogram}
 \index{Hist object}
 
-The Python module that accompanies this book, {\tt thinkstats2.py},
-provides a class named Hist, which represents a histogram.  You can
-read the documentation at {\tt http://thinkstats2.com/thinkstats2.html}.
-
 The {\tt Hist} constructor can take a sequence, dictionary, pandas
-Series, or another Hist.  You can test it in Python's interactive
-mode:
+Series, or another Hist.  You can instantiate a Hist object like this:
 %
 \begin{verbatim}
 >>> import thinkstats2
 >>> hist = thinkstats2.Hist([1, 2, 2, 3, 5])
+>>> hist
+Hist({1: 1, 2: 2, 3: 1, 5: 1})
 \end{verbatim}
 
-Hist objects provide the method {\tt Freq}, which takes a value and
+Hist objects provide {\tt Freq}, which takes a value and
 returns its frequency:
 %
 \begin{verbatim}
 >>> hist.Freq(2)
+2
+\end{verbatim}
+
+The bracket operator does the same thing:
+%
+\begin{verbatim}
+>>> hist[2]
 2
 \end{verbatim}
 
@@ -1460,8 +1459,7 @@ for val in sorted(hist.Values()):
     print(val, hist.Freq(val))
 \end{verbatim}
 
-If you are planning to look up all of the frequencies, it is more
-efficient to use {\tt Items}, which returns an unsorted list of
+Or you can use {\tt Items} to iterate through
 value-frequency pairs:
 %
 \begin{verbatim}
@@ -1481,47 +1479,14 @@ for val, freq in hist.Items():
 \label{first_wgt_lb_hist}
 \end{figure}
 
-There are a number of Python packages for making figures and graphs.
-One of the most popular is {\tt pyplot}, which is part of
-the {\tt matplotlib} package (see \url{http://matplotlib.org}).
-
-This package is included in many Python installations.  To see whether
-you have it, launch the Python interpreter and run:
-%
-\begin{verbatim}
->>> import matplotlib.pyplot as pyplot
->>> pyplot.pie([1,2,3])
->>> pyplot.show()
-\end{verbatim}
-
-If you have {\tt matplotlib} you should see a simple pie chart.
-If not, the figure might be hidden under another window, or you
-might have to install {\tt matplotlib}.  Installing these packages
-one at a time can be difficult, so I recommend using a Python
-distribution that contains the ones we need for this book;
-see Section~\ref{code}.
+For this book I wrote a module called {\tt thinkplot.py} that provides
+functions for plotting Hists and other objects defined in {\tt
+  thinkstats2.py}.  It is based on {\tt pyplot}, which is part of the
+{\tt matplotlib} package.  See Section~\ref{code} for information
+about installing {\tt matplotlib}.  \index{{\tt thinkplot}}
 \index{matplotlib}
-\index{bar plot}
-\index{plot!bar}
 
-Histograms are most often plotted as bar charts.  The
-{\tt pyplot} function to draw a bar chart is {\tt bar}.  Hist
-objects provide a method called {\tt Render} that returns a sorted
-list of values and a list of the corresponding frequencies, which
-is the format {\tt bar} expects:
-%
-\begin{verbatim}
->>> vals, freqs = hist.Render()
->>> rectangles = pyplot.bar(vals, freqs)
->>> pyplot.show()
-\end{verbatim}
-
-The code that accompanies this book includes {\tt thinkplot.py}, which
-provides functions for plotting histograms and other objects we will
-see soon.  You can read the documentation at {\tt
-  http://thinkstats2.com/thinkplot.html}.  \index{{\tt thinkplot.py}}
-
-To plot the same histogram with {\tt thinkplot.py}, try this:
+To plot a histogram with {\tt thinkplot}, try this:
 
 \begin{verbatim}
 >>> import thinkplot
@@ -1529,9 +1494,9 @@ To plot the same histogram with {\tt thinkplot.py}, try this:
 >>> thinkplot.Show(xlabel='value', ylabel='frequency')
 \end{verbatim}
 
-Most of the functions in {\tt thinkplot.py} are wrappers for
-functions in {\tt matplotlib}, customized to work with
-the objects defined in {\tt thinkstats2.py}.
+You can read the documentation for {\tt thinkplot} at
+\url{http://greenteapress.com/thinkstats2/thinkplot.html}.
+
 
 \begin{figure}
 % first.py
@@ -1544,7 +1509,7 @@ the objects defined in {\tt thinkstats2.py}.
 \section{NSFG variables}
 
 Now let's get back to the data from the NSFG.  The code in this
-chapter is from {\tt first.py}.  
+chapter is in {\tt first.py}.  
 For information about downloading and
 working with this code, see Section~\ref{code}.
 
@@ -1579,7 +1544,7 @@ births:
 The expression in brackets is a boolean Series that
 selects rows from the DataFrame and returns a new DataFrame.
 Next I'll generate and plot the histogram of
-\verb"birthwgt_lb" for live births (this code is in {\tt first.py}).
+\verb"birthwgt_lb" for live births.
 
 \begin{verbatim}
     hist = thinkstats2.Hist(live.birthwgt_lb, label='birthwgt_lb')
@@ -1588,7 +1553,7 @@ Next I'll generate and plot the histogram of
 \end{verbatim}
 
 When the argument passed to {\tt Hist} is a pandas Series, any
-{\tt NaN} values are dropped.  {\tt label} is a string that appears
+{\tt nan} values are dropped.  {\tt label} is a string that appears
 in the legend when the Hist is plotted.
 
 \begin{figure}
@@ -1616,13 +1581,14 @@ value.
 Figure~\ref{first_agepreg_hist} shows the histogram of \verb"agepreg",
 the mother's age at the end of pregnancy.  The mode is 21 years.  The
 distribution is very roughly bell-shaped, but in this case the tail
-extends farther to the right than left, because of biological limits.
+extends farther to the right than left; most mothers are in
+their 20s, fewer in their 30s.
 
-Figure~\ref{first_prglngth_hist} shows the histogram of \verb"prglngth",
-the length of the pregnancy in weeks.  By far the most common value
-is 39 weeks.  The left tail is longer than the right, again for
-biological reasons; premature babies are common, but pregnancies seldom
-go past 43 weeks, and doctors often intervene if they do. 
+Figure~\ref{first_prglngth_hist} shows the histogram of
+\verb"prglngth", the length of the pregnancy in weeks.  By far the
+most common value is 39 weeks.  The left tail is longer than the
+right; early babies are common, but pregnancies seldom go past 43
+weeks, and doctors often intervene if they do.
 
 
 \section{Outliers}
@@ -1633,12 +1599,12 @@ not always visible.
 
 Before going on, it is a good idea to check for {\bf
   outliers}, which are extreme values that might be errors in
-measurement and recording, or might be accurate measurements of rare
+measurement and recording, or might be accurate reports of rare
 events.
 
-Hist provides method {\tt Largest} and {\tt Smallest}, which take
+Hist provides methods {\tt Largest} and {\tt Smallest}, which take
 an integer {\tt n} and return the {\tt n} largest or smallest
-values from the histogram with their frequencies:
+values from the histogram:
 
 \begin{verbatim}
     for weeks, freq in hist.Smallest(10):
@@ -1703,7 +1669,7 @@ Then I plotted their histograms on the same axis:
     thinkplot.Show(xlabel='weeks', ylabel='frequency')
 \end{verbatim}
 
-{\tt thinkplot.PrePlot} takes as an argument the number of histograms
+{\tt thinkplot.PrePlot} takes the number of histograms
 we are planning to plot; it uses this information to choose
 an appropriate collection of colors.
 
@@ -1722,7 +1688,7 @@ corresponding bars on either side of the value.
 With {\tt width=0.45}, the total width of the two bars is 0.9,
 leaving some space between each pair.
 
-Finally, I adjusted the axis to show only data between 27 and 46 weeks.
+Finally, I adjust the axis to show only data between 27 and 46 weeks.
 Figure~\ref{first_nsfg_hist} shows the result.
 \index{pregnancy length}
 \index{length!pregnancy}
@@ -1780,7 +1746,7 @@ the sum of the values divided by the number of values; in other words
 \[ \xbar = \frac{1}{n} \sum_i x_i \]
 %
 The words ``mean'' and ``average'' are sometimes used interchangeably,
-but I will maintain this distinction:
+but I make this distinction:
 
 \begin{itemize}
 
@@ -1823,10 +1789,9 @@ or spread of a distribution.  The variance of a set of values is
 \[ S^2 = \frac{1}{n} \sum_i (x_i - \xbar)^2 \]
 %
 The term $x_i - \xbar$ is called the ``deviation from the mean,'' so
-variance is the mean squared deviation, which is why it is denoted
-with exponent 2.  The square root of variance, $S$, is the
-{\bf standard deviation}.  \index{deviation} \index{standard
-  deviation}
+variance is the mean squared deviation.  The square root of variance,
+$S$, is the {\bf standard deviation}.  \index{deviation}
+\index{standard deviation}
 
 If you have prior experience, you might have seen a formula for
 variance with $n-1$ in the denominator, rather than {\tt n}.  This
@@ -1847,9 +1812,9 @@ For all live births, the mean pregnancy length is 38.6 weeks, the
 standard deviation is 2.7 weeks, which means we should expect
 deviations of 2-3 weeks to be common.
 
-Variance is 7.3, which is hard to interpret, especially since the
-units are weeks$^2$, or ``square weeks,'' whatever that means.
-Variance is useful in some calculations we'll see later, but it is not
+Variance of pregnancy length is 7.3, which is hard to interpret,
+especially since the units are weeks$^2$, or ``square weeks.''
+Variance is useful in some calculations, but it is not
 a good summary statistic.
 
 
@@ -1861,26 +1826,25 @@ for it) the size of an effect.  For example, to describe the
 difference between two groups, one obvious choice is the difference in
 the means.  \index{effect size}
 
-For example, the mean pregnancy length for first babies is 38.601; for
+Mean pregnancy length for first babies is 38.601; for
 other babies it is 38.523.  The difference is 0.078 weeks, which works
 out to 13 hours.  As a fraction of the typical pregnancy length, this
 difference is about 0.2\%.
 
-If we assume that this estimate is accurate, such a difference
+If we assume this estimate is accurate, such a difference
 would have no practical consequences.  In fact, without
 observing a large number of pregnancies, it is unlikely that anyone
 would notice this difference at all.
 
 Another way to convey the size of the effect is to compare the
 difference between groups to the variability within groups.
-Cohen's $d$ is a statistic intended to do that; it is defined:
+Cohen's $d$ is a statistic intended to do that; it is defined
 %
 \[ d = \frac{\bar{x_1} - \bar{x_2}}{s}  \]
 %
 where $\bar{x_1}$ and $\bar{x_2}$ are the means of the groups and
-$s$ is the ``pooled standard deviation'', which is a weighted sum of
-the standard deviations within groups.  Here's what it looks like in
-Python:
+$s$ is the ``pooled standard deviation''.  Here's the Python
+code that computes Cohen's $d$:
 
 \begin{verbatim}
 def CohenEffectSize(group1, group2):
@@ -1895,9 +1859,9 @@ def CohenEffectSize(group1, group2):
     return d
 \end{verbatim}
 
-In this example, the difference in means is 0.029 standard deviations.
-To put that in perspective, the difference in height between men and
-women is about 1.7 standard deviations (see
+In this example, the difference in means is 0.029 standard deviations,
+which is small.  To put that in perspective, the difference in
+height between men and women is about 1.7 standard deviations (see
 \url{https://en.wikipedia.org/wiki/Effect_size}).
 
 
@@ -1952,7 +1916,7 @@ precisely, and honestly.
 In the repository you downloaded, you should find a file named
 \verb"chap02ex.ipynb"; open it.  Some cells are already filled in, and
 you should execute them.  Other cells give you instructions for
-exercises you should try.
+exercises.  Follow the instructions and fill in the answers.
 
 A solution to this exercise is in \verb"chap02ex_soln.ipynb"
 \end{exercise}
@@ -1961,8 +1925,8 @@ For the following exercises, create a file named {\tt chap02ex.py}.
 You can find a solution in \verb"chap02ex_soln.py".
 
 \begin{exercise}
-The mode of a distribution is the most frequent value (see
-\url{http://wikipedia.org/wiki/Mode_(statistics)}).  Write a function
+The mode of a distribution is the most frequent value; see
+\url{http://wikipedia.org/wiki/Mode_(statistics)}.  Write a function
 called {\tt Mode} that takes a Hist and returns the most
 frequent value.\index{mode}
 
@@ -1972,10 +1936,10 @@ frequency.
 \end{exercise}
 
 \begin{exercise}
-Use the variable \verb"totalwgt_lb", investigate whether first
+Using the variable \verb"totalwgt_lb", investigate whether first
 babies are lighter or heavier than others.  Compute Cohen's $d$
 to quantify the difference between the groups.  How does it
-compare to the difference in pregnancy length ($d = 0.028$)?
+compare to the difference in pregnancy length?
 \end{exercise}
 
 
@@ -1983,7 +1947,7 @@ compare to the difference in pregnancy length ($d = 0.028$)?
 
 \begin{itemize}
 
-\item distribution: A summary of the values that appear in a sample
+\item distribution: The values that appear in a sample
 and the frequency of each.
 \index{distribution}
 
@@ -2011,7 +1975,7 @@ the same frequency.
 \index{outlier}
 
 \item central tendency: A characteristic of a sample or population;
-intuitively, it is the most average value. 
+intuitively, it is an average or typical value. 
 \index{central tendency}
 
 \item outlier: A value far from the central tendency.
@@ -2048,9 +2012,13 @@ that is relevant in practice.
 \chapter{Probability mass functions}
 \index{Probability mass function}
 
+The code for this chapter is in {\tt probability.py}.
+For information about downloading and
+working with this code, see Section~\ref{code}.
+
+
 \section{Pmfs}
 \index{Pmf object}
-\index{{\tt pmf.py}@{\tt Pmf.py}}
 
 Another way to represent a distribution is a {\bf probability mass
   function} (PMF), which maps from each value to its probability.  A
@@ -2072,7 +2040,7 @@ for x, freq in hist.Items():
     d[x] = freq / n
 \end{verbatim}
 %
-Or we can use the {\tt Pmf} class provided by {\tt thinkstats2.py}.
+Or we can use the {\tt Pmf} class provided by {\tt thinkstats2}.
 Like {\tt Hist}, the {\tt Pmf} constructor can take a list, pandas
 Series, dictionary, Hist, or another Pmf object.  Here's an example
 with a simple list.
@@ -2080,14 +2048,11 @@ with a simple list.
 \begin{verbatim}
 >>> import thinkstats2
 >>> pmf = thinkstats2.Pmf([1, 2, 2, 3, 5])
+>>> pmf
+Pmf({1: 0.2, 2: 0.4, 3: 0.2, 5: 0.2})
 \end{verbatim}
 
 The result is normalized so the total probability is 1.
-
-\begin{verbatim}
->>> pmf.Total()
-1.0
-\end{verbatim}
 
 Pmf and Hist objects are similar in many ways; in fact, they inherit
 many of their methods from a common parent class.  For example, the
@@ -2099,6 +2064,13 @@ To look up the probability associated with a value, use {\tt Prob}:
 %
 \begin{verbatim}
 >>> pmf.Prob(2)
+0.4
+\end{verbatim}
+
+The bracket operator is equivalent:
+
+\begin{verbatim}
+>>> pmf[2]
 0.4
 \end{verbatim}
 
@@ -2139,17 +2111,17 @@ To renormalize, call {\tt Normalize}:
 Pmf objects provide a {\tt Copy} method so you can make
 and modify a copy without affecting the original.
 
-My notation for PMFs can be confusing, so here it is: I use Pmf for
-the name of the class, {\tt pmf} for an instance of the class, and
-``PMF'' to refer to the mathematical concept of a probability mass
-function.
+My notation in this section might seem inconsistent, but there is a
+system: I use Pmf for the name of the class, {\tt pmf} for an instance
+of the class, and PMF for the mathematical concept of a
+probability mass function.
 
 
 \section{Plotting PMFs}
 \index{plotting}
 \index{PMF}
 
-There are two common ways to plot Pmfs:
+{\tt thinkplot} provides two ways to plot Pmfs:
 
 \begin{itemize}
 
@@ -2168,6 +2140,10 @@ also works with Hist objects.
 
 \end{itemize}
 
+In addition, {\tt pyplot} provides a function called {\tt hist} that
+takes a sequence of values, computes a histogram, and plots it.
+Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
+
 \begin{figure}
 % probability.py
 \centerline{\includegraphics[height=3.0in]{figs/probability_nsfg_pmf.pdf}}
@@ -2183,19 +2159,12 @@ first babies and others using bar graphs (left) and step functions
 (right).
 
 By plotting the PMF instead of the histogram, we can compare the two
-distributions without distortion caused by the difference in sample
+distributions without being mislead by the difference in sample
 size.  Based on this figure, first babies seem to be less likely than
 others to arrive on time (week 39) and more likely to be a late (weeks
 41 and 42).
 
-Whether you plot PMFs as bar graphs or step functions is up to you.
-The code that generates this figure is in {\tt probability.py}.
-Note: {\tt pyplot} provides a function called {\tt hist} that
-takes a sequence of values, computes the histogram and plots it.
-Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
-
-The code that generates Figure~\ref{probability_nsfg_pmf} is in
-{\tt probability.py}:
+Here's the code that generates Figure~\ref{probability_nsfg_pmf}:
 
 \begin{verbatim}
     thinkplot.PrePlot(2, cols=2)
@@ -2213,7 +2182,7 @@ The code that generates Figure~\ref{probability_nsfg_pmf} is in
 \end{verbatim}
 
 {\tt PrePlot} takes optional parameters {\tt rows} and {\tt cols}
-to make a grid of figures, in this case 1 row of 2 figures.
+to make a grid of figures, in this case one row of two figures.
 The first figure (on the left) displays the Pmfs using {\tt Hist},
 as we have seen before.
 
@@ -2255,9 +2224,10 @@ graph, and to transform the data to emphasize differences:
 
 In this code, {\tt weeks} is the range of weeks; {\tt diffs} is the
 difference between the two PMFs in percentage points.
-Figure~\ref{probability_nsfg_diffs} shows the result.  This figure
-makes the pattern clearer: first babies are less likely to be born in
-week 39, and somewhat more likely to be born in weeks 41 and 42.
+Figure~\ref{probability_nsfg_diffs} shows the result as a bar chart.
+This figure makes the pattern clearer: first babies are less likely to
+be born in week 39, and somewhat more likely to be born in weeks 41
+and 42.
 
 \begin{figure}
 % probability.py
@@ -2277,8 +2247,8 @@ later.
 \section{The class size paradox}
 \index{class size}
 
-Before we go on, I want to look at an example that demonstrates
-one kind of computation you can do with Pmf objects: I call
+Before we go on, I want to demonstrate
+one kind of computation you can do with Pmf objects; I call
 this example the ``class size paradox.''
 
 At many American colleges and universities, the student-to-faculty
@@ -2296,7 +2266,7 @@ but the number of students in a large class is (ahem!) large.
 
 \end{itemize}
 
-The first effect is obvious (at least once it is pointed out);
+The first effect is obvious, at least once it is pointed out;
 the second is more subtle.  Let's look at an example.  Suppose
 that a college offers 65 classes in a given semester, with the
 following distribution of sizes:
@@ -2375,7 +2345,7 @@ than the actual mean.
 It is also possible to invert this operation.  Suppose you want to
 find the distribution of class sizes at a college, but you can't get
 reliable data from the Dean.  An alternative is to choose a random
-sample of students and how many students are in their
+sample of students and ask how many students are in their
 classes.  \index{bias!oversampling} \index{oversampling}
 
 The result would be biased for the reasons we've just seen, but you
@@ -2395,11 +2365,6 @@ def UnbiasPmf(pmf, label):
 
 It's similar to {\tt BiasPmf}; the only difference is that it
 divides each probability by {\tt x} instead of multiplying.
-
-The code for this example is in \url{chap03.py}.  It confirms that
-if we start with the actual distribution, apply {\tt BiasPmf}
-and apply {\tt UnbiasPmf} to the result, we get the original
-distribution back.
 
 
 \section{DataFrame indexing}
@@ -2435,7 +2400,7 @@ you can provide column names:
 \end{verbatim}
 
 You can also provide row names.  The set of row names is called the
-index; the row names themselves are called labels.
+{\bf index}; the row names themselves are called {\bf labels}.
 
 \begin{verbatim}
 >>> index = ['a', 'b', 'c', 'd']
@@ -2479,8 +2444,8 @@ B    0.61605
 Name: a, dtype: float64
 \end{verbatim}
 
-{\tt loc} can also take a list of labels, and {\tt iloc} can take a list 
-of integer positions.  The result is a DataFrame.
+{\tt loc} can also take a list of labels; in that case,
+the result is a DataFrame.
 
 \begin{verbatim}
 >>> indices = ['a', 'c']
@@ -2562,7 +2527,6 @@ Write functions called {\tt PmfMean} and {\tt PmfVar} that take a
 Pmf object and compute the mean and variance.  To test these methods,
 check that they are consistent with the methods {\tt Mean} and {\tt
   Var} provided by {\tt Pmf}.
-\index{{\tt pmf.py}@{\tt Pmf.py}}
 \end{exercise}
 
 
@@ -2614,10 +2578,9 @@ the race.
 
 So where does the bias come from?  During my time on the course, the
 chance of overtaking a runner, or being overtaken, is proportional to
-the difference in our speeds.  To see why, think about the extremes.
-If another runner is going at the same speed as me, neither of us will
-overtake the other.  If someone is going so fast that they cover the
-entire course while I am running, they are certain to overtake me.
+the difference in our speeds.  I am more likely to catch a slow
+runner, and more likely to be caught by a fast runner.  But runners
+at the same speed are unlikely to see each other.
 
 Write a function called {\tt ObservedPmf} that takes a Pmf representing
 the actual distribution of runners' speeds, and the speed of a running
@@ -2630,7 +2593,7 @@ pace of each runner to mph.
 
 Compute the distribution of speeds you would observe if you ran a
 relay race at 7.5 mph with this group of runners.  A solution to this
-exercise is in \url{http://thinkstats2.com/relay_soln.py}
+exercise is in \verb"relay_soln.py".
 \end{exercise}
 
 
@@ -2651,11 +2614,18 @@ size.
 size to get a probability.
 \index{normalization}
 
+\item index: In a pandas DataFrame, the index is a special column
+that contains the row labels.
+
 \end{itemize}
 
 
 \chapter{Cumulative distribution functions}
 \label{cumulative}
+
+This code for this chapter is in {\tt cumulative.py}.
+For information about downloading and
+working with this code, see Section~\ref{code}.
 
 
 \section{The limits of PMFs}
@@ -2713,7 +2683,7 @@ percentile,'' you did as well as or better than 90\% of the people who
 took the exam.
 
 Here's how you could compute the percentile rank of a value,
-\verb"your_score", relative to the scores in the sequence {\tt
+\verb"your_score", relative to the values in the sequence {\tt
   scores}:
 %
 \begin{verbatim}
@@ -2727,7 +2697,7 @@ def PercentileRank(scores, your_score):
     return percentile_rank
 \end{verbatim}
 
-The code in this section is in {\tt chap04.py}.  As an example, if the
+As an example, if the
 scores in the sequence were 55, 66, 77, 88 and 99, and you got the 88,
 then your percentile rank would be {\tt 100 * 4 / 5} which is 80.
 
@@ -2749,7 +2719,7 @@ the 50th percentile is the value with percentile rank 50.  In the
 distribution of exam scores, the 50th percentile is 77.
 \index{percentile}
 
-This implementation of {\tt Percentile} is not very efficient.  A
+This implementation of {\tt Percentile} is not efficient.  A
 better approach is to use the percentile rank to compute the index of
 the corresponding percentile:
 
@@ -2762,100 +2732,26 @@ def Percentile2(scores, percentile_rank):
 
 The difference between ``percentile'' and ``percentile rank'' can
 be confusing, and people do not always use the terms precisely.
-To summarize, {\tt PercentileRank} takes a score and computes
-its percentile rank in a set of scores; {\tt Percentile} takes
-a percentile rank and computes the corresponding score.
+To summarize, {\tt PercentileRank} takes a value and computes
+its percentile rank in a set of values; {\tt Percentile} takes
+a percentile rank and computes the corresponding value.
 
 
-\section{Conditional distributions}
-\index{conditional distribution}
-\index{distribution!conditional}
-
-A {\bf conditional distribution} is the distribution of a subset of
-the data, selected according to some condition.
-
-For example, if you are above average in weight, but way above average
-in height, then you might be relatively light for your height.  Here's
-how you could make that claim more precise.
-
-\begin{enumerate}
-
-\item Select a cohort of people who are the same height as you (within
-some range).
-\index{cohort}
-
-\item Find the CDF of weight for those people.
-
-\item Find the percentile rank of your weight in that distribution.
-
-\end{enumerate}
-
-Percentile ranks are useful for comparing measurements across
-different groups.  For example, people who compete in foot races are
-usually grouped by age and gender.  To compare people in different
-age groups, you can convert race times to percentile ranks.
-\index{percentile rank} \index{rank!percentile}
-
-A few years ago I ran the James Joyce Ramble 10K in
-Dedham MA; the results are available from
-\url{http://coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml}.
-I finished in 42:44, which was 97th in a field of 1633.  I beat or
-tied 1537 runners out of 1633, so my percentile rank in the field is
-94\%.  \index{James Joyce Ramble} \index{race time}
-
-More generally, given position and field size, we can compute
-percentile rank:
-
-\begin{verbatim}
-def PositionToPercentile(position, field_size):
-    beat = field_size - position + 1
-    percentile = 100.0 * beat / field_size
-    return percentile
-\end{verbatim}
-
-In my age group, denoted M4049 for ``male between 40 and 49 years of
-age'', I came in 26th out of 256.  So my percentile rank in my age
-group was 90\%.
-
-If I am still running in 10 years (and I hope I am), I will be in
-the M5059 division.  Assuming that my percentile rank in my division
-is the same, how much slower should I expect to be?
-
-I can answer that question by converting my percentile rank in M4049
-to a position in M5059.  Here's the code:
-
-\begin{verbatim}
-def PercentileToPosition(percentile, field_size):
-    beat = percentile * field_size / 100.0
-    position = field_size - beat + 1
-    return position
-\end{verbatim}
-
-There were 171 people in M5059, so I would have to come in between
-17th and 18th place to have the same percentile rank.  The finishing
-time of the 17th runner in M5059 was 46:05, so in the next 10 years I
-should expect to slow down by 3--4 minutes.
-
-I maintain a friendly rivalry with a student who is in the
-F2039 division.  How fast does she have to run her next 10K to
-``beat'' me in terms of percentile ranks?
-
-
-\section{Cumulative distribution functions}
-\index{cumulative distribution function}
+\section{CDFs}
 \index{CDF}
 
 Now that we understand percentiles and percentile ranks,
 we are ready to tackle the {\bf cumulative distribution function}
 (CDF).  The CDF is the function that maps from a value to its
-percentile rank in a distribution.
+percentile rank.
+\index{cumulative distribution function}
 
 The CDF is a function of $x$, where $x$ is any value that might appear
 in the distribution.  To evaluate $\CDF(x)$ for a particular value of
 $x$, we compute the fraction of values in the distribution less
 than or equal to $x$.
 
-Here's what that looks like as a function that takes a sample,
+Here's what that looks like as a function that takes a sequence,
 {\tt t}, and a value, {\tt x}:
 %
 \begin{verbatim}
@@ -2869,12 +2765,12 @@ def EvalCdf(t, x):
     return prob
 \end{verbatim}
 
-This function should look familiar; it is almost identical to {\tt
-  PercentileRank}, except that the result is in a probability in the
-range 0--1 rather than a percentile rank in the range 0--100.
+This function is almost identical to {\tt PercentileRank}, except that
+the result is a probability in the range 0--1 rather than a
+percentile rank in the range 0--100.
 
-As an example, suppose a sample has the values {\tt [1, 2, 2, 3, 5]}.
-Here are some values from its CDF:
+As an example, suppose we collect a sample with the values 
+{\tt [1, 2, 2, 3, 5]}.  Here are some values from its CDF:
 %
 \[ CDF(0) = 0 \]
 %
@@ -2905,30 +2801,20 @@ The CDF of a sample is a step function.
 
 
 \section{Representing CDFs}
-\index{{\tt cdf.py}@{\tt Cdf.py}}
 \index{Cdf object}
 
-{\tt thinkstats2} provides a class named
-{\tt Cdf} that represents CDFs.
-Cdfs are implemented with two sorted lists: {\tt xs}, which contains
-the values, and {\tt ps}, which contains the probabilities.  The
-fundamental methods {\tt Cdf} provides are:
+{\tt thinkstats2} provides a class named {\tt Cdf} that represents
+CDFs.  The fundamental methods {\tt Cdf} provides are:
 
 \begin{itemize}
 
 \item {\tt Prob(x)}: Given a value {\tt x}, computes the probability
-  $p = \CDF(x)$.
+  $p = \CDF(x)$.  The bracket operator is equivalent to {\tt Prob}.
 
 \item {\tt Value(p)}: Given a probability {\tt p}, computes the
 corresponding value, {\tt x}; that is, the {\bf inverse CDF} of {\tt p}.
 
 \end{itemize}
-
-Because {\tt xs} and {\tt ps} are sorted, these operations use the
-binary search algorithm, which is efficient; the run time is proportional
-to the logarithm of the number of values; see
-\url{https://en.wikipedia.org/wiki/Binary_search_algorithm}.
-\index{binary search algorithm}
 
 \begin{figure}
 % cumulative.py
@@ -2938,29 +2824,31 @@ to the logarithm of the number of values; see
 \end{figure}
 
 The Cdf constructor can take as an argument a list of values,
-a pandas Series, a Hist, Pmf, or another Cdf.
-
-{\tt thinkplot.py} provides functions named {\tt Cdf} and
-{\tt Cdfs} that plot Cdfs as lines.
-\index{{\tt thinkplot.py}}
-For example, here's the code to make and plot the CDF of pregnancy
-length for all live births.
+a pandas Series, a Hist, Pmf, or another Cdf.  The following
+code makes a Cdf for the distribution of pregnancy lengths in
+the NSFG:
 
 \begin{verbatim}
     live, firsts, others = first.MakeFrames()
     cdf = thinkstats2.Cdf(live.prglngth, label='prglngth')
+\end{verbatim}
+
+{\tt thinkplot} provides a function named {\tt Cdf} that
+plots Cdfs as lines:
+\index{{\tt thinkplot}}
+
+\begin{verbatim}
     thinkplot.Cdf(cdf)
     thinkplot.Show(xlabel='weeks', ylabel='CDF')
 \end{verbatim}
 
-This code is in {\tt cumulative.py}.
 Figure~\ref{cumulative_prglngth_cdf} shows the result.  One way to
 read a CDF is to look up percentiles.  For example, it looks like
 about 10\% of pregnancies are shorter than 36 weeks, and about 90\%
 are shorter than 41 weeks.  The CDF also provides a visual
 representation of the shape of the distribution.  Common values appear
 as steep or vertical sections of the CDF; in this example, the mode at
-39 weeks is apparent.  There are very few values below 30 weeks, so
+39 weeks is apparent.  There are few values below 30 weeks, so
 the CDF in this range is flat.
 
 It takes some time to get used to CDFs, but once you
@@ -2996,7 +2884,8 @@ weight for first babies and others.
 \end{figure}
 
 Figure~\ref{cumulative_birthwgt_cdf} shows the result.
-This figure makes the shape of the distributions, and the differences
+Compared to Figure~\ref{nsfg_birthwgt_pmf},
+this figure makes the shape of the distributions, and the differences
 between them, much clearer.  We can see that first babies are slightly
 lighter throughout the distribution, with a larger discrepancy above 
 the mean.
@@ -3020,7 +2909,7 @@ and percentile ranks.  The {\tt Cdf} class provides these two methods:
 \begin{itemize}
 
 \item {\tt PercentileRank(x)}: Given a value {\tt x}, computes its
-  percentile rank, $100 \CDF(x)$.
+  percentile rank, $100 \cdot \CDF(x)$.
 
 \item {\tt Percentile(p)}: Given a percentile rank {\tt rank},
   computes the corresponding value, {\tt x}.  Equivalent to {\tt
@@ -3045,7 +2934,7 @@ is the difference between the 75th and 25th percentiles.
 More generally, percentiles are often used to summarize the shape
 of a distribution.  For example, the distribution of income is
 often reported in ``quintiles''; that is, it is split at the
-the 20th, 40th, 60th and 80th percentiles.  Other distributions
+20th, 40th, 60th and 80th percentiles.  Other distributions
 are divided into ten ``deciles''.  Statistics like these that represent
 equally-spaced points in a CDF are called {\bf quantiles}.
 For more, see \url{https://en.wikipedia.org/wiki/Quantile}.
@@ -3060,23 +2949,34 @@ births and look up the percentile rank of their birth weights.
 Now suppose we compute the CDF of the percentile ranks.  What do
 you think the distribution will look like?
 
-Here's the code to compute it:
+Here's how we can compute it.  First, we make the Cdf of
+birth weights:
 
 \begin{verbatim}
     weights = live.totalwgt_lb
     cdf = thinkstats2.Cdf(weights, label='totalwgt_lb')
+\end{verbatim}
 
+Then we generate a sample and compute the percentile rank of
+each value in the sample.
+
+\begin{verbatim}
     sample = np.random.choice(weights, 100, replace=True)
     ranks = [cdf.PercentileRank(x) for x in sample]
+\end{verbatim}
 
+{\tt sample}
+is a random sample of 100 birthweights, chosen with {\bf replacement};
+that is, the same value could be chosen more than once.  {\tt ranks}
+is a list of percentile ranks.
+
+Finally we make and plot the Cdf of the percentile ranks.
+
+\begin{verbatim}
     rank_cdf = thinkstats2.Cdf(ranks)
     thinkplot.Cdf(rank_cdf)
     thinkplot.Show(xlabel='percentile rank', ylabel='CDF')
 \end{verbatim}
-
-{\tt cdf} is the distribution of all birthweights.  {\tt sample}
-is a random sample of 100 birthweights, chosen with {\bf replacement};
-that is, the same value could be chosen more than once.
 
 \begin{figure}
 % cumulative.py
@@ -3085,13 +2985,11 @@ that is, the same value could be chosen more than once.
 \label{cumulative_random}
 \end{figure}
 
-{\tt ranks} is a list of percentile ranks for the 100 values
-in the sample.  \verb"rank_cdf" is the CDF of those ranks.
 Figure~\ref{cumulative_random} shows the result.  The CDF is
 approximately a straight line, which means that the distribution
 is uniform.
 
-That result might be non-obvious, but it is a consequence of
+That outcome might be non-obvious, but it is a consequence of
 the way the CDF is defined.  What this figure shows is that 10\%
 of the sample is below the 10th percentile, 20\% are below the
 20th percentile, and so on, exactly as we should expect.
@@ -3124,26 +3022,52 @@ that corresponds to the percentile rank you chose.
 {\tt n}, and returns a list of {\tt n} values chosen at random
 from the Cdf.
 
-If {\tt Sample} works correctly, the distribution of the sample
-should match the original distribution.  Here's how we can check:
+
+\section{Comparing percentile ranks}
+
+Percentile ranks are useful for comparing measurements across
+different groups.  For example, people who compete in foot races are
+usually grouped by age and gender.  To compare people in different
+age groups, you can convert race times to percentile ranks.
+\index{percentile rank} \index{rank!percentile}
+
+A few years ago I ran the James Joyce Ramble 10K in
+Dedham MA; I finished in 42:44, which was 97th in a field of 1633.  I beat or
+tied 1537 runners out of 1633, so my percentile rank in the field is
+94\%.  \index{James Joyce Ramble} \index{race time}
+
+More generally, given position and field size, we can compute
+percentile rank:
 
 \begin{verbatim}
-    weights = live.totalwgt_lb
-    cdf = thinkstats2.Cdf(weights, label='totalwgt_lb')
-
-    sample = cdf.Sample(1000)
-    sample_cdf = thinkstats2.Cdf(sample, label='sample')
-    thinkplot.Cdfs([cdf, sample_cdf])
-    thinkplot.Show(xlabel='weight (pounds)',
-                   ylabel='CDF')
+def PositionToPercentile(position, field_size):
+    beat = field_size - position + 1
+    percentile = 100.0 * beat / field_size
+    return percentile
 \end{verbatim}
 
-Again, {\tt cdf} is the distribution of birth weights for live
-births.  {\tt sample} is a random sample drawn from {\tt cdf},
-and \verb"sample_cdf" is its Cdf.
+In my age group, denoted M4049 for ``male between 40 and 49 years of
+age'', I came in 26th out of 256.  So my percentile rank in my age
+group was 90\%.
 
-This code is in {\tt cumulative.py}; you can run it to confirm
-that {\tt Cdf.Sample} works.
+If I am still running in 10 years (and I hope I am), I will be in
+the M5059 division.  Assuming that my percentile rank in my division
+is the same, how much slower should I expect to be?
+
+I can answer that question by converting my percentile rank in M4049
+to a position in M5059.  Here's the code:
+
+\begin{verbatim}
+def PercentileToPosition(percentile, field_size):
+    beat = percentile * field_size / 100.0
+    position = field_size - beat + 1
+    return position
+\end{verbatim}
+
+There were 171 people in M5059, so I would have to come in between
+17th and 18th place to have the same percentile rank.  The finishing
+time of the 17th runner in M5059 was 46:05, so that's the time I will
+have to beat to maintain my percentile rank.
 
 
 
@@ -3169,9 +3093,6 @@ should have the same probability.
 
 Generate 1000 numbers from {\tt random.random} and plot their
 PMF and CDF.  Is the distribution uniform?
-
-You can read about the uniform distribution at
-\url{http://wikipedia.org/wiki/Uniform_distribution_(discrete)}.
 \index{uniform distribution}
 \index{distribution!uniform}
 
@@ -3190,26 +3111,22 @@ less than or equal to a given value.
 \item percentile: The value associated with a given percentile rank.
 \index{percentile}
 
-\item conditional distribution: The distribution of a subset of
-the data, selected according to some condition.
-\index{conditional distribution}
-
-\item Cumulative distribution function (CDF): a function that maps
+\item cumulative distribution function (CDF): a function that maps
   from values to their cumulative probabilities.  $\CDF(x)$ is the
   fraction of the sample less than or equal to $x$.  \index{CDF}
 
-\item Inverse CDF: a function that maps from a probability, $p$, to
-  the corresponding value.
+\item inverse CDF: a function that maps from a cumulative probability,
+  $p$, to the corresponding value.
 
 \item median: The 50th percentile, often used as a measure of central
   tendency.  \index{median}
 
-\item interquartile range: A measure of spread, the difference between
-the 75th and 25th percentiles.
+\item interquartile range: The difference between
+the 75th and 25th percentiles, used as a measure of spread.
 \index{interquartile range}
 
 \item quantile: A sequence of values that correspond to equally-spaced
-percentile ranks; for example, quartiles are
+percentile ranks; for example, the quartiles of a distribution are
 the 25th, 50th and 75th percentiles.
 
 \item replacement: A property of a sampling process. ``With replacement''
@@ -3265,7 +3182,7 @@ analytic function:
 %
 The parameter, $\lambda$, determines the shape of the distribution.
 Figure~\ref{analytic_expo_cdf} shows what this CDF looks like with
-$\lambda = 0.5, 1, 2$.
+$\lambda = 0.5, 1, and 2$.
   \index{parameter}
 
 In the real world, exponential distributions
@@ -3316,7 +3233,7 @@ midnight.
 
 {\tt diffs} is the difference between consecutive birth times, and
 {\tt cdf} is the distribution of these interarrival times.
-Figure~\ref{analytic_interarrival_cdf} shows the CDF (left).  It seems
+Figure~\ref{analytic_interarrival_cdf} (left) shows the CDF.  It seems
 to have the general shape of an exponential distribution, but how can
 we tell?
 
@@ -3353,26 +3270,26 @@ With the argument {\tt complement=True}, {\tt thinkplot.Cdf} computes
 the complementary CDF before plotting.  And with {\tt yscale='log'},
 {\tt thinkplot.Show} sets the {\tt y} axis to a logarithmic scale.
 
-Figure~\ref{analytic_interarrival_cdf} shows the result (right).  It is not
+Figure~\ref{analytic_interarrival_cdf} (right) shows the result.  It is not
 exactly straight, which indicates that the exponential distribution is
 not a perfect model for this data.  Most likely the underlying
 assumption---that a birth is equally likely at any time of day---is
 not exactly true.  Nevertheless, it might be reasonable to model this
-dataset with an exponential distribution.  In that case we can
+dataset with an exponential distribution.  With that simplification, we can
 summarize the distribution with a single parameter.
 
 The parameter, $\lambda$, can be interpreted as a rate; that is, the
 number of events that occur, on average, in a unit of time.  In this
 example, 44 babies are born in 24 hours, so the rate is $\lambda =
-1.83$ births per hour.  The mean of an exponential distribution is
-$1/\lambda$, so the mean time between births is 0.55 hours.
+0.0306$ births per minute.  The mean of an exponential distribution is
+$1/\lambda$, so the mean time between births is 32.7 minutes.
 
 
 \section{The normal distribution}
 \label{normal}
 
 The {\bf normal distribution}, also called Gaussian, is commonly
-used because it describes so many phenomena, at least approximately.
+used because it describes many phenomena, at least approximately.
 It turns out that there is a good reason for its ubiquity, which we
 will get to in Section~\ref{CLT}.
 \index{CDF}
@@ -3448,38 +3365,28 @@ a normal distribution with the same mean and variance.
 \end{figure}
 
 The normal distribution is a good model for this dataset, so
-we can summarize the distribution with the parameters
-$\mu = 7.28$ and $\sigma = 1.24$, and the resulting error
+if we summarize the distribution with the parameters
+$\mu = 7.28$ and $\sigma = 1.24$, the resulting error
 (difference between the model and the data) is small.
 \index{model}
 \index{percentile}
 
 Below the 10th percentile there is a discrepancy between the data
 and the model; there are more light babies than we would expect in
-a normal distribution.  If we are interested in studying preterm
+a normal distribution.  If we are specifically interested in preterm
 babies, it would be important to get this part of the distribution
 right, so it might not be appropriate to use the normal
 model.
 
 
 \section{Normal probability plot}
-\index{normal probability plot}
-\index{plot!normal probability}
-\index{exponential distribution}
-\index{distribution!exponential}
-\index{Weibull distribution}
-\index{distribution!Weibull}
-\index{Pareto distribution}
-\index{distribution!Pareto}
 
 For the exponential distribution, and a few others, there are
 simple transformations we can use to test whether an analytic
-distribution is a good model of a dataset.
+distribution is a good model for a dataset.
+\index{exponential distribution}
+\index{distribution!exponential}
 \index{model}
-\index{normal distribution}
-\index{distribution!normal}
-\index{Gaussian distribution}
-\index{distribution!Gaussian}
 
 For the normal distribution there is no such transformation, but there
 is an alternative called a {\bf normal probability plot}.  There
@@ -3487,6 +3394,12 @@ are two ways to generate a normal probability plot: the hard way
 and the easy way.  If you are interested in the hard way, you can
 read about it at \url{https://en.wikipedia.org/wiki/Normal_probability_plot}.
 Here's the easy way:
+\index{normal probability plot}
+\index{plot!normal probability}
+\index{normal distribution}
+\index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 
 \begin{enumerate}
 
@@ -3530,12 +3443,13 @@ previous section.  It plots a gray line that represents the model
 and a blue line that represents the data.
 
 \begin{verbatim}
+def MakeNormalPlot(weights):
     mean = weights.mean()
     std = weights.std()
 
     xs = [-4, 4]
-    xs, ys = thinkstats2.FitLine(xs, inter=mean, slope=std)
-    thinkplot.Plot(xs, ys, color='gray', label='model')
+    fxs, fys = thinkstats2.FitLine(xs, inter=mean, slope=std)
+    thinkplot.Plot(fxs, fys, color='gray', label='model')
 
     xs, ys = thinkstats2.NormalProbability(weights)
     thinkplot.Plot(xs, ys, label='birth weights')
@@ -3633,7 +3547,7 @@ the Behavioral Risk Factor Surveillance System
   Data. Atlanta, Georgia: U.S. Department of Health and Human
   Services, Centers for Disease Control and Prevention, 2008.}  In
 2008, they interviewed 414,509 respondents and asked about their
-demographics, health and health risks.
+demographics, health, and health risks.
 Among the data they collected are the weights in kilograms of
 398,484 respondents.
 \index{Behavioral Risk Factor Surveillance System}
@@ -3870,6 +3784,8 @@ $\sigma = 7.7$ cm for men, and $\mu = 163$ cm and $\sigma = 7.3$ cm for
 women.
 \index{normal distribution}
 \index{distribution!normal}
+\index{Gaussian distribution}
+\index{distribution!Gaussian}
 \index{height}
 \index{Blue Man Group}
 \index{Group, Blue Man}
@@ -4206,11 +4122,10 @@ and computes a kernel density estimate.  The result is a
 \verb"gaussian_kde" object that provides an {\tt evaluate}
 method.
 
-{\tt Density} takes a value, calls \verb"gaussian_kde.evaluate",
-and returns the resulting density\footnote{The word ``Gaussian'' appears
-in the name because it uses a Gaussian filter to smooth
-the KDE.}.  
-\index{density}
+{\tt Density} takes a value, calls \verb"gaussian_kde.evaluate", and
+returns the resulting density.  The word ``Gaussian'' appears in the
+name because it uses a filter based on a Gaussian distribution to
+smooth the KDE.  \index{density}
 
 Here's an example that generates a sample from a normal
 distribution and then makes an EstimatedPdf to fit it:
@@ -5885,8 +5800,8 @@ so working backwards, we might choose
 %
 $\lamhat$ is an
 estimator of $\lambda$.  And not just any estimator; it is also the
-maximum likelihood estimator\footnote{See
-\url{http://wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}.}.
+maximum likelihood estimator (see
+\url{http://wikipedia.org/wiki/Exponential_distribution#Maximum_likelihood}).
 So if you want to maximize your chance of guessing $\lambda$ exactly,
 $\lamhat$ is the way to go.
 \index{MLE}
@@ -6792,8 +6707,8 @@ whether it is significant, you have a good chance of generating a
 false positive.
 
 To compensate for multiple tests, you can adjust the p-value
-threshold\footnote{See
-  \url{https://en.wikipedia.org/wiki/Holm-Bonferroni_method}}.  Or you
+threshold (see
+  \url{https://en.wikipedia.org/wiki/Holm-Bonferroni_method}).  Or you
 can address both problems by partitioning the data, using one set for
 exploration and the other for testing.
 
@@ -7173,7 +7088,7 @@ birth, and {\tt iters}, the number of experiments to simulate.  It
 uses {\tt ResampleRows} to resample the observed pregnancies.  We've
 already seen {\tt SampleRows}, which chooses random rows from a
 DataFrame.  {\tt thinkstats2} also provides {\tt ResampleRows}, which
-handles the case when the new sample is the same size as the original:
+returns a sample the same size as the original:
 
 \begin{verbatim}
 def ResampleRows(df):
@@ -7188,11 +7103,12 @@ I summarize the sampling distributions by printing the standard
 error and confidence interval:
 
 \begin{verbatim}
-def Summarize(values, actual):
-    std = thinkstats2.Std(values, mu=actual)
+def Summarize(values, actual=None):
+    mean = thinkstats2.Mean(values)
+    stderr = thinkstats2.Std(values, mu=actual)
     cdf = thinkstats2.Cdf(values)
-    ci = cdf.Percentile(5), cdf.Percentile(95)
-    print('SE, CI', std, ci)
+    ci = cdf.ConfidenceInterval(90)
+    print('mean, SE, CI', mean, stderr, ci)
 \end{verbatim}
 
 For the intercept, the estimated value is 6.83, with standard error
@@ -7211,37 +7127,30 @@ all of the fitted lines, or for a less cluttered representation,
 plot a 90\% confidence interval for each age.  Here's the code:
 
 \begin{verbatim}
-def PlotConfidenceIntervals(xs, inters, slopes, **options):
-    size = len(slopes), len(xs)
-    array = np.zeros(size)
-
+def PlotConfidenceIntervals(xs, inters, slopes,
+                            percent=90, **options):
+    fys_seq = []
     for i, (inter, slope) in enumerate(zip(inters, slopes)):
         fxs, fys = thinkstats2.FitLine(xs, inter, slope)
-        array[i,] = fys
+        fys_seq.append(fys)
 
-    xs = np.sort(xs)
-    array = np.sort(array, axis=0)
-    
-    low = array[5,]
-    high = array[95,]
-    thinkplot.FillBetween(xs, low, high, **options)
+    p = (100 - percent) / 2
+    percents = p, 100 - p
+    low, high = thinkstats2.PercentileRows(fys_seq, percents)
+    thinkplot.FillBetween(fxs, low, high, **options)
 \end{verbatim}
 
 {\tt xs} is the sequence of mother's age.  {\tt inters} and {\tt slopes}
 are the estimates parameters generated by {\tt SamplingDistributions}.
+{\tt percent} indicates which confidence interval to plot.
 
-{\tt PlotConfidenceIntervals} generates a fitted line for each pairs
-of {\tt inter} and {\tt slope} and stores the results in an array with
-one row per simulated experiment.  Then it sorts each column in the
-array, and selects the row with indices 5 and 95, which contain the
-5th and 95th percentiles (this is a simplified version of the code for
-the case where there are 101 rows).
-
+{\tt PlotConfidenceIntervals} generates a fitted line for each pair
+of {\tt inter} and {\tt slope} and stores the results in a sequence,
+\verb"fys_seq".  Then it uses {\tt PercentileRows} to select the
+upper and lower percentiles of {\tt y} for each value of {\tt x}.
+For a 90\% confidence interval, it selects the 5th and 95th percentiles.
 {\tt FillBetween} draws a polygon that fills the space between two
-lines.  Figure~\ref{linear3} shows the 50\% and 90\% confidence
-intervals.  The vertical width of the region represents the effect of
-sampling error; the effect is smaller for values near the mean and
-larger for the extremes.
+lines.
 
 \begin{figure}
 % linear.py
@@ -7250,6 +7159,12 @@ larger for the extremes.
   fitted line due to sampling error of {\tt inter} and {\tt slope}.}
 \label{linear3}
 \end{figure}
+
+Figure~\ref{linear3} shows the 50\% and 90\% confidence
+intervals for curves fitted to the high quality price data.
+  The vertical width of the region represents the effect of
+sampling error; the effect is smaller for values near the mean and
+larger for the extremes.
 
 
 \section{Goodness of fit}
@@ -8615,8 +8530,8 @@ about downloading and working with this code, see Section~\ref{code}.
 \section{Importing and cleaning}
 
 I downloaded Jones's data from
-\url{http://zmjones.com/static/data/mj-clean.csv} and read it
-into a pandas DataFrame:
+\url{http://zmjones.com/static/data/mj-clean.csv} and read it into a
+pandas DataFrame:
 
 \begin{verbatim}
     transactions = pandas.read_csv('mj-clean.csv', parse_dates=[5])
@@ -8673,10 +8588,9 @@ def GroupByQualityAndDay(transactions):
     return dailies
 \end{verbatim}
 
-{\tt groupby} is a DataFrame method that returns a GroupBy
-object; used in a for loop, {\tt groups} iterates the names of the groups
-and the DataFrames that represent them.
-Since the values of {\tt quality}
+{\tt groupby} is a DataFrame method that returns a GroupBy object;
+used in a for loop, {\tt groups} iterates the names of the groups and
+the DataFrames that represent them.  Since the values of {\tt quality}
 are {\tt low}, {\tt medium}, and {\tt high}, we get three groups with
 those names.
 
@@ -8717,6 +8631,7 @@ of years since the first transaction as a floating-point number.
 
 The resulting DataFrame has columns {\tt ppg}, {\tt date}, and
 {\tt years}.
+
 
 \section{Plotting}
 
@@ -9006,7 +8921,7 @@ series; we can solve that problem by adding in resampled
 residuals\footnote{A note on vocabulary: in this book I am using
 ``resampling'' in the statistical sense, which is drawing a random
 sample from a population that is, itself, a sample.  In the context
-of time series analysis, it has another meaning, changing the
+of time series analysis, it has another meaning: changing the
 time between measurements in a series.  I don't use the second
 meaning in this book, but you might encounter it.}:
 
@@ -9284,9 +9199,9 @@ def SimulateResults(daily, iters=101):
 Section~\ref{timeregress}, to estimate the slope and intercept
 of the observed values.
 
-Each time through the loop, we generate a ``fake'' dataset by resampling
-the residuals and adding them to the fitted values.  Then we run
-a linear model on the fake data and store the RegressionResults
+Each time through the loop, it generates a ``fake'' dataset by
+resampling the residuals and adding them to the fitted values.  Then
+it runs a linear model on the fake data and stores the RegressionResults
 object.
 
 The next step is to use the simulated results to generate predictions:
@@ -9297,24 +9212,23 @@ def GeneratePredictions(result_seq, years, add_resid=False):
     d = dict(Intercept=np.ones(n), years=years, years2=years**2)
     predict_df = pandas.DataFrame(d)
     
-    size = len(result_seq), n
-    array = np.zeros(size)
-
+    predict_seq = []
     for i, fake_results in enumerate(result_seq):
         predict = fake_results.predict(predict_df)
         if add_resid:
             predict += thinkstats2.Resample(fake_results.resid, n)
-        array[i,] = predict
+        predict_seq.append(predict)
 
-    array = np.sort(array, axis=0)
-    return array
+    return predict_seq
 \end{verbatim}
 
 {\tt GeneratePredictions} takes the sequence of results from the
 previous step, as well as {\tt years}, which is a sequence of
-floats that specifies the interval we should generate predictions for,
-and \verb"add_resid", which indicates whether we should add resampled
+floats that specifies the interval to generate predictions for,
+and \verb"add_resid", which indicates whether it should add resampled
 residuals to the straight-line prediction.
+{\tt GeneratePredictions} iterates through the sequence of
+RegressionResults and generates a sequence of predictions.
 
 \begin{figure}
 % timeseries.py
@@ -9324,17 +9238,37 @@ to sampling error and prediction error.}
 \label{timeseries4}
 \end{figure}
 
-The last step is to plot the predictions; the code for that is
-in {\tt timeseries.py}.  Figure~\ref{timeseries4} shows the result.
+Finally, here's the code that plots a 90\% confidence interval for
+the predictions:
+
+\begin{verbatim}
+def PlotPredictions(daily, years, iters=101, percent=90):
+    result_seq = SimulateResults(daily, iters=iters)
+    p = (100 - percent) / 2
+    percents = p, 100-p
+
+    predict_seq = GeneratePredictions(result_seq, years, True)
+    low, high = thinkstats2.PercentileRows(predict_seq, percents)
+    thinkplot.FillBetween(years, low, high, alpha=0.3, color='gray')
+
+    predict_seq = GeneratePredictions(result_seq, years, False)
+    low, high = thinkstats2.PercentileRows(predict_seq, percents)
+    thinkplot.FillBetween(years, low, high, alpha=0.5, color='gray')
+\end{verbatim}
+
+{\tt PlotPredictions} calls {\tt GeneratePredictions} twice: once
+with \verb"add_resid=True" and again with \verb"add_resid=False".
+It uses {\tt PercentileRows} to select the 5th and 95th percentiles
+for each year, then plots a gray region between these bounds.
+
+Figure~\ref{timeseries4} shows the result.
 The dark gray region represents a 90\% confidence interval for
 the sampling error; that is, uncertainty about the estimated
-slope and intercept due to sampling.  It is generated by calling
-{\tt GeneratePredictions} with \verb"add_resid=False".
+slope and intercept due to sampling.
 
 The lighter region shows
 a 90\% confidence interval for prediction error, which is the
-sum of sampling error and random variation.  It is generated by calling
-{\tt GeneratePredictions} with \verb"add_resid=True".
+sum of sampling error and random variation.
 
 These regions quantify sampling error and random variation, but
 not modeling error.  In general modeling error is hard to quantify,
@@ -9374,7 +9308,7 @@ variation in the interval of observation.
 The model based on the entire interval has positive slope, indicating
 that prices were increasing.  But the most recent interval shows signs
 of decreasing prices, so models based on the most recent data have
-negative slope.  As a result, the widest confidence interval includes
+negative slope.  As a result, the widest predictive interval includes
 the possibility of decreasing prices over the next year.
 
 
@@ -9706,7 +9640,7 @@ survival and hazard functions.  But in many real-world
 scenarios, we can't measure the distribution of lifetimes directly.
 We have to infer it.
 
-For example, suppose you are following a cohort of patients to see how
+For example, suppose you are following a group of patients to see how
 long they survive after diagnosis.  Not all patients are diagnosed
 on the same day, so at any point in time, some patients have survived
 longer than others.  If some patients have died, their survival times
@@ -9722,8 +9656,7 @@ As a more cheerful example, I will use NSFG data to quantify how
 long respondents ``survive'' until they get married for the
 first time.  The range of respondents' ages is 14 to 44 years, so
 the dataset provides a snapshot of women at different stages in their
-lives, in the same way that a medical cohort might include patients
-at difference stages of disease.
+lives.
 
 For women who have been married, the dataset includes the date
 of their first marriage and their age at the time.
@@ -11124,6 +11057,7 @@ to go past Step 1.
 
 \section{Exercises}
 
+A solution to this exercise is in \verb"chap14ex_soln.py"
 
 \begin{exercise}
 In Section~\ref{lognormal}, we saw that the distribution
@@ -11151,8 +11085,8 @@ To model this phenomenon, choose a distribution for $f$ that seems
 reasonable, then generate a sample of adult weights by choosing a
 random value from the distribution of birthweights, choosing a
 sequence of factors from the distribution of $f$, and computing the
-product.  What value of $n$
-is needed to converge to a lognormal distribution?
+product.  What value of $n$ is needed to converge to a lognormal
+distribution?
 
 \index{logarithm}
 \index{product}
@@ -11168,14 +11102,45 @@ the null hypothesis that both samples are drawn from the same
 population.
 
 We can also use this distribution to find the standard error of the
-estimate and confidence intervals, but
-that would only be approximately correct.  To be more precise,
-we should compute the sampling distribution of $\delta$ under the
-alternate hypothesis that the samples are drawn from different
-populations.
+estimate and confidence intervals, but that would only be
+approximately correct.  To be more precise, we should compute the
+sampling distribution of $\delta$ under the alternate hypothesis that
+the samples are drawn from different populations.
 
 Compute this distribution and use it to calculate the standard error
 and a 90\% confidence interval for the difference in means.
+\end{exercise}
+
+
+\begin{exercise}
+In a recent paper\footnote{``Evidence for the persistent effects of an
+  intervention to mitigate gender-sterotypical task allocation within
+  student engineering teams,'' Proceedings of the IEEE Frontiers in Education
+Conference, 2014.}, Stein et al.~investigate the
+effects of an intervention intended to mitigate gender-stereotypical
+task allocation within student engineering teams.
+
+Before and after the intervention, students responded to a survey that
+asked them to rate their contribution to each aspect of the project on
+a 7-point scale.
+
+Before the intervention, male students reported higher scores for the
+programming aspect of the project than female students; on average men
+reported a score of 3.57 with standard error 0.28.  Women reported
+1.91, on average, with standard error 0.32.
+
+Compute the sampling distribution of the gender gap (the difference in
+means), and test whether it is statistically significant.  Because you
+are given standard errors for the estimated means, you don't need to
+know the sample size to figure out the sampling distributions.
+
+After the intervention, the gender gap was smaller: the average score
+for men was 3.44 (SE 0.16); the average score for women was 3.18 (SE
+0.16).  Again, compute the sampling distribution of the gender gap and
+test it.
+
+Finally, estimate the change in gender gap; what is the sampling
+distribution of this change, and is it statistically significant?
 \end{exercise}
 
 

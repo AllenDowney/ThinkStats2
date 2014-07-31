@@ -215,23 +215,20 @@ def GeneratePredictions(result_seq, years, add_resid=False):
     years: sequence of times (in years) to make predictions for
     add_resid: boolean, whether to add in resampled residuals
 
-    returns: array with one row per model result, one column per timestep
+    returns: sequence of predictions
     """
     n = len(years)
     d = dict(Intercept=np.ones(n), years=years, years2=years**2)
     predict_df = pandas.DataFrame(d)
     
-    size = len(result_seq), n
-    array = np.zeros(size)
-
+    predict_seq = []
     for i, fake_results in enumerate(result_seq):
         predict = fake_results.predict(predict_df)
         if add_resid:
             predict += thinkstats2.Resample(fake_results.resid, n)
-        array[i,] = predict
+        predict_seq.append(predict)
 
-    array = np.sort(array, axis=0)
-    return array
+    return predict_seq
 
 
 def GenerateSimplePrediction(results, years):
@@ -250,18 +247,6 @@ def GenerateSimplePrediction(results, years):
     return predict
 
 
-def PercentileRow(array, p):
-    """Selects the row from a sorted array that maps to percentile p.
-
-    p: float 0--100
-
-    returns: NumPy array (one row)
-    """
-    rows, cols = array.shape
-    index = int(rows * p / 100)
-    return array[index,]
-
-
 def PlotPredictions(daily, years, iters=101, percent=90, func=RunLinearModel):
     """Plots predictions.
 
@@ -273,15 +258,14 @@ def PlotPredictions(daily, years, iters=101, percent=90, func=RunLinearModel):
     """
     result_seq = SimulateResults(daily, iters=iters, func=func)
     p = (100 - percent) / 2
+    percents = p, 100-p
 
-    predictions = GeneratePredictions(result_seq, years, add_resid=True)
-    low = PercentileRow(predictions, p)
-    high = PercentileRow(predictions, 100-p)
+    predict_seq = GeneratePredictions(result_seq, years, add_resid=True)
+    low, high = thinkstats2.PercentileRows(predict_seq, percents)
     thinkplot.FillBetween(years, low, high, alpha=0.3, color='gray')
 
-    predictions = GeneratePredictions(result_seq, years, add_resid=False)
-    low = PercentileRow(predictions, p)
-    high = PercentileRow(predictions, 100-p)
+    predict_seq = GeneratePredictions(result_seq, years, add_resid=False)
+    low, high = thinkstats2.PercentileRows(predict_seq, percents)
     thinkplot.FillBetween(years, low, high, alpha=0.5, color='gray')
 
 
@@ -296,10 +280,10 @@ def PlotIntervals(daily, years, iters=101, percent=90, func=RunLinearModel):
     """
     result_seq = SimulateIntervals(daily, iters=iters, func=func)
     p = (100 - percent) / 2
+    percents = p, 100-p
 
-    predictions = GeneratePredictions(result_seq, years, add_resid=True)
-    low = PercentileRow(predictions, p)
-    high = PercentileRow(predictions, 100-p)
+    predict_seq = GeneratePredictions(result_seq, years, add_resid=True)
+    low, high = thinkstats2.PercentileRows(predict_seq, percents)
     thinkplot.FillBetween(years, low, high, alpha=0.1, color='gray')
 
 
@@ -460,9 +444,9 @@ def PrintSerialCorrelations(dailies):
 def SimulateAutocorrelation(daily, iters=1001, nlags=40):
     """Resample residuals, compute autocorrelation, and plot percentiles.
 
-    daily:
-    iters:
-    nlags:
+    daily: DataFrame
+    iters: number of simulations to run
+    nlags: maximum lags to compute autocorrelation
     """
     # run simulations
     t = []
@@ -472,15 +456,7 @@ def SimulateAutocorrelation(daily, iters=1001, nlags=40):
         acf = smtsa.acf(resid, nlags=nlags, unbiased=True)[1:]
         t.append(np.abs(acf))
 
-    # put the results in an array and sort the columns
-    size = iters, len(acf)
-    array = np.zeros(size)
-    for i, acf in enumerate(t):
-        array[i,] = acf
-    array = np.sort(array, axis=0)
-
-    # find the bounds that cover 95% of the distribution
-    high = PercentileRow(array, 97.5)
+    high = thinkstats2.PercentileRows(t, [97.5])[0]
     low = -high
     lags = range(1, nlags+1)
     thinkplot.FillBetween(lags, low, high, alpha=0.2, color='gray')
@@ -617,7 +593,6 @@ def main(name):
                    xlabel='years',
                    xlim=xlim,
                    ylabel='price per gram ($)')
-
 
     name = 'medium'
     daily = dailies[name]

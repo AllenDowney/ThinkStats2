@@ -81,7 +81,8 @@ def MakeBabyBoom():
                      yscale='log',
                      legend=False)
 
-    thinkplot.Save(root='analytic_interarrivals')
+    thinkplot.Save(root='analytic_interarrivals',
+                   legend=False)
 
 
 def MakeParetoCdf():
@@ -187,8 +188,8 @@ def MakeNormalPlot(weights, term_weights):
     std = math.sqrt(var)
 
     xs = [-4, 4]
-    xs, ys = thinkstats2.FitLine(xs, mean, std)
-    thinkplot.Plot(xs, ys, linewidth=4, color='0.8')
+    fxs, fys = thinkstats2.FitLine(xs, mean, std)
+    thinkplot.Plot(fxs, fys, linewidth=4, color='0.8')
 
     thinkplot.PrePlot(2) 
     xs, ys = thinkstats2.NormalProbability(weights)

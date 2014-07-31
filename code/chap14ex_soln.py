@@ -20,6 +20,23 @@ def PlotPregLengths(live, firsts, others):
     """Plots sampling distributions under the null and alternate hypotheses.
 
     live, firsts, others: DataFrames
+
+    Results:  
+    null hypothesis N(0, 0.00319708)
+    0.0837707042554 0.0837707042554     (90% CI)
+
+    estimated params N(0.0780373, 0.00321144)
+    -0.0151758158699 0.171250349425     (90% CI)
+
+    Sampling distribution under the null hypothesis is centered
+    around 0.
+
+    Sampling distribution under the null hypothesis is centered
+    around the observed difference, 0.078.
+
+    The variance of the two distributions is very similar; in practice,
+    you could reasonably compute whichever one is easier.
+
     """
     print('prglngth example')
     delta = firsts.prglngth.mean() - others.prglngth.mean()
@@ -46,13 +63,33 @@ def PlotPregLengths(live, firsts, others):
 
 
 def GenerateAdultWeight(birth_weights, n):
+    """Generate a random adult weight by simulating annual gain.
+
+    birth_weights: sequence of birth weights in lbs
+    n: number of years to simulate
+
+    returns: adult weight in lbs
+    """
     bw = random.choice(birth_weights)
     factors = np.random.normal(1.09, 0.03, n)
     aw = bw * np.prod(factors)
     return aw
 
-def PlotAdultWeights(live):
 
+def PlotAdultWeights(live):
+    """Makes a normal probability plot of log10 adult weight.
+
+    live: DataFrame of live births
+
+    results: 
+
+    With n=40 the distribution is approximately lognormal except for
+    the lowest weights.
+
+    Actual distribution might deviate from lognormal because it is
+    a mixture of people at different ages, or because annual weight
+    gains are correlated.
+    """
     birth_weights = live.totalwgt_lb.dropna().values
     aws = [GenerateAdultWeight(birth_weights, 40) for _ in range(1000)]
     log_aws = np.log10(aws)
@@ -61,6 +98,36 @@ def PlotAdultWeights(live):
                    ylabel='adult weight (log10 lbs)')
 
 
+def TestIntervention():
+    """Tests whether reported changes are statistically significant.
+
+    Results:
+    -1.66 4.73095323208e-05
+    -0.26 0.125267987207
+     1.4 0.00182694836898
+
+    Conclusions:
+
+    1) Gender gap before intervention was 1.66 points (p-value 5e-5)
+
+    2) Genger gap after was 0.26 points (p-value 0.13, no significant)
+
+    3) Change in gender gap was 1.4 points (p-value 0.002, significant).
+    """
+    male_before = normal.Normal(3.57, 0.28**2)
+    male_after = normal.Normal(3.44, 0.16**2)
+
+    female_before = normal.Normal(1.91, 0.32**2)
+    female_after = normal.Normal(3.18, 0.16**2)
+
+    diff_before = female_before - male_before
+    print(diff_before.mu, 1-diff_before.Prob(0))
+
+    diff_after = female_after - male_after
+    print(diff_after.mu, 1-diff_after.Prob(0))
+
+    diff = diff_after - diff_before
+    print(diff.mu, diff.Prob(0))
 
 
 def main():
@@ -68,9 +135,11 @@ def main():
 
     live, firsts, others = first.MakeFrames()
     PlotAdultWeights(live)
-    return
+
     PlotPregLengths(live, firsts, others)
 
+    TestIntervention()
+    
 
 if __name__ == '__main__':
     main()

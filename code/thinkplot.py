@@ -28,7 +28,7 @@ import pandas
 #matplotlib.rc('ytick.minor', size=3.0)
 
 
-class Brewer(object):
+class _Brewer(object):
     """Encapsulates a nice sequence of colors.
 
     Shades of blue that look good in color and can be distinguished
@@ -73,7 +73,7 @@ class Brewer(object):
         """
         for i in cls.which_colors[n]:
             yield cls.colors[i]
-        raise StopIteration('Ran out of colors in Brewer.ColorGenerator')
+        raise StopIteration('Ran out of colors in _Brewer.ColorGenerator')
 
     @classmethod
     def InitializeIter(cls, num):
@@ -102,7 +102,7 @@ def PrePlot(num=None, rows=None, cols=None):
     cols: number of columns of subplots
     """
     if num:
-        Brewer.InitializeIter(num)
+        _Brewer.InitializeIter(num)
 
     if rows is None and cols is None:
         return
@@ -146,27 +146,7 @@ def SubPlot(plot_number, rows=None, cols=None):
     pyplot.subplot(rows, cols, plot_number)
 
 
-class InfiniteList(list):
-    """A list that returns the same value for all indices."""
-    def __init__(self, val):
-        """Initializes the list.
-
-        val: value to be stored
-        """
-        list.__init__(self)
-        self.val = val
-
-    def __getitem__(self, index):
-        """Gets the item with the given index.
-
-        index: int
-
-        returns: the stored value
-        """
-        return self.val
-
-
-def Underride(d, **options):
+def _Underride(d, **options):
     """Add key-value pairs to d only if key is not in d.
 
     If d is None, create a new dictionary.
@@ -185,7 +165,7 @@ def Underride(d, **options):
 
 def Clf():
     """Clears the figure and any hints that have been set."""
-    Brewer.ClearIter()
+    _Brewer.ClearIter()
     pyplot.clf()
     fig = pyplot.gcf()
     fig.set_size_inches(8, 6)
@@ -193,22 +173,22 @@ def Clf():
 
 def Figure(**options):
     """Sets options for the current figure."""
-    Underride(options, figsize=(6, 8))
+    _Underride(options, figsize=(6, 8))
     pyplot.figure(**options)
 
 
-def UnderrideColor(options):
+def _UnderrideColor(options):
     if 'color' in options:
         return options
 
-    color_iter = Brewer.GetIter()
+    color_iter = _Brewer.GetIter()
 
     if color_iter:
         try:
             options['color'] = next(color_iter)
         except StopIteration:
             print('Warning: Brewer ran out of colors.')
-            Brewer.ClearIter()
+            _Brewer.ClearIter()
     return options
 
 
@@ -221,9 +201,9 @@ def Plot(obj, ys=None, style='', **options):
       style: style string passed along to pyplot.plot
       options: keyword args passed to pyplot.plot
     """
-    options = UnderrideColor(options)
+    options = _UnderrideColor(options)
     label = getattr(obj, 'label', '')
-    options = Underride(options, linewidth=3, alpha=0.8, label=label)
+    options = _Underride(options, linewidth=3, alpha=0.8, label=label)
 
     xs = obj
     if ys is None:
@@ -249,8 +229,8 @@ def FillBetween(xs, y1, y2=None, where=None, **options):
       where: sequence of boolean
       options: keyword args passed to pyplot.fill_between
     """
-    options = UnderrideColor(options)
-    options = Underride(options, linewidth=0, alpha=0.5)
+    options = _UnderrideColor(options)
+    options = _Underride(options, linewidth=0, alpha=0.5)
     pyplot.fill_between(xs, y1, y2, where, **options)
 
 
@@ -262,8 +242,8 @@ def Bar(xs, ys, **options):
       ys: sequence of y values
       options: keyword args passed to pyplot.bar
     """
-    options = UnderrideColor(options)
-    options = Underride(options, linewidth=0, alpha=0.6)
+    options = _UnderrideColor(options)
+    options = _Underride(options, linewidth=0, alpha=0.6)
     pyplot.bar(xs, ys, **options)
 
 
@@ -274,7 +254,7 @@ def Scatter(xs, ys=None, **options):
     ys: y values
     options: options passed to pyplot.scatter
     """
-    options = Underride(options, color='blue', alpha=0.2, 
+    options = _Underride(options, color='blue', alpha=0.2, 
                         s=30, edgecolors='none')
 
     if ys is None and isinstance(xs, pandas.Series):
@@ -291,7 +271,7 @@ def HexBin(xs, ys, **options):
     ys: y values
     options: options passed to pyplot.scatter
     """
-    options = Underride(options, cmap=matplotlib.cm.Blues)
+    options = _Underride(options, cmap=matplotlib.cm.Blues)
     pyplot.hexbin(xs, ys, **options)
 
 
@@ -306,7 +286,7 @@ def Pdf(pdf, **options):
     n = options.pop('n', 101)
     xs, ps = pdf.Render(low=low, high=high, n=n)
     if pdf.label:
-        options = Underride(options, label=pdf.label)
+        options = _Underride(options, label=pdf.label)
     Plot(xs, ps, **options)
 
 
@@ -349,9 +329,9 @@ def Hist(hist, **options):
                             )
 
     if hist.label:
-        options = Underride(options, label=hist.label)
+        options = _Underride(options, label=hist.label)
 
-    options = Underride(options, align='center')
+    options = _Underride(options, align='center')
     if options['align'] == 'left':
         options['align'] = 'edge'
     elif options['align'] == 'right':
@@ -414,7 +394,7 @@ def Pmf(pmf, **options):
     points.append((lastx, 0))
 
     if pmf.label:
-        options = Underride(options, label=pmf.label)
+        options = _Underride(options, label=pmf.label)
 
     pxs, pys = zip(*points)
 
@@ -503,7 +483,7 @@ def Cdf(cdf, complement=False, transform=None, **options):
         scale['yscale'] = 'log'
 
     if cdf.label:
-        options = Underride(options, label=cdf.label)
+        options = _Underride(options, label=cdf.label)
 
     Plot(xs, ps, **options)
     return scale
@@ -535,7 +515,7 @@ def Contour(obj, pcolor=False, contour=True, imshow=False, **options):
     except AttributeError:
         d = obj
 
-    Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
+    _Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
     xs, ys = zip(*d.iterkeys())
     xs = sorted(set(xs))
@@ -570,7 +550,7 @@ def Pcolor(xs, ys, zs, pcolor=True, contour=False, **options):
     contour: boolean, whether to make a contour plot
     options: keyword args passed to pyplot.pcolor and/or pyplot.contour
     """
-    Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
+    _Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
     X, Y = np.meshgrid(xs, ys)
     Z = zs
@@ -595,7 +575,7 @@ def Text(x, y, s, **options):
     s: string
     options: keyword args passed to pyplot.text
     """
-    options = Underride(options, verticalalignment='top',
+    options = _Underride(options, verticalalignment='top',
                         horizontalalignment='left')
     pyplot.text(x, y, s, **options)
 
@@ -701,7 +681,7 @@ save = Save
 
 
 def main():
-    color_iter = Brewer.ColorGenerator(7)
+    color_iter = _Brewer.ColorGenerator(7)
     for color in color_iter:
         print(color)
 

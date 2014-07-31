@@ -165,6 +165,8 @@ class _DictWrapper(object):
         cls = self.__class__.__name__
         return '%s(%s)' % (cls, str(self.d))
 
+    __repr__ = __str__
+
     def __eq__(self, other):
         return self.d == other.d
 
@@ -905,6 +907,8 @@ class Cdf(object):
 
     def __str__(self):
         return 'Cdf(%s, %s)' % (str(self.xs), str(self.ps))
+
+    __repr__ = __str__
 
     def __len__(self):
         return len(self.xs)
@@ -2551,7 +2555,12 @@ def PercentileRow(array, p):
 
 
 def PercentileRows(ys_seq, percents):
-    """
+    """Selects rows from a sequence that map to percentiles.
+
+    ys_seq: sequence of unsorted rows
+    percents: list of percentiles (0-100) to select
+
+    returns: list of NumPy arrays
     """
     nrows = len(ys_seq)
     ncols = len(ys_seq[0])

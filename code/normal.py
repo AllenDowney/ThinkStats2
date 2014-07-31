@@ -7,10 +7,8 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function, division
 
-import itertools
 import math
 import numpy as np
-import pandas
 import random
 import scipy.stats
 
@@ -102,15 +100,25 @@ class Normal(object):
         return Normal(n * self.mu, n * self.sigma2)
 
     def Render(self):
+        """Returns pair of xs, ys suitable for plotting.
+        """
         mean, std = self.mu, self.sigma
         low, high = mean - 3 * std, mean + 3 * std
         xs, ys = thinkstats2.RenderNormalCdf(mean, std, low, high)
-        return thinkstats2.RenderNormalCdf(mean, std, low, high)
+        return xs, ys
 
     def Prob(self, x):
+        """Cumulative probability of x.
+
+        x: numeric
+        """
         return thinkstats2.EvalNormalCdf(x, self.mu, self.sigma)
 
     def Percentile(self, p):
+        """Inverse CDF of p.
+
+        p: percentile rank 0-100
+        """
         return thinkstats2.EvalNormalCdfInverse(p/100, self.mu, self.sigma)
 
 
@@ -325,12 +333,20 @@ def TestCorrelation(live):
 
 
 def ChiSquaredCdf(n):
+    """Discrete approximation of the chi-squared CDF with df=n-1.
+
+    n: sample size
+    
+    returns: Cdf
+    """
     xs = np.linspace(0, 25, 101)
     ps = scipy.stats.chi2.cdf(xs, df=n-1)
     return thinkstats2.Cdf(xs, ps)
 
 
 def TestChiSquared():
+    """Performs a chi-squared test analytically.
+    """
     data = [8, 9, 19, 5, 8, 11]
     dt = hypothesis.DiceChiTest(data)
     p_value = dt.PValue(iters=1000)
@@ -352,6 +368,8 @@ def TestChiSquared():
 
 
 def MakeCltPlots():
+    """Makes plot showing distributions of sums converging to normal.
+    """
     thinkplot.PrePlot(num=3, rows=2, cols=3)
     samples = MakeExpoSamples()
     NormalPlotSamples(samples, plot=1, ylabel='sum of expo values')
@@ -370,6 +388,7 @@ def MakeCltPlots():
     samples = MakeCorrelatedSamples()
     NormalPlotSamples(samples, plot=4, ylabel='sum of correlated expo values')
     thinkplot.Save(root='normal2', legend=False)
+
 
 def main():
     thinkstats2.RandomSeed(17)
