@@ -990,8 +990,19 @@ class Cdf(object):
         return p
 
     def Probs(self, xs):
-        """Gets probabilities for a sequence of values."""
-        return [self.Prob(x) for x in xs]
+        """Gets probabilities for a sequence of values.
+
+        xs: any sequence that can be converted to NumPy array
+
+        returns: NumPy array of cumulative probabilities
+        """
+        xs = np.asarray(xs)
+        index = np.searchsorted(self.xs, xs, side='right')
+        ps = self.ps[index-1]
+        ps[xs < self.xs[0]] = 0.0
+        return ps
+
+    ProbArray = Probs
 
     def Value(self, p):
         """Returns InverseCDF(p), the value that corresponds to probability p.
@@ -1005,8 +1016,23 @@ class Cdf(object):
         if p < 0 or p > 1:
             raise ValueError('Probability p must be in range [0, 1]')
 
-        # TODO: consider replacing this with numpy.searchsorted
         index = bisect.bisect_left(self.ps, p)
+        return self.xs[index]
+
+    def ValueArray(self, ps):
+        """Returns InverseCDF(p), the value that corresponds to probability p.
+
+        Args:
+            ps: NumPy array of numbers in the range [0, 1]
+
+        Returns:
+            NumPy array of values
+        """
+        ps = np.asarray(ps)
+        if np.any(ps < 0) or np.any(ps > 1):
+            raise ValueError('Probability p must be in range [0, 1]')
+
+        index = np.searchsorted(self.ps, ps, side='left')
         return self.xs[index]
 
     def Percentile(self, p):
@@ -1039,7 +1065,8 @@ class Cdf(object):
         Args:
             n: int length of the sample
         """
-        return [self.Random() for _ in range(n)]
+        ps = np.random.random(n)
+        return self.ValueArray(ps)
 
     def Mean(self):
         """Computes the mean of a CDF.
@@ -1373,8 +1400,8 @@ class Pdf(object):
         Returns: new Pmf
         """
         label = options.pop('label', '')
-        xs, ps = self.Render(**options)
-        return Pmf(zip(xs, ps), label=label)
+        xs, ds = self.Render(**options)
+        return Pmf(zip(xs, ds), label=label)
 
     def Render(self, **options):
         """Generates a sequence of points suitable for plotting.
@@ -1389,8 +1416,8 @@ class Pdf(object):
         else:
             xs = self.GetLinspace()
             
-        ys = self.Density(xs)
-        return xs, ys
+        ds = self.Density(xs)
+        return xs, ds
 
     def Items(self):
         """Generates a sequence of (value, probability) pairs.
@@ -2103,9 +2130,9 @@ def MeanVar(xs, ddof=0):
     returns: pair of float, mean and var
     """
     xs = np.asarray(xs)
-    xbar = xs.mean()
-    s2 = Var(xs, xbar, ddof)
-    return xbar, s2
+    mean = xs.mean()
+    s2 = Var(xs, mean, ddof)
+    return mean, s2
 
 
 def Trim(t, p=0.01):
@@ -2185,12 +2212,15 @@ def Cov(xs, ys, meanx=None, meany=None):
     Returns:
         Cov(X, Y)
     """
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+
     if meanx is None:
         meanx = np.mean(xs)
     if meany is None:
         meany = np.mean(ys)
 
-    cov = np.dot(np.asarray(xs)-meanx, np.asarray(ys)-meany) / len(xs)
+    cov = np.dot(xs-meanx, ys-meany) / len(xs)
     return cov
 
 
@@ -2370,8 +2400,8 @@ def RawMoment(xs, k):
 def CentralMoment(xs, k):
     """Computes the kth central moment of xs.
     """
-    meanx = RawMoment(xs, 1)
-    return sum((x - meanx)**k for x in xs) / len(xs)
+    mean = RawMoment(xs, 1)
+    return sum((x - mean)**k for x in xs) / len(xs)
 
 
 def StandardizedMoment(xs, k):

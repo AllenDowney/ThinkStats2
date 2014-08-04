@@ -614,7 +614,7 @@ def Config(**options):
         pyplot.legend(loc=loc)
 
 
-def Show(**options):
+def Show(clf=True, **options):
     """Shows the plot.
 
     For options, see Config.
@@ -623,11 +623,27 @@ def Show(**options):
     """
     Config(**options)
     pyplot.show()
-    Clf()
+    if clf:
+        Clf()
 
 
-def Save(root=None, formats=None, **options):
-    """Saves the plot in the given formats.
+def Plotly(clf=True, **options):
+    """Shows the plot.
+
+    For options, see Config.
+
+    options: keyword args used to invoke various pyplot functions
+    """
+    Config(**options)
+    import plotly.plotly as plotly
+    url = plotly.plot_mpl(pyplot.gcf())
+    if clf:
+        Clf()
+    return url
+
+
+def Save(root=None, formats=None, clf=True, **options):
+    """Saves the plot in the given formats and clears the figure.
 
     For options, see Config.
 
@@ -641,10 +657,17 @@ def Save(root=None, formats=None, **options):
     if formats is None:
         formats = ['pdf', 'eps']
 
+    try:
+        formats.remove('plotly')
+        Plotly(clf=False)
+    except ValueError:
+        pass
+
     if root:
         for fmt in formats:
             SaveFormat(root, fmt)
-    Clf()
+    if clf:
+        Clf()
 
 
 def SaveFormat(root, fmt='eps'):

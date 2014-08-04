@@ -153,6 +153,11 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(cdf[5], 1)
         self.assertAlmostEqual(cdf[6], 1)
 
+        xs = range(7)
+        ps = cdf.Probs(xs)
+        for p1, p2 in zip(ps, [0, 0.2, 0.6, 0.8, 0.8, 1, 1]):
+            self.assertAlmostEqual(p1, p2)
+
         self.assertEqual(cdf.Value(0), 1)
         self.assertEqual(cdf.Value(0.1), 1)
         self.assertEqual(cdf.Value(0.2), 1)
@@ -164,6 +169,14 @@ class Test(unittest.TestCase):
         self.assertEqual(cdf.Value(0.8), 3)
         self.assertEqual(cdf.Value(0.9), 5)
         self.assertEqual(cdf.Value(1), 5)
+
+        ps = np.linspace(0, 1, 11)
+        xs = cdf.ValueArray(ps)
+        self.assertTrue((xs == [1, 1, 1, 2, 2, 2, 2, 3, 3, 5, 5]).all())
+
+        np.random.seed(17)
+        xs = cdf.Sample(7)
+        self.assertListEqual(xs.tolist(), [2, 2, 1, 1, 3, 3, 3])
 
         # when you make a Cdf from a Pdf, you might get some floating
         # point representation error

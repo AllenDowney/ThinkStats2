@@ -16,8 +16,14 @@ import first
 import thinkstats2
 import thinkplot
 
+import plotly.plotly as plotly
+import matplotlib.pyplot as pyplot
 
 def Summarize(data):
+    """Prints summary statistics.
+
+    data: pandas Series
+    """
     mean = data.mean()
     std = data.std()
     median = thinkstats2.Median(data)
@@ -32,6 +38,8 @@ def Summarize(data):
 
 
 def ComputeSkewnesses():
+    """Plots KDE of birthweight and adult weight.
+    """
     def VertLine(x, y):
         thinkplot.Plot([x, x], [0, y], color='0.6', linewidth=1)
 
@@ -71,7 +79,9 @@ def ComputeSkewnesses():
                    xlim=[0, 200])
 
 
-def MakePdfExample():
+def MakePdfExample(n=500):
+    """Plots a normal density function and a KDE estimate.
+    """
     # mean and var of women's heights in cm, from the BRFSS
     mean, var = 163, 52.8
     std = math.sqrt(var)
@@ -85,13 +95,14 @@ def MakePdfExample():
     thinkplot.Pdf(pdf, label='normal')
 
     # make a sample, make an estimated PDF, and plot it
-    sample = [random.gauss(mean, std) for i in range(100)]
+    sample = [random.gauss(mean, std) for i in range(n)]
     sample_pdf = thinkstats2.EstimatedPdf(sample)
     thinkplot.Pdf(sample_pdf, label='sample KDE')
 
     thinkplot.Save(root='pdf_example',
                    xlabel='Height (cm)',
-                   ylabel='Density')
+                   ylabel='Density',
+                   formats=['pdf', 'eps', 'plotly'])
 
 
 def main():

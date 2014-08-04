@@ -3566,18 +3566,19 @@ and {\tt brfss.py}, which reads the file and analyzes the data.
 \label{brfss_weight_normal}
 \end{figure}
 
-Figure~\ref{brfss_weight} shows the distribution of adult weights on a
-linear scale, with a normal model, and on a log scale, with a
-lognormal model.  The lognormal model is a better fit, but this
-representation of the data does not make the difference particularly
-dramatic.  \index{respondent} \index{model}
+Figure~\ref{brfss_weight} (left) shows the distribution of adult
+weights on a linear scale with a normal model.
+Figure~\ref{brfss_weight} (right) shows the same distribution on a log
+scale with a lognormal model.  The lognormal model is a better fit,
+but this representation of the data does not make the difference
+particularly dramatic.  \index{respondent} \index{model}
 
 Figure~\ref{brfss_weight_normal} shows normal probability plots
 for adult weights, $w$, and for their logarithms, $\log_{10} w$.
 Now it is apparent that the data deviate substantially from the
 normal model.  The lognormal model is a good match for the data
 within a few standard deviations of the mean, but it deviates in
-the tails.  I would conclude that the lognormal distribution is
+the tails.  I conclude that the lognormal distribution is
 a good model for this data.
 \index{normal distribution} \index{distribution!normal}
 \index{Gaussian distribution} \index{distribution!Gaussian}
@@ -3631,8 +3632,8 @@ So if you plot $\log y$ versus $\log x$, it should look like a straight
 line with slope $-\alpha$ and intercept
 $\alpha \log x_{m}$.
 
-As an example, let's look at the sizes of cities and towns in the
-United States.  The U.S.~Census Bureau publishes data on the
+As an example, let's look at the sizes of cities and towns.
+The U.S.~Census Bureau publishes the
 population of every incorporated city and town in the United States.
 \index{Pareto distribution} \index{distribution!Pareto}
 \index{U.S.~Census Bureau} \index{population} \index{city size}
@@ -3648,7 +3649,7 @@ I downloaded their data from
 \url{http://www.census.gov/popest/data/cities/totals/2012/SUB-EST2012-3.html};
 it is in the repository for this book in a file named
 \verb"PEP_2012_PEPANNRES_with_ann.csv".  The repository also
-contains {\tt populations.py}, which reads the data file and plots
+contains {\tt populations.py}, which reads the file and plots
 the distribution of populations.
 
 Figure~\ref{populations_pareto} shows the CCDF of populations on a
@@ -3667,7 +3668,7 @@ The Pareto model only applies to the largest 1\% of cities, but it
 is a better fit for that part of the distribution.  The lognormal
 model is a better fit for the other 99\%.
 Which model is appropriate depends on which part of the distribution
-you is relevant.
+is relevant.
 
 \begin{figure}
 % populations.py
@@ -3691,7 +3692,7 @@ Analytic CDFs can be used to generate random numbers with a given
 distribution function, $p = \CDF(x)$.  If there is an efficient way to
 compute the inverse CDF, we can generate random values
 with the appropriate distribution by choosing $p$ from a uniform
-distribution from 0 to 1, then choosing
+distribution between 0 and 1, then choosing
 $x = ICDF(p)$.
 
 For example, the CDF of the exponential distribution is
@@ -3717,9 +3718,9 @@ from the exponential distribution with parameter {\tt lam}.
 Two notes about this implementation:
 I called the parameter \verb"lam" because \verb"lambda" is a Python
 keyword.  Also, since $\log 0$ is undefined, we have to
-be a little careful.  Most implementations of {\tt random.random}
-can return 0 but not 1, so $1 - p$ can be 1 but not 0, 
-so that works out well.  \index{random module}
+be a little careful.  The implementation of {\tt random.random}
+can return 0 but not 1, so $1 - p$ can be 1 but not 0, so
+{\tt log(1-p)} is always defined.  \index{random module}
 
 
 \section{Why model?}
@@ -3801,16 +3802,15 @@ the U.S. male population is in this range?  Hint: use {\tt
 \begin{exercise}
 To get a feel for the Pareto distribution, imagine what the world
 would be like if the distribution of human height were Pareto.
-Choosing the parameters $x_{m} = 1$ m and $\alpha = 1.7$, we
+With the parameters $x_{m} = 1$ m and $\alpha = 1.7$, we
 get a distribution with a reasonable minimum, 1 m,
 and median, 1.5 m.
 \index{height}
 
-What is the mean human height in Pareto world?  What is the mean of
-this sample?  What fraction of the population is shorter than the
-mean?  If there are 7 billion people in Pareto world, how many do we
-expect to be taller than 1 km?  How tall do we expect the tallest
-person to be?
+Plot this distribution.  What is the mean human height in Pareto
+world?  What fraction of the population is shorter than the mean?  If
+there are 7 billion people in Pareto world, how many do we expect to
+be taller than 1 km?  How tall do we expect the tallest person to be?
 \index{Pareto World}
 
 \end{exercise}
@@ -3867,8 +3867,8 @@ to generate the values.
 \begin{exercise}
 In the repository for this book, you'll find a set of data files
 called {\tt mystery0.dat}, {\tt mystery1.dat}, and so on.  Each
-contains a sequence of random numbers generated from different
-distributions.
+contains a sequence of random numbers generated from an analytic
+distribution.
 
 You will also find \verb"test_models.py", a script that reads
 data from a file and plots the CDF under a variety of transforms.
@@ -3943,10 +3943,6 @@ random values from a standard normal distribution.
 \index{normal probability plot}
 \index{plot!normal probability}
 
-\item model: A useful simplification.  Analytic distributions are
-often good models of more complex empirical distributions.
-\index{model}
-
 \end{itemize}
 
 
@@ -4003,9 +3999,9 @@ following methods:
 
 \item {\tt Render}, which evaluates the density at a discrete set of
   values and returns a pair of sequences: the sorted values, {\tt xs},
-  and their probability densities, {\tt ps}.
+  and their probability densities, {\tt ds}.
 
-\item {\tt MakePmf}, which uses {\tt Render} to evaluate the density
+\item {\tt MakePmf}, which evaluates {\tt Density}
   at a discrete set of values and returns a normalized Pmf that
   approximates the Pdf.
 
@@ -4070,7 +4066,7 @@ we plot the Pdf, we can see the shape of the distribution:
 {\tt thinkplot.Pdf} plots the Pdf as a smooth function,
 as contrasted with {\tt thinkplot.Pmf}, which renders a Pmf as a
 step function.  Figure~\ref{pdf_example} shows the result, as well
-as a PDF estimated from a sample, which we'll see in the next
+as a PDF estimated from a sample, which we'll compute in the next
 section.
 
 You can use {\tt MakePmf} to approximate the Pdf:
@@ -4088,7 +4084,7 @@ and {\tt n}.
 % pdf_example.py
 \centerline{\includegraphics[height=2.2in]{figs/pdf_example.pdf}}
 \caption{A normal PDF that models adult female height in the U.S.,
-and the kernel density estimate of a sample with $n=1000$.}
+and the kernel density estimate of a sample with $n=500$.}
 \label{pdf_example}
 \end{figure}
 
@@ -4122,28 +4118,28 @@ and computes a kernel density estimate.  The result is a
 \verb"gaussian_kde" object that provides an {\tt evaluate}
 method.
 
-{\tt Density} takes a value, calls \verb"gaussian_kde.evaluate", and
-returns the resulting density.  The word ``Gaussian'' appears in the
-name because it uses a filter based on a Gaussian distribution to
-smooth the KDE.  \index{density}
+{\tt Density} takes a value or sequence, calls
+\verb"gaussian_kde.evaluate", and returns the resulting density.  The
+word ``Gaussian'' appears in the name because it uses a filter based
+on a Gaussian distribution to smooth the KDE.  \index{density}
 
 Here's an example that generates a sample from a normal
 distribution and then makes an EstimatedPdf to fit it:
 \index{numpy}
 
 \begin{verbatim}
->>> sample = [random.gauss(mean, std) for i in range(100)]
+>>> sample = [random.gauss(mean, std) for i in range(500)]
 >>> sample_pdf = thinkstats2.EstimatedPdf(sample)
 >>> thinkplot.Pdf(pdf, label='sample KDE')
 \end{verbatim}
 
-\verb"sample" is a list of 100 random heights.
+\verb"sample" is a list of 500 random heights.
 \verb"sample_pdf" is a {\tt Pdf} object that contains the estimated
 KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
 evaluating the density at a sequence of equally spaced values.
 
 Figure~\ref{pdf_example} shows the normal density function and a KDE
-based on a sample of 1000 random heights.  The estimate is a good
+based on a sample of 500 random heights.  The estimate is a good
 match for the original distribution.
 
 Estimating a density function with KDE is useful for several purposes:
@@ -4162,9 +4158,10 @@ Estimating a density function with KDE is useful for several purposes:
   the population distribution is smooth, you can use KDE to interpolate
   the density for values that don't appear in the sample.
 
-\item[Simulation]: If your sample is an input to a simulation, it
-  might be appropriate to smooth the sample distribution using KDE.
-  That might allow the simulation to explore more possible outcomes,
+\item[Simulation]: Simulations are often based the distribution
+  of a sample.  If the sample size is small, it
+  might be appropriate to smooth the sample distribution using KDE,
+  which allows the simulation to explore more possible outcomes,
   rather than replicating the observed data.
 
 \end{description}
@@ -4194,7 +4191,7 @@ probabilities.  We'll see the implementation of these operations
 in the next few sections.
 
 A PDF is the derivative of a continuous CDF; or, equivalently,
-a CDF is the integral of a PDF.  But remember that a PDF maps from
+a CDF is the integral of a PDF.  Remember that a PDF maps from
 values to probability densities; to get a probability, you have to
 integrate.
 \index{discrete}
@@ -4240,9 +4237,9 @@ indicates what it is: a dictionary wrapper.  Its primary attribute is
 The values can be any hashable type.  The frequencies should be integers,
 but can be any numeric type.
 
-\verb"_DictWrapper" contains the methods appropriate for both
-{\tt Hist} and {\tt Pmf}, including the constructor, {\tt Values},
-{\tt Items} and {\tt Render}.  It also provides the modifier
+\verb"_DictWrapper" contains methods appropriate for both
+{\tt Hist} and {\tt Pmf}, including \verb"__init__", {\tt Values},
+{\tt Items} and {\tt Render}.  It also provides modifier
 methods {\tt Set}, {\tt Incr}, {\tt Mult}, and {\tt Remove}.  These
 methods are all implemented with dictionary operations.  For example:
 
@@ -4259,28 +4256,19 @@ methods are all implemented with dictionary operations.  For example:
         del self.d[x]
 \end{verbatim}
 
-Because {\tt Hist} operators and methods are based on dictionaries,
-you should expect getting and setting items to be constant time operations;
-that is, their run time does not increase as the Hist gets bigger.
-
-\verb"_DictWrapper" also provides special methods to support getting
-and setting items, so instead of using {\tt Incr} you could write:
-
-\begin{verbatim}
->>> hist = thinkstats2.Hist()
->>> hist['a'] += 1
-\end{verbatim}
-
 {\tt Hist} also provides {\tt Freq}, which looks up the frequency
 of a given value.
+
+Because {\tt Hist} operators and methods are based on dictionaries,
+these methods are constant time operations;
+that is, their run time does not increase as the Hist gets bigger.
 
 
 \section{Pmf implementation}
 
 {\tt Pmf} and {\tt Hist} are almost the same thing, except that a Pmf
 maps values to floating-point probabilities, rather than integer
-frequencies.  If the sum of the probabilities is 1, the Pmf is said to
-be normalized.
+frequencies.  If the sum of the probabilities is 1, the Pmf is normalized.
 
 {\tt Pmf} provides {\tt Normalize}, which computes the sum of the
 probabilities and divides through by a factor:
@@ -4291,7 +4279,7 @@ probabilities and divides through by a factor:
     def Normalize(self, fraction=1.0):
         total = self.Total()
         if total == 0.0:
-            raise ValueError('Normalize: total probability is zero.')
+            raise ValueError('Total probability is zero.')
 
         factor = float(fraction) / total
         for x in self.d:
@@ -4303,10 +4291,10 @@ probabilities and divides through by a factor:
 {\tt fraction} determines the sum of the probabilities after normalizing;
 the default value is 1.
 If the total probability is 0, the Pmf cannot be normalized, so
-{\tt Normalize} raises and error.
+{\tt Normalize} raises {\tt ValueError}.
 
 {\tt Hist} and {\tt Pmf} have the same constructor.  It can take
-as an argument a Python {\tt dict}, a Hist, Pmf or Cdf, a pandas
+as an argument a {\tt dict}, Hist, Pmf or Cdf, a pandas
 Series, a list of (value, frequency) pairs, or a sequence of values.
 
 If you instantiate a Pmf, the result is normalized.  If you
@@ -4317,13 +4305,13 @@ not renormalize the Pmf.
 
 \section{Cdf implementation}
 
-A CDF is a map from values to their cumulative probabilities, so
-it would be reasonable to implement {\tt Cdf} as a \verb"_DictWrapper".
-But the values in a CDF are ordered and the values in a \verb"_DictWrapper"
-are not.  Also, it is often useful to compute the inverse CDF; that
-is, the mapping from cumulative probability to value.  So the
-implementaion I chose is two sorted lists.  That way I can use
-binary search to do a forward or inverse mapping in logarithmic time.
+A CDF maps from values to cumulative probabilities, so I could have
+implemented Cdf as a \verb"_DictWrapper".  But the values in a CDF are
+ordered and the values in a \verb"_DictWrapper" are not.  Also, it is
+often useful to compute the inverse CDF; that is, the map from
+cumulative probability to value.  So the implementaion I chose is two
+sorted lists.  That way I can use binary search to do a forward or
+inverse lookup in logarithmic time.
 
 The {\tt Cdf} constructor can take as a parameter a sequence of values
 or a pandas Series, a dictionary that maps from values to
@@ -4345,6 +4333,8 @@ a Hist.  Then it uses the Hist to initialize the attributes:
 of corresponding frequencies.  {\tt np.cumsum} computes
 the cumulative sum of the frequencies.  Dividing through by the
 total frequency yields cumulative probabilities.
+For {\tt n} values, the time to construct the
+Cdf is proportional to $n \log n$.
 
 Here is the implementation of {\tt Prob}, which takes a value
 and returns its cumulative probability: 
@@ -4367,7 +4357,7 @@ cumulative probability and returns the corresponding value:
 # class Cdf
     def Value(self, p):
         if p < 0 or p > 1:
-            raise ValueError('Probability p must be in range [0, 1]')
+            raise ValueError('p must be in range [0, 1]')
 
         index = bisect.bisect_left(self.ps, p)
         return self.xs[index]
@@ -4429,8 +4419,8 @@ Or in Python:
 
 \begin{verbatim}
 def CentralMoment(xs, k):
-    xbar = RawMoment(xs, 1)
-    return sum((x - xbar)**k for x in xs) / len(xs)
+    mean = RawMoment(xs, 1)
+    return sum((x - mean)**k for x in xs) / len(xs)
 \end{verbatim}
 
 When $k=2$ the result is the second central moment, which you might
@@ -4503,8 +4493,8 @@ In a distribution that skews right, the mean is greater.
 \index{Pearson's median skewness coefficient}
 \index{coefficient!skewness}
 
-{\bf Pearson's median skewness coefficient} is an alternative measure
-of skewness that explicitly captures the relationship between the
+{\bf Pearson's median skewness coefficient} is a measure
+of skewness based on the difference between the
 sample mean and median:
 %
 \[ g_p = 3 (\xbar - m) / S \]
@@ -4607,7 +4597,7 @@ the data.
 The dataset is in the form of a series of income ranges and the number
 of respondents who fell in each range.  The lowest range includes
 respondents who reported annual household income ``Under \$5000.''
-The highest range includes respondents who made ``\$250,0000 or
+The highest range includes respondents who made ``\$250,000 or
 more.''
 
 To estimate mean and other statistics from these data, we have to
@@ -4669,8 +4659,7 @@ raised to a power.
 
 \item standardized moment: A ratio of moments that has no units.
 
-\item skewness: A characteristic of a distribution; intuitively, it
-is a measure of how asymmetric the distribution is.
+\item skewness: A measure of how asymmetric a distribution is.
 \index{skewness}
 
 \item sample skewness: A moment-based statistic intended to quantify
@@ -4678,7 +4667,9 @@ the skewness of a distribution.
 \index{sample skewness}
 
 \item Pearson's median skewness coefficient: A statistic intended to
-  quantify the skewness of a distribution.  \index{Pearson's skewness}
+  quantify the skewness of a distribution based on the median, mean,
+  and standard deviation.
+  \index{Pearson's skewness}
 
 \item robust: A statistic is robust if it is relatively immune to the
   effect of outliers.
@@ -4842,7 +4833,7 @@ hexbin is that it shows the shape of the relationship well, and it is
 efficient for large datasets, both in time and in the size of the file
 it generates.  A drawback is that it makes the outliers invisible.
 
-The moral of this story is that it is
+The point of this example is that it is
 not easy to make a scatter plot that shows relationships clearly
 without introducing misleading artifacts.
 
@@ -4864,9 +4855,7 @@ NumPy and pandas provide functions for binning data:
     groups = df.groupby(indices)
 \end{verbatim}
 
-{\tt dropna} drops rows with {\tt nan} in any of the columns
-listed in {\tt subset}.
-
+{\tt dropna} drops rows with {\tt nan} in any of the listed columns.
 {\tt arange} makes a NumPy array of bins from 135 to, but not including,
 210, in increments of 5.
 
@@ -4897,12 +4886,11 @@ Now for each group we can compute the mean height and the CDF
 of weight:
 
 \begin{verbatim}
-    heights = [group.htm3.mean() for i, group in groups][1:-1]
-    cdfs = [thinkstats2.Cdf(group.wtkg2) for i, group in groups][1:-1]
+    heights = [group.htm3.mean() for i, group in groups]
+    cdfs = [thinkstats2.Cdf(group.wtkg2) for i, group in groups]
 \end{verbatim}
 
-The slice operators omit the first and last groups, which contain
-the values that fall outside the range of bins.  Finally, we can
+Finally, we can
 plot percentiles of weight versus height:
 
 \begin{verbatim}
@@ -4913,7 +4901,7 @@ plot percentiles of weight versus height:
 \end{verbatim}
 
 Figure~\ref{scatter3} shows the result.  Between 140 and 200 cm
-the relationship between these variables is linear.  This range
+the relationship between these variables is roughly linear.  This range
 includes more than 99\% of the data, so we don't have to worry
 too much about the extremes.
 
@@ -4933,21 +4921,24 @@ There are two common solutions to these problems:
 
 \begin{enumerate}
 
-\item Transform all values to {\bf standard scores}.  This leads to
+\item Transform each value to a {\bf standard scores}, which is the
+number of standard deviations from the mean.  
+This transform leads to
 the ``Pearson product-moment correlation coefficient.''
 \index{standard scores}
 \index{Pearson coefficient of correlation}
 \index{Spearman coefficient of correlation}
 \index{coefficient!correlation}
 
-\item Transform all values to their percentile ranks.  This
+\item Transform each value to its {\bf rank}, which is its index in
+the sorted list of values.  This transform
 leads to the ``Spearman rank correlation coefficient.''
 \index{rank}
 \index{percentile rank}
 
 \end{enumerate}
 
-If $X$ is a series of values, $x_i$, we can convert to standard
+If $X$ is a series of $n$ values, $x_i$, we can convert to standard
 scores by subtracting the mean and dividing by the standard deviation:
 $z_i = (x_i - \mu) / \sigma$.
 \index{mean}
@@ -4967,8 +4958,8 @@ variance 1.
 If $X$ is normally distributed, so is $Z$.  But if $X$ is skewed or has
 outliers, so does $Z$; in those cases, it is more robust to use
 percentile ranks.  If we compute a new variable, $R$, so that $r_i$ is
-the percentile rank of $x_i$, the distribution of $R$ is uniform
-between 0 and 100, regardless of the distribution of $X$.
+the rank of $x_i$, the distribution of $R$ is uniform
+from 1 to $n$, regardless of the distribution of $X$.
 \index{uniform distribution} \index{distribution!uniform}
 \index{robust}
 
@@ -4982,7 +4973,6 @@ to vary together.  If we have two series, $X$ and $Y$, their
 deviations from the mean are
 %
 \[ dx_i = x_i - \xbar \]
-%
 \[ dy_i = y_i - \ybar \]
 %
 where $\xbar$ is the sample mean of $X$ and $\ybar$ is the sample mean
@@ -5010,12 +5000,15 @@ implement {\tt Cov} efficiently:
 
 \begin{verbatim}
 def Cov(xs, ys, meanx=None, meany=None):
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+
     if meanx is None:
         meanx = np.mean(xs)
     if meany is None:
         meany = np.mean(ys)
 
-    cov = np.dot(np.asarray(xs)-meanx, np.asarray(ys)-meany) / len(xs)
+    cov = np.dot(xs-meanx, ys-meany) / len(xs)
     return cov
 \end{verbatim}
 
@@ -5094,9 +5087,7 @@ other.  \index{prediction}
 
 Most correlation in the real world is not perfect, but it is still
 useful.  The correlation of height and weight is 0.51, which is a
-strong correlation compared to similar human-related variables.  In
-Section~\ref{goodness} I will say more about how to interpret
-correlations.
+strong correlation compared to similar human-related variables.
 
 
 \section{Non-linear relationships}
@@ -5147,14 +5138,6 @@ robust in the presence of outliers.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-Anscombe's quartet demonstrates this effect; it contains four data
-sets with the same correlation.  One is a linear relation with random
-noise, one is a non-linear relation, one is a perfect relation with an
-outlier, and one has no relation except an artifact caused by an
-outlier.  You can read more about it at
-\url{http://wikipedia.org/wiki/Anscombe's_quartet}.
-\index{Anscombe's quartet}
-
 Spearman's rank correlation is an alternative that mitigates the
 effect of outliers and skewed distributions.  To compute Spearman's
 correlation, we have to compute the {\bf rank} of each value, which is its
@@ -5177,7 +5160,7 @@ I convert the arguments to pandas Series objects so I can use
 a Series.  Then I use {\tt Corr} to compute the correlation
 of the ranks.
 
-Or I could use {\tt Series.corr} directly and specify
+I could also use {\tt Series.corr} directly and specify
 Spearman's method:
 
 \begin{verbatim}
@@ -5199,7 +5182,7 @@ of the relationship, and
 
 \item Pearson's correlation can be affected (in either direction)
 if one of the distributions is skewed or contains outliers.  Spearman's
-rank correlation is immune to these effects.
+rank correlation is more robust.
 
 \end{itemize}
 
@@ -5225,7 +5208,7 @@ the difference between Pearson's and Spearman's correlation.
 \index{correlation}
 \index{causation}
 
-If variables A and B are related, there are three possible
+If variables A and B are correlated, there are three possible
 explanations: A causes B, or B causes A, or some other set of factors
 causes both A and B.  These explanations are called ``causal
 relationships''.
@@ -5249,7 +5232,7 @@ So what can you do to provide evidence of causation?
 \item Use randomness.  If you divide a large sample into two
   groups at random and compute the means of almost any variable, you
   expect the difference to be small.
-  If the groups are nearly identical in all variable but one, you
+  If the groups are nearly identical in all variables but one, you
   can eliminate spurious relationships.
   \index{spurious relationship}
 
@@ -5345,7 +5328,7 @@ treatments.
 \index{randomized controlled trial}
 
 \item treatment group: A group in a controlled trial that receives
-some kind of interventions.
+some kind of intervention.
 \index{treatment group}
 
 \item control group: A group in a controlled trial that receives no
@@ -6485,7 +6468,7 @@ standardizes the deviations, although in this case it has no effect
 because the expected frequencies are all equal.
 
 The p-value using the chi-squared statistic is 0.04,
-substantially smaller than what we got using total deviation, 0.12.
+substantially smaller than what we got using total deviation, 0.13.
 If we take the 5\% threshold seriously, we would consider this effect
 statistically significant.  But considering the two tests togther, I
 would say that the results are borderline.  I would not rule out the
@@ -6855,6 +6838,17 @@ is false.
 
 The code for this chapter is in {\tt linear.py}.  For information
 about downloading and working with this code, see Section~\ref{code}.
+
+% TODO
+%Anscombe's quartet demonstrates this effect; it contains four data
+%sets with the same correlation.  One is a linear relation with random
+%noise, one is a non-linear relation, one is a perfect relation with an
+%outlier, and one has no relation except an artifact caused by an
+%outlier.  You can read more about it at
+%\url{http://wikipedia.org/wiki/Anscombe's_quartet}.
+%\index{Anscombe's quartet}
+
+
 
 \section{Least squares fit}
 
@@ -11060,6 +11054,7 @@ to go past Step 1.
 A solution to this exercise is in \verb"chap14ex_soln.py"
 
 \begin{exercise}
+\label{log_clt}
 In Section~\ref{lognormal}, we saw that the distribution
 of adult weights is approximately lognormal.  One possible
 explanation is that the weight a person
