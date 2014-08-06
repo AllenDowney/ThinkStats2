@@ -8,8 +8,6 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 from __future__ import print_function
 
 import math
-import random
-import scipy.stats
 
 import numpy as np
 import pandas
@@ -106,8 +104,6 @@ def MakeParetoCdf2():
     alpha = 1.7    
     xs, ps = thinkstats2.RenderParetoCdf(xmin, alpha, 0, 1000.0, n=100) 
     thinkplot.Plot(xs, ps)
-
-    median = ParetoMedian(xmin, alpha)
 
     thinkplot.Save(root='analytic_pareto_height',
                    title='Pareto CDF',

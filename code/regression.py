@@ -15,7 +15,7 @@ import statsmodels.api as sm
 import statsmodels.formula.api as smf
 import re
 
-import chap01ex_soln
+import chap01soln
 import first
 import linear
 import thinkplot
@@ -66,7 +66,7 @@ def JoinFemResp(df):
 
     df: DataFrame
     """
-    resp = chap01ex_soln.ReadFemResp()
+    resp = chap01soln.ReadFemResp()
     resp.index = resp.caseid
 
     join = df.join(resp, on='caseid', rsuffix='_r')

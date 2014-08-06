@@ -222,7 +222,7 @@ def GeneratePredictions(result_seq, years, add_resid=False):
     predict_df = pandas.DataFrame(d)
     
     predict_seq = []
-    for i, fake_results in enumerate(result_seq):
+    for fake_results in result_seq:
         predict = fake_results.predict(predict_df)
         if add_resid:
             predict += thinkstats2.Resample(fake_results.resid, n)
@@ -284,7 +284,7 @@ def PlotIntervals(daily, years, iters=101, percent=90, func=RunLinearModel):
 
     predict_seq = GeneratePredictions(result_seq, years, add_resid=True)
     low, high = thinkstats2.PercentileRows(predict_seq, percents)
-    thinkplot.FillBetween(years, low, high, alpha=0.1, color='gray')
+    thinkplot.FillBetween(years, low, high, alpha=0.2, color='gray')
 
 
 def Correlate(dailies):
@@ -450,7 +450,7 @@ def SimulateAutocorrelation(daily, iters=1001, nlags=40):
     """
     # run simulations
     t = []
-    for i in range(iters):
+    for _ in range(iters):
         filled = FillMissing(daily, span=30)
         resid = thinkstats2.Resample(filled.resid)
         acf = smtsa.acf(resid, nlags=nlags, unbiased=True)[1:]

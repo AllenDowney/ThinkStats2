@@ -369,9 +369,6 @@ def Pmf(pmf, **options):
     if width is None:
         try:
             width = np.diff(xs).min()
-            if width < 0.1:
-                logging.warning("Pmf: width is very small; "
-                                "Pmf may not be visible.")
         except TypeError:
             logging.warning("Pmf: Can't compute bar width automatically."
                             "Check for non-numeric types in Pmf."

@@ -15,15 +15,15 @@ import thinkplot
 import thinkstats2
 
 
-def Summarize(values, actual=None):
+def Summarize(estimates, actual=None):
     """Prints standard error and 90% confidence interval.
 
-    values: sequence of estimates
+    estimates: sequence of estimates
     actual: float actual value
     """
-    mean = thinkstats2.Mean(values)
-    stderr = thinkstats2.Std(values, mu=actual)
-    cdf = thinkstats2.Cdf(values)
+    mean = thinkstats2.Mean(estimates)
+    stderr = thinkstats2.Std(estimates, mu=actual)
+    cdf = thinkstats2.Cdf(estimates)
     ci = cdf.ConfidenceInterval(90)
     print('mean, SE, CI', mean, stderr, ci)
 
@@ -59,7 +59,7 @@ def PlotConfidenceIntervals(xs, inters, slopes,
     percent: what percentile range to show
     """
     fys_seq = []
-    for i, (inter, slope) in enumerate(zip(inters, slopes)):
+    for inter, slope in zip(inters, slopes):
         fxs, fys = thinkstats2.FitLine(xs, inter, slope)
         if res is not None:
             fys += np.random.permutation(res)

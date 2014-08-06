@@ -13,11 +13,11 @@ import pandas
 import nsfg
 import thinkstats2
 import thinkplot
-import chap01ex_soln
 
 """
 
-Outcome codes from http://www.icpsr.umich.edu/nsfg6/Controller?displayPage=labelDetails&fileCode=PREG&section=&subSec=8016&srtLabel=611932
+Outcome codes from http://www.icpsr.umich.edu/nsfg6/Controller?
+displayPage=labelDetails&fileCode=PREG&section=&subSec=8016&srtLabel=611932
 
 1	LIVE BIRTH	 	9148
 2	INDUCED ABORTION	1862
@@ -120,7 +120,7 @@ class SurvivalFunction(object):
             pmf[t] = 0
             pmf.Normalize()
             d[t] = func(pmf) - t
-            print(t, d[t])
+            #print(t, d[t])
 
         return pandas.Series(d)
 
@@ -156,22 +156,6 @@ class HazardFunction(object):
         ss = (1 - self.series).cumprod()
         cdf = thinkstats2.Cdf(ts, 1-ss)
         sf = SurvivalFunction(cdf, label=label)
-        return sf
-
-    def MakeSurvival2(self):
-        """Makes the survival function.
-
-        returns: SurvivalFunction
-        """
-        ts = self.series.index
-        s = 1.0
-        ps = []
-        for lam in self.series:
-            s *= 1-lam
-            ps.append(1-s)
-
-        cdf = thinkstats2.Cdf(ts, ps)
-        sf = SurvivalFunction(cdf)
         return sf
 
     def Extend(self, other):
@@ -218,8 +202,6 @@ def PlotConditionalSurvival(durations):
         label = 't0=%d' % t0
         thinkplot.Plot(sf, label=label)
 
-        print(t0, sf.Mean())
-
     thinkplot.Show()
 
 
@@ -265,7 +247,6 @@ def PlotHazard(complete, ongoing):
 
     # plot the survival function
     sf = hf.MakeSurvival()
-    sf2 = hf.MakeSurvival2()
 
     thinkplot.Plot(sf, label='S(t)')
     thinkplot.Show(xlabel='t (weeks)')
@@ -319,7 +300,7 @@ def AddLabelsByDecade(groups, **options):
     groups: GroupBy object
     """
     thinkplot.PrePlot(len(groups))
-    for name, group in groups:
+    for name, _ in groups:
         label = '%d0s' % name
         thinkplot.Plot([15], [1], label=label, **options)
 
@@ -330,9 +311,8 @@ def EstimateSurvivalByDecade(groups, **options):
     groups: GroupBy object
     """
     thinkplot.PrePlot(len(groups))
-    for name, group in groups:
-        print(name, len(group))
-        hf, sf = EstimateSurvival(group)
+    for _, group in groups:
+        _, sf = EstimateSurvival(group)
         thinkplot.Plot(sf, **options)
 
 
@@ -342,7 +322,7 @@ def PlotPredictionsByDecade(groups, **options):
     groups: GroupBy object
     """
     hfs = []
-    for name, group in groups:
+    for _, group in groups:
         hf, sf = EstimateSurvival(group)
         hfs.append(hf)
 
@@ -360,7 +340,7 @@ def ResampleSurvival(resp, iters=101):
     resp: DataFrame of respondents
     iters: number of resamples
     """ 
-    hf, sf = EstimateSurvival(resp)
+    _, sf = EstimateSurvival(resp)
     thinkplot.Plot(sf)
 
     low, high = resp.agemarry.min(), resp.agemarry.max()
@@ -369,7 +349,7 @@ def ResampleSurvival(resp, iters=101):
     ss_seq = []
     for _ in range(iters):
         sample = thinkstats2.ResampleRowsWeighted(resp)
-        hf, sf = EstimateSurvival(sample)
+        _, sf = EstimateSurvival(sample)
         ss_seq.append(sf.Probs(ts))
 
     low, high = thinkstats2.PercentileRows(ss_seq, [5, 95])
@@ -407,7 +387,7 @@ def PlotMarriageData(resp):
 
     thinkplot.PrePlot(rows=2)
     thinkplot.Plot(hf)
-    thinkplot.Config()
+    thinkplot.Config(legend=False)
 
     thinkplot.SubPlot(2)
     thinkplot.Plot(sf)
@@ -415,6 +395,7 @@ def PlotMarriageData(resp):
                    xlabel='age (years)',
                    ylabel='prob unmarried',
                    ylim=[0, 1],
+                   legend=False,
                    formats=FORMATS)
     return sf
 
@@ -426,7 +407,7 @@ def PlotPregnancyData(preg):
     """
     complete = preg.query('outcome in [1, 3, 4]').prglngth
     print('Number of complete pregnancies', len(complete))
-    ongoing = preg[preg.outcome==6].prglngth
+    ongoing = preg[preg.outcome == 6].prglngth
     print('Number of ongoing pregnancies', len(ongoing))
 
     PlotSurvival(complete)
@@ -549,7 +530,6 @@ def PlotResampledByDecade(resps, iters=11, predict_flag=False, omit=None):
         samples = [thinkstats2.ResampleRowsWeighted(resp) 
                    for resp in resps]
         sample = pandas.concat(samples, ignore_index=True)
-        print(len(sample))
         groups = sample.groupby('decade')
 
         if omit:

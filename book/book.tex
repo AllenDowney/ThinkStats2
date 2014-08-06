@@ -36,8 +36,8 @@
 \title{Think Stats}
 \author{Allen B. Downey}
 
-\newcommand{\thetitle}{Think Stats: Probability and Statistics for Programmers}
-\newcommand{\theversion}{2.0.14}
+\newcommand{\thetitle}{Think Stats: Data Science for Programmers}
+\newcommand{\theversion}{2.0.16}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -135,7 +135,7 @@
 \vspace*{2.0in}
 
 \begin{spacing}{3}
-{\huge Think Stats: Probability and Statistics for Programmers}\\
+{\huge Think Stats: Data Science for Programmers}\\
 {\Large }
 \end{spacing}
 
@@ -165,7 +165,7 @@ Version \theversion
 
 \begin{spacing}{3}
 {\huge Think Stats}\\
-{\Large Probability and Statistics for Programmers}
+{\Large Data Science for Programmers}
 \end{spacing}
 
 \vspace{0.25in}
@@ -262,23 +262,21 @@ Unported License, which is available at
 \chapter{Preface}
 \label{preface}
 
-\section*{Why I wrote this book}
-
-{\em Think Stats: Probability and Statistics for Programmers} is an
+{\em Think Stats: Data Science for Programmers} is an
 introduction to the practical tools of exploratory data analysis.
-
-When I start working with a new dataset, I follow these steps:
+The organization of the book follows the process I use
+when I start working with a dataset:
 
 \begin{itemize}
 
 \item Importing and cleaning: Whatever format the data is in, it
-usually takes some time and effort to read the data, clean and transform
-it, and check that everything made it through the translation process
-intact.
+  usually takes some time and effort to read the data, clean and
+  transform it, and check that everything made it through the
+  translation process intact.
 
 \item Single variable explorations: I usually start by examining one
-  variable at a time, finding out what the values mean and what
-  distributions of the variables are, and identifying appropriate
+  variable at a time, finding out what the variables mean, looking
+  at distributions of the values, and choosing appropriate
   summary statistics.
 
 \item Pair-wise explorations: To identify possible relationships
@@ -292,7 +290,7 @@ intact.
 \item Estimation and hypothesis testing: When reporting statistical
   results, it is important to answer three questions: How big is
   the effect?  How much variability should we expect if we run the same
-  measurement again?  Is it likely that the apparent effect could be
+  measurement again?  Is it possible that the apparent effect is
   due to chance?
 
 \item Visualization: During exploration, visualization is an important 
@@ -303,12 +301,12 @@ intact.
 \end{itemize}
 
 
-This books takes a computational approach, which has several
-advantages:
+This book takes a computational approach, which has several
+advantages over mathematical approaches:
 
 \begin{itemize}
 
-\item I present most ideas using simple Python code, rather than
+\item I present most ideas using Python code, rather than
   mathematical notation.  In general, Python code is more readable;
   also, because it is executable, readers can download it, run it,
   and modify it.
@@ -318,20 +316,20 @@ advantages:
   express your understanding in code; while you are debugging the
   program, you are also correcting your understanding.
 
-\item Some exercises involve running experiments to test statistical
+\item Some exercises involve experiments to test statistical
   behavior.  For example, you can explore the Central Limit Theorem
   (CLT) by generating random samples and computing their sums.  The
-  resulting visualizations demonstrate why the CLT works, and when
+  resulting visualizations demonstrate why the CLT works and when
   it doesn't.
 
 \item Some ideas that are hard to grasp mathematically are easy to
   understand by simulation.  For example, we approximate p-values by
-  running Monte Carlo simulations, which reinforces the meaning of the
+  running random simulations, which reinforces the meaning of the
   p-value.
 
-\item Because the book is based on a general-purpose programming language
-  (Python), readers can import data from almost any
-  source.  They are not limited to data that has been cleaned and
+\item Because the book is based on a general-purpose programming
+  language (Python), readers can import data from almost any source.
+  They are not limited to datasets that have been cleaned and
   formatted for a particular statistics tool.
 
 \end{itemize}
@@ -341,7 +339,7 @@ students work on a semester-long project that requires them to pose a
 statistical question, find a dataset that can address it, and apply
 each of the techniques they learn to their own data.
 
-To demonstrate my approach to exploratory data analysis, the book
+To demonstrate my approach to statistical analysis, the book
 presents a case study that runs through all of the chapters.  It uses
 data from two sources:
 
@@ -364,16 +362,11 @@ Other examples use data from the IRS, the U.S. Census, and
 the Boston Marathon.
 
 
-\section*{How I wrote this book}
+\section{How I wrote this book}
 
 When people write a new textbook, they usually start by
 reading a stack of old textbooks.  As a result, most books
-contain the same material in pretty much the same order.  Often there
-are phrases, and errors, that propagate from one book to the next;
-Stephen Jay Gould pointed out an example in his essay, ``The Case of
-the Creeping Fox Terrier Clone.''\footnote{A breed of dog that is about half
-  the size of a Hyracotherium (see
-  \url{http://wikipedia.org/wiki/Hyracotherium}).}
+contain the same material in pretty much the same order.
 
 I did not do that.  In fact, I used almost no printed material while I
 was writing this book, for several reasons:
@@ -399,21 +392,19 @@ I wanted to test my theory.
 
 \end{itemize}
 
-The resource I used more than any other is Wikipedia, the bugbear
-of librarians everywhere.  In general, the articles I read on
-statistical topics were very good (although I made a few small changes
-along the way).  I include references to Wikipedia pages throughout
-the book and I encourage you to follow those links; in many cases, the
-Wikipedia page picks up where my description leaves off.  The
-vocabulary and notation in this book are generally consistent with
-Wikipedia, unless I had a good reason to deviate.
-Other resources I found useful were Wolfram MathWorld and (of course)
-Google.
+The resource I used more than any other is Wikipedia.  In general, the
+articles I read on statistical topics were very good (although I made
+a few small changes along the way).  I include references to Wikipedia
+pages throughout the book and I encourage you to follow those links;
+in many cases, the Wikipedia page picks up where my description leaves
+off.  The vocabulary and notation in this book are generally
+consistent with Wikipedia, unless I had a good reason to deviate.
+Other resources I found useful were Wolfram MathWorld and 
+the Reddit statistics forum, \url{http://www.reddit.com/r/statistics}.
 
-\section*{Using the code}
+
+\section{Using the code}
 \label{code}
-
-% TODO: add note about Python 2/3 and print, division
 
 The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  Git is a version
@@ -429,33 +420,35 @@ work with the code:
 
 \item You can create a copy of my repository
 on GitHub by pressing the {\sf Fork} button.  If you don't already
-have a GitHub account, you'll need to create one, but if you do, you'll
+have a GitHub account, you'll need to create one.  After forking, you'll
 have your own repository on GitHub that you can use to keep track
-of code you write while working on this book.
+of code you write while working on this book.  Then you can
+clone the repo, which means that you make a copy of the files
+on your computer.
 
-\item You can also {\bf clone}
-my repository, which means that you create a copy of the files on
-your computer.  You don't need a GitHub account to do this, but you
+\item Or you could clone
+my repository.  You don't need a GitHub account to do this, but you
 won't be able to write your changes back to my repository.
 
 \item If you don't want to use Git at all, you can download the files
-in a Zip file.
+in a Zip file using the button in the lower-right corner of the
+GitHub page.
 
 \end{itemize}
 
-The code in this book is written to work in both Python 2 and Python 3
-with no translation.  
-I developed this book using Anaconda from Continuum
-Analytics, which is a free Python distribution that includes all
-packages you'll need to run the code (and lots more).
+All of the code is written to work in both Python 2 and Python 3
+with no translation.
 
+I developed this book using Anaconda from
+Continuum Analytics, which is a free Python distribution that includes
+all the packages you'll need to run the code (and lots more).
 I found Anaconda easy to install.  By default it does a user-level
 installation, not system-level, so you don't need administrative
 privilege.  And it supports both Python 2 and Python 3.  You can
 download Anaconda from \url{http://continuum.io/downloads}.
 
 If you don't want to use Anaconda, you will need the following
-packages installed:
+packages:
 
 \begin{itemize}
 
@@ -484,19 +477,17 @@ After you clone the repository or unzip the zip file, you should
 have a file called {\tt ThinkStats2/code/nsfg.py}.  If you run it,
 it should read a data file, run some tests, and print a message
 like, ``All tests passed.''  If you get import errors, it probably
-means there are some packages you need to install.
+means there are packages you need to install.
 
 Most exercises use Python scripts, but some also use the iPython
 notebook.  If you have not used iPython notebook before, I suggest
 you start with the documentation at
 \url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
 
-
-Allen B. Downey \\*
-Needham MA \\*
+---
 
 Allen B. Downey is a Professor of Computer Science at 
-the Franklin W. Olin College of Engineering.
+the Franklin W. Olin College of Engineering in Needham, MA.
 
 
 
@@ -566,9 +557,10 @@ Pearson's correlation.
 
 \item Michael Kearney sent me many excellent suggestions.
 
-\item Ben Small caught an error in the preface.
-
 \item Alex Birch made a number of helpful suggestions.
+
+\item Lindsey Vanderlyn, Griffin Tschurwald, and Ben Small read an
+  early version of this book and found many errors.
 
 % ENDCONTRIB
 
@@ -837,14 +829,14 @@ the data.
 
 If you print {\tt df} you get a truncated view of the rows and
 columns, and the shape of the DataFrame, which is 13593
-rows/records and 243 columns/variables.
+rows/records and 244 columns/variables.
 
 \begin{verbatim}
 >>> import nsfg
 >>> df = nsfg.ReadFemPreg()
 >>> df
 ...
-[13593 rows x 243 columns]
+[13593 rows x 244 columns]
 \end{verbatim}
 
 The attribute {\tt columns} returns a sequence of column
@@ -891,7 +883,7 @@ corresponding values:
 Name: pregordr, Length: 13593, dtype: int64
 \end{verbatim}
 
-In this example the indices are integers from 0 to 13593, but in
+In this example the indices are integers from 0 to 13592, but in
 general they can be any sortable type.  The elements
 are also integers, but they can be any type.
 
@@ -928,7 +920,7 @@ identifier, so it has to begin with a letter, can't contain spaces, etc.
 \section{Variables}
 
 We have already seen two variables in the NSFG dataset, {\tt caseid}
-and {\tt pregordr}, and we have seen that there are 243 variables in
+and {\tt pregordr}, and we have seen that there are 244 variables in
 total.  For the explorations in this book, I'll use the following
 variables:
 
@@ -1240,7 +1232,7 @@ Open \verb"chap01ex.ipynb".  Some cells are already filled in, and
 you should execute them.  Other cells give you instructions for
 exercises you should try.
 
-A solution to this exercise is in \verb"chap01ex_soln.ipynb"
+A solution to this exercise is in \verb"chap01soln.ipynb"
 \end{exercise}
 
 
@@ -1262,7 +1254,7 @@ You can use {\tt nsfg.MakePregMap} to make a dictionary that maps
 from each {\tt caseid} to a list of indices into the pregnancy
 DataFrame.
 
-A solution to this exercise is in \verb"chap01ex_soln.py"
+A solution to this exercise is in \verb"chap01soln.py"
 \end{exercise}
 
 
@@ -1355,7 +1347,7 @@ checking, calculation or interpretation.
 logic applied to raw data.
 \index{recode}
 
-\item {\bf data cleaning}: processes that include validating data,
+\item {\bf data cleaning}: Processes that include validating data,
   identifying errors, translating between data types and
   representations, etc.
 
@@ -1821,7 +1813,7 @@ a good summary statistic.
 \section{Effect size}
 \index{effect size}
 
-An {\bf effect size} is a summary statistic intended describe (wait
+An {\bf effect size} is a summary statistic intended to describe (wait
 for it) the size of an effect.  For example, to describe the
 difference between two groups, one obvious choice is the difference in
 the means.  \index{effect size}
@@ -1918,11 +1910,11 @@ In the repository you downloaded, you should find a file named
 you should execute them.  Other cells give you instructions for
 exercises.  Follow the instructions and fill in the answers.
 
-A solution to this exercise is in \verb"chap02ex_soln.ipynb"
+A solution to this exercise is in \verb"chap02soln.ipynb"
 \end{exercise}
 
 For the following exercises, create a file named {\tt chap02ex.py}.
-You can find a solution in \verb"chap02ex_soln.py".
+You can find a solution in \verb"chap02soln.py".
 
 \begin{exercise}
 The mode of a distribution is the most frequent value; see
@@ -2499,12 +2491,12 @@ are in their household.
 
 Plot the actual and biased distributions, and compute their means.
 As a starting place, you can use \verb"chap03ex.ipynb"
-You can find a solution in \verb"chap03ex_soln.ipynb".
+You can find a solution in \verb"chap03soln.ipynb".
 \end{exercise}
 
 
 For the following exercises, create a file named {\tt chap03ex.py}.
-You can find a solution in \verb"chap03ex_soln.py".
+You can find a solution in \verb"chap03soln.py".
 
 \begin{exercise}
 %
@@ -3074,7 +3066,7 @@ have to beat to maintain my percentile rank.
 \section{Exercises}
 
 For the following exercises, you can start with \verb"chap04ex.ipynb".
-My solution is in \verb"chap04ex_soln.ipynb".
+My solution is in \verb"chap04soln.ipynb".
 
 \begin{exercise}
 How much did you weigh at birth?  If you don't know, call your mother
@@ -3097,7 +3089,6 @@ PMF and CDF.  Is the distribution uniform?
 \index{distribution!uniform}
 
 \end{exercise}
-
 
 
 \section{Glossary}
@@ -3776,7 +3767,7 @@ for.
 \section{Exercises}
 
 For the following exercises, you can start with \verb"chap05ex.ipynb".
-My solution is in \verb"chap05ex_soln.ipynb".
+My solution is in \verb"chap05soln.ipynb".
 
 \begin{exercise}
 In the BRFSS (see Section~\ref{lognormal}), the distribution of
@@ -4624,7 +4615,7 @@ resulting sample.  What fraction of households reports a taxable
 income below the mean?  How do the results depend on the assumed
 upper bound?
 
-A solution to this exercise is in \verb"hinc2_soln.py".
+A solution to this exercise is in \verb"chap06soln.py".
 \end{exercise}
 
 
@@ -5159,6 +5150,7 @@ I convert the arguments to pandas Series objects so I can use
 {\tt rank}, which computes the rank for each value and returns
 a Series.  Then I use {\tt Corr} to compute the correlation
 of the ranks.
+\index{pandas}
 
 I could also use {\tt Series.corr} directly and specify
 Spearman's method:
@@ -5173,6 +5165,7 @@ def SpearmanCorr(xs, ys):
 The Spearman rank correlation for the BRFSS data is 0.54, a little
 higher than the Pearson correlation, 0.51.  There are several possible
 reasons for the difference, including:
+\index{rank correlation}
 
 \begin{itemize}
 
@@ -5202,6 +5195,7 @@ correlation with log-weight and height:
 The result is 0.53, close to the rank correlation, 0.54.  So that
 suggests that skewness in the distribution of weight explains most of
 the difference between Pearson's and Spearman's correlation.
+\index{skewness}
 
 
 \section{Correlation and causation}
@@ -5212,6 +5206,7 @@ If variables A and B are correlated, there are three possible
 explanations: A causes B, or B causes A, or some other set of factors
 causes both A and B.  These explanations are called ``causal
 relationships''.
+\index{causal relationship}
 
 Correlation alone does not distinguish between these explanations,
 so it does not tell you which ones are true.
@@ -5283,7 +5278,7 @@ versus mother's age.  Compute Pearson's and Spearman's correlations.
 How would you characterize the relationship
 between these variables?
 
-A solution to this exercise is in \verb"chap07ex_soln.py".
+A solution to this exercise is in \verb"chap07soln.py".
 \end{exercise}
 
 
@@ -5356,7 +5351,7 @@ about downloading and working with this code, see Section~\ref{code}.
 \section{The estimation game}
 
 Let's play a game.  I'll think of a distribution, and you have to guess
-what it is.  I'll give you two hints; it's a
+what it is.  I'll give you two hints: it's a
 normal distribution, and here's a random sample drawn from it:
 \index{normal distribution}
 \index{distribution!normal}
@@ -5387,6 +5382,7 @@ introducing outliers.
 {\em I'm thinking of a distribution.}  It's a normal distribution, and
 here's a sample that was collected by an unreliable surveyor who
 occasionally puts the decimal point in the wrong place.
+\index{measurement error}
 
 {\tt [-0.441, 1.774, -0.101, -1.138, 2.975, -213.8]}
 
@@ -5419,6 +5415,9 @@ compute $\xbar$.
 Here is a function that simulates the estimation game and computes
 the root mean squared error (RMSE), which is the square root of
 MSE:
+\index{mean squared error}
+\index{MSE}
+\index{RMSE}
 
 \begin{verbatim}
 def Estimate1(n=7, m=1000):
@@ -5441,6 +5440,7 @@ def Estimate1(n=7, m=1000):
 Again, {\tt n} is the size of the sample, and {\tt m} is the
 number of times we play the game.  {\tt means} is the list of
 estimates based on $\xbar$.  {\tt medians} is the list of medians.
+\index{median}
 
 Here's the function that computes RMSE:
 
@@ -5456,6 +5456,7 @@ actual value being estimated.  In practice, of course, we don't
 know {\tt actual}; if we did, we wouldn't have to estimate it.
 The purpose of this experiment is to compare the performance of
 the two estimators.
+\index{estimator}
 
 When I ran this code, the RMSE of the sample mean was 0.41, which
 means that if we use $\xbar$ to estimate the mean of this
@@ -5471,6 +5472,7 @@ overbuild the structure, increasing its cost.  But if it's too
 low, the building might collapse.  Because cost as a function of
 error is not symmetric, minimizing MSE is not the best strategy.
 \index{prediction}
+\index{cost, asymmetric}
 
 As another example, suppose I roll three six-sided dice and ask you to
 predict the total.  If you get it exactly right, you get a prize;
@@ -5481,6 +5483,7 @@ highest chance of being right, which is a {\bf maximum likelihood
   estimator} (MLE).  If you pick 10 or 11, your chance of winning is 1
 in 8, and that's the best you can do.  \index{MLE} \index{maximum
   likelihood estimator}
+\index{dice}
 
 
 \section{Guess the variance}
@@ -5553,6 +5556,7 @@ $S_{n-1}^2$ if you provide the argument {\tt ddof=1}, which stands for
 ``delta degrees of freedom.''  I won't explain that term, but you can read
 about it at
 \url{http://en.wikipedia.org/wiki/Degrees_of_freedom_(statistics)}.
+\index{degrees of freedom}
 
 {\tt MeanError} computes the mean difference between the estimates
 and the actual value:
@@ -5572,13 +5576,14 @@ Properties like MSE and bias are long-term expectations based on
 many iterations of the estimation game.  By running simulations like
 the ones in this chapter, we can compare estimators and check whether
 they have desired properties.
+\index{bias}
 
 But when you apply an estimator to real
 data, you just get one estimate.  It would not be meaningful to say
 that the estimate is unbiased; being unbiased is a property of the
 estimator, not the estimate.
 
-If you choose an estimator with appropriate properties, and use it to
+After you choose an estimator with appropriate properties, and use it to
 generate an estimate, the next step is to characterize the
 uncertainty of the estimate, which is the topic of the next
 section.
@@ -5597,18 +5602,24 @@ gorillas.  Let's assume that the population of the preserve is
 well known, so we can choose a representative sample of adult
 females.  We could use the sample mean, $\xbar$, to estimate the
 unknown population mean, $\mu$.
+\index{gorilla}
+\index{population}
+\index{sample}
 
 Having weighed 9 female gorillas, you might find $\xbar=90$ kg and
-sample standard deviation, $S=7.5$ kg.  The sample mean, $\xbar=90$,
+sample standard deviation, $S=7.5$ kg.  The sample mean
 is an unbiased estimator of $\mu$, and in the long run it
-minimizes MSE.  So if you reported a single
+minimizes MSE.  So if you report a single
 estimate that summarizes the results, you would report 90 kg.
+\index{MSE}
+\index{sample mean}
 
 But how confident should you be in this estimate?  If you only weigh
 $n=9$ gorillas out of a much larger population, you might be unlucky
 and choose the 9 heaviest gorillas (or the 9 lightest ones) just by
 chance.  Variation in the estimate caused by random selection is
 called {\bf sampling error}.
+\index{sampling error}
 
 To quantify sampling error, we can simulate the
 sampling process with hypothetical values of $\mu$ and $\sigma$, and
@@ -5641,6 +5652,7 @@ def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
 the parameters.  {\tt n} is the sample size, the number of
 gorillas we measured.  {\tt m} is the number of times we run
 the simulation.
+\index{sample size}
 
 \begin{figure}
 % estimation.py
@@ -5656,6 +5668,7 @@ distribution, {\tt cdf}, of the estimates.  The result is shown in
 Figure~\ref{estimation1}.  This distribution is called the {\bf
   sampling distribution} of the estimator.  It shows how much the
 estimates would vary if we ran the experiment over and over.
+\index{sampling distribution}
 
 The mean of the sampling distribution is pretty close
 to the hypothetical value of $\mu$, which means that the experiment
@@ -5671,11 +5684,13 @@ There are two common ways to summarize the sampling distribution:
   estimate to be off, on average.  For each simulated experiment, we
   compute the error, $\xbar - \mu$, and then compute the root mean
   squared error (RMSE).  In this example, it is roughly 2.5 kg.
+\index{standard error}
 
 \item A {\bf confidence interval} (CI) is a range that includes a
   given fraction of the sampling distribution.  For example, the 90\%
   confidence interval is the range from the 5th to the 95th
   percentile.  In this example, the 90\% CI is $(86, 94)$ kg.
+\index{confidence interval}
 
 \end{itemize}
 
@@ -5690,20 +5705,20 @@ Standard errors and confidence intervals are the source of much confusion:
   this example, the standard error of the mean, based on a sample of 9
   measurements, is 2.5 kg.
 
-One way to remember the difference is that, as sample size increases,
-standard error gets smaller; standard deviation does not.
+  One way to remember the difference is that, as sample size
+  increases, standard error gets smaller; standard deviation does not.
 
 \item People often think that there is a 90\% probability that the
   actual parameter, $\mu$, falls in the 90\% confidence interval.
   Sadly, that is not true.  If you want to make a claim like that, you
   have to use Bayesian methods (see my book, {\it Think Bayes}).
+\index{Bayesian statistics}
+
+  The sampling distribution answers a different question: it gives you
+  a sense of how reliable an estimate is by telling you how much it
+  would vary if you ran the experiment again.
 
 \end{itemize}
-
-The sampling distribution answers a different question:
-it gives you a sense of how reliable an estimate
-is by telling you how much it would vary if you ran the experiment
-again.
 
 It is important to remember that confidence intervals
 and standard errors only quantify sampling error; that is,
@@ -5720,11 +5735,14 @@ you want to know the average weight of women in the city where you
 live.  It is unlikely that you would be allowed
 to choose a representative sample of women and
 weigh them.
+\index{sampling bias}
+\index{measurement error}
 
 A simple alternative would be
 ``telephone sampling;'' that is,
 you could choose random numbers from the phone book, call and ask to
 speak to an adult woman, and ask how much she weighs.
+\index{telephone sampling}
 
 Telephone sampling has obvious limitations.  For example, the sample
 is limited to people whose telephone numbers are listed, so it
@@ -5732,25 +5750,27 @@ eliminates people without phones (who might be poorer than average)
 and people with unlisted numbers (who might be richer).  Also, if you
 call home telephones during the day, you are less likely to sample
 people with jobs.  And if you only sample the person who answers the
-phone, you are less likely to sample people who share a phone number
-with other women.
+phone, you are less likely to sample people who share a phone line.
 
 If factors like income, employment, and household size are related
-to weight (and it is plausible that they are), the results of your
-survey will be affected one way or another.  This problem is
+to weight -- and it is plausible that they are -- the results of your
+survey would be affected one way or another.  This problem is
 called {\bf sampling bias} because it is a property of the sampling
 process.
+\index{sampling bias}
 
 This sampling process is also vulnerable to self-selection, which is a
 kind of sampling bias.  Some people will refuse to answer the
 question, and if the tendency to refuse is related to weight, that
-will affect the results.
+would affect the results.
+\index{self-selection}
 
 Finally, if you ask people how much they weigh, rather than weighing
 them, the results might not be accurate.  Even helpful respondents
 might round up or down if they are uncomfortable with their actual
 weight.  And not all respondents are helpful.  These inaccuracies are
 examples of {\bf measurement error}.
+\index{measurement error}
 
 When you report an estimated quantity, it is useful to report
 standard error, or a confidence interval, or both, in order to
@@ -5794,6 +5814,7 @@ But we know that $\xbar$ is not robust in the presence of outliers, so
 we expect $\lamhat$ to have the same problem.
 \index{robust}
 \index{outlier}
+\index{sample median}
 
 We can choose an alternative based on the sample median.
 The median of an exponential distribution is $\ln(2) / \lambda$,
@@ -5826,14 +5847,18 @@ def Estimate3(n=7, m=1000):
     print('mean error Lm', MeanError(medians, lam))
 \end{verbatim}
 
-When I ran this experiment with $\lambda=2$, I found the RMSE of $L$ is 
+When I run this experiment with $\lambda=2$, the RMSE of $L$ is
 1.1.  For the median-based estimator $L_m$, RMSE is 1.8.  We can't
-tell from this experiment whether $L$ minimized MSE, but at least
+tell from this experiment whether $L$ minimizes MSE, but at least
 it seems better than $L_m$.
+\index{MSE}
+\index{RMSE}
 
 Sadly, it seems that both estimators are biased.  For $L$ the mean
 error is 0.33, for $L_m$ it is 0.45.  And neither converges to 0
 as {\tt m} increases.
+\index{bias}
+\index{estimator, biased}
 
 It turns out that $\xbar$ is an unbiased estimator of the mean
 of the distribution, $1 / \lambda$, but $L$ is not an unbiased
@@ -5842,8 +5867,8 @@ estimator of $\lambda$.
 
 \section{Exercises}
 
-For the following exercises, you might want to start with
-{\tt estimation.py}.  
+For the following exercises, you might want to start with a copy of
+{\tt estimation.py}.  Solutions are in \verb"chap08soln.py"
 
 \begin{exercise}
 
@@ -5855,20 +5880,26 @@ $S^2$ is biased and $S_{n-1}^2$ unbiased.
 Run similar experiments to see if $\xbar$ and median are biased estimates
 of $\mu$.
 Also check whether $S^2$ or $S_{n-1}^2$ yields a lower MSE.
+\index{sample mean}
+\index{sample median}
+\index{estimator, biased}
 
 \end{exercise}
 
 
 \begin{exercise}
 
-Suppose you draw a sample with size $n=10$ from a population 
-with an exponential distribution with $\lambda=2$.  Simulate
+Suppose you draw a sample with size $n=10$ from 
+an exponential distribution with $\lambda=2$.  Simulate
 this experiment 1000 times and plot the sampling distribution of
 the estimate $\lamhat$.  Compute the standard error of the estimate
 and the 90\% confidence interval.
 
 Repeat the experiment with a few different values of $n$ and make
 a plot of standard error versus $n$.
+\index{exponential distribution}
+\index{distribution!exponential}
+
 
 \end{exercise}
 
@@ -5880,6 +5911,8 @@ roughly exponential.  So you could estimate a team's goal-scoring rate
 by observing the number of goals they score in a game.  This
 estimation process is a little different from sampling the time
 between goals, so let's see how it works.
+\index{hockey}
+\index{soccer}
 
 Write a function that takes a goal-scoring rate, {\tt lam}, in goals
 per game, and simulates a game by generating the time between goals
@@ -5893,6 +5926,7 @@ Is this way of making an estimate biased?  Plot the sampling
 distribution of the estimates and the 90\% confidence interval.  What
 is the standard error?  What happens to sampling error for increasing
 values of {\tt lam}?
+\index{estimator, biased}
 
 \end{exercise}
 
@@ -5932,7 +5966,7 @@ point estimate most likely to be correct.
 \item sampling bias: Error in an estimate due to a sampling process
   that is not representative of the population. \index{sampling bias}
 
-\item measurement error: Error in an estimate due to errors collecting
+\item measurement error: Error in an estimate due to inaccuracy collecting
   or recording data. \index{measurement error}
 
 \item sampling distribution: The distribution of a statistic if an
@@ -6024,7 +6058,7 @@ contradiction, you conclude that A must actually be true.
 \index{contradiction, proof by}
 
 Similarly, to test a hypothesis like, ``This effect is real,'' we
-assume, temporarily, that is is not.  That's the null hypothesis.
+assume, temporarily, that it is not.  That's the null hypothesis.
 Based on that assumption, we compute the probability of the apparent
 effect.  That's the p-value.  If the p-value is low enough, we
 conclude that the null hypothesis is unlikely to be true.
@@ -6064,9 +6098,9 @@ class HypothesisTest(object):
 \end{verbatim}
 
 {\tt HypothesisTest} is an abstract parent class that provides
-complete definitions for some methods, and place-keepers for others.
+complete definitions for some methods and place-keepers for others.
 Child classes based on {\tt HypothesisTest} inherit \verb"__init__"
-and {\tt PValue} and provide implementations for {\tt TestStatistic},
+and {\tt PValue} and provide {\tt TestStatistic},
 {\tt RunModel}, and optionally {\tt MakeModel}.
 
 \verb"__init__" takes the data in whatever form is appropriate.  It
@@ -6088,7 +6122,7 @@ As a simple example\footnote{Adapted from MacKay, {\it Information
 toss a coin 250 times and see 140 heads and 110 tails.  Based on this
 result, we might suspect that the coin is biased; that is, more likely
 to land heads.  To test this hypothesis, we compute the
-probability of seeing such a big difference if the coin is actually
+probability of seeing such a difference if the coin is actually
 fair:
 
 \begin{verbatim}
@@ -6140,7 +6174,7 @@ p-value depends on the choice of the test statistics and
 the model of the null hypothesis.  So p-values should not be considered
 precise measurements.
 
-Instead I recommend interpreting p-values according to their order of
+I recommend interpreting p-values according to their order of
 magnitude: if the p-value is less than 1\%, the effect is unlikely to
 be due to chance; if it is greater than 10\%, the effect can plausibly
 be explained by chance.  P-values between 1\% and 10\% should be
@@ -6188,11 +6222,11 @@ class DiffMeansPermute(thinkstats2.HypothesisTest):
         return data
 \end{verbatim}
 
-The parameter, {\tt data}, is a pair of sequences, one for each
+{\tt data} is a pair of sequences, one for each
 group.  The test statistic is the absolute difference in the means.
 
 {\tt MakeModel} records the sizes of the groups, {\tt n} and
-{\tt m}, and combines the data from the groups into one NumPy
+{\tt m}, and combines the groups into one NumPy
 array, {\tt self.pool}.
 
 {\tt RunModel} simulates the null hypothesis by shuffling the
@@ -6241,7 +6275,7 @@ observed difference at 0.83, which is the complement of the p-value,
 
 If we run the same analysis with birth weight, the computed p-value
 is 0; after 1000 attempts,
-the simulation never yielded an effect
+the simulation never yields an effect
 as big as the observed difference, 0.12 lbs.  So we would
 report $p < 0.001$, and
 conclude that the difference in birth weight is statistically
@@ -6366,10 +6400,10 @@ It only means that it is unlikely to have occurred by chance.
 
 \section{Testing proportions}
 \label{casino}
-\index{Chi-square test}
+\index{chi-squared test}
 
 Suppose you run a casino and you suspect that a customer is
-using a ``crooked die;'' that
+using a crooked die; that
 is, one that has been modified to make one of the faces more
 likely than the others.  You apprehend the alleged
 cheater and confiscate the die, but now you have to prove that it
@@ -6398,8 +6432,8 @@ each value, the difference between the expected and observed
 frequencies, and the total absolute difference.  In this
 example, we expect each side to come up 10 times out of 60; the
 deviations from this expectation are -2, -1, 9, -5, -2, and 1; so the
-total absolute difference is 20.  How often would we see a
-difference as big as that by chance?
+total absolute difference is 20.  How often would we see such a
+difference by chance?
 
 Here's a version of {\tt HypothesisTest} that answers that question:
 
@@ -6475,6 +6509,12 @@ would say that the results are borderline.  I would not rule out the
 possibility that the die is crooked, but I would not convict the
 accused cheater.
 
+This example demonstrates an important point: the p-value depends
+on the choice of test statistic and the model of the null hypothesis,
+and sometimes these choices determine whether an effect is
+statistically significant or not.
+
+
 \section{First babies again}
 
 Earlier in this chapter we looked at pregnancy lengths for first
@@ -6485,8 +6525,7 @@ in the distribution of pregnancy length, especially in the range from
 35 to 43 weeks.  To see whether those differences are statistically
 significant, we can use a test based on a chi-squared statistic.
 
-The code combines elements from previous examples, so it is
-a bit more complex.  Here's the code that makes and runs the model:
+The code combines elements from previous examples:
 
 \begin{verbatim}
 class PregLengthTest(thinkstats2.HypothesisTest):
@@ -6501,10 +6540,6 @@ class PregLengthTest(thinkstats2.HypothesisTest):
         self.expected_probs = np.array(pmf.Probs(self.values))
 
     def RunModel(self):
-        """Run the model of the null hypothesis.
-
-        returns: simulated data
-        """
         np.random.shuffle(self.pool)
         data = self.pool[:self.n], self.pool[self.n:]
         return data
@@ -6585,16 +6620,16 @@ threshold is 5\%, the false positive rate is 5\%.  Here's why:
 
 \item If there is no real effect, the null hypothesis is true, so we
   can compute the distribution of the test statistic by simulating the
-  null hypothesis.  Call the distribution $T$ and its CDF $\CDF_T$.
+  null hypothesis.  Call this distribution $\CDF_T$.
 
 \item Each time we run an experiment, we get a test statistic, $t$,
-  which is drawn from $T$.  Then we compute a p-value, which is
-  the probability that a random value from $T$ exceeds {\tt t},
+  which is drawn from $CDF_T$.  Then we compute a p-value, which is
+  the probability that a random value from $CDF_T$ exceeds {\tt t},
   so that's $1 - CDF_T(t)$.
 
 \item The p-value is less than 5\% if $CDF_T(t)$ is greater
   than 95\%; that is, if $t$ exceeds the 95th percentile.
-  And how often does a value chosen from $T$ exceed
+  And how often does a value chosen from $CDF_T$ exceed
   the 95th percentile?  5\% of the time.
 
 \end{itemize}
@@ -6715,7 +6750,7 @@ dataset:
 to 0.078 weeks in the original dataset).
 
 \item The difference in birth weight is 0.17 pounds with $p < 0.001$
-(compared with 0.12 lbs in the original dataset).
+(compared to 0.12 lbs in the original dataset).
 
 \item The correlation between birthweight and mother's age is
 0.08 with $p < 0.001$ (compared to 0.07).
@@ -6733,7 +6768,7 @@ original, is bigger in the new dataset and significant.
 
 \section{Exercises}
 
-A solution to these exercises is in \verb"chap09ex_soln.py".
+A solution to these exercises is in \verb"chap09soln.py".
 
 \begin{exercise}
 As sample size increases, the power of a hypothesis test increases,
@@ -6815,9 +6850,9 @@ as big as the observed effect, and with the same sign?''
 \index{test!one-sided}
 \index{test!two-sided}
 
-\item chi-square test: A test that uses the chi-square statistic as
+\item chi-squared test: A test that uses the chi-squared statistic as
 the test statistic.
-\index{chi-square test}
+\index{chi-squared test}
 
 \item false positive: The conclusion that an effect is real when it is not.
 \index{false positive}
@@ -6838,16 +6873,6 @@ is false.
 
 The code for this chapter is in {\tt linear.py}.  For information
 about downloading and working with this code, see Section~\ref{code}.
-
-% TODO
-%Anscombe's quartet demonstrates this effect; it contains four data
-%sets with the same correlation.  One is a linear relation with random
-%noise, one is a non-linear relation, one is a perfect relation with an
-%outlier, and one has no relation except an artifact caused by an
-%outlier.  You can read more about it at
-%\url{http://wikipedia.org/wiki/Anscombe's_quartet}.
-%\index{Anscombe's quartet}
-
 
 
 \section{Least squares fit}
@@ -6945,15 +6970,14 @@ def LeastSquares(xs, ys):
     return inter, slope
 \end{verbatim}
 
-To see how this is derived, see
-\url{http://wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
-
 {\tt LeastSquares} takes sequences
 {\tt xs} and {\tt ys} and returns the estimated parameters {\tt inter}
 and {\tt slope}.
+For details on how it works, see
+\url{http://wikipedia.org/wiki/Numerical_methods_for_linear_least_squares}.
 
-{\tt thinkstats2} also provides {\tt FitLine}, which takes the
-estimated parameters and returns the fitted line for a sequence
+{\tt thinkstats2} also provides {\tt FitLine}, which takes {\tt inter}
+and {\tt slope} and returns the fitted line for a sequence
 of {\tt xs}.
 
 \begin{verbatim}
@@ -7020,6 +7044,13 @@ def Residuals(xs, ys, inter, slope):
 estimated parameters {\tt inter} and {\tt slope}.  It returns
 the differences between the actual values and the fitted line.
 
+\begin{figure}
+% linear.py
+\centerline{\includegraphics[height=2.5in]{figs/linear2.pdf}}
+\caption{Residuals of the linear fit.}
+\label{linear2}
+\end{figure}
+
 To visualize the residuals, I group respondents by age and compute
 percentiles in each group, as we saw in Section~\ref{characterizing}.
 Figure~\ref{linear2} shows the 25th, 50th and 75th percentiles of
@@ -7034,13 +7065,6 @@ the same for all age groups.  In fact, the lines are close to
 parallel, so that's good; but they have some curvature, indicating
 that the relationship is non-linear.  Nevertheless, the linear fit
 is a simple model that is probably good enough for some purposes.
-
-\begin{figure}
-% linear.py
-\centerline{\includegraphics[height=2.5in]{figs/linear2.pdf}}
-\caption{Residuals of the linear fit.}
-\label{linear2}
-\end{figure}
 
 
 \section{Estimation}
@@ -7097,15 +7121,19 @@ I summarize the sampling distributions by printing the standard
 error and confidence interval:
 
 \begin{verbatim}
-def Summarize(values, actual=None):
-    mean = thinkstats2.Mean(values)
-    stderr = thinkstats2.Std(values, mu=actual)
-    cdf = thinkstats2.Cdf(values)
+def Summarize(estimates, actual=None):
+    mean = thinkstats2.Mean(estimates)
+    stderr = thinkstats2.Std(estimates, mu=actual)
+    cdf = thinkstats2.Cdf(estimates)
     ci = cdf.ConfidenceInterval(90)
     print('mean, SE, CI', mean, stderr, ci)
 \end{verbatim}
 
-For the intercept, the estimated value is 6.83, with standard error
+{\tt Summarize} takes a sequence of estimates and the actual value.
+It prints the mean of the estimates, the standard error and 
+a 90\% confidence interval.
+
+For the intercept, the mean estimate is 6.83, with standard error
 0.07 and 90\% confidence interval (6.71, 6.94).  The estimated slope, in
 more compact form, is 0.0174, SE 0.0028, CI (0.0126, 0.0220).
 There is almost a factor of two between the low and high ends of
@@ -7124,7 +7152,7 @@ plot a 90\% confidence interval for each age.  Here's the code:
 def PlotConfidenceIntervals(xs, inters, slopes,
                             percent=90, **options):
     fys_seq = []
-    for i, (inter, slope) in enumerate(zip(inters, slopes)):
+    for inter, slope in zip(inters, slopes):
         fxs, fys = thinkstats2.FitLine(xs, inter, slope)
         fys_seq.append(fys)
 
@@ -7135,7 +7163,7 @@ def PlotConfidenceIntervals(xs, inters, slopes,
 \end{verbatim}
 
 {\tt xs} is the sequence of mother's age.  {\tt inters} and {\tt slopes}
-are the estimates parameters generated by {\tt SamplingDistributions}.
+are the estimated parameters generated by {\tt SamplingDistributions}.
 {\tt percent} indicates which confidence interval to plot.
 
 {\tt PlotConfidenceIntervals} generates a fitted line for each pair
@@ -7195,7 +7223,7 @@ of MSE that remains if you use the model, and $R^2$ is the fraction
 of MSE the model eliminates.
 
 For birth weight and mother's age, $R^2$ is 0.0047, which means
-that mother's age predicts less than half of 1\% of variance in
+that mother's age predicts about half of 1\% of variance in
 birth weight.
 
 There is a simple relationship between the coefficient of
@@ -7218,7 +7246,7 @@ $\rho=0.72$ between total SAT scores and IQ scores, which sounds like
 a strong correlation.  But $R^2 = \rho^2 = 0.52$, so SAT scores
 account for only 52\% of variance in IQ.
 
-IQ scores are normalized so {\tt Std(ys) = 15}, so
+IQ scores are normalized with {\tt Std(ys) = 15}, so
 
 \begin{verbatim}
 >>> var_ys = 15**2
@@ -7331,9 +7359,9 @@ So we could estimate the p-value two ways:
 hypothesis exceeds the observed slope.
 
 \item Compute the probability that the slope in the sampling
-distribution falls below 0.  If the estimated slope were negative,
+distribution falls below 0.  (If the estimated slope were negative,
 we would compute the probability that the slope in the sampling
-distribution exceeds 0.
+distribution exceeds 0.)
 
 \end{itemize}
 
@@ -7414,7 +7442,7 @@ weights.  Without weights, we generate the sampling distribution
 like this:
 
 \begin{verbatim}
-    estimates = [thinkstats2.ResampleRows(live).totalwgt_lb.mean()
+    estimates = [ResampleRows(live).totalwgt_lb.mean()
                  for _ in range(iters)]
 \end{verbatim}
 
@@ -7474,7 +7502,7 @@ of respondents in the BRFSS, the standard error of the mean, and a
 90\% confidence interval.  How much does correct weighting affect the
 estimates?
 
-A solution to this exercise is in \verb"chap10ex_soln.ipynb"
+A solution to this exercise is in \verb"chap10soln.ipynb"
 
 \end{exercise}
 
@@ -7484,8 +7512,7 @@ A solution to this exercise is in \verb"chap10ex_soln.ipynb"
 \begin{itemize}
 
 \item linear fit: a line intended to model the relationship between
-variables.  
-\index{linear fit}
+variables.  \index{linear fit}
 
 \item least squares fit: A model of a dataset that minimizes the
 sum of squares of the residuals.
@@ -7525,14 +7552,14 @@ and another set of variables, called independent or {\bf
 
 In the previous chapter we used mother's age as an explanatory
 variable to predict birth weight as a dependent variable.  When there
-is only one dependent and one explanatory variable, that's called {\bf
+is only one dependent and one explanatory variable, that's {\bf
   simple regression}.  In this chapter, we move on to {\bf multiple
   regression}, with more than one explanatory variable.  If there is
-more than one dependent variable, that's called multivariate
+more than one dependent variable, that's multivariate
 regression.
 
 If the relationship between the dependent and explanatory variable
-is linear, that's called {\bf linear regression}.  For example,
+is linear, that's {\bf linear regression}.  For example,
 if the dependent variable is $y$ and the explanatory variables
 are $x_1$ and $x_2$, we would write the following linear
 regression model:
@@ -7579,9 +7606,9 @@ StatsModels:
 
 {\tt statsmodels} provides two interfaces (APIs); the ``formula''
 API uses strings to identify the dependent and explanatory variables.
-It uses a syntax called {\tt patsy}; in this example, the {\tt ~}
+It uses a syntax called {\tt patsy}; in this example, the \verb"~"
 operator separates the dependent variable on the left from the
-explatory variables on the right.
+explanatory variables on the right.
 
 {\tt smf.ols} takes the formula string and the DataFrame, {\tt live},
 and returns an OLS object that represents the model.  The name {\tt ols}
@@ -7602,8 +7629,8 @@ get the intercept and slope like this:
 The estimated parameters are 6.83 and 0.0175, the same as
 from {\tt LeastSquares}.
 
-{\tt pvalues} is a Series that maps from variable name to the associated
-p-value, so we can check whether the estimated slope is statistically
+{\tt pvalues} is a Series that maps from variable names to the associated
+p-values, so we can check whether the estimated slope is statistically
 significant:
 
 \begin{verbatim}
@@ -7660,10 +7687,10 @@ this relationship is {\bf spurious}.
 
 In fact, there is a possible explanation for this effect.  We have
 seen that birth weight depends on mother's age, and we might expect
-that mother's of first babies are younger than others.
+that mothers of first babies are younger than others.
 
 With a few calculations we can check whether this explanation
-is plausible.  Then we can use multiple regression to investigate
+is plausible.  Then we'll use multiple regression to investigate
 more carefully.  First, let's see how big the difference in weight
 is:
 
@@ -7734,7 +7761,7 @@ the $R^2$ value for this model is small, which means that
 {\tt isfirst} doesn't account for a substantial part of the
 variation in birth weight.
 
-The results are simular with {\tt agepreg}:
+The results are similar with {\tt agepreg}:
 
 \begin{verbatim}
 Intercept       6.83    (0)
@@ -7772,7 +7799,7 @@ than either alone (but not by much).
 
 Remembering that the contribution of {\tt agepreg} might be non-linear,
 we might consider adding a variable to capture more of this
-relationship.  One option is to create a column, {\tt agepreg2}
+relationship.  One option is to create a column, {\tt agepreg2},
 that contains the squares of the ages:
 
 \begin{verbatim}
@@ -7791,7 +7818,7 @@ agepreg2        -0.00185  (8.8e-06)
 R^2 0.007462
 \end{verbatim}
 
-The parameter of {\tt agepreg2} is negative, so the parabola is
+The parameter of {\tt agepreg2} is negative, so the parabola
 curves downward, which is consistent with the shape of the lines
 in Figure~\ref{linear2}.
 
@@ -7818,6 +7845,11 @@ Model 4 & -0.0504 (0.11) & 0.112 * & -0.00185 * & 0.0075 \\
 \hline
 \end{tabular}
 \end{center}
+
+The columns in this table are the explanatory variables and
+the coefficient of determination, $R^2$.  Each entry is an estimated
+parameter and either a p-value in parentheses or an asterisk to
+indicate a p-value less that 0.001.
 
 We conclude that the apparent difference in birth weight
 is explained, at least in part, by the difference in mother's age.
@@ -7867,7 +7899,7 @@ as a DataFrame method, so we can perform the operation like this:
 
 \begin{verbatim}
     live = live[live.prglngth>30]
-    resp = chap01ex_soln.ReadFemResp()
+    resp = chap01soln.ReadFemResp()
     resp.index = resp.caseid
     join = live.join(resp, on='caseid', rsuffix='_r')
 \end{verbatim}
@@ -7922,7 +7954,7 @@ we already know that it has some predictive power.
 I check that each explanatory variable has some variability; otherwise
 the results of the regression are unreliable.  I also check the number
 of observations for each model.  Variables that contains a large number
-of NA values are not good candidates for prediction.
+of {\tt nan}s are not good candidates for prediction.
 
 For most of these variables, we haven't done any cleaning.  Some of them
 are encoded in ways that don't work very well for linear regression.
@@ -7943,13 +7975,13 @@ yield the highest values of $R^2$.
 
 The first variable on the list is \verb"totalwgt_lb",
 followed by \verb"birthwgt_lb".  Obviously, we can't use birth
-weight to predict birthweight.
+weight to predict birth weight.
 
 Similarly {\tt prglngth} has useful predictive power, but for the
 office pool we assume pregnancy length (and the related variables)
 are not known yet.
 
-The first useful predictive variable {\tt babysex} which indicates
+The first useful predictive variable is {\tt babysex} which indicates
 whether the baby is male or female.  In the NSFG dataset, boys are
 about 0.3 lbs heavier.  So, assuming that the sex of the baby is
 known, we can use it for prediction.
@@ -8007,7 +8039,7 @@ female.
 Similarly {\tt nbrnaliv>1} is True for multiple births and 
 {\tt paydu==1} is True for respondents who own their houses.
 
-{\tt totincr} is encoded numerically from 1-14, which each increment
+{\tt totincr} is encoded numerically from 1-14, with each increment
 representing about \$5000 in annual income.  So we can treat these
 values as numerical, expressed in units of \$5000.
 
@@ -8025,7 +8057,7 @@ totincr                 0.0122  (0.00188)
 \end{verbatim}
 
 The estimated parameters for race are larger than I expected,
-especially since we have controlled for income.  The encoding
+especially since we control for income.  The encoding
 is 1 for white, 2 for black, and 3 for other.  Babies of white
 mothers are lighter than babies of other races by 0.27--0.36 lbs.
 
@@ -8056,7 +8088,7 @@ variable was always numerical.
 Linear regression can be generalized to handle other kinds of
 dependent variables.  If the dependent variable is boolean, the
 generalized model is called {\bf logistic regression}.  If the dependent
-variable is a positive, integer count, it's called {\bf Poisson
+variable is an integer count, it's called {\bf Poisson
 regression}.
 
 As an example of logistic regression, let's consider a variation
@@ -8141,7 +8173,7 @@ closed-form solution, so it is solved by guessing an initial
 solution and improving it iteratively.
 
 The usual goal is to find the maximum-likelihood estimate (MLE),
-which is the parameters that maximizes the likelihood of the
+which is the set of parameters that maximizes the likelihood of the
 data.  For example, suppose we have the following data:
 
 \begin{verbatim}
@@ -8205,7 +8237,7 @@ iterative solver like Newton's method (see
 \section{Implementation}
 \label{implementation}
 
-{\tt statsmodels} provides an implementation of logistic regression
+StatsModels provides an implementation of logistic regression
 called {\tt logit}, named for the function that converts from
 probability to log-odds.  To demonstrate its use, I'll look for
 variables that affect the sex ratio.
@@ -8228,7 +8260,7 @@ boolean), so I'll create a new column named {\tt boy}, using {\tt
 
 Factors that have been found to affect sex ratio include parents'
 age, birth order, race, and social status.  We can use logistic
-regression to see if these effect appear in the NSFG data.  I'll
+regression to see if these effects appear in the NSFG data.  I'll
 start with the mother's age:
 
 \begin{verbatim}
@@ -8253,7 +8285,7 @@ sometimes convenient to convert them to DataFrames:
     exog = pandas.DataFrame(model.exog, columns=model.exog_names)
 \end{verbatim}
 
-The result of {\tt model.fit} is BinaryResults object, which is
+The result of {\tt model.fit} is a BinaryResults object, which is
 similar to the RegressionResults object we got from {\tt ols}.
 Here is a summary of the results:
 
@@ -8281,7 +8313,7 @@ believed to be associated with sex ratio:
 \end{verbatim}
 
 Along with mother's age, this model includes father's age at
-birth, {\tt hpagelb}, birth order, {\tt birthord}, and
+birth ({\tt hpagelb}), birth order ({\tt birthord}), and
 race as a categorical variable.  Here are the results:
 
 \begin{verbatim}
@@ -8294,8 +8326,9 @@ birthord        0.00501    (0.821)
 R^2 0.000144
 \end{verbatim}
 
-None of the estimated parameters are statistically significant.
-$R^2$ is a little higher, but that could be due to chance.
+None of the estimated parameters are statistically significant.  The
+pseudo-$R^2$ value is a little higher, but that could be due to
+chance.
 
 
 \section{Accuracy}
@@ -8315,8 +8348,10 @@ strategy is just the fraction of boys:
     baseline = actual.mean()
 \end{verbatim}
 
-Since {\tt actual} in encoded in binary integers, the mean is the
-fraction of boys.  Here's how we compute the accuracy of the model:
+Since {\tt actual} is encoded in binary integers, the mean is the
+fraction of boys, which is 0.507.
+
+Here's how we compute the accuracy of the model:
 
 \begin{verbatim}
     predict = (results.predict() >= 0.5)
@@ -8325,7 +8360,7 @@ fraction of boys.  Here's how we compute the accuracy of the model:
 \end{verbatim}
 
 {\tt results.predict} returns a NumPy array of probabilities, which we
-round the predictions off to 0 or 1.  Multiplying by {\tt actual}
+round off to 0 or 1.  Multiplying by {\tt actual}
 yields 1 if we predict a boy and get it right, 0 otherwise.  So,
 \verb"true_pos" indicates ``true positives''.
 
@@ -8336,13 +8371,13 @@ and get it right.  Accuracy is the fraction of correct guesses:
     acc = (sum(true_pos) + sum(true_neg)) / len(actual)
 \end{verbatim}
 
-In this example, the accuracy is 0.512, slightly better than the
-baseline, 0.507.  Again, you should not take this result too seriously.
+The result is 0.512, slightly better than the
+baseline, 0.507.  But, you should not take this result too seriously.
 We used the same data to build and test the model, so the model
 may not have predictive power on new data.
 
 Nevertheless, let's use the model to make a prediction for the office
-pool.  Let's suppose that your friend is and 35 years old and white,
+pool.  Suppose your friend is and 35 years old and white,
 her husband is 39, and they are expecting their third child:
 
 \begin{verbatim}
@@ -8360,7 +8395,7 @@ improves your chances of winning, the difference is very small.
 
 \section{Exercises}
 
-My solution to these exercises is in \verb"chap11ex_soln.ipynb".
+My solution to these exercises is in \verb"chap11soln.ipynb".
 
 \begin{exercise}
 Suppose one of your co-workers is expecting a baby and you are
@@ -8403,7 +8438,7 @@ children would you predict she has born?
 
 
 \begin{exercise}
-If the quantity you want to predict is a categorical, you can use
+If the quantity you want to predict is categorical, you can use
 multinomial logistic regression, which is implemented in StatsModels
 with a function called {\tt mnlogit}.  As an exercise, let's use it to
 guess whether a woman is married, cohabitating, widowed, divorced,
@@ -8422,7 +8457,7 @@ What is the probability that she is married, cohabitating, etc?
 
 \begin{itemize}
 
-\item regression: One of many related processes for estimating parameters
+\item regression: One of several related processes for estimating parameters
 that fit a model to data.
 \index{regression}
 
@@ -8503,15 +8538,15 @@ The example I work with in this chapter comes from Zachary M. Jones, a
 researcher in political science who studies the black market for
 cannabis in the U.S.  (\url{http://zmjones.com/marijuana}).  He
 collected data from a web site called ``Price of Weed'' that
-crowdsources market information by asking participant to report the
+crowdsources market information by asking participants to report the
 price, quantity, quality, and location of cannabis transactions
 (\url{http://www.priceofweed.com/}).  The goal of his project is to
 investigate the effect of policy decisions, like legalization, on
 markets.  I find this project appealing because it is an example that
 uses data to address important political questions, like drug policy.
 
-It is also an example many people find interesting, so I hope you will
-find this chapter entertaining.  But I'll take this opportunity to
+I hope you will
+find this chapter interesting, but I'll take this opportunity to
 reiterate the importance of maintaining a professional attitude to
 data analysis.  Whether and which drugs should be illegal are
 important and difficult public policy questions; our decisions should
@@ -8531,8 +8566,8 @@ pandas DataFrame:
     transactions = pandas.read_csv('mj-clean.csv', parse_dates=[5])
 \end{verbatim}
 
-\verb"parse_dates" tells \verb"read_csv" to interpret column 5
-as a date and convert the values to NumPy {\tt datetime64} objects.
+\verb"parse_dates" tells \verb"read_csv" to interpret values in column 5
+as dates and convert them to NumPy {\tt datetime64} objects.
 
 The DataFrame has a row for each reported transaction and 
 the following columns:
@@ -8562,15 +8597,15 @@ the following columns:
 \end{itemize}
 
 Each transaction is an event in time, so we could treat this dataset
-as a time series.  But the events are not equally-spaced in time; the
+as a time series.  But the events are not equally spaced in time; the
 number of transactions reported each days varies from 0 to several
 hundred.  Many methods used to analyze time series require the
-measurements to be equally-spaced, or at least things are simpler if
+measurements to be equally spaced, or at least things are simpler if
 they are.
 
-In order to demonstrate these methods, I will divide the dataset
+In order to demonstrate these methods, I divide the dataset
 into groups by reported quality, and then transform each group into
-an equally-spaced series by computing the mean daily price per gram.
+an equally spaced series by computing the mean daily price per gram.
 
 \begin{verbatim}
 def GroupByQualityAndDay(transactions):
@@ -8604,19 +8639,19 @@ def GroupByDay(transactions, func=np.mean):
     return daily
 \end{verbatim}
 
-The parameter, {\tt transactions}, is a DataFrame that contains at
-least the columns {\tt date} and {\tt ppg}.  We select these two
+The parameter, {\tt transactions}, is a DataFrame that contains
+columns {\tt date} and {\tt ppg}.  We select these two
 columns, then group by {\tt date}.
 
 The result, {\tt grouped}, is a map from each date to a DataFrame that
 contains prices reported on that date.  {\tt aggregate} is a
-DataFrameGroupBy method that iterates through the groups and applies a
+GroupBy method that iterates through the groups and applies a
 function to each column of the group; in this case there is only one
 column, {\tt ppg}.  So the result of {\tt aggregate} is a DataFrame
 with one row for each date and one column, {\tt ppg}.
 
 Dates in these DataFrames are stored as NumPy {\tt datetime64}
-objects, which are represented as 64-bit integers, in nanoseconds.
+objects, which are represented as 64-bit integers in nanoseconds.
 For some of the analyses coming up, it will be convenient to
 work with time in more human-friendly units, like years.  So
 {\tt GroupByDay} adds a column named {\tt date} by copying
@@ -8647,9 +8682,9 @@ the three time series:
 \end{verbatim}
 
 {\tt PrePlot} with {\tt rows=3} means that we are planning to
-make three subplots, laid out in three rows.  The loop iterates
+make three subplots laid out in three rows.  The loop iterates
 through the DataFrames and creates a scatter plot for each.  It is
-also common to plot time series with line segments between the points,
+common to plot time series with line segments between the points,
 but in this case there are many data points and prices are highly
 variable, so adding lines would not help.
 
@@ -8658,7 +8693,7 @@ to rotate the ``ticks'' 30 degrees, making them more readable.
 
 \begin{figure}
 % timeseries.py
-\centerline{\includegraphics[width=3in]{figs/timeseries1.pdf}}
+\centerline{\includegraphics[width=3.5in]{figs/timeseries1.pdf}}
 \caption{Time series of daily price per gram for high, medium, and low
 quality cannabis.}
 \label{timeseries1}
@@ -8674,8 +8709,8 @@ Visually, it looks like the price of high quality cannabis is
 declining during this period, and the price of medium quality is
 increasing.  The price of low quality might also be increasing, but it
 is harder to tell, since it seems to be more volatile.  Keep in mind
-that the quality data is reported by volunteers, so trends over time
-might reflect changes in how participants apply these categories.
+that quality data is reported by volunteers, so trends over time
+might reflect changes in how participants apply these labels.
 
 
 \section{Linear regression}
@@ -8707,11 +8742,11 @@ each:
 Here are the results:
 
 \begin{center}
-\begin{tabular}{|l|l|c|} \hline
-intercept & slope & $R^2$ \\ \hline
-13.450 (0) & -0.708 (3.7e-160) & 0.444 \\
-8.879 (0) & 0.283 (1.8e-15) & 0.050 \\
-5.362 (3.1e-130) & 0.568 (2.8e-09) & 0.030 \\
+\begin{tabular}{|l|l|l|c|} \hline
+quality & intercept & slope & $R^2$ \\ \hline
+high    & 13.450  & -0.708  & 0.444 \\
+medium  &  8.879  & 0.283   & 0.050 \\
+low     &  5.362  & 0.568   & 0.030 \\
 \hline
 \end{tabular}
 \end{center}
@@ -8719,14 +8754,14 @@ intercept & slope & $R^2$ \\ \hline
 The estimated slopes indicate that the price of high quality cannabis
 dropped by about 71 cents per year during the observed interval; for
 medium quality it increased by 28 cents per year, and for low quality
-it increase by 57 cents per year.  These estimates are
+it increased by 57 cents per year.  These estimates are all
 statistically significant with very small p-values.
 
 The $R^2$ value for high quality cannabis is 0.44, which means
 that time as an explanatory variable accounts for 44\% of the observed
 variability in price.  For the other qualities, the change in price
 is smaller, and variability in prices is higher, so the values
-of $R^2$ are much smaller (although still statistically significant).
+of $R^2$ are smaller (but still statistically significant).
 
 The following code plots the observed prices and the fitted values:
 
@@ -8750,7 +8785,7 @@ and a linear least squares fit.}
 \label{timeseries2}
 \end{figure}
 
-{\tt PlotFittedValues} makes a scatter plot of data points and a line
+{\tt PlotFittedValues} makes a scatter plot of the data points and a line
 plot of the fitted values.  Figure~\ref{timeseries2} shows the results
 for high quality cannabis.  The model seems like a good linear fit
 for the data; nevertheless, linear regression is not the most 
@@ -8867,7 +8902,7 @@ There are ways to fill in these gaps, but they are a minor nuisance.
 
 An alternative is the {\bf exponentially-weighted moving average} (EWMA),
 which has two advantages.  First, as the name suggests, it computes
-a weighted average where the most recent value has the highest weight,
+a weighted average where the most recent value has the highest weight
 and the weights for previous values drop off exponentially.
 Second, the pandas implementation of EWMA handles missing values
 better.
@@ -8911,19 +8946,21 @@ flag tells {\tt fillna} to modify the existing Series rather than
 create a new one.
 
 A drawback of this method is that it understates the noise in the
-series; we can solve that problem by adding in resampled
-residuals\footnote{A note on vocabulary: in this book I am using
-``resampling'' in the statistical sense, which is drawing a random
-sample from a population that is, itself, a sample.  In the context
-of time series analysis, it has another meaning: changing the
-time between measurements in a series.  I don't use the second
-meaning in this book, but you might encounter it.}:
+series.  We can solve that problem by adding in resampled
+residuals:
 
 \begin{verbatim}
     resid = (reindexed.ppg - ewma).dropna()
     fake_data = ewma + thinkstats2.Resample(resid, len(reindexed))
     reindexed.ppg.fillna(fake_data, inplace=True)
 \end{verbatim}
+
+% (One note on vocabulary: in this book I am using
+%``resampling'' in the statistical sense, which is drawing a random
+%sample from a population that is, itself, a sample.  In the context
+%of time series analysis, it has another meaning: changing the
+%time between measurements in a series.  I don't use the second
+%meaning in this book, but you might encounter it.)
 
 {\tt resid} contains the residual values, not including days
 when {\tt ppg} is {\tt nan}.  \verb"fake_data" contains the
@@ -8954,7 +8991,7 @@ like this is called {\bf serial
 correlation}, because each value is correlated with the next one
 in the series.
 
-To compute serial correlation, we can shift one of the time series
+To compute serial correlation, we can shift the time series
 by an interval called a {\bf lag}, and then compute the correlation
 of the shifted series with the original:
 
@@ -9018,22 +9055,23 @@ in these series, at least not with these lags.
 
 \section{Autocorrelation}
 
-Serial correlation is the correlation of a series with a shifted
-version of itself, also known as {\bf autocorrelation}.  If you think
-a series might have some serial correlation, but you don't know which
-lags to test, you can test them all!
+If you think a series might have some serial correlation, but you
+don't know which lags to test, you can test them all!  The {\bf
+  autocorrelation function} is a function that maps from lag to the
+serial correlation with the given lag.  ``Autocorrelation'' is another
+name for serial correlation, used more often when the lag is not 1.
 
 StatsModels, which we used for linear regression in
 Section~\ref{statsmodels}, also provides functions for time series
-analysis, including {\tt acf}, which computes the {\bf autocorrelation
-  function}:
+analysis, including {\tt acf}, which computes the autocorrelation
+function:
 
 \begin{verbatim}
     import statsmodels.tsa.stattools as smtsa
     acf = smtsa.acf(filled.resid, nlags=365, unbiased=True)
 \end{verbatim}
 
-{\tt acf} computes the serial correlation of the series with all
+{\tt acf} computes serial correlations with
 lags from 0 through {\tt nlags}.  The {\tt unbiased} flag tells
 {\tt acf} to correct the estimates for the sample size.  The result
 is an array of correlations.  If we select daily prices for high
@@ -9065,19 +9103,19 @@ statistically significant, with a p-value less than 5\%.  Since
 the false positive rate is 5\%, and
 we are computing 120 correlations (40 lags for each of 3 times series),
 we expect to see about 6 points outside this region.  In fact, there
-are 7.  We can conclude that there are no apparent autocorrelations
+are 7.  We conclude that there are no autocorrelations
 in these series that could not be explained by chance.
 
 I computed the gray regions by resampling the residuals.  You
 can see my code in {\tt timeseries.py}; the function is called
 {\tt SimulateAutocorrelation}.
 
-To see what the autocorrelation function looks like when there is
-a seasonal component, I generated simulated data by adding a weekly
-cycle.  Assuming that demand for cannabis is higher on weekends,
-we might expect the price to be higher.  For example, suppose
-that on Friday and Saturday, we add a random amount to the price,
-chosen from a uniform distribution from \$0 to \$2.
+To see what the autocorrelation function looks like when there is a
+seasonal component, I generated simulated data by adding a weekly
+cycle.  Assuming that demand for cannabis is higher on weekends, we
+might expect the price to be higher.  To simulate this effect, I
+select dates that fall on Friday or Saturday and add a random amount
+to the price, chosen from a uniform distribution from \$0 to \$2.
 
 \begin{verbatim}
 def AddWeeklySeasonality(daily):
@@ -9090,10 +9128,12 @@ def AddWeeklySeasonality(daily):
 {\tt frisat} is a boolean Series, {\tt True} if the day of the
 week is Friday or Saturday.  {\tt fake} is a new DataFrame, initially
 a copy of {\tt daily}, which we modify by adding random values
-to {\tt ppg}.
+to {\tt ppg}.  {\tt frisat.sum()} is the total number of Fridays
+and Saturdays, which is the number of random values we have to
+generate.
 
 Figure~\ref{timeseries9} (right) shows autocorrelation functions for
-prices with this simulated seasonality added in.  As expected, the
+prices with this simulated seasonality.  As expected, the
 correlations are highest when the lag is a multiple of 7.  For
 high and medium quality, the new correlations are statistically
 significant.  For low quality they are not, because residuals in this
@@ -9127,10 +9167,9 @@ sequence of time values we want predictions for.  The function
 constructs a DataFrame, passes it to {\tt predict}, and
 returns the result.
 
-If all we want is a single, best-guess prediction, that's all
-we need.  But for most purposes it is important to quantify error.
-In other words, we want to know how accurate the prediction is likely
-to be.
+If all we want is a single, best-guess prediction, we're done.  But
+for most purposes it is important to quantify error.  In other words,
+we want to know how accurate the prediction is likely to be.
 
 There are three sources of error we should take into account:
 
@@ -9159,9 +9198,7 @@ legalize it, the price is likely to go down.  But if
 the federal government cracks down, the price might go up.
 
 Modeling errors and unexpected future events are hard to
-quantify.  They are what Donald Rumsfeld would call ``unknown
-unknowns'' (see
-\url{https://en.wikipedia.org/wiki/There_are_known_knowns}).  Sampling
+quantify.  Sampling
 error and random variation are easier to deal with, so we'll do
 that first.
 
@@ -9207,7 +9244,7 @@ def GeneratePredictions(result_seq, years, add_resid=False):
     predict_df = pandas.DataFrame(d)
     
     predict_seq = []
-    for i, fake_results in enumerate(result_seq):
+    for fake_results in result_seq:
         predict = fake_results.predict(predict_df)
         if add_resid:
             predict += thinkstats2.Resample(fake_results.resid, n)
@@ -9316,14 +9353,14 @@ out not to be useful for the example data I worked with.
 But once you
 have learned the material in this chapter, you are well prepared
 to learn about autoregression.  One resource I recommend is
-Phillipp Janert's book, {\it Data Analysis with Open Source Tools},
+Philipp Janert's book, {\it Data Analysis with Open Source Tools},
 O'Reilly Media, 2011.  His chapter on time series analysis picks up
 where this one leaves off.
 
 
 \section{Exercises}
 
-My solutions to these exercises are in \verb"chap12ex_soln.py".
+My solutions to these exercises are in \verb"chap12soln.py".
 
 \begin{exercise}
 The linear model I used in this chapter has the obvious drawback
@@ -9340,7 +9377,7 @@ model, but after that you should be able to reuse code in
 \end{exercise}
 
 \begin{exercise}
-Write definition for a class named {\tt SerialCorrelationTest}
+Write a definition for a class named {\tt SerialCorrelationTest}
 that extends {\tt HypothesisTest} from Section~\ref{hypotest}.
 It should take a series and a lag as data, compute the serial
 correlation of the series with the given lag, and then compute
@@ -9763,7 +9800,7 @@ First, we read the respondent file and replace invalid values of
 {\tt cmmarrhx}:
 
 \begin{verbatim}
-    resp = chap01ex_soln.ReadFemResp()
+    resp = chap01soln.ReadFemResp()
     resp.cmmarrhx.replace([9997, 9998, 9999], np.nan, inplace=True)
 \end{verbatim}
 
@@ -9994,7 +10031,7 @@ group respondents by decade, and plot survival curves:
 
 Data from the three NSFG cycles use different sampling weights,
 so I resample them separately and then use {\tt concat}
-to merge them into a single DataFrame.  The option \verb"ignore_index"
+to merge them into a single DataFrame.  The parameter \verb"ignore_index"
 tells {\tt concat} not to match up respondents by index; instead
 it creates a new index from 0 to 30768.
 
@@ -10266,7 +10303,7 @@ median (50th percentile).
 
 \section{Exercises}
 
-My solutions to these exercises are in \verb"chap13ex_soln.py".
+My solutions to these exercises are in \verb"chap13soln.py".
 
 \begin{exercise}
 In NSFG Cycles 6 and 7, the variable {\tt cmdivorcx} contains the
@@ -10952,7 +10989,7 @@ the total squared deviation from the expected values in a table:
 %
 \[ \goodchi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
 %
-One reason the chi-square statistic is a popular choice is that
+One reason the chi-squared statistic is a popular choice is that
 its sampling distribution under the null hypothesis is analytic;
 by a remarkable coincidence\footnote{Not really.}, it is called
 the chi-squared distribution.  Like the t-distribution, the
@@ -11051,7 +11088,7 @@ to go past Step 1.
 
 \section{Exercises}
 
-A solution to this exercise is in \verb"chap14ex_soln.py"
+A solution to this exercise is in \verb"chap14soln.py"
 
 \begin{exercise}
 \label{log_clt}

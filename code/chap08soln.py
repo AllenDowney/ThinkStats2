@@ -15,8 +15,12 @@ import random
 import numpy as np
 
 from scipy import stats
+from estimation import RMSE, MeanError
 
-"""This file contains a solution to an exercise in Think Stats:
+
+"""This file contains a solution to exercises in Think Stats:
+
+Exercise 8.1
 
 In this chapter we used $\xbar$ and median to estimate $\mu$, and
 found that $\xbar$  yields lower MSE.
@@ -36,6 +40,8 @@ one is obviously biased, as far as we can tell from the experiment.
 estimator, by about 10%.  And the difference holds up as m increases.
 
 
+Exercise 8.2
+
 Suppose you draw a sample with size $n=10$ from a population 
 with an exponential disrtribution with $\lambda=2$.  Simulate
 this experiment 1000 times and plot the sampling distribution of
@@ -45,36 +51,62 @@ and the 90\% confidence interval.
 Repeat the experiment with a few different values of $n$ and make
 a plot of standard error versus $n$.
 
-1) 
+1) With sample size 10:
+
+standard error 0.896717911545
+confidence interval (1.2901330772324622, 3.8692334892427911)
+
+2) As sample size increases, standard error and the width of
+the CI decrease:
+
+10      0.90    (1.3, 3.9)
+100     0.21    (1.7, 2.4)
+1000    0.06    (1.9, 2.1)
+
+All three confidence intervals contain the actual value, 2.
+
+
+Exercise 8.3
+
+In games like hockey and soccer, the time between goals is
+roughly exponential.  So you could estimate a team's goal-scoring rate
+by observing the number of goals they score in a game.  This
+estimation process is a little different from sampling the time
+between goals, so let's see how it works.
+
+Write a function that takes a goal-scoring rate, {\tt lam}, in goals
+per game, and simulates a game by generating the time between goals
+until the total time exceeds 1 game, then returns the number of goals
+scored.
+
+Write another function that simulates many games, stores the
+estimates of {\tt lam}, then computes their mean error and RMSE.
+
+Is this way of making an estimate biased?  Plot the sampling
+distribution of the estimates and the 90\% confidence interval.  What
+is the standard error?  What happens to sampling error for increasing
+values of {\tt lam}?
+
+My conclusions:
+
+1) RMSE for this way of estimating lambda is 1.4
+
+2) The mean error is small and decreases with m, so this estimator
+appears to be unbiased.
+
+One note: If the time between goals is exponential, the distribution
+of goals scored in a game is Poisson.
+
+See https://en.wikipedia.org/wiki/Poisson_distribution
 
 """
 
-def MeanError(estimates, actual):
-    """Computes the mean error of a sequence of estimates.
-
-    estimate: sequence of numbers
-    actual: actual value
-
-    returns: float mean error
-    """
-    errors = [estimate-actual for estimate in estimates]
-    return np.mean(errors)
-
-
-def RMSE(estimates, actual):
-    """Computes the root mean squared error of a sequence of estimates.
-
-    estimate: sequence of numbers
-    actual: actual value
-
-    returns: float RMSE
-    """
-    e2 = [(estimate-actual)**2 for estimate in estimates]
-    mse = np.mean(e2)
-    return math.sqrt(mse)
-
-
 def Estimate1(n=7, m=100000):
+    """Mean error for xbar and median as estimators of population mean.
+
+    n: sample size
+    m: number of iterations
+    """
     mu = 0
     sigma = 1
 
@@ -93,6 +125,11 @@ def Estimate1(n=7, m=100000):
 
 
 def Estimate2(n=7, m=100000):
+    """RMSE for biased and unbiased estimators of population variance.
+
+    n: sample size
+    m: number of iterations
+    """
     mu = 0
     sigma = 1
 
@@ -111,6 +148,12 @@ def Estimate2(n=7, m=100000):
 
 
 def SimulateSample(lam=2, n=10, m=1000):
+    """Sampling distribution of L as an estimator of exponential parameter.
+
+    lam: parameter of an exponential distribution
+    n: sample size
+    m: number of iterations
+    """
     def VertLine(x, y=1):
         thinkplot.Plot([x, x], [0, y], color='0.8', linewidth=3)
 
@@ -177,15 +220,16 @@ def Estimate4(lam=2, m=1000000):
 
 def main():
     thinkstats2.RandomSeed(17)
-    Estimate4()
-    return
 
+    Estimate1()
+    Estimate2()
+
+    print('Experiment 3')
     for n in [10, 100, 1000]:
         stderr = SimulateSample(n=n)
         print(n, stderr)
 
-    Estimate1()
-    Estimate2()
+    Estimate4()
 
 
 if __name__ == '__main__':

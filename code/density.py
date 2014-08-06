@@ -9,15 +9,12 @@ from __future__ import print_function
 
 import math
 import random
-import scipy.stats
 
 import brfss
 import first
 import thinkstats2
 import thinkplot
 
-import plotly.plotly as plotly
-import matplotlib.pyplot as pyplot
 
 def Summarize(data):
     """Prints summary statistics.
@@ -81,6 +78,8 @@ def ComputeSkewnesses():
 
 def MakePdfExample(n=500):
     """Plots a normal density function and a KDE estimate.
+
+    n: sample size
     """
     # mean and var of women's heights in cm, from the BRFSS
     mean, var = 163, 52.8
@@ -95,14 +94,13 @@ def MakePdfExample(n=500):
     thinkplot.Pdf(pdf, label='normal')
 
     # make a sample, make an estimated PDF, and plot it
-    sample = [random.gauss(mean, std) for i in range(n)]
+    sample = [random.gauss(mean, std) for _ in range(n)]
     sample_pdf = thinkstats2.EstimatedPdf(sample)
     thinkplot.Pdf(sample_pdf, label='sample KDE')
 
     thinkplot.Save(root='pdf_example',
                    xlabel='Height (cm)',
-                   ylabel='Density',
-                   formats=['pdf', 'eps', 'plotly'])
+                   ylabel='Density')
 
 
 def main():
