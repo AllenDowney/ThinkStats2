@@ -14,7 +14,12 @@ import thinkplot
 import thinkstats2
 import survival
 
+
 def CleanData(resp):
+    """Cleans respondent data.
+
+    resp: DataFrame
+    """
     resp.cmdivorcx.replace([9998, 9999], np.nan, inplace=True)
 
     resp['notdivorced'] = resp.cmdivorcx.isnull().astype(int)
@@ -28,17 +33,25 @@ def CleanData(resp):
 
 
 def ResampleDivorceCurve(resps):
-    for i in range(41):
+    """Plots divorce curves based on resampled data.
+
+    resps: list of respondent DataFrames
+    """
+    for _ in range(41):
         samples = [thinkstats2.ResampleRowsWeighted(resp) 
                    for resp in resps]
         sample = pandas.concat(samples, ignore_index=True)
-        PlotDivorceCurve(sample, color='#225EA8', alpha=0.1)
+        PlotDivorceCurveByDecade(sample, color='#225EA8', alpha=0.1)
 
     thinkplot.Show(xlabel='years',
                    axis=[0, 28, 0, 1])
 
 
 def ResampleDivorceCurveByDecade(resps):
+    """Plots divorce curves for each birth cohort.
+
+    resps: list of respondent DataFrames    
+    """
     for i in range(41):
         samples = [thinkstats2.ResampleRowsWeighted(resp) 
                    for resp in resps]
@@ -62,7 +75,7 @@ def EstimateSurvivalByDecade(groups, **options):
     thinkplot.PrePlot(len(groups))
     for name, group in groups:
         print(name, len(group))
-        hf, sf = EstimateSurvival(group)
+        _, sf = EstimateSurvival(group)
         thinkplot.Plot(sf, **options)
 
 
@@ -82,7 +95,7 @@ def EstimateSurvival(resp):
     return hf, sf
 
 
-def main(name):
+def main():
     resp6 = survival.ReadFemResp2002()
     CleanData(resp6)
     married6 = resp6[resp6.evrmarry==1]
@@ -95,5 +108,4 @@ def main(name):
 
 
 if __name__ == '__main__':
-    import sys
-    main(*sys.argv)
+    main()
