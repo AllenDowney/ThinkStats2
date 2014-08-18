@@ -447,7 +447,7 @@ on your computer.
 
 \item Or you could clone
 my repository.  You don't need a GitHub account to do this, but you
-won't be able to write your changes back to my repository.
+won't be able to write your changes back to GitHub.
 \index{clone}
 
 \item If you don't want to use Git at all, you can download the files
@@ -506,11 +506,11 @@ it should read a data file, run some tests, and print a message
 like, ``All tests passed.''  If you get import errors, it probably
 means there are packages you need to install.
 
-Most exercises use Python scripts, but some also use the iPython
-notebook.  If you have not used iPython notebook before, I suggest
+Most exercises use Python scripts, but some also use the IPython
+notebook.  If you have not used IPython notebook before, I suggest
 you start with the documentation at
 \url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
-\index{iPython}
+\index{IPython}
 
 ---
 
@@ -589,6 +589,8 @@ Pearson's correlation.
 
 \item Lindsey Vanderlyn, Griffin Tschurwald, and Ben Small read an
   early version of this book and found many errors.
+
+\item John Roth found several errors and made helpful suggestions.
 
 % ENDCONTRIB
 
@@ -1005,8 +1007,8 @@ gestation times the average number of weeks in a month).
 
 Recodes are often based on logic that checks the consistency and
 accuracy of the data.  In general it is a good idea to use recodes
-unless there is a compelling reason to process the raw data
-yourself.
+when they are available, unless there is a compelling reason to
+process the raw data yourself.
 
 
 \section{Transformation}
@@ -1116,7 +1118,7 @@ value	label	 	        Total
 6	CURRENT PREGNANCY        352
 \end{verbatim}
 
-The {\tt Series} class provides a method, \verb"value_counts", that
+The Series class provides a method, \verb"value_counts", that
 counts the number of times each value appears.  If we select the {\tt
   outcome} Series from the DataFrame, we can use \verb"value_counts"
 to compare with the published data:
@@ -1269,18 +1271,25 @@ respect and gratitude.
 
 \begin{exercise}
 In the repository you downloaded, you should find a file named
-\verb"chap01ex.ipynb", which is an iPython notebook.  You can
-launch iPython notebook from the command line like this:
-\index{iPython}
+\verb"chap01ex.ipynb", which is an IPython notebook.  You can
+launch IPython notebook from the command line like this:
+\index{IPython}
 
 \begin{verbatim}
 $ ipython notebook &
 \end{verbatim}
 
-If iPython is installed, it should launch a server that runs in the
+If IPython is installed, it should launch a server that runs in the
 background and open a browser to view the notebook.  If you are not
-familiar with iPython, I suggest you start at
+familiar with IPython, I suggest you start at
 \url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
+
+You can add a command-line option that makes figures appear ``inline'';
+that is, in the notebook rather than a pop-up window:
+
+\begin{verbatim}
+$ ipython notebook --pylab=inline &
+\end{verbatim}
 
 Open \verb"chap01ex.ipynb".  Some cells are already filled in, and
 you should execute them.  Other cells give you instructions for
@@ -1451,7 +1460,7 @@ dictionary.
 
 Another option is to use the pandas method \verb"value_counts", which
 we saw in the previous chapter.  But for this book I created a class,
-{\tt Hist}, that represents histograms and provides the methods
+Hist, that represents histograms and provides the methods
 that operate on them.
 \index{pandas}
 
@@ -1460,7 +1469,7 @@ that operate on them.
 \index{histogram}
 \index{Hist}
 
-The {\tt Hist} constructor can take a sequence, dictionary, pandas
+The Hist constructor can take a sequence, dictionary, pandas
 Series, or another Hist.  You can instantiate a Hist object like this:
 %
 \begin{verbatim}
@@ -1533,7 +1542,7 @@ functions for plotting Hists and other objects defined in {\tt
 about installing {\tt matplotlib}.  \index{thinkplot}
 \index{matplotlib}
 
-To plot a histogram with {\tt thinkplot}, try this:
+To plot {\tt hist} with {\tt thinkplot}, try this:
 \index{Hist}
 
 \begin{verbatim}
@@ -1605,7 +1614,7 @@ Next I generate and plot the histogram of
     thinkplot.Show(xlabel='weeks', ylabel='frequency')
 \end{verbatim}
 
-When the argument passed to {\tt Hist} is a pandas Series, any
+When the argument passed to Hist is a pandas Series, any
 {\tt nan} values are dropped.  {\tt label} is a string that appears
 in the legend when the Hist is plotted.
 \index{pandas}
@@ -1784,26 +1793,26 @@ summarize the distribution with a few descriptive statistics.
 
 Some of the characteristics we might want to report are:
 
-\begin{description}
+\begin{itemize}
 
-\item[central tendency]: Do the values tend to cluster around
+\item central tendency: Do the values tend to cluster around
 a particular point?
 \index{central tendency}
 
-\item[modes]: Is there more that one cluster?
+\item modes: Is there more than one cluster?
 \index{mode}
 
-\item[spread]: How much variability is there in the values?
+\item spread: How much variability is there in the values?
 \index{spread}
 
-\item[tails]: How quickly do the probabilities drop off as we
+\item tails: How quickly do the probabilities drop off as we
 move away from the modes?
 \index{tail}
 
 \item[outliers]: Are there extreme values far from the modes?
 \index{outlier}
 
-\end{description}
+\end{itemize}
 
 Statistics designed to answer these questions are called {\bf summary
   statistics}.  By far the most common summary statistic is the {\bf
@@ -2123,8 +2132,8 @@ for x, freq in hist.Items():
     d[x] = freq / n
 \end{verbatim}
 %
-Or we can use the {\tt Pmf} class provided by {\tt thinkstats2}.
-Like {\tt Hist}, the {\tt Pmf} constructor can take a list, pandas
+Or we can use the Pmf class provided by {\tt thinkstats2}.
+Like Hist, the Pmf constructor can take a list, pandas
 Series, dictionary, Hist, or another Pmf object.  Here's an example
 with a simple list:
 %
@@ -2230,7 +2239,7 @@ also works with Hist objects.
 
 In addition, {\tt pyplot} provides a function called {\tt hist} that
 takes a sequence of values, computes a histogram, and plots it.
-Since I use {\tt Hist} objects, I usually don't use {\tt pyplot.hist}.
+Since I use Hist objects, I usually don't use {\tt pyplot.hist}.
 \index{pyplot}
 
 \begin{figure}
@@ -2273,14 +2282,14 @@ Here's the code that generates Figure~\ref{probability_nsfg_pmf}:
 
 {\tt PrePlot} takes optional parameters {\tt rows} and {\tt cols}
 to make a grid of figures, in this case one row of two figures.
-The first figure (on the left) displays the Pmfs using {\tt Hist},
+The first figure (on the left) displays the Pmfs using {\tt thinkplot.Hist},
 as we have seen before.
 \index{thinkplot}
 \index{Hist}
 
 The second call to {\tt PrePlot} resets the color generator.  Then
 {\tt SubPlot} switches to the second figure (on the right) and
-displays the Pmfs using {\tt Pmf}.  I used the {\tt axis} option
+displays the Pmfs using {\tt thinkplot.Pmfs}.  I used the {\tt axis} option
 to ensure that the two figures are on the same axes, which is
 generally a good idea if you intend to compare two figures.
 
@@ -2478,7 +2487,8 @@ to initialize a DataFrame:
 >>> import numpy as np
 >>> import pandas
 >>> array = np.random.randn(4, 2)
->>> pandas.DataFrame(array)
+>>> df = pandas.DataFrame(array)
+>>> df
           0         1
 0 -0.143510  0.616050
 1 -1.489647  0.300774
@@ -2491,7 +2501,8 @@ you can provide column names:
 
 \begin{verbatim}
 >>> columns = ['A', 'B']
->>> pandas.DataFrame(array, columns=columns)
+>>> df = pandas.DataFrame(array, columns=columns)
+>>> df
           A         B
 0 -0.143510  0.616050
 1 -1.489647  0.300774
@@ -2504,7 +2515,8 @@ You can also provide row names.  The set of row names is called the
 
 \begin{verbatim}
 >>> index = ['a', 'b', 'c', 'd']
->>> pandas.DataFrame(array, columns=columns, index=index)
+>>> df = pandas.DataFrame(array, columns=columns, index=index)
+>>> df
           A         B
 a -0.143510  0.616050
 b -1.489647  0.300774
@@ -2586,6 +2598,9 @@ the labels consistently and avoid using integer positions.
 
 \section{Exercises}
 
+Solutions to these exercises are in \verb"chap03soln.ipynb"
+and \verb"chap03soln.py"
+
 \begin{exercise}
 Something like the class size paradox appears if you survey children
 and ask how many children are in their family.  Families with many
@@ -2602,35 +2617,30 @@ children and asked them how many children under 18 (including themselves)
 are in their household.  
 
 Plot the actual and biased distributions, and compute their means.
-As a starting place, you can use \verb"chap03ex.ipynb"
-You can find a solution in \verb"chap03soln.ipynb".
+As a starting place, you can use \verb"chap03ex.ipynb".
 \end{exercise}
 
 
-For the following exercises, create a file named {\tt chap03ex.py}.
-You can find a solution in \verb"chap03soln.py".
-
 \begin{exercise}
-%
 \index{mean}
 \index{variance}
 \index{PMF}
-%
+
 In Section~\ref{mean} we computed the mean of a sample by adding up
 the elements and dividing by n.  If you are given a PMF, you can
 still compute the mean, but the process is slightly different:
 %
-\[ \xbar = \sum_i p_i x_i \]
+\[ \xbar = \sum_i p_i~x_i \]
 %
 where the $x_i$ are the unique values in the PMF and $p_i=PMF(x_i)$.
 Similarly, you can compute variance like this:
 %
-\[ S^2 = \sum_i p_i (x_i - \xbar)^2\]
+\[ S^2 = \sum_i p_i~(x_i - \xbar)^2\]
 % 
 Write functions called {\tt PmfMean} and {\tt PmfVar} that take a
 Pmf object and compute the mean and variance.  To test these methods,
 check that they are consistent with the methods {\tt Mean} and {\tt
-  Var} provided by {\tt Pmf}.
+  Var} provided by Pmf.
 \index{Pmf}
 
 \end{exercise}
@@ -2917,8 +2927,8 @@ The CDF of a sample is a step function.
 \section{Representing CDFs}
 \index{Cdf}
 
-{\tt thinkstats2} provides a class named {\tt Cdf} that represents
-CDFs.  The fundamental methods {\tt Cdf} provides are:
+{\tt thinkstats2} provides a class named Cdf that represents
+CDFs.  The fundamental methods Cdf provides are:
 
 \begin{itemize}
 
@@ -3026,7 +3036,7 @@ the mean.
 \index{spread}
 
 Once you have computed a CDF, it is easy to compute percentiles
-and percentile ranks.  The {\tt Cdf} class provides these two methods:
+and percentile ranks.  The Cdf class provides these two methods:
 \index{Cdf}
 \index{percentile rank}
 
@@ -3145,7 +3155,7 @@ that corresponds to the percentile rank you chose.
 
 \end{itemize}
 
-{\tt Cdf} provides an implementation of this algorithm, called
+Cdf provides an implementation of this algorithm, called
 {\tt Random}:
 
 \begin{verbatim}
@@ -3154,7 +3164,7 @@ that corresponds to the percentile rank you chose.
         return self.Percentile(random.uniform(0, 100))
 \end{verbatim}
 
-{\tt Cdf} also provides {\tt Sample}, which takes an integer,
+Cdf also provides {\tt Sample}, which takes an integer,
 {\tt n}, and returns a list of {\tt n} values chosen at random
 from the Cdf.
 
@@ -3328,7 +3338,7 @@ analytic function:
 %
 The parameter, $\lambda$, determines the shape of the distribution.
 Figure~\ref{analytic_expo_cdf} shows what this CDF looks like with
-$\lambda = 0.5, 1, and 2$.
+$\lambda = $ 0.5, 1, and 2.
   \index{parameter}
 
 In the real world, exponential distributions
@@ -3977,8 +3987,9 @@ the U.S. male population is in this range?  Hint: use {\tt
 
 
 \begin{exercise}
-To get a feel for the Pareto distribution, imagine what the world
-would be like if the distribution of human height were Pareto.
+To get a feel for the Pareto distribution, let's see how different
+the world
+would be if the distribution of human height were Pareto.
 With the parameters $x_{m} = 1$ m and $\alpha = 1.7$, we
 get a distribution with a reasonable minimum, 1 m,
 and median, 1.5 m.
@@ -4173,7 +4184,7 @@ if the density is not constant, you have to integrate over volume.
 Similarly, {\bf probability density} measures probability per unit of $x$.
 In order to get a probability mass, you have to integrate over $x$.
 
-{\tt thinkstats2} provides a class called {\tt Pdf} that represents
+{\tt thinkstats2} provides a class called Pdf that represents
 a probability density function.  Every Pdf object provides the
 following methods:
 
@@ -4196,10 +4207,10 @@ following methods:
 
 \end{itemize}  
 
-{\tt Pdf} is an abstract parent class, which means you should not
+Pdf is an abstract parent class, which means you should not
 instantiate it; that is, you cannot create a Pdf object.  Instead, you
-should define a child class that inherits from {\tt Pdf} and provides
-definitions of {\tt Density} and {\tt GetLinspace}.  {\tt Pdf} provides
+should define a child class that inherits from Pdf and provides
+definitions of {\tt Density} and {\tt GetLinspace}.  Pdf provides
 {\tt Render} and {\tt MakePmf}.
 
 For example, {\tt thinkstats2} provides a class named {\tt
@@ -4324,7 +4335,7 @@ distribution and then makes an EstimatedPdf to fit it:
 \end{verbatim}
 
 \verb"sample" is a list of 500 random heights.
-\verb"sample_pdf" is a {\tt Pdf} object that contains the estimated
+\verb"sample_pdf" is a Pdf object that contains the estimated
 KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
 evaluating the density at a sequence of equally spaced values.
 \index{thinkplot}
@@ -4336,9 +4347,9 @@ match for the original distribution.
 
 Estimating a density function with KDE is useful for several purposes:
 
-\begin{description}
+\begin{itemize}
 
-\item[Visualization]: During the exploration phase of a project, CDFs
+\item {\it Visualization:} During the exploration phase of a project, CDFs
   are usually the best visualization of a distribution.  After you
   look at a CDF, you can decide whether an estimated PDF is an
   appropriate model of the distribution.  If so, it can be a better
@@ -4347,20 +4358,20 @@ Estimating a density function with KDE is useful for several purposes:
 \index{visualization}
 \index{model}
 
-\item[Interpolation]: An estimated PDF is a way to get from a sample
+\item {\it Interpolation:} An estimated PDF is a way to get from a sample
   to a model of the population.  If you have reason to believe that
   the population distribution is smooth, you can use KDE to interpolate
   the density for values that don't appear in the sample.
 \index{interpolation}
 
-\item[Simulation]: Simulations are often based the distribution
+\item {\it Simulation:} Simulations are often based the distribution
   of a sample.  If the sample size is small, it
   might be appropriate to smooth the sample distribution using KDE,
   which allows the simulation to explore more possible outcomes,
   rather than replicating the observed data.
 \index{simulation}
 
-\end{description}
+\end{itemize}
 
 
 \section{The distribution framework}
@@ -4426,7 +4437,9 @@ one uses that term.  \index{CDF}
 
 At this point you should know how to use the basic types provided
 by {\tt thinkstats2}: Hist, Pmf, Cdf, and Pdf.  The next few sections
-provide details about how they are implemented.
+provide details about how they are implemented.  This material
+might help you use these classes more effectively, but it is not
+strictly necessary.
 \index{Hist}
 
 Hist and Pmf inherit from a parent class called \verb"_DictWrapper".
@@ -4443,7 +4456,7 @@ but can be any numeric type.
 \index{hashable}
 
 \verb"_DictWrapper" contains methods appropriate for both
-{\tt Hist} and {\tt Pmf}, including \verb"__init__", {\tt Values},
+Hist and Pmf, including \verb"__init__", {\tt Values},
 {\tt Items} and {\tt Render}.  It also provides modifier
 methods {\tt Set}, {\tt Incr}, {\tt Mult}, and {\tt Remove}.  These
 methods are all implemented with dictionary operations.  For example:
@@ -4462,11 +4475,11 @@ methods are all implemented with dictionary operations.  For example:
         del self.d[x]
 \end{verbatim}
 
-{\tt Hist} also provides {\tt Freq}, which looks up the frequency
+Hist also provides {\tt Freq}, which looks up the frequency
 of a given value.
 \index{frequency}
 
-Because {\tt Hist} operators and methods are based on dictionaries,
+Because Hist operators and methods are based on dictionaries,
 these methods are constant time operations;
 that is, their run time does not increase as the Hist gets bigger.
 \index{Hist}
@@ -4474,12 +4487,12 @@ that is, their run time does not increase as the Hist gets bigger.
 
 \section{Pmf implementation}
 
-{\tt Pmf} and {\tt Hist} are almost the same thing, except that a Pmf
+Pmf and Hist are almost the same thing, except that a Pmf
 maps values to floating-point probabilities, rather than integer
 frequencies.  If the sum of the probabilities is 1, the Pmf is normalized.
 \index{Pmf}
 
-{\tt Pmf} provides {\tt Normalize}, which computes the sum of the
+Pmf provides {\tt Normalize}, which computes the sum of the
 probabilities and divides through by a factor:
 
 \begin{verbatim}
@@ -4497,12 +4510,12 @@ probabilities and divides through by a factor:
         return total
 \end{verbatim}
 
-{\tt fraction} determines the sum of the probabilities after normalizing;
-the default value is 1.
-If the total probability is 0, the Pmf cannot be normalized, so
-{\tt Normalize} raises {\tt ValueError}.
+{\tt fraction} determines the sum of the probabilities after
+normalizing; the default value is 1.  If the total probability is 0,
+the Pmf cannot be normalized, so {\tt Normalize} raises {\tt
+  ValueError}.
 
-{\tt Hist} and {\tt Pmf} have the same constructor.  It can take
+Hist and Pmf have the same constructor.  It can take
 as an argument a {\tt dict}, Hist, Pmf or Cdf, a pandas
 Series, a list of (value, frequency) pairs, or a sequence of values.
 \index{Hist}
@@ -4529,7 +4542,7 @@ inverse lookup in logarithmic time.
 \index{inverse CDF}
 \index{CDF, inverse}
 
-The {\tt Cdf} constructor can take as a parameter a sequence of values
+The Cdf constructor can take as a parameter a sequence of values
 or a pandas Series, a dictionary that maps from values to
 probabilities, a sequence of (value, probability) pairs, a Hist, Pmf,
 or Cdf.  Or if it is given two parameters, it treats them as a sorted
@@ -4601,7 +4614,7 @@ the last one back to the beginning.  We replace the first element of
 is a NumPy array of probabilities.
 \index{NumPy}
 
-{\tt Cdf} provides {\tt Shift} and {\tt Scale}, which modify the
+Cdf provides {\tt Shift} and {\tt Scale}, which modify the
 values in the Cdf, but the probabilities should be treated as
 immutable.
 
@@ -4814,6 +4827,8 @@ on a third moment, it is somewhat more robust.
 
 \section{Exercises}
 
+A solution to this exercise is in \verb"chap06soln.py".
+
 \begin{exercise}
 
 The distribution of income is famously skewed to the right.  In this
@@ -4865,8 +4880,6 @@ Compute the median, mean, skewness and Pearson's skewness of the
 resulting sample.  What fraction of households reports a taxable
 income below the mean?  How do the results depend on the assumed
 upper bound?
-
-A solution to this exercise is in \verb"chap06soln.py".
 \end{exercise}
 
 
@@ -4946,14 +4959,6 @@ working with this code, see Section~\ref{code}.
 \index{scatter plot}
 \index{plot!scatter}
 
-\begin{figure}
-% scatter.py
-\centerline{\includegraphics[height=3.0in]{figs/scatter1.pdf}}
-\caption{Scatter plots of weight versus height for the respondents
-in the BRFSS, unjittered (left), jittered (right).}
-\label{scatter1}
-\end{figure}
-
 The simplest way to check for a relationship between two variables
 is a {\bf scatter plot}, but making a good scatter plot is not always easy.
 As an example, I'll plot weight versus height for the respondents
@@ -5003,10 +5008,10 @@ people tend to be heavier.
 
 \begin{figure}
 % scatter.py
-\centerline{\includegraphics[height=3.0in]{figs/scatter2.pdf}}
-\caption{Scatter plot with jittering and transparency (left),
-hexbin plot (right).}
-\label{scatter2}
+\centerline{\includegraphics[height=3.0in]{figs/scatter1.pdf}}
+\caption{Scatter plots of weight versus height for the respondents
+in the BRFSS, unjittered (left), jittered (right).}
+\label{scatter1}
 \end{figure}
 
 But this is not the best representation of
@@ -5052,6 +5057,14 @@ in the dense parts of the figure and gives disproportionate emphasis
 to outliers.  This effect is called {\bf saturation}.
 \index{outlier}
 \index{saturation}
+
+\begin{figure}
+% scatter.py
+\centerline{\includegraphics[height=3.0in]{figs/scatter2.pdf}}
+\caption{Scatter plot with jittering and transparency (left),
+hexbin plot (right).}
+\label{scatter2}
+\end{figure}
 
 We can solve this problem with the {\tt alpha} parameter, which makes
 the points partly transparent:
@@ -5259,7 +5272,7 @@ vary together.
 
 Covariance is the mean of these products:
 %
-\[ Cov(X,Y) = \frac{1}{n} \sum dx_i dy_i \]
+\[ Cov(X,Y) = \frac{1}{n} \sum dx_i~dy_i \]
 %
 where $n$ is the length of the two series (they have to be the same
 length).
@@ -5267,7 +5280,7 @@ length).
 If you have studied linear algebra, you might recognize that
 {\tt Cov} is the dot product of the deviations, divided
 by their length.  So the covariance is maximized if the two vectors
-are identical, 0 if they are othogonal, and negative if they
+are identical, 0 if they are orthogonal, and negative if they
 point in opposite directions.  {\tt thinkstats2} uses {\tt np.dot} to
 implement {\tt Cov} efficiently:
 \index{linear algebra}
@@ -5557,6 +5570,7 @@ Unfortunately, controlled trials are only possible in the laboratory
 sciences, medicine, and a few other disciplines.  In the social sciences,
 controlled experiments are rare, usually because they are impossible
 or unethical.
+\index{ethics}
 
 An alternative is to look for a {\bf natural experiment}, where
 different ``treatments'' are applied to groups that are otherwise
@@ -5572,6 +5586,8 @@ In some cases it is possible to infer causal relationships using {\bf
 
 \section{Exercises}
 
+A solution to this exercise is in \verb"chap07soln.py".
+
 \begin{exercise}
 Using data from the NSFG, make a scatter plot of birth weight
 versus mother's age.  Plot percentiles of birth weight
@@ -5582,8 +5598,6 @@ between these variables?
 \index{weight!birth}
 \index{Pearson coefficient of correlation}
 \index{Spearman coefficient of correlation}
-
-A solution to this exercise is in \verb"chap07soln.py".
 \end{exercise}
 
 
@@ -6443,7 +6457,7 @@ and {\tt PValue} and provide {\tt TestStatistic},
 \index{HypothesisTest}
 
 \verb"__init__" takes the data in whatever form is appropriate.  It
-calls {\tt RunModel}, which builds a representation of the null
+calls {\tt MakeModel}, which builds a representation of the null
 hypothesis, then passes the data to {\tt TestStatistic}, which
 computes the size of the effect in the sample.
 \index{test statistic}
@@ -6493,7 +6507,7 @@ is 30.
 \index{HypothesisTest}
 
 {\tt RunModel} simulates coin tosses assuming that the coin is
-actually fair.  It generates a sample of 250 tosses, uses {\tt Hist}
+actually fair.  It generates a sample of 250 tosses, uses Hist
 to count the number of heads and tails, and returns a pair of
 integers.
 \index{Hist}
@@ -7175,7 +7189,7 @@ exploration and the other for testing.
 \index{Holm-Bonferroni method}
 
 In some fields these practices are required or at least encouraged.
-But it is more common to address these problems, implicitly, by
+But it is also common to address these problems implicitly by
 replicating published results.  Typically the first paper to report a
 new result is considered exploratory.  Subsequent papers that
 replicate the result with new data are considered confirmatory.
@@ -7689,7 +7703,8 @@ lines.
 \end{figure}
 
 Figure~\ref{linear3} shows the 50\% and 90\% confidence
-intervals for curves fitted to the high quality price data.
+intervals for curves fitted to birth weight as a function of
+mother's age.
   The vertical width of the region represents the effect of
 sampling error; the effect is smaller for values near the mean and
 larger for the extremes.
@@ -8047,6 +8062,8 @@ implies that the difference is not due to chance.
 
 \section{Exercises}
 
+A solution to this exercise is in \verb"chap10soln.ipynb"
+
 \begin{exercise}
 
 Using the data from the BRFSS, compute the linear least squares
@@ -8070,9 +8087,6 @@ estimates?
 \index{standard error}
 \index{oversampling}
 \index{sampling weight}
-
-A solution to this exercise is in \verb"chap10soln.ipynb"
-
 \end{exercise}
 
 
@@ -8686,7 +8700,7 @@ factors likely to affect birth weight.
 \index{income}
 \index{wealth}
 
-Some other the other variables on the list are things that would not
+Some of the other variables on the list are things that would not
 be known until later, like {\tt bfeedwks}, the number of weeks
 the baby was breast fed.  We can't use these variables for prediction,
 but you might want to speculate on reasons
@@ -9131,7 +9145,7 @@ may not have predictive power on new data.
 \index{model}
 
 Nevertheless, let's use the model to make a prediction for the office
-pool.  Suppose your friend is and 35 years old and white,
+pool.  Suppose your friend is 35 years old and white,
 her husband is 39, and they are expecting their third child:
 
 \begin{verbatim}
@@ -9377,7 +9391,7 @@ the following columns:
 
 Each transaction is an event in time, so we could treat this dataset
 as a time series.  But the events are not equally spaced in time; the
-number of transactions reported each days varies from 0 to several
+number of transactions reported each day varies from 0 to several
 hundred.  Many methods used to analyze time series require the
 measurements to be equally spaced, or at least things are simpler if
 they are.
@@ -9398,13 +9412,11 @@ def GroupByQualityAndDay(transactions):
     return dailies
 \end{verbatim}
 
-{\tt groupby} is a DataFrame method that returns a GroupBy object;
-used in a for loop, {\tt groups} iterates the names of the groups and
-the DataFrames that represent them.  Since the values of {\tt quality}
-are {\tt low}, {\tt medium}, and {\tt high}, we get three groups with
-those names.
-\index{DataFrame}
-\index{groupby}
+{\tt groupby} is a DataFrame method that returns a GroupBy object,
+{\tt groups}; used in a for loop, it iterates the names of the groups
+and the DataFrames that represent them.  Since the values of {\tt
+  quality} are {\tt low}, {\tt medium}, and {\tt high}, we get three
+groups with those names.  \index{DataFrame} \index{groupby}
 
 The loop iterates through the groups and calls {\tt GroupByDay},
 which computes the daily average price and returns a new DataFrame:
@@ -9616,7 +9628,7 @@ appropriate choice for this data:
 
 \item Finally, one of the assumptions of linear regression is that the
   residuals are uncorrelated noise.  With time series data, this
-  assumption is often false.
+  assumption is often false because successive values are correlated.
 \index{residuals}
 
 \end{itemize}
@@ -9696,7 +9708,7 @@ that by ``reindexing'' the DataFrame:
     reindexed = daily.reindex(dates)
 \end{verbatim}
 
-The first line computes a date range that include every day from the
+The first line computes a date range that includes every day from the
 beginning to the end of the observed interval.  The second line
 creates a new DataFrame with all of the data from {\tt daily}, but
 including rows for all dates, filled with {\tt nan}.
@@ -10263,7 +10275,7 @@ where this one leaves off.
 
 \section{Exercises}
 
-My solutions to these exercises are in \verb"chap12soln.py".
+My solution to these exercises is in \verb"chap12soln.py".
 
 \begin{exercise}
 The linear model I used in this chapter has the obvious drawback
@@ -10495,7 +10507,10 @@ class SurvivalFunction(object):
 
 {\tt SurvivalFunction} provides two properties: {\tt ts}, which
 is the sequence of lifetimes, and {\tt ss}, which is the survival
-function.  We can instantiate a {\tt SurvivalFunction} by passing
+function.  In Python, a ``property'' is a method that can be
+invoked as if it were a variable.
+
+We can instantiate a {\tt SurvivalFunction} by passing
 the CDF of lifetimes:
 \index{property}
 
@@ -10550,7 +10565,7 @@ weeks, which is the most common pregnancy length.
 
 From the survival function we can derive the {\bf hazard function};
 for pregnancy lengths, the hazard function maps from a time, $t$, to
-the fraction of pregnancies that survive until $t$ and then end at
+the fraction of pregnancies that continue until $t$ and then end at
 $t$.  To be more precise:
 %
 \[ \lambda(t) = \frac{S(t) - S(t+1)}{S(t)} \]
@@ -11096,7 +11111,7 @@ In the meantime we can make some predictions.
 \section{Extrapolation}
 
 The survival curve for the 70s cohort ends at about age 38;
-for the 80s cohort is ends at age 28, and for the 90s cohort
+for the 80s cohort it ends at age 28, and for the 90s cohort
 we hardly have any data at all.
 \index{extrapolation}
 
@@ -11253,7 +11268,7 @@ years until first marriage (right).}
 \label{survival6}
 \end{figure}
 
-Figure~\ref{survival6} (left) shows the expecting remaining pregnancy
+Figure~\ref{survival6} (left) shows the expected remaining pregnancy
 length as a function of the current duration.  For example, during
 Week 0, the expected remaining duration is about 34 weeks.  That's
 less than full term (39 weeks) because terminations of pregnancy
@@ -11332,7 +11347,7 @@ median (50th percentile).
 
 \section{Exercises}
 
-My solution to this exercises is in \verb"chap13soln.py".
+My solution to this exercise is in \verb"chap13soln.py".
 
 \begin{exercise}
 In NSFG Cycles 6 and 7, the variable {\tt cmdivorcx} contains the
@@ -11871,7 +11886,7 @@ def GenerateCorrelated(rho, n):
 \end{verbatim}
 
 The first value is a standard normal value.  Each subsequent value
-depends on it predecessor: if the previous value is {\tt x}, the mean of
+depends on its predecessor: if the previous value is {\tt x}, the mean of
 the next value is {\tt x*rho}, with variance {\tt 1-rho**2}.  Note that {\tt
   random.gauss} takes the standard deviation as the second argument,
 not variance.
@@ -11984,7 +11999,7 @@ subtraction using Equation~\ref{eqn3}:
                       self.sigma2 + other.sigma2)
 \end{verbatim}
 
-So can compute the sampling distribution of the difference like this:
+So we can compute the sampling distribution of the difference like this:
 
 \begin{verbatim}
 >>> dist = dist1 - dist2
@@ -12253,7 +12268,7 @@ to go past Step 1.
 
 \section{Exercises}
 
-A solution to this exercise is in \verb"chap14soln.py"
+A solution to these exercises is in \verb"chap14soln.py"
 
 \begin{exercise}
 \label{log_clt}
