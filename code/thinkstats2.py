@@ -126,12 +126,13 @@ class Interpolator(object):
 class _DictWrapper(object):
     """An object that contains a dictionary."""
 
-    def __init__(self, obj=None, label='', name=''):
+    def __init__(self, obj=None, label=None):
         """Initializes the distribution.
 
-        hypos: sequence of hypotheses
+        obj: Hist, Pmf, Cdf, Pdf, dict, pandas Series, list of pairs
+        label: string label
         """
-        self.label = label or name
+        self.label = label if label is not None else '_nolegend_'
         self.d = {}
 
         # flag whether the distribution is under a log transform
@@ -141,8 +142,7 @@ class _DictWrapper(object):
             return
 
         if isinstance(obj, (_DictWrapper, Cdf, Pdf)):
-            if not label:
-                self.label = obj.label
+            self.label = label if label is not None else obj.label
 
         if isinstance(obj, dict):
             self.d.update(obj.items())
@@ -294,6 +294,7 @@ class _DictWrapper(object):
 
     def MakeCdf(self, label=None):
         """Makes a Cdf."""
+        label = label if label is not None else self.label
         return Cdf(self, label=label)
 
     def Print(self):
@@ -669,7 +670,7 @@ class Joint(Pmf):
     The values are sequences (usually tuples)
     """
 
-    def Marginal(self, i, label=''):
+    def Marginal(self, i, label=None):
         """Gets the marginal distribution of the indicated variable.
 
         i: index of the variable we want
@@ -681,7 +682,7 @@ class Joint(Pmf):
             pmf.Incr(vs[i], prob)
         return pmf
 
-    def Conditional(self, i, j, val, label=''):
+    def Conditional(self, i, j, val, label=None):
         """Gets the conditional distribution of the indicated variable.
 
         Distribution of vs[i], conditioned on vs[j] = val.
@@ -745,7 +746,7 @@ def MakeJoint(pmf1, pmf2):
     return joint
 
 
-def MakeHistFromList(t, label=''):
+def MakeHistFromList(t, label=None):
     """Makes a histogram from an unsorted sequence of values.
 
     Args:
@@ -758,7 +759,7 @@ def MakeHistFromList(t, label=''):
     return Hist(t, label=label)
 
 
-def MakeHistFromDict(d, label=''):
+def MakeHistFromDict(d, label=None):
     """Makes a histogram from a map from values to frequencies.
 
     Args:
@@ -771,7 +772,7 @@ def MakeHistFromDict(d, label=''):
     return Hist(d, label)
 
 
-def MakePmfFromList(t, label=''):
+def MakePmfFromList(t, label=None):
     """Makes a PMF from an unsorted sequence of values.
 
     Args:
@@ -784,7 +785,7 @@ def MakePmfFromList(t, label=''):
     return Pmf(t, label=label)
 
 
-def MakePmfFromDict(d, label=''):
+def MakePmfFromDict(d, label=None):
     """Makes a PMF from a map from values to probabilities.
 
     Args:
@@ -797,7 +798,7 @@ def MakePmfFromDict(d, label=''):
     return Pmf(d, label=label)
 
 
-def MakePmfFromItems(t, label=''):
+def MakePmfFromItems(t, label=None):
     """Makes a PMF from a sequence of value-probability pairs
 
     Args:
@@ -864,12 +865,20 @@ class Cdf(object):
         ps: sequence of probabilities
         label: string used as a graph label.
     """
-    def __init__(self, obj=None, ps=None, label=''):
-        self.label = label
+    def __init__(self, obj=None, ps=None, label=None):
+        """Initializes.
+        
+        If ps is provided, obj must be the corresponding list of values.
+
+        obj: Hist, Pmf, Cdf, Pdf, dict, pandas Series, list of pairs
+        ps: list of cumulative probabilities
+        label: string label
+        """
+        self.label = label if label is not None else '_nolegend_'
 
         if isinstance(obj, (_DictWrapper, Cdf, Pdf)):
             if not label:
-                self.label = obj.label
+                self.label = label if label is not None else obj.label
 
         if obj is None:
             self.xs = np.asarray([])
@@ -932,13 +941,12 @@ class Cdf(object):
         """
         if label is None:
             label = self.label
-        return Cdf(list(self.xs), list(self.ps), label)
+        return Cdf(list(self.xs), list(self.ps), label=label)
 
     def MakePmf(self, label=None):
         """Makes a Pmf."""
         if label is None:
             label = self.label
-
         return Pmf(self, label=label)
 
     def Values(self):
@@ -1145,7 +1153,7 @@ class Cdf(object):
         return cdf
 
 
-def MakeCdfFromItems(items, label=''):
+def MakeCdfFromItems(items, label=None):
     """Makes a cdf from an unsorted sequence of (value, frequency) pairs.
 
     Args:
@@ -1158,7 +1166,7 @@ def MakeCdfFromItems(items, label=''):
     return Cdf(items, label=label)
 
 
-def MakeCdfFromDict(d, label=''):
+def MakeCdfFromDict(d, label=None):
     """Makes a CDF from a dictionary that maps values to frequencies.
 
     Args:
@@ -1171,7 +1179,7 @@ def MakeCdfFromDict(d, label=''):
     return Cdf(d, label=label)
 
 
-def MakeCdfFromList(seq, label=''):
+def MakeCdfFromList(seq, label=None):
     """Creates a CDF from an unsorted sequence.
 
     Args:
@@ -1184,7 +1192,7 @@ def MakeCdfFromList(seq, label=''):
     return Cdf(seq, label=label)
 
 
-def MakeCdfFromHist(hist, label=''):
+def MakeCdfFromHist(hist, label=None):
     """Makes a CDF from a Hist object.
 
     Args:
@@ -1320,7 +1328,7 @@ class Suite(Pmf):
             self.Set(hypo, Probability(odds))
 
 
-def MakeSuiteFromList(t, label=''):
+def MakeSuiteFromList(t, label=None):
     """Makes a suite from an unsorted sequence of values.
 
     Args:
@@ -1353,7 +1361,7 @@ def MakeSuiteFromHist(hist, label=None):
     return MakeSuiteFromDict(d, label)
 
 
-def MakeSuiteFromDict(d, label=''):
+def MakeSuiteFromDict(d, label=None):
     """Makes a suite from a map from values to probabilities.
 
     Args:
@@ -1428,7 +1436,7 @@ class Pdf(object):
 class NormalPdf(Pdf):
     """Represents the PDF of a Normal distribution."""
 
-    def __init__(self, mu=0, sigma=1, label=''):
+    def __init__(self, mu=0, sigma=1, label=None):
         """Constructs a Normal Pdf with given mu and sigma.
 
         mu: mean
@@ -1437,7 +1445,7 @@ class NormalPdf(Pdf):
         """
         self.mu = mu
         self.sigma = sigma
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
 
     def __str__(self):
         return 'NormalPdf(%f, %f)' % (self.mu, self.sigma)
@@ -1463,14 +1471,14 @@ class NormalPdf(Pdf):
 class ExponentialPdf(Pdf):
     """Represents the PDF of an exponential distribution."""
 
-    def __init__(self, lam=1, label=''):
+    def __init__(self, lam=1, label=None):
         """Constructs an exponential Pdf with given parameter.
 
         lam: rate parameter
         label: string
         """
         self.lam = lam
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
 
     def __str__(self):
         return 'ExponentialPdf(%f)' % (self.lam)
@@ -1496,13 +1504,13 @@ class ExponentialPdf(Pdf):
 class EstimatedPdf(Pdf):
     """Represents a PDF estimated by KDE."""
 
-    def __init__(self, sample, label=''):
+    def __init__(self, sample, label=None):
         """Estimates the density function based on a sample.
 
         sample: sequence of data
         label: string
         """
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
         self.kde = scipy.stats.gaussian_kde(sample)
         low = min(sample)
         high = max(sample)
@@ -1842,11 +1850,11 @@ class Beta(object):
 
     See http://en.wikipedia.org/wiki/Beta_distribution
     """
-    def __init__(self, alpha=1, beta=1, label=''):
+    def __init__(self, alpha=1, beta=1, label=None):
         """Initializes a Beta distribution."""
         self.alpha = alpha
         self.beta = beta
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
 
     def Update(self, data):
         """Updates a Beta distribution.
@@ -1877,7 +1885,7 @@ class Beta(object):
         """Evaluates the PDF at x."""
         return x ** (self.alpha - 1) * (1 - x) ** (self.beta - 1)
 
-    def MakePmf(self, steps=101, label=''):
+    def MakePmf(self, steps=101, label=None):
         """Returns a Pmf of this distribution.
 
         Note: Normally, we just evaluate the PDF at a sequence
@@ -1896,7 +1904,7 @@ class Beta(object):
 
         xs = [i / (steps - 1.0) for i in xrange(steps)]
         probs = [self.EvalPdf(x) for x in xs]
-        pmf = MakePmfFromDict(dict(zip(xs, probs)), label)
+        pmf = MakePmfFromDict(dict(zip(xs, probs)), label=label)
         return pmf
 
     def MakeCdf(self, steps=101):
@@ -1913,7 +1921,7 @@ class Dirichlet(object):
     See http://en.wikipedia.org/wiki/Dirichlet_distribution
     """
 
-    def __init__(self, n, conc=1, label=''):
+    def __init__(self, n, conc=1, label=None):
         """Initializes a Dirichlet distribution.
 
         n: number of dimensions
@@ -1926,7 +1934,7 @@ class Dirichlet(object):
 
         self.n = n
         self.params = np.ones(n, dtype=np.float) * conc
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
 
     def Update(self, data):
         """Updates a Dirichlet distribution.
@@ -1989,7 +1997,7 @@ class Dirichlet(object):
         alpha = self.params[i]
         return Beta(alpha, alpha0 - alpha)
 
-    def PredictivePmf(self, xs, label=''):
+    def PredictivePmf(self, xs, label=None):
         """Makes a predictive distribution.
 
         xs: values to go into the Pmf
@@ -2059,7 +2067,7 @@ def Jitter(values, jitter=0.5):
     return np.random.uniform(-jitter, +jitter, n) + values
 
 
-def NormalProbabilityPlot(sample, label='', fit_color='0.8'):
+def NormalProbabilityPlot(sample, label=None, fit_color='0.8'):
     """Makes a normal probability plot with a fitted line.
 
     sample: sequence of numbers
@@ -2647,7 +2655,7 @@ class HypothesisTest(object):
         """
         return max(self.test_stats)
 
-    def PlotCdf(self, label=''):
+    def PlotCdf(self, label=None):
         """Draws a Cdf with vertical lines at the observed test stat.
         """
         def VertLine(x):

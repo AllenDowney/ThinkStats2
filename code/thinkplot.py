@@ -202,7 +202,7 @@ def Plot(obj, ys=None, style='', **options):
       options: keyword args passed to pyplot.plot
     """
     options = _UnderrideColor(options)
-    label = getattr(obj, 'label', '')
+    label = getattr(obj, 'label', '_nolegend_')
     options = _Underride(options, linewidth=3, alpha=0.8, label=label)
 
     xs = obj
@@ -285,8 +285,7 @@ def Pdf(pdf, **options):
     low, high = options.pop('low', None), options.pop('high', None)
     n = options.pop('n', 101)
     xs, ps = pdf.Render(low=low, high=high, n=n)
-    if pdf.label:
-        options = _Underride(options, label=pdf.label)
+    options = _Underride(options, label=pdf.label)
     Plot(xs, ps, **options)
 
 
@@ -328,9 +327,7 @@ def Hist(hist, **options):
                             "Or try providing width option."
                             )
 
-    if hist.label:
-        options = _Underride(options, label=hist.label)
-
+    options = _Underride(options, label=hist.label)
     options = _Underride(options, align='center')
     if options['align'] == 'left':
         options['align'] = 'edge'
@@ -389,10 +386,6 @@ def Pmf(pmf, **options):
         lastx = x + width
         lasty = y
     points.append((lastx, 0))
-
-    if pmf.label:
-        options = _Underride(options, label=pmf.label)
-
     pxs, pys = zip(*points)
 
     align = options.pop('align', 'center')
@@ -401,6 +394,7 @@ def Pmf(pmf, **options):
     if align == 'right':
         pxs = np.array(pxs) - width
 
+    options = _Underride(options, label=pmf.label)
     Plot(pxs, pys, **options)
 
 
@@ -479,9 +473,7 @@ def Cdf(cdf, complement=False, transform=None, **options):
         ps = [-math.log(p) for p in ps]
         scale['yscale'] = 'log'
 
-    if cdf.label:
-        options = _Underride(options, label=cdf.label)
-
+    options = _Underride(options, label=cdf.label)
     Plot(xs, ps, **options)
     return scale
 

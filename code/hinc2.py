@@ -13,50 +13,6 @@ import hinc
 import thinkplot
 import thinkstats2
 
-"""This file contains a solution to an exercise in Think Stats:
-
-The distribution of income is famously skewed to the right.  In this
-exercise, we'll measure how strong that skew is.
-...
-
-Compute the median, mean, skewness and Pearson's skewness of the
-resulting sample.  What fraction of households reports a taxable
-income below the mean?  How do the results depend on the assumed
-upper bound?
-
-My results with log_upper=6
-
-mean 74278.7075312
-std 93946.9299635
-median 51226.4544789
-skewness 4.94992024443
-pearson skewness 0.736125801914
-cdf[mean] 0.660005879567
-
-With log_upper=7
-
-mean 124267.397222
-std 559608.501374
-median 51226.4544789
-skewness 11.6036902675
-pearson skewness 0.391564509277
-cdf[mean] 0.856563066521
-
-With a higher upper bound, the moment-based skewness increases, as
-expected.  Surprisingly, the Person skewness goes down!  The reason
-seems to be that increasing the upper bound has a modest effect on the
-mean, and a stronger effect on standard deviation.  Since std is in
-the denominator with exponent 3, it has a stronger effect on the
-result.
-
-So this is apparently an example where Pearson skewness is not working
-well as a summary statistic.  A better choice is a statistic that has
-meaning in context, like the fraction of people with income below the
-mean.  Or something like the Gini coefficient designed to quantify a
-property of the distribution (like the relative difference we expect
-between two random people).
-
-"""
 
 def InterpolateSample(df, log_upper=6.0):
     """Makes a sample of log10 household income.

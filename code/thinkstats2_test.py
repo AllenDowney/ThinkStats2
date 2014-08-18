@@ -291,7 +291,7 @@ class Test(unittest.TestCase):
         
     def testEstimatedPdf(self):
         pdf = thinkstats2.EstimatedPdf([1, 2, 2, 3, 5])
-        self.assertEqual(len(str(pdf)), 20)
+        self.assertEqual(len(str(pdf)), 30)
         self.assertAlmostEqual(pdf.Density(3)[0], 0.19629968)
         pmf = pdf.MakePmf()
         self.assertAlmostEqual(pmf[1.0], 0.010172282816895044)        

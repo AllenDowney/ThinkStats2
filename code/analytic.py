@@ -27,8 +27,9 @@ def MakeExpoCdf():
 
     thinkplot.PrePlot(3)
     for lam in [2.0, 1, 0.5]:
-        xs, ps = thinkstats2.RenderExpoCdf(lam, 0, 3.0, 50)        
-        thinkplot.Plot(xs, ps, label='lam=%g' % lam)
+        xs, ps = thinkstats2.RenderExpoCdf(lam, 0, 3.0, 50)
+        label = r'$\lambda=%g$' % lam
+        thinkplot.Plot(xs, ps, label=label)
     
     thinkplot.Save(root='analytic_expo_cdf',
                    title='Exponential CDF',
@@ -90,7 +91,7 @@ def MakeParetoCdf():
     thinkplot.PrePlot(3)
     for alpha in [2.0, 1.0, 0.5]:
         xs, ps = thinkstats2.RenderParetoCdf(xmin, alpha, 0, 10.0, n=100) 
-        thinkplot.Plot(xs, ps, label='alpha=%g' % alpha)
+        thinkplot.Plot(xs, ps, label=r'$\alpha=%g$' % alpha)
     
     thinkplot.Save(root='analytic_pareto_cdf',
                    title='Pareto CDF',
@@ -122,7 +123,7 @@ def MakeNormalCdf():
     for mu, sigma in zip(mus, sigmas):
         xs, ps = thinkstats2.RenderNormalCdf(mu=mu, sigma=sigma, 
                                                low=-1.0, high=4.0)
-        label = 'mu=%g, sigma=%g' % (mu, sigma)
+        label = r'$\mu=%g$, $\sigma=%g$' % (mu, sigma)
         thinkplot.Plot(xs, ps, label=label)
 
     thinkplot.Save(root='analytic_normal_cdf',
@@ -168,7 +169,7 @@ def MakeExampleNormalPlot():
     for mu, sigma in zip(mus, sigmas):
         sample = np.random.normal(mu, sigma, n)
         xs, ys = thinkstats2.NormalProbability(sample)
-        label = 'mu=%d, sigma=%d' % (mu, sigma)
+        label = '$\mu=%d$, $\sigma=%d$' % (mu, sigma)
         thinkplot.Plot(xs, ys, label=label)
 
     thinkplot.Save(root='analytic_normal_prob_example',
