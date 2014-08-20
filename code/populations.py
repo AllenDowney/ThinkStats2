@@ -24,7 +24,8 @@ def ReadData(filename='PEP_2012_PEPANNRES_with_ann.csv'):
 
     returns: pandas Series of populations in thousands
     """
-    df = pandas.read_csv(filename, header=None, skiprows=2)
+    df = pandas.read_csv(filename, header=None, skiprows=2,
+                         encoding='iso-8859-1')
     populations = df[7]
     populations.replace(0, np.nan, inplace=True)
     return populations.dropna()

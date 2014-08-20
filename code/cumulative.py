@@ -5,7 +5,7 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import numpy as np
 
@@ -47,7 +47,7 @@ def Percentile2(scores, percentile_rank):
     Slightly more efficient.
     """
     scores.sort()
-    index = percentile_rank * (len(scores)-1) / 100
+    index = percentile_rank * (len(scores)-1) // 100
     return scores[index]
 
 print('prank, score, score')

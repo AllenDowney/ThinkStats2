@@ -2495,15 +2495,18 @@ class FixedWidthVariables(object):
         return df
 
 
-def ReadStataDct(dct_file):
+def ReadStataDct(dct_file, **options):
     """Reads a Stata dictionary file.
+
+    dct_file: string filename
+    options: dict of options passed to open()
 
     returns: FixedWidthVariables object
     """
     type_map = dict(byte=int, int=int, long=int, float=float, double=float)
 
     var_info = []
-    for line in open(dct_file):
+    for line in open(dct_file, **options):
         match = re.search( r'_column\(([^)]*)\)', line)
         if match:
             start = int(match.group(1))

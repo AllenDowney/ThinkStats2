@@ -5,8 +5,11 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+from __future__ import print_function
+
+
 import random
-import numpy
+import numpy as np
 import scipy.stats
 
 def write_sample(sample, filename):
@@ -50,7 +53,7 @@ def main():
 
     for i in range(len(funcs)):
         sample = funcs[i](1000)
-        print numpy.mean(sample)
+        print(np.mean(sample))
         filename = 'mystery%d.dat' % i
         write_sample(sample, filename)
 
