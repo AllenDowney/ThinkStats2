@@ -603,26 +603,28 @@ def Config(**options):
         pyplot.legend(loc=loc)
 
 
-def Show(clf=True, **options):
+def Show(**options):
     """Shows the plot.
 
     For options, see Config.
 
     options: keyword args used to invoke various pyplot functions
     """
+    clf = options.pop('clf', True)
     Config(**options)
     pyplot.show()
     if clf:
         Clf()
 
 
-def Plotly(clf=True, **options):
+def Plotly(**options):
     """Shows the plot.
 
     For options, see Config.
 
     options: keyword args used to invoke various pyplot functions
     """
+    clf = options.pop('clf', True)
     Config(**options)
     import plotly.plotly as plotly
     url = plotly.plot_mpl(pyplot.gcf())
@@ -631,7 +633,7 @@ def Plotly(clf=True, **options):
     return url
 
 
-def Save(root=None, formats=None, clf=True, **options):
+def Save(root=None, formats=None, **options):
     """Saves the plot in the given formats and clears the figure.
 
     For options, see Config.
@@ -641,6 +643,7 @@ def Save(root=None, formats=None, clf=True, **options):
       formats: list of string formats
       options: keyword args used to invoke various pyplot functions
     """
+    clf = options.pop('clf', True)
     Config(**options)
 
     if formats is None:

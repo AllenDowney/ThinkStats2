@@ -365,23 +365,18 @@ def RunLogisticModels(live):
 def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
     LogisticRegressionExample()
-    return
 
     live, firsts, others = first.MakeFrames()
     live['isfirst'] = (live.birthord == 1)
 
     RunLogisticModels(live)
-    return
 
     RunSimpleRegression(live)
     RunModels(live)
-    return
 
     PredictBirthWeight(live)
-    return
 
     JoinRespFile(live)
-    return
 
 
 

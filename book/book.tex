@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.18}
+\newcommand{\theversion}{2.0.21}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -590,7 +590,9 @@ Pearson's correlation.
 \item Lindsey Vanderlyn, Griffin Tschurwald, and Ben Small read an
   early version of this book and found many errors.
 
-\item John Roth found several errors and made helpful suggestions.
+\item John Roth, Carol Willing, and Carol Novitsky performed technical
+reviews of the book.  They found many errors and made many
+helpful suggestions.
 
 % ENDCONTRIB
 
@@ -613,7 +615,7 @@ Pearson's correlation.
 \mainmatter
 
 
-\chapter{Data science for programmers}
+\chapter{Exploratory data analysis}
 \label{intro}
 
 The thesis of this book is that data combined with practical
@@ -1323,7 +1325,7 @@ A solution to this exercise is in \verb"chap01soln.py"
 
 
 \begin{exercise}
-The best way to learn about data science is to work on a project you are
+The best way to learn about statistics is to work on a project you are
 interested in.  Is there a question like, ``Do first babies arrive
 late,'' that you want to investigate?
 
@@ -2144,7 +2146,7 @@ with a simple list:
 Pmf({1: 0.2, 2: 0.4, 3: 0.2, 5: 0.2})
 \end{verbatim}
 
-The result is normalized so the total probability is 1.
+The Pmf is normalized so total probability is 1.
 
 Pmf and Hist objects are similar in many ways; in fact, they inherit
 many of their methods from a common parent class.  For example, the
@@ -3304,9 +3306,7 @@ which are necessarily finite samples.
 \index{distribution!empirical}
 
 The alternative is an {\bf analytic distribution}, which is
-characterized by a CDF that is an analytic function (as opposed to a
-step function).
-
+characterized by a CDF that is a mathematical function.
 Analytic distributions can be used to model empirical distributions.
 In this context, a {\bf model} is a simplification that leaves out
 unneeded details.  This chapter presents common analytic distributions
@@ -3331,8 +3331,7 @@ about downloading and working with this code, see Section~\ref{code}.
 \end{figure}
 
 I'll start with the {\bf exponential distribution} because it is
-relatively simple.  The CDF of the exponential distribution is an
-analytic function:
+relatively simple.  The CDF of the exponential distribution is
 %
 \[ \CDF(x) = 1 - e^{-\lambda x} \]
 %
@@ -4426,10 +4425,9 @@ numerical integration.  \index{discretize}
 \index{quantize}
 \index{binning}
 
-One final note: to be strictly correct, a discrete CDF should be
-called a cumulative mass function (CMF), but as far as I can tell no
-one uses that term.  \index{CDF}
-\index{CMF}
+To distinguish between continuous and discrete CDFs, it might be
+better for a discrete CDF to be a ``cumulative mass function,'' but as
+far as I can tell no one uses that term.  \index{CDF}
 
 
 
@@ -4657,9 +4655,9 @@ def CentralMoment(xs, k):
 
 When $k=2$ the result is the second central moment, which you might
 recognize as variance.  The definition of variance gives a hint about
-why these statistics are called moments.  If we place a mass along a
-number line at each value, $x_i$, and then spin the number line around
-the mean, the moment of inertia of the spinning masses is the variance
+why these statistics are called moments.  If we attach a weight along a
+ruler at each location, $x_i$, and then spin the ruler around
+the mean, the moment of inertia of the spinning weights is the variance
 of the values.  If you are not familiar with moment of inertia, see
 \url{http://en.wikipedia.org/wiki/Moment_of_inertia}.  \index{moment
   of inertia}.
@@ -6089,7 +6087,7 @@ people with jobs.  And if you only sample the person who answers the
 phone, you are less likely to sample people who share a phone line.
 
 If factors like income, employment, and household size are related
-to weight -- and it is plausible that they are -- the results of your
+to weight---and it is plausible that they are---the results of your
 survey would be affected one way or another.  This problem is
 called {\bf sampling bias} because it is a property of the sampling
 process.
@@ -6409,7 +6407,7 @@ contradiction, you conclude that A must actually be true.
 Similarly, to test a hypothesis like, ``This effect is real,'' we
 assume, temporarily, that it is not.  That's the null hypothesis.
 Based on that assumption, we compute the probability of the apparent
-effect.  That's the p-value.  If the p-value is low enough, we
+effect.  That's the p-value.  If the p-value is low, we
 conclude that the null hypothesis is unlikely to be true.
 \index{p-value}
 \index{null hypothesis}
@@ -8758,9 +8756,11 @@ agepreg                 0.00741 (0.0035)
 totincr                 0.0122  (0.00188)
 \end{verbatim}
 
+% TODO: get this correction into the version on Atlas
+
 The estimated parameters for race are larger than I expected,
 especially since we control for income.  The encoding
-is 1 for white, 2 for black, and 3 for other.  Babies of white
+is 1 for black, 2 for white, and 3 for other.  Babies of black
 mothers are lighter than babies of other races by 0.27--0.36 lbs.
 \index{control variable}
 \index{race}
@@ -8874,7 +8874,7 @@ probability like this:
 
 Logistic regression is based on the following model:
 %
-\[ \log o = \beta_0 + \beta_1 x_1 + \beta_2 x_2 \]
+\[ \log o = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \eps \]
 %
 Where $o$ is the odds in favor of a particular outcome; in the
 example, $o$ would be the odds of having a boy.
@@ -9347,8 +9347,9 @@ about downloading and working with this code, see Section~\ref{code}.
 
 \section{Importing and cleaning}
 
-I downloaded the data from
-\url{http://zmjones.com/static/data/mj-clean.csv} and read it into a
+The data I downloaded from
+Mr. Jones's site is in the repository for this book.
+The following code reads it into a
 pandas DataFrame:
 \index{pandas}
 \index{DataFrame}
@@ -11477,7 +11478,7 @@ confidence intervals:
 Now we'll do the same calculation analytically.  We
 take advantage of the fact that the weights of adult female gorillas
 are roughly normally distributed.  Normal distributions have two
-properties that make them amenable for analysis: they are closed under
+properties that make them amenable for analysis: they are ``closed'' under
 linear transformation and addition.  To explain what that means, I
 need some notation.  \index{analysis}
 \index{linear transformation}
@@ -11486,48 +11487,39 @@ need some notation.  \index{analysis}
 If the distribution of a quantity, $X$, is
 normal with parameters $\mu$ and $\sigma$, you can write
 %
-\[ X \sim \normal (\mu, \sigma^{2})\]
+\[ X \sim \normal~(\mu, \sigma^{2})\]
 %
 where the symbol $\sim$ means ``is distributed'' and the script letter
 $\normal$ stands for ``normal.''
 
 %The other analytic distributions in this chapter are sometimes
 %written $\mathrm{Exponential}(\lambda)$, $\mathrm{Pareto}(x_m,
-%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal (\mu,
+%\alpha)$ and, for lognormal, $\mathrm{Log}-\normal~(\mu,
 %\sigma^2)$.
 
 A linear transformation of $X$ is something like $X' = a X + b$, where
 $a$ and $b$ are real numbers.\index{linear transformation}
 A family of distributions is closed under
 linear transformation if $X'$ is in the same family as $X$.  The normal
-distribution has this property; if $X \sim \normal (\mu,
+distribution has this property; if $X \sim \normal~(\mu,
 \sigma^2)$,
 %
-\begin{equation}
- X' \sim \normal (a \mu + b, a^{2} \sigma^2)
-\label{eqn1}
-\end{equation}
+\[ X' \sim \normal~(a \mu + b, a^{2} \sigma^2) \tag*{(1)} \]
 %
 Normal distributions are also closed under addition.  
 If $Z = X + Y$ and
-$X \sim \normal (\mu_{X}, \sigma_{X}^{2})$ and
-$Y \sim \normal (\mu_{Y}, \sigma_{Y}^{2})$ then
+$X \sim \normal~(\mu_{X}, \sigma_{X}^{2})$ and
+$Y \sim \normal~(\mu_{Y}, \sigma_{Y}^{2})$ then
 %
-\begin{equation}
-\label{eqn3}
-Z \sim \normal (\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2)
-\end{equation}
+\[ Z \sim \normal~(\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2)  \tag*{(2)}\]
 %
 In the special case $Z = X + X$, we have
 %
-\[ Z \sim \normal (2 \mu_X, 2 \sigma_X^2) \]
+\[ Z \sim \normal~(2 \mu_X, 2 \sigma_X^2) \]
 %
 and in general if we draw $n$ values of $X$ and add them up, we have
 %
-\begin{equation}
- Z \sim \normal (n \mu_X, n \sigma_X^2)
-\label{eqn2}
-\end{equation}
+\[ Z \sim \normal~(n \mu_X, n \sigma_X^2)  \tag*{(3)}\]
 
 
 \section{Sampling distributions}
@@ -11542,18 +11534,18 @@ adding up the total weight, and dividing by $n$.
 Assume that the distribution of gorilla weights, $X$, is
 approximately normal:
 %
-\[ X \sim \normal (\mu, \sigma^2)\]
+\[ X \sim \normal~(\mu, \sigma^2)\]
 %
 If we weigh $n$ gorillas, the total weight, $Y$, is distributed
 %
-\[ Y \sim \normal (n \mu, n \sigma^2) \]
+\[ Y \sim \normal~(n \mu, n \sigma^2) \]
 %
-using Equation~\ref{eqn1}.  And if we divide by $n$, the sample mean,
+using Equation 3.  And if we divide by $n$, the sample mean,
 $Z$, is distributed
 %
-\[ Z \sim \normal (\mu, \sigma^2/n) \]
+\[ Z \sim \normal~(\mu, \sigma^2/n) \]
 %
-using Equation~\ref{eqn2} with $a = 1/n$.
+using Equation 1 with $a = 1/n$.
 
 The distribution of $Z$ is the sampling distribution of $\xbar$.
 The mean of $Z$ is $\mu$, which shows that $\xbar$ is an unbiased
@@ -11646,15 +11638,15 @@ N(90, 56.25)
 
 {\tt Normal} provides {\tt Sum}, which takes a sample size, {\tt n},
 and returns the distribution of the sum of {\tt n} values, using
-Equation~\ref{eqn2}:
+Equation 3:
 
 \begin{verbatim}
     def Sum(self, n):
         return Normal(n * self.mu, n * self.sigma2)
 \end{verbatim}
 
-Normal also knows how to multiply and divide by a scalar, using
-Equation~\ref{eqn1}:
+Normal also knows how to multiply and divide using
+Equation 1:
 
 \begin{verbatim}
     def __mul__(self, factor):
@@ -11763,7 +11755,7 @@ distribution tends to be normal.
 \index{CLT}
 
 
-\section{Testing CLT}
+\section{Testing the CLT}
 
 To see how the Central Limit Theorem works, and when it doesn't,
 let's try some experiments.  First, we'll try
@@ -11795,14 +11787,6 @@ It is easy to get {\tt n} and {\tt iters} confused:  {\tt n} is the
 number of terms in each sum;  {\tt iters} is the number of sums we
 compute in order to characterize the distribution of sums.
 
-\begin{figure}
-% normal.py
-\centerline{\includegraphics[height=3.5in]{figs/normal1.pdf}}
-\caption{Distributions of sums of exponential values (top row) and
-lognormal values (bottom row).}
-\label{normal1}
-\end{figure}
-
 The return value is a list of {\tt (n, sample)} pairs.  For
 each pair, we make a normal probability plot:
 \index{thinkplot}
@@ -11821,6 +11805,14 @@ def NormalPlotSamples(samples, plot=1, ylabel=''):
 {\tt NormalPlotSamples} takes the list of pairs from {\tt
   MakeExpoSamples} and generates a row of normal probability plots.
 \index{normal probability plot}
+
+\begin{figure}
+% normal.py
+\centerline{\includegraphics[height=3.5in]{figs/normal1.pdf}}
+\caption{Distributions of sums of exponential values (top row) and
+lognormal values (bottom row).}
+\label{normal1}
+\end{figure}
 
 Figure~\ref{normal1} (top row) shows
 the results.  With {\tt n=1}, the distribution of the sum is still
@@ -11927,7 +11919,7 @@ works, and what happens when it doesn't.  Now let's see how we can
 use it.
 
 
-\section{Applying CLT}
+\section{Applying the CLT}
 \label{usingCLT}
 
 To see why the Central Limit Theorem is useful, let's get back
@@ -11990,7 +11982,7 @@ distribution of the mean is, by the Central Limit Theorem.
 
 Next, we compute the sampling distribution of the difference
 in the means.  The {\tt Normal} class knows how to perform
-subtraction using Equation~\ref{eqn3}:
+subtraction using Equation 2:
 \index{Normal}
 
 \begin{verbatim}
@@ -12255,7 +12247,7 @@ into account these pros and cons, I recommend the following process:
   optimization.
 
 \item If replacing a computational method with an analytic method is
-  appropriate, use the computational model as a basis of comparison, 
+  appropriate, use the computational method as a basis of comparison, 
   providing mutual validation between the computational and
   analytic results.
 \index{model}
@@ -12346,7 +12338,7 @@ effects of an intervention intended to mitigate gender-stereotypical
 task allocation within student engineering teams.
 
 Before and after the intervention, students responded to a survey that
-asked them to rate their contribution to each aspect of the project on
+asked them to rate their contribution to each aspect of class projects on
 a 7-point scale.
 
 Before the intervention, male students reported higher scores for the

@@ -62,7 +62,7 @@ def ResampleDivorceCurveByDecade(resps):
 
         EstimateSurvivalByDecade(groups, alpha=0.1)
 
-    thinkplot.Save(root='survival6',
+    thinkplot.Save(root='survival7',
                    xlabel='years',
                    axis=[0, 28, 0, 1])
 

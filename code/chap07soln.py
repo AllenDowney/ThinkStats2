@@ -85,7 +85,8 @@ def BinnedPercentiles(df):
         label = '%dth' % percent
         thinkplot.Plot(ages, weights, label=label)
 
-    thinkplot.Save(root='chap07_scatter3',
+    thinkplot.Save(root='chap07scatter3',
+                   formats=['jpg'],
                    xlabel="mother's age (years)",
                    ylabel='birth weight (lbs)')
 
@@ -105,7 +106,9 @@ def main(script):
           thinkstats2.SpearmanCorr(ages, weights))
 
     ScatterPlot(ages, weights, alpha=0.1)
-    thinkplot.Save(root='chap07_scatter1')
+    thinkplot.Save(root='chap07scatter1', 
+                   legend=False,
+                   formats=['jpg'])
 
 
 if __name__ == '__main__':
