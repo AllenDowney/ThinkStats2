@@ -137,6 +137,25 @@ class Test(unittest.TestCase):
         xs, ys = pmf.Render()
         self.assertEqual(tuple(xs), tuple(sorted(pmf.Values())))        
         
+    def testPmfProbLess(self):
+        d6 = thinkstats2.Pmf(range(1,7))
+        self.assertEqual(d6.ProbLess(4), 0.5)
+        self.assertEqual(d6.ProbGreater(3), 0.5)
+        two = d6 + d6
+        three = two + d6
+        self.assertAlmostEqual(two > three, 0.15200617284)
+        self.assertAlmostEqual(two < three, 0.778549382716049)
+        self.assertAlmostEqual(two.ProbGreater(three), 0.15200617284)
+        self.assertAlmostEqual(two.ProbLess(three), 0.778549382716049)
+
+    def testPmfMax(self):
+        d6 = thinkstats2.Pmf(range(1,7))
+        two = d6 + d6
+        three = two + d6
+        cdf = three.Max(6)
+        thinkplot.Cdf(cdf)
+        self.assertAlmostEqual(cdf[14], 0.558230962626)
+
     def testCdf(self):
         t = [1, 2, 2, 3, 5]
         pmf = thinkstats2.Pmf(t)

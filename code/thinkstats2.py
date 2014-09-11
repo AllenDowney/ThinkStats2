@@ -1,5 +1,5 @@
-"""This file contains code for use with "Think Bayes",
-by Allen B. Downey, available from greenteapress.com
+"""This file contains code for use with "Think Stats" and
+"Think Bayes", both by Allen B. Downey, available from greenteapress.com
 
 Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
@@ -160,6 +160,9 @@ class _DictWrapper(object):
             
         if len(self) > 0 and isinstance(self, Pmf):
             self.Normalize()
+
+    def __hash__(self):
+        return id(self)
 
     def __str__(self):
         cls = self.__class__.__name__
@@ -444,8 +447,11 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        t = [prob for (val, prob) in self.d.items() if val > x]
-        return sum(t)
+        if isinstance(x, _DictWrapper):
+            return PmfProbGreater(self, x)
+        else:
+            t = [prob for (val, prob) in self.d.items() if val > x]
+            return sum(t)
 
     def ProbLess(self, x):
         """Probability that a sample from this Pmf is less than x.
@@ -454,8 +460,11 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        t = [prob for (val, prob) in self.d.items() if val < x]
-        return sum(t)
+        if isinstance(x, _DictWrapper):
+            return PmfProbLess(self, x)
+        else:
+            t = [prob for (val, prob) in self.d.items() if val < x]
+            return sum(t)
 
     def __lt__(self, obj):
         """Less than.
@@ -464,10 +473,7 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        if isinstance(obj, _DictWrapper):
-            return PmfProbLess(self, obj)
-        else:
-            return self.ProbLess(obj)
+        return self.ProbLess(obj)
 
     def __gt__(self, obj):
         """Greater than.
@@ -476,10 +482,7 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        if isinstance(obj, _DictWrapper):
-            return PmfProbGreater(self, obj)
-        else:
-            return self.ProbGreater(obj)
+        return self.ProbGreater(obj)
 
     def __ge__(self, obj):
         """Greater than or equal.
@@ -660,8 +663,7 @@ class Pmf(_DictWrapper):
         returns: new Cdf
         """
         cdf = self.MakeCdf()
-        cdf.ps = [p ** k for p in cdf.ps]
-        return cdf
+        return cdf.Max(k)
 
 
 class Joint(Pmf):
@@ -889,6 +891,9 @@ class Cdf(object):
         else:
             # if the caller provides xs and ps, we're done            
             if ps is not None:
+                if isinstance(ps, str):
+                    logging.warning("Cdf: ps can't be a string")
+
                 self.xs = np.asarray(obj)
                 self.ps = np.asarray(ps)
                 return
@@ -1149,7 +1154,7 @@ class Cdf(object):
         returns: new Cdf
         """
         cdf = self.Copy()
-        cdf.ps = [p ** k for p in cdf.ps]
+        cdf.ps **= k
         return cdf
 
 
@@ -1422,7 +1427,9 @@ class Pdf(object):
             n = options.pop('n', 101)
             xs = np.linspace(low, high, n)
         else:
-            xs = self.GetLinspace()
+            xs = options.pop('xs', None)
+            if xs is None:
+                xs = self.GetLinspace()
             
         ds = self.Density(xs)
         return xs, ds
@@ -1625,7 +1632,7 @@ def SampleSum(dists, n):
 
     returns: new Pmf of sums
     """
-    pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
+    pmf = Pmf(RandomSum(dists) for i in range(n))
     return pmf
 
 
@@ -1693,7 +1700,7 @@ def MakePoissonPmf(lam, high, step=1):
     returns: normalized Pmf
     """
     pmf = Pmf()
-    for k in xrange(0, high + 1, step):
+    for k in range(0, high + 1, step):
         p = EvalPoissonPmf(k, lam)
         pmf.Set(k, p)
     pmf.Normalize()
@@ -1902,14 +1909,14 @@ class Beta(object):
             pmf = cdf.MakePmf()
             return pmf
 
-        xs = [i / (steps - 1.0) for i in xrange(steps)]
+        xs = [i / (steps - 1.0) for i in range(steps)]
         probs = [self.EvalPdf(x) for x in xs]
-        pmf = MakePmfFromDict(dict(zip(xs, probs)), label=label)
+        pmf = Pmf(dict(zip(xs, probs)), label=label)
         return pmf
 
     def MakeCdf(self, steps=101):
         """Returns the CDF of this distribution."""
-        xs = [i / (steps - 1.0) for i in xrange(steps)]
+        xs = [i / (steps - 1.0) for i in range(steps)]
         ps = [scipy.special.betainc(self.alpha, self.beta, x) for x in xs]
         cdf = Cdf(xs, ps)
         return cdf
