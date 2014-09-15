@@ -151,13 +151,9 @@ class _DictWrapper(object):
         elif isinstance(obj, pandas.Series):
             self.d.update(obj.value_counts().iteritems())
         else:
-            try:
-                # see if it's a list of pairs
-                self.d.update(obj)
-            except (ValueError, TypeError):
-                # finally, treat it like a list
-                self.d.update(Counter(obj))
-            
+            # finally, treat it like a list
+            self.d.update(Counter(obj))
+
         if len(self) > 0 and isinstance(self, Pmf):
             self.Normalize()
 
@@ -810,7 +806,7 @@ def MakePmfFromItems(t, label=None):
     Returns:
         Pmf object
     """
-    return Pmf(t, label=label)
+    return Pmf(dict(t), label=label)
 
 
 def MakePmfFromHist(hist, label=None):
@@ -883,13 +879,14 @@ class Cdf(object):
                 self.label = label if label is not None else obj.label
 
         if obj is None:
+            # caller does not provide obj, make an empty Cdf
             self.xs = np.asarray([])
             self.ps = np.asarray([])
             if ps is not None:
                 logging.warning("Cdf: can't pass ps without also passing xs.")
             return
         else:
-            # if the caller provides xs and ps, we're done            
+            # if the caller provides xs and ps, just store them          
             if ps is not None:
                 if isinstance(ps, str):
                     logging.warning("Cdf: ps can't be a string")
@@ -898,7 +895,7 @@ class Cdf(object):
                 self.ps = np.asarray(ps)
                 return
 
-        # caller has provided a single value
+        # caller has provided just obj, not ps
         if isinstance(obj, Cdf):
             self.xs = copy.copy(obj.xs)
             self.ps = copy.copy(obj.ps)
@@ -1168,7 +1165,7 @@ def MakeCdfFromItems(items, label=None):
     Returns:
         cdf: list of (value, fraction) pairs
     """
-    return Cdf(items, label=label)
+    return Cdf(dict(items), label=label)
 
 
 def MakeCdfFromDict(d, label=None):
@@ -1414,7 +1411,7 @@ class Pdf(object):
         """
         label = options.pop('label', '')
         xs, ds = self.Render(**options)
-        return Pmf(zip(xs, ds), label=label)
+        return Pmf(dict(zip(xs, ds)), label=label)
 
     def Render(self, **options):
         """Generates a sequence of points suitable for plotting.

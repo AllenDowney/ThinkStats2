@@ -127,10 +127,6 @@ class Test(unittest.TestCase):
         self.assertEqual(len(pmf), 4)
         self.assertEqual(pmf.Prob('l'), 0.4)
 
-        pmf = thinkstats2.Pmf(pmf.d.items())
-        self.assertEqual(len(pmf), 4)
-        self.assertEqual(pmf.Prob('l'), 0.4)
-
         pmf2 = pmf.Copy()
         self.assertEqual(pmf, pmf2)
 
@@ -209,11 +205,6 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(cdf.Prob(2), 0.6)
         self.assertEqual(cdf.Value(0.6), 2)
 
-        cdf = thinkstats2.Cdf(pmf.Items())
-        self.assertEqual(len(cdf), 4)
-        self.assertAlmostEqual(cdf.Prob(2), 0.6)
-        self.assertEqual(cdf.Value(0.6), 2)
-
         cdf = thinkstats2.MakeCdfFromItems(pmf.Items())
         self.assertEqual(len(cdf), 4)
         self.assertAlmostEqual(cdf.Prob(2), 0.6)
@@ -274,6 +265,10 @@ class Test(unittest.TestCase):
         pmf2 = thinkstats2.Pmf(cdf)
         for x in pmf.Values():
             self.assertAlmostEqual(pmf[x], pmf2[x])
+
+        pmf3 = cdf.MakePmf()
+        for x in pmf.Values():
+            self.assertAlmostEqual(pmf[x], pmf3[x])
 
     def testNormalPdf(self):
         pdf = thinkstats2.NormalPdf(mu=1, sigma=2)

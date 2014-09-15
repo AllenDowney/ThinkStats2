@@ -226,7 +226,7 @@ def ResampleRowsWeighted(df, attr='finalwgt'):
     returns: DataFrame
     """
     weights = df[attr]
-    cdf = thinkstats2.Pmf(weights.iteritems()).MakeCdf()
+    cdf = thinkstats2.Pmf(weights).MakeCdf()
     indices = cdf.Sample(len(weights))
     sample = df.loc[indices]
     return sample

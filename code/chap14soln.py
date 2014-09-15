@@ -121,25 +121,32 @@ def TestIntervention():
     female_after = normal.Normal(3.18, 0.16**2)
 
     diff_before = female_before - male_before
-    print(diff_before.mu, 1-diff_before.Prob(0))
+    print('mean, p-value', diff_before.mu, 1-diff_before.Prob(0))
+    print('CI', diff_before.Percentile(5), diff_before.Percentile(95))
+    print('stderr', diff_before.sigma)
 
     diff_after = female_after - male_after
-    print(diff_after.mu, 1-diff_after.Prob(0))
+    print('mean, p-value', diff_after.mu, 1-diff_after.Prob(0))
+    print('CI', diff_after.Percentile(5), diff_after.Percentile(95))
+    print('stderr', diff_after.sigma)
 
     diff = diff_after - diff_before
-    print(diff.mu, diff.Prob(0))
+    print('mean, p-value', diff.mu, diff.Prob(0))
+    print('CI', diff.Percentile(5), diff.Percentile(95))
+    print('stderr', diff.sigma)
 
 
 def main():
     thinkstats2.RandomSeed(17)
+
+    TestIntervention()
+    return
 
     live, firsts, others = first.MakeFrames()
     PlotAdultWeights(live)
 
     PlotPregLengths(live, firsts, others)
 
-    TestIntervention()
-    
 
 if __name__ == '__main__':
     main()

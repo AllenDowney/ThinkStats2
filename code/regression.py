@@ -312,7 +312,6 @@ def RunLogisticModels(live):
     #live = linear.ResampleRowsWeighted(live)
 
     df = live[live.prglngth>30]
-    # df = JoinFemResp(df)
 
     df['boy'] = (df.babysex==1).astype(int)
     df['isyoung'] = (df.agepreg<20).astype(int)
@@ -364,19 +363,18 @@ def RunLogisticModels(live):
 
 def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
-    LogisticRegressionExample()
+    #LogisticRegressionExample()
 
     live, firsts, others = first.MakeFrames()
     live['isfirst'] = (live.birthord == 1)
 
     RunLogisticModels(live)
+    return
 
     RunSimpleRegression(live)
     RunModels(live)
 
     PredictBirthWeight(live)
-
-    JoinRespFile(live)
 
 
 
