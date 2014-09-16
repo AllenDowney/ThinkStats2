@@ -1234,14 +1234,14 @@ for her pregnancies:
 \begin{verbatim}
 >>> caseid = 10229
 >>> indices = preg_map[caseid]
->>> preg.outcome[indices].values
+>>> df.outcome[indices].values
 [4 4 4 4 4 4 1]
 \end{verbatim}
 
 {\tt indices} is the list of indices for pregnancies corresponding
 to respondent {\tt 10229}.
  
-Using this list as an index into {\tt preg.outcome} selects the
+Using this list as an index into {\tt df.outcome} selects the
 indicated rows and yields a Series.  Instead of printing the
 whole Series, I selected the {\tt values} attribute, which is
 a NumPy array.  
