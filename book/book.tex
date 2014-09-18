@@ -310,7 +310,6 @@ when I start working with a dataset:
 
 \end{itemize}
 
-
 This book takes a computational approach, which has several
 advantages over mathematical approaches:
 \index{computational methods}
@@ -375,6 +374,14 @@ data from two sources:
 
 Other examples use data from the IRS, the U.S. Census, and
 the Boston Marathon.
+
+% TODO: add this to the Atlas version
+
+This second edition of {\it Think Stats} includes the chapters from
+the first edition, many of them substantially revised, and new
+chapters on regression, time series analysis, survival analysis,
+and analytic methods.  The previous edition did not use pandas,
+SciPy, or StatsModels, so all of that material is new.
 
 
 \section{How I wrote this book}
@@ -464,7 +471,7 @@ Continuum Analytics, which is a free Python distribution that includes
 all the packages you'll need to run the code (and lots more).
 I found Anaconda easy to install.  By default it does a user-level
 installation, not system-level, so you don't need administrative
-privilege.  And it supports both Python 2 and Python 3.  You can
+privileges.  And it supports both Python 2 and Python 3.  You can
 download Anaconda from \url{http://continuum.io/downloads}.
 \index{Anaconda}
 
@@ -493,7 +500,7 @@ packages:
 
 \end{itemize}
 
-Although these are commonly-used packages, they are not included with
+Although these are commonly used packages, they are not included with
 all Python installations, and they can be hard to install in some
 environments.  If you have trouble installing them, I strongly
 recommend using Anaconda or one of the other Python distributions
@@ -511,6 +518,24 @@ notebook.  If you have not used IPython notebook before, I suggest
 you start with the documentation at
 \url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
 \index{IPython}
+
+% TODO: Add this to Atlas
+
+I wrote this book assuming that the reader is familiar with core Python,
+including object-oriented features, but not pandas,
+NumPy, and SciPy.  If you are already familiar with these modules, you
+can skip a few sections.
+
+I assume that the reader knows basic mathematics, including
+logarithms, for example, and summations.  I refer to calculus concepts
+in a few places, but you don't have to do any calculus.
+
+If you have never studied statistics, I think this book is a good place
+to start.  And if you have taken
+a traditional statistics class, I hope this book will help repair the
+damage.
+
+
 
 ---
 
@@ -593,6 +618,12 @@ Pearson's correlation.
 \item John Roth, Carol Willing, and Carol Novitsky performed technical
 reviews of the book.  They found many errors and made many
 helpful suggestions.
+
+% TODO: add Rohit and the production people to Atlas
+
+\item Rohit Deshpande found a typesetting error.
+
+\item David Palmer sent many helpful suggestions and corrections.
 
 % ENDCONTRIB
 
@@ -825,7 +856,7 @@ string that represents the respondent ID; {\tt pregorder} is a
 one-byte integer that indicates which pregnancy this record
 describes for this respondent.
 
-The code you downloaded includes {\tt thinkstats2.py} which is a Python
+The code you downloaded includes {\tt thinkstats2.py}, which is a Python
 module
 that contains many classes and functions used in this book,
 including functions that read the Stata dictionary and
@@ -836,7 +867,7 @@ def ReadFemPreg(dct_file='2002FemPreg.dct',
                 dat_file='2002FemPreg.dat.gz'):
     dct = thinkstats2.ReadStataDct(dct_file)
     df = dct.ReadFixedWidth(dat_file, compression='gzip')
-    CleanFremPreg(df)
+    CleanFemPreg(df)
     return df
 \end{verbatim}
 
@@ -1180,7 +1211,7 @@ And here are the value counts:
 
 The counts for 6, 7, and 8 pounds check out, and if you add
 up the counts for 0-5 and 9-95, they check out, too.  But
-if you look more closely, you notice one value that has to be
+if you look more closely, you will notice one value that has to be
 an error, a 51 pound baby!
 
 To deal with this error, I added a line to {\tt CleanFemPreg}:
@@ -1572,8 +1603,6 @@ chapter is in {\tt first.py}.
 For information about downloading and
 working with this code, see Section~\ref{code}.
 
-% TODO: apparently I can't refer to a label in the preface?
-
 When you start working with a new dataset, I suggest you explore
 the variables you are planning to use one at a time, and a good
 way to start is by looking at histograms.
@@ -1811,7 +1840,8 @@ a particular point?
 move away from the modes?
 \index{tail}
 
-\item[outliers]: Are there extreme values far from the modes?
+% TODO: push this to O'Reilly
+\item outliers: Are there extreme values far from the modes?
 \index{outlier}
 
 \end{itemize}
@@ -2681,7 +2711,7 @@ At first I thought that the distribution of speeds might be bimodal;
 that is, there were many slow runners and many fast runners, but few
 at my speed.
 
-Then I realized that I was the victim a bias similar to the
+Then I realized that I was the victim of a bias similar to the
 effect of class size.  The race
 was unusual in two ways: it used a staggered start, so teams started
 at different times; also, many teams included runners at different
@@ -2744,7 +2774,7 @@ that contains the row labels.
 \chapter{Cumulative distribution functions}
 \label{cumulative}
 
-This code for this chapter is in {\tt cumulative.py}.
+The code for this chapter is in {\tt cumulative.py}.
 For information about downloading and
 working with this code, see Section~\ref{code}.
 
@@ -3137,7 +3167,7 @@ is uniform.
 
 That outcome might be non-obvious, but it is a consequence of
 the way the CDF is defined.  What this figure shows is that 10\%
-of the sample is below the 10th percentile, 20\% are below the
+of the sample is below the 10th percentile, 20\% is below the
 20th percentile, and so on, exactly as we should expect.
 
 So, regardless of the shape of the CDF, the distribution of
@@ -3263,12 +3293,12 @@ less than or equal to a given value.
 \item percentile: The value associated with a given percentile rank.
 \index{percentile}
 
-\item cumulative distribution function (CDF): a function that maps
+\item cumulative distribution function (CDF): A function that maps
   from values to their cumulative probabilities.  $\CDF(x)$ is the
   fraction of the sample less than or equal to $x$.  \index{CDF}
 \index{cumulative probability}
 
-\item inverse CDF: a function that maps from a cumulative probability,
+\item inverse CDF: A function that maps from a cumulative probability,
   $p$, to the corresponding value.
 \index{inverse CDF}
 \index{CDF, inverse}
@@ -3280,7 +3310,7 @@ less than or equal to a given value.
 the 75th and 25th percentiles, used as a measure of spread.
 \index{interquartile range}
 
-\item quantile: A sequence of values that correspond to equally-spaced
+\item quantile: A sequence of values that correspond to equally spaced
 percentile ranks; for example, the quartiles of a distribution are
 the 25th, 50th and 75th percentiles.
 \index{quantile}
@@ -4051,8 +4081,6 @@ to generate the values.
 
 \end{exercise}
 
-% TODO: put all solutions in one file?
-
 \begin{exercise}
 In the repository for this book, you'll find a set of data files
 called {\tt mystery0.dat}, {\tt mystery1.dat}, and so on.  Each
@@ -4087,7 +4115,7 @@ look at some data.
 \index{lognormal distribution}
 \index{distribution!lognormal}
 
-The Current Population Survey (CPS) is joint effort of the Bureau
+The Current Population Survey (CPS) is a joint effort of the Bureau
 of Labor Statistics and the Census Bureau to study income and related
 variables.  Data collected in 2013 is available from
 \url{http://www.census.gov/hhes/www/cpstables/032013/hhinc/toc.htm}.
@@ -4363,7 +4391,7 @@ Estimating a density function with KDE is useful for several purposes:
   the density for values that don't appear in the sample.
 \index{interpolation}
 
-\item {\it Simulation:} Simulations are often based the distribution
+\item {\it Simulation:} Simulations are often based on the distribution
   of a sample.  If the sample size is small, it
   might be appropriate to smooth the sample distribution using KDE,
   which allows the simulation to explore more possible outcomes,
@@ -4834,7 +4862,7 @@ exercise, we'll measure how strong that skew is.
 \index{skewness}
 \index{income}
 
-The Current Population Survey (CPS) is joint effort of the Bureau
+The Current Population Survey (CPS) is a joint effort of the Bureau
 of Labor Statistics and the Census Bureau to study income and related
 variables.  Data collected in 2013 is available from
 \url{http://www.census.gov/hhes/www/cpstables/032013/hhinc/toc.htm}.
@@ -5381,14 +5409,14 @@ useful.  The correlation of height and weight is 0.51, which is a
 strong correlation compared to similar human-related variables.
 
 
-\section{Non-linear relationships}
+\section{Nonlinear relationships}
 
 If Pearson's correlation is near 0, it is tempting to conclude
 that there is no relationship between the variables, but that
 conclusion is not valid.  Pearson's correlation only measures {\em
   linear} relationships.  If there's a nonlinear relationship, $\rho$
 understates its strength.  \index{linear relationship}
-\index{non-linear}
+\index{nonlinear}
 \index{Pearson coefficient of correlation}
 
 \begin{figure}
@@ -5400,7 +5428,7 @@ understates its strength.  \index{linear relationship}
 Figure~\ref{corr_examples} is from
 \url{http://wikipedia.org/wiki/Correlation_and_dependence}.  It shows
 scatter plots and correlation coefficients for several
-carefully-constructed datasets.
+carefully constructed datasets.
 \index{scatter plot}
 \index{plot!scatter}
 
@@ -5410,8 +5438,8 @@ $\rho$ look like.  The second row shows perfect correlations with a
 range of slopes, which demonstrates that correlation is unrelated to
 slope (we'll talk about estimating slope soon).  The third row shows
 variables that are clearly related, but because the relationship is
-non-linear, the correlation coefficient is 0.
-\index{non-linear}
+nonlinear, the correlation coefficient is 0.
+\index{nonlinear}
 
 The moral of this story is that you should always look at a scatter
 plot of your data before blindly computing a correlation coefficient.
@@ -5476,9 +5504,9 @@ reasons for the difference, including:
 \begin{itemize}
 
 \item If the relationship is
-non-linear, Pearson's correlation tends to underestimate the strength
+nonlinear, Pearson's correlation tends to underestimate the strength
 of the relationship, and 
-\index{non-linear}
+\index{nonlinear}
 
 \item Pearson's correlation can be affected (in either direction)
 if one of the distributions is skewed or contains outliers.  Spearman's
@@ -5490,7 +5518,7 @@ rank correlation is more robust.
 \end{itemize}
 
 In the BRFSS example, we know that the distribution of weights is
-roughly lognormal; under a log transform is it approximates a normal
+roughly lognormal; under a log transform it approximates a normal
 distribution, so it has no skew.
 So another way to eliminate the effect of skewness is to
 compute Pearson's
@@ -6191,7 +6219,7 @@ it seems better than $L_m$.
 \index{RMSE}
 
 Sadly, it seems that both estimators are biased.  For $L$ the mean
-error is 0.33, for $L_m$ it is 0.45.  And neither converges to 0
+error is 0.33; for $L_m$ it is 0.45.  And neither converges to 0
 as {\tt m} increases.
 \index{biased estimator}
 \index{estimator!biased}
@@ -7018,7 +7046,7 @@ pre-computed probabilities, \verb"expected_probs", by the sample
 size.  It returns the chi-squared statistic, {\tt stat}.
 
 For the NSFG data the total chi-squared statistic is 102, which
-doesn't mean much by itself.  But after 1000 iteration, the largest
+doesn't mean much by itself.  But after 1000 iterations, the largest
 test statistic generated under the null hypothesis is 32.  We conclude
 that the observed chi-squared statistic is unlikely under the null
 hypothesis, so the apparent effect is statistically significant.
@@ -7035,7 +7063,7 @@ but they don't say anything specific about what the difference is.
 
 In classical hypothesis testing, an effect is considered statistically
 significant if the p-value is below some threshold, commonly 5\%.
-This procedure raises two question:
+This procedure raises two questions:
 \index{p-value}
 \index{threshold}
 \index{statistically significant} \index{significant}
@@ -7489,7 +7517,7 @@ birth weight as a function of mother's age.
 \end{verbatim}
 
 The estimated intercept and slope are 6.8 lbs and 0.017 lbs per year.
-These value are hard to interpret in this form: the intercept is
+These values are hard to interpret in this form: the intercept is
 the expected weight of a baby whose mother is 0 years old, which
 doesn't make sense in context, and the slope is too small to
 grasp easily.
@@ -7562,10 +7590,10 @@ Ideally these lines should be flat, indicating that the residuals are
 random, and parallel, indicating that the variance of the residuals is
 the same for all age groups.  In fact, the lines are close to
 parallel, so that's good; but they have some curvature, indicating
-that the relationship is non-linear.  Nevertheless, the linear fit
+that the relationship is nonlinear.  Nevertheless, the linear fit
 is a simple model that is probably good enough for some purposes.
 \index{model}
-\index{non-linear}
+\index{nonlinear}
 
 
 \section{Estimation}
@@ -8437,14 +8465,14 @@ than either alone (but not by much).
 \index{r-squared}
 
 
-\section{Non-linear relationships}
+\section{Nonlinear relationships}
 \label{nonlinear}
 
-Remembering that the contribution of {\tt agepreg} might be non-linear,
+Remembering that the contribution of {\tt agepreg} might be nonlinear,
 we might consider adding a variable to capture more of this
 relationship.  One option is to create a column, {\tt agepreg2},
 that contains the squares of the ages:
-\index{non-linear}
+\index{nonlinear}
 
 \begin{verbatim}
     live['agepreg2'] = live.agepreg**2
@@ -8481,10 +8509,10 @@ fit polynomials and other functions to data.
 This process is still considered linear
 regression, because the dependent variable is a linear function of
 the explanatory variables, regardless of whether some variables
-are non-linear functions of others.
+are nonlinear functions of others.
 \index{explanatory variable}
 \index{dependent variable}
-\index{non-linear}
+\index{nonlinear}
 
 The following table summarizes the results of these regressions:
 
@@ -9148,9 +9176,11 @@ Nevertheless, let's use the model to make a prediction for the office
 pool.  Suppose your friend is 35 years old and white,
 her husband is 39, and they are expecting their third child:
 
+% TODO: get this change into Atlas
+
 \begin{verbatim}
     columns = ['agepreg', 'hpagelb', 'birthord', 'race']
-    new = pandas.DataFrame([[35, 39, 3, 1]], columns=columns)
+    new = pandas.DataFrame([[35, 39, 3, 2]], columns=columns)
     y = results.predict(new)
 \end{verbatim}
 
@@ -10284,7 +10314,7 @@ that it is linear, and there is no reason to expect prices to
 change linearly over time.
 We can add flexibility to the model by adding a quadratic term,
 as we did in Section~\ref{nonlinear}.  
-\index{non-linear}
+\index{nonlinear}
 \index{linear model}
 \index{quadratic model}
 
