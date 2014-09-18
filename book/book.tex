@@ -1000,7 +1000,7 @@ variables:
 
 \item {\tt caseid} is the integer ID of the respondent.
 
-\item {\tt prglength} is the integer duration of the pregnancy in weeks.
+\item {\tt prglngth} is the integer duration of the pregnancy in weeks.
 \index{pregnancy length}
 
 \item {\tt outcome} is an integer code for the outcome of the
@@ -1265,14 +1265,14 @@ for her pregnancies:
 \begin{verbatim}
 >>> caseid = 10229
 >>> indices = preg_map[caseid]
->>> preg.outcome[indices].values
+>>> df.outcome[indices].values
 [4 4 4 4 4 4 1]
 \end{verbatim}
 
 {\tt indices} is the list of indices for pregnancies corresponding
 to respondent {\tt 10229}.
  
-Using this list as an index into {\tt preg.outcome} selects the
+Using this list as an index into {\tt df.outcome} selects the
 indicated rows and yields a Series.  Instead of printing the
 whole Series, I selected the {\tt values} attribute, which is
 a NumPy array.  
@@ -1642,7 +1642,7 @@ Next I generate and plot the histogram of
 \begin{verbatim}
     hist = thinkstats2.Hist(live.birthwgt_lb, label='birthwgt_lb')
     thinkplot.Hist(hist)
-    thinkplot.Show(xlabel='weeks', ylabel='frequency')
+    thinkplot.Show(xlabel='pounds', ylabel='frequency')
 \end{verbatim}
 
 When the argument passed to Hist is a pandas Series, any
@@ -1774,7 +1774,7 @@ Then I plotted their histograms on the same axis:
     thinkplot.PrePlot(2)
     thinkplot.Hist(first_hist, align='right', width=width)
     thinkplot.Hist(other_hist, align='left', width=width)
-    thinkplot.Show(xlabel='weeks', ylabel='frequency')
+    thinkplot.Show(xlabel='weeks', ylabel='frequency', axis=[27, 46, 0, 2700])
 \end{verbatim}
 
 {\tt thinkplot.PrePlot} takes the number of histograms
