@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.21}
+\newcommand{\theversion}{2.0.22}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1000,7 +1000,7 @@ variables:
 
 \item {\tt caseid} is the integer ID of the respondent.
 
-\item {\tt prglength} is the integer duration of the pregnancy in weeks.
+\item {\tt prglngth} is the integer duration of the pregnancy in weeks.
 \index{pregnancy length}
 
 \item {\tt outcome} is an integer code for the outcome of the
@@ -1265,7 +1265,7 @@ for her pregnancies:
 \begin{verbatim}
 >>> caseid = 10229
 >>> indices = preg_map[caseid]
->>> preg.outcome[indices].values
+>>> df.outcome[indices].values
 [4 4 4 4 4 4 1]
 \end{verbatim}
 
