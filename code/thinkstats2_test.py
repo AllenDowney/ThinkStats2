@@ -1,9 +1,11 @@
 """This file contains code for use with "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2010 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
+
+from __future__ import print_function, division
 
 import unittest
 import random
@@ -133,6 +135,36 @@ class Test(unittest.TestCase):
         xs, ys = pmf.Render()
         self.assertEqual(tuple(xs), tuple(sorted(pmf.Values())))        
         
+    def testPmfAddSub(self):
+        pmf = thinkstats2.Pmf([1, 2, 3, 4, 5, 6])
+
+        pmf1 = pmf + 1
+        self.assertAlmostEqual(pmf1.Mean(), 4.5)
+
+        pmf2 = pmf + pmf
+        self.assertAlmostEqual(pmf2.Mean(), 7.0)
+
+        pmf3 = pmf - 1
+        self.assertAlmostEqual(pmf3.Mean(), 2.5)
+
+        pmf4 = pmf - pmf
+        self.assertAlmostEqual(pmf4.Mean(), 0)
+
+    def testPmfMulDiv(self):
+        pmf = thinkstats2.Pmf([1, 2, 3, 4, 5, 6])
+
+        pmf1 = pmf * 2
+        self.assertAlmostEqual(pmf1.Mean(), 7)
+
+        pmf2 = pmf * pmf
+        self.assertAlmostEqual(pmf2.Mean(), 12.25)
+
+        pmf3 = pmf / 2
+        self.assertAlmostEqual(pmf3.Mean(), 1.75)
+
+        pmf4 = pmf / pmf
+        self.assertAlmostEqual(pmf4.Mean(), 1.4291667)
+
     def testPmfProbLess(self):
         d6 = thinkstats2.Pmf(range(1,7))
         self.assertEqual(d6.ProbLess(4), 0.5)
@@ -249,6 +281,18 @@ class Test(unittest.TestCase):
         self.assertEqual(cdf2.Prob(2), 0.6)
         self.assertEqual(cdf2.Value(0.6), 2)
         
+    def testShift(self):
+        t = [1, 2, 2, 3, 5]
+        cdf = thinkstats2.Cdf(t)
+        cdf2 = cdf.Shift(1)
+        self.assertEqual(cdf[1], cdf2[2])
+
+    def testScale(self):
+        t = [1, 2, 2, 3, 5]
+        cdf = thinkstats2.Cdf(t)
+        cdf2 = cdf.Scale(2)
+        self.assertEqual(cdf[2], cdf2[4])
+
     def testCdfRender(self):
         t = [1, 2, 2, 3, 5]
         cdf = thinkstats2.Cdf(t)
@@ -329,6 +373,10 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(x, 1.64485362695)
         x = thinkstats2.EvalNormalCdfInverse(0.05, 0, 1)
         self.assertAlmostEqual(x, -1.64485362695)
+
+    def testEvalPoissonPmf(self):
+        p = thinkstats2.EvalPoissonPmf(2, 1)
+        self.assertAlmostEqual(p, 0.1839397205)
 
     def testCov(self):
         t = [0, 4, 7, 3, 8, 1, 6, 2, 9, 5]
