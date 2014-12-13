@@ -50,8 +50,7 @@ def ValidatePregnum(resp):
     preg_map = nsfg.MakePregMap(preg)
 
     # iterate through respondent pregnum series
-    for i, pregnum in resp.pregnum.iteritems():
-        caseid = resp.caseid[i]
+    for i, caseid, pregnum in resp[["caseid", "pregnum"]].itertuples():
 
         # check that pregnum from the respondent file equals
         # the number of records in the pregnancy file
