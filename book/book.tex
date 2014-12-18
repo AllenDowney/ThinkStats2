@@ -1189,7 +1189,7 @@ value	label                  Total
 And here are the value counts:
 
 \begin{verbatim}
->>> df.birthwgt_lb.value_counts(sort=False)
+>>> df.birthwgt_lb.value_counts().sort_index()
 0        8
 1       40
 2       53
