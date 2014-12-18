@@ -43,11 +43,6 @@ def ValidatePregnum(resp):
 
     resp: respondent DataFrame
     """
-    # make a dictionary that maps from caseid to respondent index
-    d = {}
-    for index, caseid in resp.caseid.iteritems():
-        d[caseid] = index
-
     # read the pregnancy frame
     preg = nsfg.ReadFemPreg()
 
