@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.22}
+\newcommand{\theversion}{2.0.23}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -375,8 +375,6 @@ data from two sources:
 Other examples use data from the IRS, the U.S. Census, and
 the Boston Marathon.
 
-% TODO: add this to the Atlas version
-
 This second edition of {\it Think Stats} includes the chapters from
 the first edition, many of them substantially revised, and new
 chapters on regression, time series analysis, survival analysis,
@@ -507,19 +505,17 @@ recommend using Anaconda or one of the other Python distributions
 that include these packages.
 \index{installation}
 
-After you clone the repository or unzip the zip file, you should
-have a file called {\tt ThinkStats2/code/nsfg.py}.  If you run it,
-it should read a data file, run some tests, and print a message
-like, ``All tests passed.''  If you get import errors, it probably
-means there are packages you need to install.
+After you clone the repository or unzip the zip file, you should have
+a folder called {\tt ThinkStats2/code} with a file called {nsfg.py}.
+If you run {nsfg.py}, it should read a data file, run some tests, and print a
+message like, ``All tests passed.''  If you get import errors, it
+probably means there are packages you need to install.
 
 Most exercises use Python scripts, but some also use the IPython
 notebook.  If you have not used IPython notebook before, I suggest
 you start with the documentation at
 \url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
 \index{IPython}
-
-% TODO: Add this to Atlas
 
 I wrote this book assuming that the reader is familiar with core Python,
 including object-oriented features, but not pandas,
@@ -619,11 +615,11 @@ Pearson's correlation.
 reviews of the book.  They found many errors and made many
 helpful suggestions.
 
-% TODO: add Rohit and the production people to Atlas
-
 \item Rohit Deshpande found a typesetting error.
 
 \item David Palmer sent many helpful suggestions and corrections.
+
+\item Erik Kulyk found many typos.
 
 % ENDCONTRIB
 
@@ -1271,8 +1267,8 @@ for her pregnancies:
 
 {\tt indices} is the list of indices for pregnancies corresponding
 to respondent {\tt 10229}.
- 
-Using this list as an index into {\tt preg.outcome} selects the
+
+Using this list as an index into {\tt df.outcome} selects the
 indicated rows and yields a Series.  Instead of printing the
 whole Series, I selected the {\tt values} attribute, which is
 a NumPy array.  
@@ -1642,7 +1638,7 @@ Next I generate and plot the histogram of
 \begin{verbatim}
     hist = thinkstats2.Hist(live.birthwgt_lb, label='birthwgt_lb')
     thinkplot.Hist(hist)
-    thinkplot.Show(xlabel='weeks', ylabel='frequency')
+    thinkplot.Show(xlabel='pounds', ylabel='frequency')
 \end{verbatim}
 
 When the argument passed to Hist is a pandas Series, any
@@ -1840,7 +1836,6 @@ a particular point?
 move away from the modes?
 \index{tail}
 
-% TODO: push this to O'Reilly
 \item outliers: Are there extreme values far from the modes?
 \index{outlier}
 
@@ -2978,7 +2973,7 @@ corresponding value, {\tt x}; that is, the {\bf inverse CDF} of {\tt p}.
 \begin{figure}
 % cumulative.py
 \centerline{\includegraphics[height=2.5in]{figs/cumulative_prglngth_cdf.pdf}}
-\caption{CDF of birth weights.}
+\caption{CDF of pregnancy length.}
 \label{cumulative_prglngth_cdf}
 \end{figure}
 
@@ -8784,8 +8779,6 @@ agepreg                 0.00741 (0.0035)
 totincr                 0.0122  (0.00188)
 \end{verbatim}
 
-% TODO: get this correction into the version on Atlas
-
 The estimated parameters for race are larger than I expected,
 especially since we control for income.  The encoding
 is 1 for black, 2 for white, and 3 for other.  Babies of black
@@ -9175,8 +9168,6 @@ may not have predictive power on new data.
 Nevertheless, let's use the model to make a prediction for the office
 pool.  Suppose your friend is 35 years old and white,
 her husband is 39, and they are expecting their third child:
-
-% TODO: get this change into Atlas
 
 \begin{verbatim}
     columns = ['agepreg', 'hpagelb', 'birthord', 'race']
