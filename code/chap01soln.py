@@ -48,16 +48,14 @@ def ValidatePregnum(resp):
 
     # make the map from caseid to list of pregnancy indices
     preg_map = nsfg.MakePregMap(preg)
-    
-    # iterate through the preg_map
-    for caseid, indices in preg_map.items():
-        row = resp[resp.caseid==caseid]
-        pregnum = row.pregnum.values[0]
+
+    # iterate through respondent pregnum series
+    for i, caseid, pregnum in resp[["caseid", "pregnum"]].itertuples():
 
         # check that pregnum from the respondent file equals
         # the number of records in the pregnancy file
-        if len(indices) != pregnum:
-            print(caseid, len(indices), resp.pregnum[index])
+        if pregnum != len(preg_map[caseid]):
+            print(caseid, len(preg_map[caseid]), pregnum)
             return False
 
     return True
