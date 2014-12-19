@@ -57,7 +57,7 @@ def ValidatePregnum(resp):
         # check that pregnum from the respondent file equals
         # the number of records in the pregnancy file
         if len(indices) != pregnum:
-            print(caseid, len(indices), resp.pregnum[index])
+            print(caseid, len(indices), pregnum)
             return False
 
     return True
