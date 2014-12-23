@@ -66,12 +66,9 @@ def MakePregMap(df):
 
     df: DataFrame
 
-    returns: dict that maps from caseid to list of indices into preg df
+    returns: Series that maps from caseid to list of indices into preg df
     """
-    d = defaultdict(list)
-    for index, caseid in df.caseid.iteritems():
-        d[caseid].append(index)
-    return d
+    return df.groupby('caseid').apply(lambda x: list(x.index))
 
 
 def main(script):
