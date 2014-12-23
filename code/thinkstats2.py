@@ -2618,7 +2618,7 @@ def ReadStataDct(dct_file, **options):
 
     # fill in the end column by shifting the start column
     variables['end'] = variables.start.shift(-1)
-    variables['end'][len(variables)-1] = 0
+    variables.loc[len(variables)-1, 'end'] = 0
 
     dct = FixedWidthVariables(variables, index_base=1)
     return dct

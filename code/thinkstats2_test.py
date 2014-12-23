@@ -393,6 +393,12 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(thinkstats2.SpearmanCorr(t, -a), -1)
         self.assertAlmostEqual(thinkstats2.SpearmanCorr(t, t2), -0.1878787878)
         
+    def testReadStataDct(self):
+        dct = thinkstats2.ReadStataDct('2002FemPreg.dct')
+        self.assertEqual(len(dct.variables), 243)
+        self.assertEqual(len(dct.colspecs), 243)
+        self.assertEqual(len(dct.names), 243)
+        self.assertEqual(dct.colspecs[-1][1], -1)
 
 if __name__ == "__main__":
     unittest.main()
