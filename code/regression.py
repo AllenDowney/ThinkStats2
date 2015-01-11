@@ -90,7 +90,7 @@ def GoMining(df):
             if df[name].var() < 1e-7:
                 continue
 
-            formula='totalwgt_lb ~ agepreg + ' + name
+            formula=('totalwgt_lb ~ agepreg + ' + name).encode('ascii')  # encode needed to avoid 'PatsyError: model is missing required outcome variables', per https://readditing.com/r/pystats/comments/2cn0go
             model = smf.ols(formula, data=df)
             if model.nobs < len(df)/2:
                 continue
