@@ -55,7 +55,10 @@ plastex:
 	rm -rf /home/downey/thinkstats/trunk/book/.svn
 
 xxe:
-	~/Downloads/xxe-perso-4_8_0/bin/xxe book/book.xml
+	xmlcopyeditor ~/thinkstats/trunk/ThinkStats2/book/book/book.xml &
+
+lint:
+	xmllint -noout book/book.xml
 
 vector:
 	plastex --renderer=DocBook --theme=book --vector-imager=dvisvgm --filename=book.xml book.tex
@@ -67,10 +70,11 @@ sample:
 	plastex --renderer=DocBook --theme=book --image-resolution=300 --image-scale-factor=0.25 --filename=sample2e.xml sample2e.tex
 	~/Downloads/xxe-perso-4_8_0/bin/xxe sample2e/sample2e.xml
 
+FIGURES = figs/Correlation_examples.png
+
 oreilly:
-	rsync -a book/ ~/oreilly
-	rsync -a figs/* ~/oreilly/figs
-	cp thinkstats.pdf ~/oreilly/pdf
+	rsync -a book/book.xml ~/oreilly/1234000002166
+	rsync -a figs/*.pdf $(FIGURES) ~/oreilly/1234000002166/figs
 
 clean:
 	rm -f *~ *.aux *.log *.dvi *.idx *.ilg *.ind *.toc

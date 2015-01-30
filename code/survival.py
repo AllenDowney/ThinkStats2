@@ -542,6 +542,8 @@ def PlotResampledByDecade(resps, iters=11, predict_flag=False, omit=None):
             groups = [(name, group) for name, group in groups 
                       if name not in omit]
 
+        # TODO: refactor this to collect resampled estimates and
+        # plot shaded areas
         if i == 0:
             AddLabelsByDecade(groups, alpha=0.7)
 
