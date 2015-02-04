@@ -11,7 +11,7 @@ import thinkstats2
 import thinkplot
 
 
-def read_file(filename):
+def ReadFile(filename):
     """Reads a list of numbers from a file.
 
     filename: string
@@ -27,7 +27,7 @@ def read_file(filename):
 
 
 def main(script, filename='mystery0.dat'):
-    data = read_file(filename)
+    data = ReadFile(filename)
     cdf = thinkstats2.MakeCdfFromList(data)
 
     thinkplot.PrePlot(rows=2, cols=3)

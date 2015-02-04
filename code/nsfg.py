@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function
 
+from collections import defaultdict
 import numpy as np
 import sys
 import thinkstats2
@@ -66,9 +67,9 @@ def MakePregMap(df):
 
     returns: dict that maps from caseid to list of indices into preg df
     """
-    d = {}
+    d = defaultdict(list)
     for index, caseid in df.caseid.iteritems():
-        d.setdefault(caseid, []).append(index)
+        d[caseid].append(index)
     return d
 
 

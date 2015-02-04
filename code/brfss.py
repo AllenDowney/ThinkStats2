@@ -82,8 +82,8 @@ def ReadBrfss(filename='CDBRFS08.ASC.gz', compression='gzip', nrows=None):
     return df
 
 
-def MakeGaussianModel(weights):
-    """Plots a CDF with a Gaussian model.
+def MakeNormalModel(weights):
+    """Plots a CDF with a Normal model.
 
     weights: sequence
     """
@@ -96,7 +96,7 @@ def MakeGaussianModel(weights):
     xmin = mean - 4 * std
     xmax = mean + 4 * std
 
-    xs, ps = thinkstats2.RenderGaussianCdf(mean, std, xmin, xmax)
+    xs, ps = thinkstats2.RenderNormalCdf(mean, std, xmin, xmax)
     thinkplot.Plot(xs, ps, label='model', linewidth=4, color='0.8')
     thinkplot.Cdf(cdf)
 
@@ -124,11 +124,11 @@ def MakeFigures(df):
 
     # plot weights on linear and log scales
     thinkplot.PrePlot(cols=2)
-    MakeGaussianModel(weights)
+    MakeNormalModel(weights)
     thinkplot.Config(xlabel='adult weight (kg)', ylabel='CDF')
 
     thinkplot.SubPlot(2)
-    MakeGaussianModel(log_weights)
+    MakeNormalModel(log_weights)
     thinkplot.Config(xlabel='adult weight (log10 kg)')
 
     thinkplot.Save(root='brfss_weight')

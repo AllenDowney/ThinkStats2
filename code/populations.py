@@ -24,7 +24,8 @@ def ReadData(filename='PEP_2012_PEPANNRES_with_ann.csv'):
 
     returns: pandas Series of populations in thousands
     """
-    df = pandas.read_csv(filename, header=None, skiprows=2)
+    df = pandas.read_csv(filename, header=None, skiprows=2,
+                         encoding='iso-8859-1')
     populations = df[7]
     populations.replace(0, np.nan, inplace=True)
     return populations.dropna()
@@ -66,7 +67,7 @@ def MakeFigures():
     thinkplot.PrePlot(cols=2)
 
     mu, sigma = log_pops.mean(), log_pops.std()
-    xs, ps = thinkstats2.RenderGaussianCdf(mu, sigma, low=0, high=8)
+    xs, ps = thinkstats2.RenderNormalCdf(mu, sigma, low=0, high=8)
     thinkplot.Plot(xs, ps, label='model', color='0.8')
 
     thinkplot.Cdf(cdf_log) 

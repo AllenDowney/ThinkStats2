@@ -38,7 +38,7 @@ def ReadFemPreg(dct_file='2006_2010_FemPregSetup.dct',
 
     returns: DataFrame
     """
-    dct = thinkstats2.ReadStataDct(dct_file)
+    dct = thinkstats2.ReadStataDct(dct_file, encoding='iso-8859-1')
     df = dct.ReadFixedWidth(dat_file, compression='gzip')
     CleanFemPreg(df)
     return df

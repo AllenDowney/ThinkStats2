@@ -15,15 +15,15 @@ import thinkplot
 import thinkstats2
 
 
-def Summarize(values, actual=None):
+def Summarize(estimates, actual=None):
     """Prints standard error and 90% confidence interval.
 
-    values: sequence of estimates
+    estimates: sequence of estimates
     actual: float actual value
     """
-    mean = thinkstats2.Mean(values)
-    stderr = thinkstats2.Std(values, mu=actual)
-    cdf = thinkstats2.Cdf(values)
+    mean = thinkstats2.Mean(estimates)
+    stderr = thinkstats2.Std(estimates, mu=actual)
+    cdf = thinkstats2.Cdf(estimates)
     ci = cdf.ConfidenceInterval(90)
     print('mean, SE, CI', mean, stderr, ci)
 
@@ -58,32 +58,16 @@ def PlotConfidenceIntervals(xs, inters, slopes,
     res: residuals
     percent: what percentile range to show
     """
-    size = len(slopes), len(xs)
-    array = np.zeros(size)
-
-    for i, (inter, slope) in enumerate(zip(inters, slopes)):
+    fys_seq = []
+    for inter, slope in zip(inters, slopes):
         fxs, fys = thinkstats2.FitLine(xs, inter, slope)
         if res is not None:
             fys += np.random.permutation(res)
-        array[i,] = fys
-
-    array = np.sort(array, axis=0)
-
-    def Percentile(p):
-        """Selects the line from array that corresponds to percentile p.
-
-        p: float 0--100
-
-        returns: NumPy array (one row)
-        """
-        index = int(len(slopes) * p / 100)
-        return array[index,]
+        fys_seq.append(fys)
 
     p = (100 - percent) / 2
-    #low = thinkstats2.Smooth(Percentile(p))
-    #high = thinkstats2.Smooth(Percentile(100-p))
-    low = Percentile(p)
-    high = Percentile(100-p)
+    percents = p, 100 - p
+    low, high = thinkstats2.PercentileRows(fys_seq, percents)
     thinkplot.FillBetween(fxs, low, high, **options)
 
 
@@ -115,7 +99,8 @@ def PlotSamplingDistributions(live):
 
     thinkplot.Save(root='linear3',
                    xlabel='age (years)',
-                   ylabel='birth weight (lbs)')
+                   ylabel='birth weight (lbs)',
+                   legend=False)
 
     # plot the confidence intervals
     thinkplot.PrePlot(2)
@@ -241,7 +226,7 @@ def ResampleRowsWeighted(df, attr='finalwgt'):
     returns: DataFrame
     """
     weights = df[attr]
-    cdf = thinkstats2.Pmf(weights.iteritems()).MakeCdf()
+    cdf = thinkstats2.Pmf(weights).MakeCdf()
     indices = cdf.Sample(len(weights))
     sample = df.loc[indices]
     return sample

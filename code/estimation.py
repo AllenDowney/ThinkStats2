@@ -14,8 +14,6 @@ import math
 import random
 import numpy as np
 
-from scipy import stats
-
 
 def MeanError(estimates, actual):
     """Computes the mean error of a sequence of estimates.
@@ -43,13 +41,18 @@ def RMSE(estimates, actual):
 
 
 def Estimate1(n=7, m=1000):
+    """Evaluates RMSE of sample mean and median as estimators.
+
+    n: sample size
+    m: number of iterations
+    """
     mu = 0
     sigma = 1
 
     means = []
     medians = []
     for _ in range(m):
-        xs = [random.gauss(mu, sigma) for i in range(n)]
+        xs = [random.gauss(mu, sigma) for _ in range(n)]
         xbar = np.mean(xs)
         median = np.median(xs)
         means.append(xbar)
@@ -61,13 +64,18 @@ def Estimate1(n=7, m=1000):
 
 
 def Estimate2(n=7, m=1000):
+    """Evaluates S and Sn-1 as estimators of sample variance.
+
+    n: sample size
+    m: number of iterations
+    """
     mu = 0
     sigma = 1
 
     estimates1 = []
     estimates2 = []
     for _ in range(m):
-        xs = [random.gauss(mu, sigma) for i in range(n)]
+        xs = [random.gauss(mu, sigma) for _ in range(n)]
         biased = np.var(xs)
         unbiased = np.var(xs, ddof=1)
         estimates1.append(biased)
@@ -79,6 +87,11 @@ def Estimate2(n=7, m=1000):
 
 
 def Estimate3(n=7, m=1000):
+    """Evaluates L and Lm as estimators of the exponential parameter.
+
+    n: sample size
+    m: number of iterations
+    """
     lam = 2
 
     means = []
@@ -98,11 +111,18 @@ def Estimate3(n=7, m=1000):
 
 
 def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
+    """Plots the sampling distribution of the sample mean.
+
+    mu: hypothetical population mean
+    sigma: hypothetical population standard deviation
+    n: sample size
+    m: number of iterations
+    """
     def VertLine(x, y=1):
         thinkplot.Plot([x, x], [0, y], color='0.8', linewidth=3)
 
     means = []
-    for j in range(m):
+    for _ in range(m):
         xs = np.random.normal(mu, sigma, n)
         xbar = np.mean(xs)
         means.append(xbar)

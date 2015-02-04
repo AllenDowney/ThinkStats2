@@ -1,17 +1,19 @@
 """This file contains code for use with "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
-Copyright 2010 Allen B. Downey
+Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
 
-import logging
 import math
 import matplotlib
 import matplotlib.pyplot as pyplot
 import numpy as np
+import pandas
+
+import warnings
 
 # customize some matplotlib attributes
 #matplotlib.rc('figure', figsize=(4, 3))
@@ -27,7 +29,7 @@ import numpy as np
 #matplotlib.rc('ytick.minor', size=3.0)
 
 
-class Brewer(object):
+class _Brewer(object):
     """Encapsulates a nice sequence of colors.
 
     Shades of blue that look good in color and can be distinguished
@@ -72,7 +74,7 @@ class Brewer(object):
         """
         for i in cls.which_colors[n]:
             yield cls.colors[i]
-        raise StopIteration('Ran out of colors in Brewer.ColorGenerator')
+        raise StopIteration('Ran out of colors in _Brewer.ColorGenerator')
 
     @classmethod
     def InitializeIter(cls, num):
@@ -93,19 +95,32 @@ class Brewer(object):
         return cls.color_iter
 
 
-def PrePlot(num=None, rows=1, cols=1, plot=1):
+def PrePlot(num=None, rows=None, cols=None):
     """Takes hints about what's coming.
 
     num: number of lines that will be plotted
+    rows: number of rows of subplots
+    cols: number of columns of subplots
     """
     if num:
-        Brewer.InitializeIter(num)
+        _Brewer.InitializeIter(num)
+
+    if rows is None and cols is None:
+        return
+
+    if rows is not None and cols is None:
+        cols = 1
+
+    if cols is not None and rows is None:
+        rows = 1
 
     # resize the image, depending on the number of rows and cols
     size_map = {(1, 1): (8, 6),
                 (1, 2): (14, 6),
+                (1, 3): (14, 6),
                 (2, 2): (10, 10),
-                (2, 3): (10, 14),
+                (2, 3): (16, 10),
+                (3, 1): (8, 10),
                 }
 
     if (rows, cols) in size_map:
@@ -114,7 +129,7 @@ def PrePlot(num=None, rows=1, cols=1, plot=1):
 
     # create the first subplot
     if rows > 1 or cols > 1:
-        pyplot.subplot(rows, cols, plot)
+        pyplot.subplot(rows, cols, 1)
         global SUBPLOT_ROWS, SUBPLOT_COLS
         SUBPLOT_ROWS = rows
         SUBPLOT_COLS = cols
@@ -132,27 +147,7 @@ def SubPlot(plot_number, rows=None, cols=None):
     pyplot.subplot(rows, cols, plot_number)
 
 
-class InfiniteList(list):
-    """A list that returns the same value for all indices."""
-    def __init__(self, val):
-        """Initializes the list.
-
-        val: value to be stored
-        """
-        list.__init__(self)
-        self.val = val
-
-    def __getitem__(self, index):
-        """Gets the item with the given index.
-
-        index: int
-
-        returns: the stored value
-        """
-        return self.val
-
-
-def Underride(d, **options):
+def _Underride(d, **options):
     """Add key-value pairs to d only if key is not in d.
 
     If d is None, create a new dictionary.
@@ -171,7 +166,9 @@ def Underride(d, **options):
 
 def Clf():
     """Clears the figure and any hints that have been set."""
-    Brewer.ClearIter()
+    global LOC
+    LOC = None
+    _Brewer.ClearIter()
     pyplot.clf()
     fig = pyplot.gcf()
     fig.set_size_inches(8, 6)
@@ -179,37 +176,51 @@ def Clf():
 
 def Figure(**options):
     """Sets options for the current figure."""
-    Underride(options, figsize=(6, 8))
+    _Underride(options, figsize=(6, 8))
     pyplot.figure(**options)
 
 
-def UnderrideColor(options):
+def _UnderrideColor(options):
     if 'color' in options:
         return options
 
-    color_iter = Brewer.GetIter()
+    color_iter = _Brewer.GetIter()
 
     if color_iter:
         try:
             options['color'] = next(color_iter)
         except StopIteration:
-            print('Warning: Brewer ran out of colors.')
-            Brewer.ClearIter()
+            # TODO: reconsider whether this should warn
+            # warnings.warn('Warning: Brewer ran out of colors.')
+            _Brewer.ClearIter()
     return options
 
 
-def Plot(xs, ys, style='', **options):
+def Plot(obj, ys=None, style='', **options):
     """Plots a line.
 
     Args:
-      xs: sequence of x values
+      obj: sequence of x values, or Series, or anything with Render()
       ys: sequence of y values
       style: style string passed along to pyplot.plot
       options: keyword args passed to pyplot.plot
     """
-    options = UnderrideColor(options)
-    options = Underride(options, linewidth=3, alpha=0.8)
-    pyplot.plot(xs, ys, style, **options)
+    options = _UnderrideColor(options)
+    label = getattr(obj, 'label', '_nolegend_')
+    options = _Underride(options, linewidth=3, alpha=0.8, label=label)
+
+    xs = obj
+    if ys is None:
+        if hasattr(obj, 'Render'):
+            xs, ys = obj.Render()
+        if isinstance(obj, pandas.Series):
+            ys = obj.values
+            xs = obj.index
+
+    if ys is None:
+        pyplot.plot(xs, style, **options)
+    else:
+        pyplot.plot(xs, ys, style, **options)
 
 
 def FillBetween(xs, y1, y2=None, where=None, **options):
@@ -222,8 +233,8 @@ def FillBetween(xs, y1, y2=None, where=None, **options):
       where: sequence of boolean
       options: keyword args passed to pyplot.fill_between
     """
-    options = UnderrideColor(options)
-    options = Underride(options, linewidth=0, alpha=0.6)
+    options = _UnderrideColor(options)
+    options = _Underride(options, linewidth=0, alpha=0.5)
     pyplot.fill_between(xs, y1, y2, where, **options)
 
 
@@ -235,20 +246,25 @@ def Bar(xs, ys, **options):
       ys: sequence of y values
       options: keyword args passed to pyplot.bar
     """
-    options = UnderrideColor(options)
-    options = Underride(options, linewidth=0, alpha=0.6)
+    options = _UnderrideColor(options)
+    options = _Underride(options, linewidth=0, alpha=0.6)
     pyplot.bar(xs, ys, **options)
 
 
-def Scatter(xs, ys, **options):
+def Scatter(xs, ys=None, **options):
     """Makes a scatter plot.
 
     xs: x values
     ys: y values
     options: options passed to pyplot.scatter
     """
-    options = Underride(options, color='blue', alpha=0.2, 
+    options = _Underride(options, color='blue', alpha=0.2, 
                         s=30, edgecolors='none')
+
+    if ys is None and isinstance(xs, pandas.Series):
+        ys = xs.values
+        xs = xs.index
+
     pyplot.scatter(xs, ys, **options)
 
 
@@ -259,7 +275,7 @@ def HexBin(xs, ys, **options):
     ys: y values
     options: options passed to pyplot.scatter
     """
-    options = Underride(options, cmap=matplotlib.cm.Blues)
+    options = _Underride(options, cmap=matplotlib.cm.Blues)
     pyplot.hexbin(xs, ys, **options)
 
 
@@ -273,8 +289,7 @@ def Pdf(pdf, **options):
     low, high = options.pop('low', None), options.pop('high', None)
     n = options.pop('n', 101)
     xs, ps = pdf.Render(low=low, high=high, n=n)
-    if pdf.label:
-        options = Underride(options, label=pdf.label)
+    options = _Underride(options, label=pdf.label)
     Plot(xs, ps, **options)
 
 
@@ -311,15 +326,13 @@ def Hist(hist, **options):
         try:
             options['width'] = 0.9 * np.diff(xs).min()
         except TypeError:
-            logging.warning("Hist: Can't compute bar width automatically."
+            warnings.warn("Hist: Can't compute bar width automatically."
                             "Check for non-numeric types in Hist."
                             "Or try providing width option."
                             )
 
-    if hist.label:
-        options = Underride(options, label=hist.label)
-
-    options = Underride(options, align='center')
+    options = _Underride(options, label=hist.label)
+    options = _Underride(options, align='center')
     if options['align'] == 'left':
         options['align'] = 'edge'
     elif options['align'] == 'right':
@@ -357,13 +370,10 @@ def Pmf(pmf, **options):
     if width is None:
         try:
             width = np.diff(xs).min()
-            if width < 0.1:
-                logging.warning("Pmf: width is very small; "
-                                "Pmf may not be visible.")
         except TypeError:
-            logging.warning("Pmf: Can't compute bar width automatically."
-                            "Check for non-numeric types in Pmf."
-                            "Or try providing width option.")
+            warnings.warn("Pmf: Can't compute bar width automatically."
+                          "Check for non-numeric types in Pmf."
+                          "Or try providing width option.")
     points = []
 
     lastx = np.nan
@@ -380,10 +390,6 @@ def Pmf(pmf, **options):
         lastx = x + width
         lasty = y
     points.append((lastx, 0))
-
-    if pmf.label:
-        options = Underride(options, label=pmf.label)
-
     pxs, pys = zip(*points)
 
     align = options.pop('align', 'center')
@@ -392,6 +398,7 @@ def Pmf(pmf, **options):
     if align == 'right':
         pxs = np.array(pxs) - width
 
+    options = _Underride(options, label=pmf.label)
     Plot(pxs, pys, **options)
 
 
@@ -470,9 +477,7 @@ def Cdf(cdf, complement=False, transform=None, **options):
         ps = [-math.log(p) for p in ps]
         scale['yscale'] = 'log'
 
-    if cdf.label:
-        options = Underride(options, label=cdf.label)
-
+    options = _Underride(options, label=cdf.label)
     Plot(xs, ps, **options)
     return scale
 
@@ -503,9 +508,9 @@ def Contour(obj, pcolor=False, contour=True, imshow=False, **options):
     except AttributeError:
         d = obj
 
-    Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
+    _Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
-    xs, ys = zip(*d.iterkeys())
+    xs, ys = zip(*d.keys())
     xs = sorted(set(xs))
     ys = sorted(set(ys))
 
@@ -538,7 +543,7 @@ def Pcolor(xs, ys, zs, pcolor=True, contour=False, **options):
     contour: boolean, whether to make a contour plot
     options: keyword args passed to pyplot.pcolor and/or pyplot.contour
     """
-    Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
+    _Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
     X, Y = np.meshgrid(xs, ys)
     Z = zs
@@ -563,10 +568,15 @@ def Text(x, y, s, **options):
     s: string
     options: keyword args passed to pyplot.text
     """
-    options = Underride(options, verticalalignment='top',
-                        horizontalalignment='left')
+    options = _Underride(options,
+                         fontsize=16,
+                         verticalalignment='top',
+                         horizontalalignment='left')
     pyplot.text(x, y, s, **options)
 
+
+LEGEND = True
+LOC = None
 
 def Config(**options):
     """Configures the plot.
@@ -594,12 +604,13 @@ def Config(**options):
                 'center': 10,
                 }
 
-    loc = options.get('loc', 0)
-    #loc = loc_dict.get(loc, loc)
+    global LEGEND
+    LEGEND = options.get('legend', LEGEND)
 
-    legend = options.get('legend', True)
-    if legend:
-        pyplot.legend(loc=loc)
+    if LEGEND:
+        global LOC
+        LOC = options.get('loc', LOC)
+        pyplot.legend(loc=LOC)
 
 
 def Show(**options):
@@ -609,13 +620,31 @@ def Show(**options):
 
     options: keyword args used to invoke various pyplot functions
     """
+    clf = options.pop('clf', True)
     Config(**options)
     pyplot.show()
-    Clf()
+    if clf:
+        Clf()
+
+
+def Plotly(**options):
+    """Shows the plot.
+
+    For options, see Config.
+
+    options: keyword args used to invoke various pyplot functions
+    """
+    clf = options.pop('clf', True)
+    Config(**options)
+    import plotly.plotly as plotly
+    url = plotly.plot_mpl(pyplot.gcf())
+    if clf:
+        Clf()
+    return url
 
 
 def Save(root=None, formats=None, **options):
-    """Saves the plot in the given formats.
+    """Saves the plot in the given formats and clears the figure.
 
     For options, see Config.
 
@@ -624,15 +653,23 @@ def Save(root=None, formats=None, **options):
       formats: list of string formats
       options: keyword args used to invoke various pyplot functions
     """
+    clf = options.pop('clf', True)
     Config(**options)
 
     if formats is None:
         formats = ['pdf', 'eps']
 
+    try:
+        formats.remove('plotly')
+        Plotly(clf=False)
+    except ValueError:
+        pass
+
     if root:
         for fmt in formats:
             SaveFormat(root, fmt)
-    Clf()
+    if clf:
+        Clf()
 
 
 def SaveFormat(root, fmt='eps'):
@@ -653,6 +690,7 @@ subplot = SubPlot
 clf = Clf
 figure = Figure
 plot = Plot
+text = Text
 scatter = Scatter
 pmf = Pmf
 pmfs = Pmfs
@@ -669,7 +707,7 @@ save = Save
 
 
 def main():
-    color_iter = Brewer.ColorGenerator(7)
+    color_iter = _Brewer.ColorGenerator(7)
     for color in color_iter:
         print(color)
 

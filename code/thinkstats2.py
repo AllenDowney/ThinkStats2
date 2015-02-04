@@ -1,5 +1,5 @@
-"""This file contains code for use with "Think Bayes",
-by Allen B. Downey, available from greenteapress.com
+"""This file contains code for use with "Think Stats" and
+"Think Bayes", both by Allen B. Downey, available from greenteapress.com
 
 Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
@@ -36,9 +36,12 @@ import thinkplot
 import numpy as np
 import pandas
 
-import scipy.stats
-import scipy.special
-import scipy.ndimage
+import scipy
+from scipy import stats
+from scipy import special
+from scipy import ndimage
+
+from io import open
 
 ROOT2 = math.sqrt(2)
 
@@ -126,12 +129,13 @@ class Interpolator(object):
 class _DictWrapper(object):
     """An object that contains a dictionary."""
 
-    def __init__(self, obj=None, label='', name=''):
+    def __init__(self, obj=None, label=None):
         """Initializes the distribution.
 
-        hypos: sequence of hypotheses
+        obj: Hist, Pmf, Cdf, Pdf, dict, pandas Series, list of pairs
+        label: string label
         """
-        self.label = label or name
+        self.label = label if label is not None else '_nolegend_'
         self.d = {}
 
         # flag whether the distribution is under a log transform
@@ -141,8 +145,7 @@ class _DictWrapper(object):
             return
 
         if isinstance(obj, (_DictWrapper, Cdf, Pdf)):
-            if not label:
-                self.label = obj.label
+            self.label = label if label is not None else obj.label
 
         if isinstance(obj, dict):
             self.d.update(obj.items())
@@ -151,19 +154,20 @@ class _DictWrapper(object):
         elif isinstance(obj, pandas.Series):
             self.d.update(obj.value_counts().iteritems())
         else:
-            try:
-                # see if it's a list of pairs
-                self.d.update(obj)
-            except (ValueError, TypeError):
-                # finally, treat it like a list
-                self.d.update(Counter(obj))
-            
+            # finally, treat it like a list
+            self.d.update(Counter(obj))
+
         if len(self) > 0 and isinstance(self, Pmf):
             self.Normalize()
+
+    def __hash__(self):
+        return id(self)
 
     def __str__(self):
         cls = self.__class__.__name__
         return '%s(%s)' % (cls, str(self.d))
+
+    __repr__ = __str__
 
     def __eq__(self, other):
         return self.d == other.d
@@ -292,6 +296,7 @@ class _DictWrapper(object):
 
     def MakeCdf(self, label=None):
         """Makes a Cdf."""
+        label = label if label is not None else self.label
         return Cdf(self, label=label)
 
     def Print(self):
@@ -338,7 +343,7 @@ class _DictWrapper(object):
 
     def Total(self):
         """Returns the total of the frequencies/probabilities in the map."""
-        total = np.sum(self.d.values())
+        total = sum(self.d.values())
         return total
 
     def MaxLike(self):
@@ -429,7 +434,7 @@ class Pmf(_DictWrapper):
         """
         p = percentage / 100.0
         total = 0
-        for val, prob in self.Items():
+        for val, prob in sorted(self.Items()):
             total += prob
             if total >= p:
                 return val
@@ -441,8 +446,11 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        t = [prob for (val, prob) in self.d.items() if val > x]
-        return sum(t)
+        if isinstance(x, _DictWrapper):
+            return PmfProbGreater(self, x)
+        else:
+            t = [prob for (val, prob) in self.d.items() if val > x]
+            return sum(t)
 
     def ProbLess(self, x):
         """Probability that a sample from this Pmf is less than x.
@@ -451,8 +459,11 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        t = [prob for (val, prob) in self.d.items() if val < x]
-        return sum(t)
+        if isinstance(x, _DictWrapper):
+            return PmfProbLess(self, x)
+        else:
+            t = [prob for (val, prob) in self.d.items() if val < x]
+            return sum(t)
 
     def __lt__(self, obj):
         """Less than.
@@ -461,10 +472,7 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        if isinstance(obj, _DictWrapper):
-            return PmfProbLess(self, obj)
-        else:
-            return self.ProbLess(obj)
+        return self.ProbLess(obj)
 
     def __gt__(self, obj):
         """Greater than.
@@ -473,10 +481,7 @@ class Pmf(_DictWrapper):
 
         returns: float probability
         """
-        if isinstance(obj, _DictWrapper):
-            return PmfProbGreater(self, obj)
-        else:
-            return self.ProbGreater(obj)
+        return self.ProbGreater(obj)
 
     def __ge__(self, obj):
         """Greater than or equal.
@@ -565,6 +570,17 @@ class Pmf(_DictWrapper):
             var += p * (x - mu) ** 2
         return var
 
+    def Std(self, mu=None):
+        """Computes the standard deviation of a PMF.
+
+        mu: the point around which the variance is computed;
+                if omitted, computes the mean
+
+        returns: float standard deviation
+        """
+        var = self.Var(mu)
+        return math.sqrt(var)
+
     def MaximumLikelihood(self):
         """Returns the value with the highest probability.
 
@@ -649,6 +665,70 @@ class Pmf(_DictWrapper):
                 pmf.Incr(v1 - v2, p1 * p2)
         return pmf
 
+    def __mul__(self, other):
+        """Computes the Pmf of the product of values drawn from self and other.
+
+        other: another Pmf
+
+        returns: new Pmf
+        """
+        try:
+            return self.MulPmf(other)
+        except AttributeError:
+            return self.MulConstant(other)
+
+    def MulPmf(self, other):
+        """Computes the Pmf of the diff of values drawn from self and other.
+
+        other: another Pmf
+
+        returns: new Pmf
+        """
+        pmf = Pmf()
+        for v1, p1 in self.Items():
+            for v2, p2 in other.Items():
+                pmf.Incr(v1 * v2, p1 * p2)
+        return pmf
+
+    def MulConstant(self, other):
+        """Computes the Pmf of the product of a constant and values from self.
+
+        other: a number
+
+        returns: new Pmf
+        """
+        pmf = Pmf()
+        for v1, p1 in self.Items():
+            pmf.Set(v1 * other, p1)
+        return pmf
+
+    def __div__(self, other):
+        """Computes the Pmf of the ratio of values drawn from self and other.
+
+        other: another Pmf
+
+        returns: new Pmf
+        """
+        try:
+            return self.DivPmf(other)
+        except AttributeError:
+            return self.MulConstant(1/other)
+
+    __truediv__ = __div__
+
+    def DivPmf(self, other):
+        """Computes the Pmf of the ratio of values drawn from self and other.
+
+        other: another Pmf
+
+        returns: new Pmf
+        """
+        pmf = Pmf()
+        for v1, p1 in self.Items():
+            for v2, p2 in other.Items():
+                pmf.Incr(v1 / v2, p1 * p2)
+        return pmf
+
     def Max(self, k):
         """Computes the CDF of the maximum of k selections from this dist.
 
@@ -657,8 +737,7 @@ class Pmf(_DictWrapper):
         returns: new Cdf
         """
         cdf = self.MakeCdf()
-        cdf.ps = [p ** k for p in cdf.ps]
-        return cdf
+        return cdf.Max(k)
 
 
 class Joint(Pmf):
@@ -667,7 +746,7 @@ class Joint(Pmf):
     The values are sequences (usually tuples)
     """
 
-    def Marginal(self, i, label=''):
+    def Marginal(self, i, label=None):
         """Gets the marginal distribution of the indicated variable.
 
         i: index of the variable we want
@@ -679,7 +758,7 @@ class Joint(Pmf):
             pmf.Incr(vs[i], prob)
         return pmf
 
-    def Conditional(self, i, j, val, label=''):
+    def Conditional(self, i, j, val, label=None):
         """Gets the conditional distribution of the indicated variable.
 
         Distribution of vs[i], conditioned on vs[j] = val.
@@ -743,7 +822,7 @@ def MakeJoint(pmf1, pmf2):
     return joint
 
 
-def MakeHistFromList(t, label=''):
+def MakeHistFromList(t, label=None):
     """Makes a histogram from an unsorted sequence of values.
 
     Args:
@@ -756,7 +835,7 @@ def MakeHistFromList(t, label=''):
     return Hist(t, label=label)
 
 
-def MakeHistFromDict(d, label=''):
+def MakeHistFromDict(d, label=None):
     """Makes a histogram from a map from values to frequencies.
 
     Args:
@@ -769,7 +848,7 @@ def MakeHistFromDict(d, label=''):
     return Hist(d, label)
 
 
-def MakePmfFromList(t, label=''):
+def MakePmfFromList(t, label=None):
     """Makes a PMF from an unsorted sequence of values.
 
     Args:
@@ -782,7 +861,7 @@ def MakePmfFromList(t, label=''):
     return Pmf(t, label=label)
 
 
-def MakePmfFromDict(d, label=''):
+def MakePmfFromDict(d, label=None):
     """Makes a PMF from a map from values to probabilities.
 
     Args:
@@ -795,7 +874,7 @@ def MakePmfFromDict(d, label=''):
     return Pmf(d, label=label)
 
 
-def MakePmfFromItems(t, label=''):
+def MakePmfFromItems(t, label=None):
     """Makes a PMF from a sequence of value-probability pairs
 
     Args:
@@ -805,7 +884,7 @@ def MakePmfFromItems(t, label=''):
     Returns:
         Pmf object
     """
-    return Pmf(t, label=label)
+    return Pmf(dict(t), label=label)
 
 
 def MakePmfFromHist(hist, label=None):
@@ -862,27 +941,39 @@ class Cdf(object):
         ps: sequence of probabilities
         label: string used as a graph label.
     """
-    def __init__(self, obj=None, ps=None, label=''):
-        self.label = label
+    def __init__(self, obj=None, ps=None, label=None):
+        """Initializes.
+        
+        If ps is provided, obj must be the corresponding list of values.
+
+        obj: Hist, Pmf, Cdf, Pdf, dict, pandas Series, list of pairs
+        ps: list of cumulative probabilities
+        label: string label
+        """
+        self.label = label if label is not None else '_nolegend_'
 
         if isinstance(obj, (_DictWrapper, Cdf, Pdf)):
             if not label:
-                self.label = obj.label
+                self.label = label if label is not None else obj.label
 
         if obj is None:
-            self.xs = []
-            self.ps = []
+            # caller does not provide obj, make an empty Cdf
+            self.xs = np.asarray([])
+            self.ps = np.asarray([])
             if ps is not None:
                 logging.warning("Cdf: can't pass ps without also passing xs.")
             return
         else:
-            # if the caller provides xs and ps, we're done            
+            # if the caller provides xs and ps, just store them          
             if ps is not None:
-                self.xs = obj
-                self.ps = ps
+                if isinstance(ps, str):
+                    logging.warning("Cdf: ps can't be a string")
+
+                self.xs = np.asarray(obj)
+                self.ps = np.asarray(ps)
                 return
 
-        # caller has provided a single value
+        # caller has provided just obj, not ps
         if isinstance(obj, Cdf):
             self.xs = copy.copy(obj.xs)
             self.ps = copy.copy(obj.ps)
@@ -893,12 +984,20 @@ class Cdf(object):
         else:
             dw = Hist(obj)
 
-        self.xs, freqs = zip(*sorted(dw.Items()))
+        if len(dw) == 0:
+            self.xs = np.asarray([])
+            self.ps = np.asarray([])
+            return
+
+        xs, freqs = zip(*sorted(dw.Items()))
+        self.xs = np.asarray(xs)
         self.ps = np.cumsum(freqs, dtype=np.float)
         self.ps /= self.ps[-1]
 
     def __str__(self):
         return 'Cdf(%s, %s)' % (str(self.xs), str(self.ps))
+
+    __repr__ = __str__
 
     def __len__(self):
         return len(self.xs)
@@ -913,7 +1012,7 @@ class Cdf(object):
         raise UnimplementedMethodException()
 
     def __eq__(self, other):
-        return (self.xs == other.xs) and (self.ps == other.ps)
+        return np.all(self.xs == other.xs) and np.all(self.ps == other.ps)
 
     def Copy(self, label=None):
         """Returns a copy of this Cdf.
@@ -922,13 +1021,12 @@ class Cdf(object):
         """
         if label is None:
             label = self.label
-        return Cdf(list(self.xs), list(self.ps), label)
+        return Cdf(list(self.xs), list(self.ps), label=label)
 
     def MakePmf(self, label=None):
         """Makes a Pmf."""
         if label is None:
             label = self.label
-
         return Pmf(self, label=label)
 
     def Values(self):
@@ -952,7 +1050,8 @@ class Cdf(object):
         term: how much to add
         """
         new = self.Copy()
-        new.xs = [x + term for x in self.xs]
+        # don't use +=, or else an int array + float yields int array
+        new.xs = new.xs + term
         return new
 
     def Scale(self, factor):
@@ -961,7 +1060,8 @@ class Cdf(object):
         factor: what to multiply by
         """
         new = self.Copy()
-        new.xs = [x * factor for x in self.xs]
+        # don't use *=, or else an int array * float yields int array
+        new.xs = new.xs * factor
         return new
 
     def Prob(self, x):
@@ -980,8 +1080,19 @@ class Cdf(object):
         return p
 
     def Probs(self, xs):
-        """Gets probabilities for a sequence of values."""
-        return [self.Prob(x) for x in xs]
+        """Gets probabilities for a sequence of values.
+
+        xs: any sequence that can be converted to NumPy array
+
+        returns: NumPy array of cumulative probabilities
+        """
+        xs = np.asarray(xs)
+        index = np.searchsorted(self.xs, xs, side='right')
+        ps = self.ps[index-1]
+        ps[xs < self.xs[0]] = 0.0
+        return ps
+
+    ProbArray = Probs
 
     def Value(self, p):
         """Returns InverseCDF(p), the value that corresponds to probability p.
@@ -996,6 +1107,22 @@ class Cdf(object):
             raise ValueError('Probability p must be in range [0, 1]')
 
         index = bisect.bisect_left(self.ps, p)
+        return self.xs[index]
+
+    def ValueArray(self, ps):
+        """Returns InverseCDF(p), the value that corresponds to probability p.
+
+        Args:
+            ps: NumPy array of numbers in the range [0, 1]
+
+        Returns:
+            NumPy array of values
+        """
+        ps = np.asarray(ps)
+        if np.any(ps < 0) or np.any(ps > 1):
+            raise ValueError('Probability p must be in range [0, 1]')
+
+        index = np.searchsorted(self.ps, ps, side='left')
         return self.xs[index]
 
     def Percentile(self, p):
@@ -1025,10 +1152,11 @@ class Cdf(object):
     def Sample(self, n):
         """Generates a random sample from this distribution.
         
-        Args:
-            n: int length of the sample
+        n: int length of the sample
+        returns: NumPy array
         """
-        return [self.Random() for _ in range(n)]
+        ps = np.random.random(n)
+        return self.ValueArray(ps)
 
     def Mean(self):
         """Computes the mean of a CDF.
@@ -1103,11 +1231,11 @@ class Cdf(object):
         returns: new Cdf
         """
         cdf = self.Copy()
-        cdf.ps = [p ** k for p in cdf.ps]
+        cdf.ps **= k
         return cdf
 
 
-def MakeCdfFromItems(items, label=''):
+def MakeCdfFromItems(items, label=None):
     """Makes a cdf from an unsorted sequence of (value, frequency) pairs.
 
     Args:
@@ -1117,10 +1245,10 @@ def MakeCdfFromItems(items, label=''):
     Returns:
         cdf: list of (value, fraction) pairs
     """
-    return Cdf(items, label=label)
+    return Cdf(dict(items), label=label)
 
 
-def MakeCdfFromDict(d, label=''):
+def MakeCdfFromDict(d, label=None):
     """Makes a CDF from a dictionary that maps values to frequencies.
 
     Args:
@@ -1133,7 +1261,7 @@ def MakeCdfFromDict(d, label=''):
     return Cdf(d, label=label)
 
 
-def MakeCdfFromList(seq, label=''):
+def MakeCdfFromList(seq, label=None):
     """Creates a CDF from an unsorted sequence.
 
     Args:
@@ -1146,7 +1274,7 @@ def MakeCdfFromList(seq, label=''):
     return Cdf(seq, label=label)
 
 
-def MakeCdfFromHist(hist, label=''):
+def MakeCdfFromHist(hist, label=None):
     """Makes a CDF from a Hist object.
 
     Args:
@@ -1282,7 +1410,7 @@ class Suite(Pmf):
             self.Set(hypo, Probability(odds))
 
 
-def MakeSuiteFromList(t, label=''):
+def MakeSuiteFromList(t, label=None):
     """Makes a suite from an unsorted sequence of values.
 
     Args:
@@ -1315,7 +1443,7 @@ def MakeSuiteFromHist(hist, label=None):
     return MakeSuiteFromDict(d, label)
 
 
-def MakeSuiteFromDict(d, label=''):
+def MakeSuiteFromDict(d, label=None):
     """Makes a suite from a map from values to probabilities.
 
     Args:
@@ -1337,7 +1465,7 @@ class Pdf(object):
     def Density(self, x):
         """Evaluates this Pdf at x.
 
-        Returns: float probability density
+        Returns: float or NumPy array of probability density
         """
         raise UnimplementedMethodException()
 
@@ -1362,8 +1490,8 @@ class Pdf(object):
         Returns: new Pmf
         """
         label = options.pop('label', '')
-        xs, ps = self.Render(**options)
-        return Pmf(zip(xs, ps), label=label)
+        xs, ds = self.Render(**options)
+        return Pmf(dict(zip(xs, ds)), label=label)
 
     def Render(self, **options):
         """Generates a sequence of points suitable for plotting.
@@ -1376,10 +1504,12 @@ class Pdf(object):
             n = options.pop('n', 101)
             xs = np.linspace(low, high, n)
         else:
-            xs = self.GetLinspace()
+            xs = options.pop('xs', None)
+            if xs is None:
+                xs = self.GetLinspace()
             
-        ys = self.Density(xs)
-        return xs, ys
+        ds = self.Density(xs)
+        return xs, ds
 
     def Items(self):
         """Generates a sequence of (value, probability) pairs.
@@ -1387,11 +1517,11 @@ class Pdf(object):
         return zip(*self.Render())
 
 
-class GaussianPdf(Pdf):
-    """Represents the PDF of a Gaussian distribution."""
+class NormalPdf(Pdf):
+    """Represents the PDF of a Normal distribution."""
 
-    def __init__(self, mu=0, sigma=1, label=''):
-        """Constructs a Gaussian Pdf with given mu and sigma.
+    def __init__(self, mu=0, sigma=1, label=None):
+        """Constructs a Normal Pdf with given mu and sigma.
 
         mu: mean
         sigma: standard deviation
@@ -1399,10 +1529,10 @@ class GaussianPdf(Pdf):
         """
         self.mu = mu
         self.sigma = sigma
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
 
     def __str__(self):
-        return 'GaussianPdf(%f, %f)' % (self.mu, self.sigma)
+        return 'NormalPdf(%f, %f)' % (self.mu, self.sigma)
 
     def GetLinspace(self):
         """Get a linspace for plotting.
@@ -1417,22 +1547,22 @@ class GaussianPdf(Pdf):
 
         xs: scalar or sequence of floats
 
-        Returns: float probability density
+        returns: float or NumPy array of probability density
         """
-        return scipy.stats.norm.pdf(xs, self.mu, self.sigma)
+        return stats.norm.pdf(xs, self.mu, self.sigma)
 
 
 class ExponentialPdf(Pdf):
     """Represents the PDF of an exponential distribution."""
 
-    def __init__(self, lam=1, label=''):
+    def __init__(self, lam=1, label=None):
         """Constructs an exponential Pdf with given parameter.
 
         lam: rate parameter
         label: string
         """
         self.lam = lam
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
 
     def __str__(self):
         return 'ExponentialPdf(%f)' % (self.lam)
@@ -1450,22 +1580,22 @@ class ExponentialPdf(Pdf):
 
         xs: scalar or sequence of floats
 
-        Returns: float probability density
+        returns: float or NumPy array of probability density
         """
-        return scipy.stats.expon.pdf(xs, scale=1.0/self.lam)
+        return stats.expon.pdf(xs, scale=1.0/self.lam)
 
 
 class EstimatedPdf(Pdf):
     """Represents a PDF estimated by KDE."""
 
-    def __init__(self, sample, label=''):
+    def __init__(self, sample, label=None):
         """Estimates the density function based on a sample.
 
         sample: sequence of data
         label: string
         """
-        self.label = label
-        self.kde = scipy.stats.gaussian_kde(sample)
+        self.label = label if label is not None else '_nolegend_'
+        self.kde = stats.gaussian_kde(sample)
         low = min(sample)
         high = max(sample)
         self.linspace = np.linspace(low, high, 101)
@@ -1483,7 +1613,7 @@ class EstimatedPdf(Pdf):
     def Density(self, xs):
         """Evaluates this Pdf at xs.
 
-        Returns: float probability density
+        returns: float or NumPy array of probability density
         """
         return self.kde.evaluate(xs)
 
@@ -1579,11 +1709,11 @@ def SampleSum(dists, n):
 
     returns: new Pmf of sums
     """
-    pmf = MakePmfFromList(RandomSum(dists) for i in xrange(n))
+    pmf = Pmf(RandomSum(dists) for i in range(n))
     return pmf
 
 
-def EvalGaussianPdf(x, mu, sigma):
+def EvalNormalPdf(x, mu, sigma):
     """Computes the unnormalized PDF of the normal distribution.
 
     x: value
@@ -1592,11 +1722,11 @@ def EvalGaussianPdf(x, mu, sigma):
     
     returns: float probability density
     """
-    return scipy.stats.norm.pdf(x, mu, sigma)
+    return stats.norm.pdf(x, mu, sigma)
 
 
-def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
-    """Makes a PMF discrete approx to a Gaussian distribution.
+def MakeNormalPmf(mu, sigma, num_sigmas, n=201):
+    """Makes a PMF discrete approx to a Normal distribution.
     
     mu: float mean
     sigma: float standard deviation
@@ -1610,18 +1740,27 @@ def MakeGaussianPmf(mu, sigma, num_sigmas, n=201):
     high = mu + num_sigmas * sigma
 
     for x in np.linspace(low, high, n):
-        p = EvalGaussianPdf(x, mu, sigma)
+        p = EvalNormalPdf(x, mu, sigma)
         pmf.Set(x, p)
     pmf.Normalize()
     return pmf
 
 
 def EvalBinomialPmf(k, n, p):
-    """Evaluates the binomial pmf.
+    """Evaluates the binomial PMF.
 
     Returns the probabily of k successes in n trials with probability p.
     """
-    return scipy.stats.binom.pmf(k, n, p)
+    return stats.binom.pmf(k, n, p)
+    
+
+def EvalHypergeomPmf(k, N, K, n):
+    """Evaluates the hypergeometric PMF.
+
+    Returns the probabily of k successes in n trials from a population
+    N with K successes in it.
+    """
+    return stats.hypergeom.pmf(k, N, K, n)
     
 
 def EvalPoissonPmf(k, lam):
@@ -1634,8 +1773,8 @@ def EvalPoissonPmf(k, lam):
     """
     # don't use the scipy function (yet).  for lam=0 it returns NaN;
     # should be 0.0
-    # return scipy.stats.poisson.pmf(k, lam)
-    return lam ** k * math.exp(-lam) / math.factorial(k)
+    # return stats.poisson.pmf(k, lam)
+    return lam ** k * math.exp(-lam) / special.gamma(k+1)
 
 
 def MakePoissonPmf(lam, high, step=1):
@@ -1647,7 +1786,7 @@ def MakePoissonPmf(lam, high, step=1):
     returns: normalized Pmf
     """
     pmf = Pmf()
-    for k in xrange(0, high + 1, step):
+    for k in range(0, high + 1, step):
         p = EvalPoissonPmf(k, lam)
         pmf.Set(k, p)
     pmf.Normalize()
@@ -1687,8 +1826,8 @@ def MakeExponentialPmf(lam, high, n=200):
     return pmf
 
 
-def StandardGaussianCdf(x):
-    """Evaluates the CDF of the standard Gaussian distribution.
+def StandardNormalCdf(x):
+    """Evaluates the CDF of the standard Normal distribution.
     
     See http://en.wikipedia.org/wiki/Normal_distribution
     #Cumulative_distribution_function
@@ -1702,8 +1841,8 @@ def StandardGaussianCdf(x):
     return (math.erf(x / ROOT2) + 1) / 2
 
 
-def EvalGaussianCdf(x, mu=0, sigma=1):
-    """Evaluates the CDF of the gaussian distribution.
+def EvalNormalCdf(x, mu=0, sigma=1):
+    """Evaluates the CDF of the normal distribution.
     
     Args:
         x: float
@@ -1715,11 +1854,11 @@ def EvalGaussianCdf(x, mu=0, sigma=1):
     Returns:
         float
     """
-    return scipy.stats.norm.cdf(x, loc=mu, scale=sigma)
+    return stats.norm.cdf(x, loc=mu, scale=sigma)
 
 
-def EvalGaussianCdfInverse(p, mu=0, sigma=1):
-    """Evaluates the inverse CDF of the gaussian distribution.
+def EvalNormalCdfInverse(p, mu=0, sigma=1):
+    """Evaluates the inverse CDF of the normal distribution.
 
     See http://en.wikipedia.org/wiki/Normal_distribution#Quantile_function  
 
@@ -1733,8 +1872,7 @@ def EvalGaussianCdfInverse(p, mu=0, sigma=1):
     Returns:
         float
     """
-    x = ROOT2 * scipy.special.erfinv(2 * p - 1)
-    return mu + x * sigma
+    return stats.norm.ppf(p, loc=mu, scale=sigma)
 
 
 def EvalLognormalCdf(x, mu=0, sigma=1):
@@ -1746,10 +1884,10 @@ def EvalLognormalCdf(x, mu=0, sigma=1):
                 
     Returns: float or sequence
     """
-    return scipy.stats.lognorm.cdf(x, loc=mu, scale=sigma)
+    return stats.lognorm.cdf(x, loc=mu, scale=sigma)
 
 
-def RenderExpoCdf(lam, low, high, n=50):
+def RenderExpoCdf(lam, low, high, n=101):
     """Generates sequences of xs and ps for an exponential CDF.
 
     lam: parameter
@@ -1761,12 +1899,12 @@ def RenderExpoCdf(lam, low, high, n=50):
     """
     xs = np.linspace(low, high, n)
     ps = 1 - np.exp(-lam * xs)
-    #ps = scipy.stats.expon.cdf(xs, scale=1.0/lam)
+    #ps = stats.expon.cdf(xs, scale=1.0/lam)
     return xs, ps
 
 
-def RenderGaussianCdf(mu, sigma, low, high, n=50):
-    """Generates sequences of xs and ps for a Gaussian CDF.
+def RenderNormalCdf(mu, sigma, low, high, n=101):
+    """Generates sequences of xs and ps for a Normal CDF.
 
     mu: parameter
     sigma: parameter
@@ -1777,7 +1915,7 @@ def RenderGaussianCdf(mu, sigma, low, high, n=50):
     returns: numpy arrays (xs, ps)
     """
     xs = np.linspace(low, high, n)
-    ps = scipy.stats.norm.cdf(xs, mu, sigma)
+    ps = stats.norm.cdf(xs, mu, sigma)
     return xs, ps
 
 
@@ -1796,7 +1934,7 @@ def RenderParetoCdf(xmin, alpha, low, high, n=50):
         low = xmin
     xs = np.linspace(low, high, n)
     ps = 1 - (xs / xmin) ** -alpha
-    #ps = scipy.stats.pareto.cdf(xs, scale=xmin, b=alpha)
+    #ps = stats.pareto.cdf(xs, scale=xmin, b=alpha)
     return xs, ps
 
 
@@ -1805,11 +1943,11 @@ class Beta(object):
 
     See http://en.wikipedia.org/wiki/Beta_distribution
     """
-    def __init__(self, alpha=1, beta=1, label=''):
+    def __init__(self, alpha=1, beta=1, label=None):
         """Initializes a Beta distribution."""
         self.alpha = alpha
         self.beta = beta
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
 
     def Update(self, data):
         """Updates a Beta distribution.
@@ -1840,7 +1978,7 @@ class Beta(object):
         """Evaluates the PDF at x."""
         return x ** (self.alpha - 1) * (1 - x) ** (self.beta - 1)
 
-    def MakePmf(self, steps=101, label=''):
+    def MakePmf(self, steps=101, label=None):
         """Returns a Pmf of this distribution.
 
         Note: Normally, we just evaluate the PDF at a sequence
@@ -1857,15 +1995,15 @@ class Beta(object):
             pmf = cdf.MakePmf()
             return pmf
 
-        xs = [i / (steps - 1.0) for i in xrange(steps)]
+        xs = [i / (steps - 1.0) for i in range(steps)]
         probs = [self.EvalPdf(x) for x in xs]
-        pmf = MakePmfFromDict(dict(zip(xs, probs)), label)
+        pmf = Pmf(dict(zip(xs, probs)), label=label)
         return pmf
 
     def MakeCdf(self, steps=101):
         """Returns the CDF of this distribution."""
-        xs = [i / (steps - 1.0) for i in xrange(steps)]
-        ps = [scipy.special.betainc(self.alpha, self.beta, x) for x in xs]
+        xs = [i / (steps - 1.0) for i in range(steps)]
+        ps = [special.betainc(self.alpha, self.beta, x) for x in xs]
         cdf = Cdf(xs, ps)
         return cdf
 
@@ -1876,7 +2014,7 @@ class Dirichlet(object):
     See http://en.wikipedia.org/wiki/Dirichlet_distribution
     """
 
-    def __init__(self, n, conc=1, label=''):
+    def __init__(self, n, conc=1, label=None):
         """Initializes a Dirichlet distribution.
 
         n: number of dimensions
@@ -1889,7 +2027,7 @@ class Dirichlet(object):
 
         self.n = n
         self.params = np.ones(n, dtype=np.float) * conc
-        self.label = label
+        self.label = label if label is not None else '_nolegend_'
 
     def Update(self, data):
         """Updates a Dirichlet distribution.
@@ -1952,7 +2090,7 @@ class Dirichlet(object):
         alpha = self.params[i]
         return Beta(alpha, alpha0 - alpha)
 
-    def PredictivePmf(self, xs, label=''):
+    def PredictivePmf(self, xs, label=None):
         """Makes a predictive distribution.
 
         xs: values to go into the Pmf
@@ -2022,12 +2160,12 @@ def Jitter(values, jitter=0.5):
     return np.random.uniform(-jitter, +jitter, n) + values
 
 
-def NormalProbabilityPlot(sample, label='', fit_color='0.8'):
+def NormalProbabilityPlot(sample, fit_color='0.8', **options):
     """Makes a normal probability plot with a fitted line.
 
     sample: sequence of numbers
-    label: string
     fit_color: color string for the fitted line
+    options: passed along to Plot
     """
     xs, ys = NormalProbability(sample)
     mean, var = MeanVar(sample)
@@ -2037,7 +2175,7 @@ def NormalProbabilityPlot(sample, label='', fit_color='0.8'):
     thinkplot.Plot(*fit, color=fit_color, label='model')
 
     xs, ys = NormalProbability(sample)
-    thinkplot.Plot(xs, ys, label=label)
+    thinkplot.Plot(xs, ys, **options)
 
  
 def Mean(xs):
@@ -2093,9 +2231,9 @@ def MeanVar(xs, ddof=0):
     returns: pair of float, mean and var
     """
     xs = np.asarray(xs)
-    xbar = xs.mean()
-    s2 = Var(xs, xbar, ddof)
-    return xbar, s2
+    mean = xs.mean()
+    s2 = Var(xs, mean, ddof)
+    return mean, s2
 
 
 def Trim(t, p=0.01):
@@ -2175,12 +2313,15 @@ def Cov(xs, ys, meanx=None, meany=None):
     Returns:
         Cov(X, Y)
     """
+    xs = np.asarray(xs)
+    ys = np.asarray(ys)
+
     if meanx is None:
         meanx = np.mean(xs)
     if meany is None:
         meany = np.mean(ys)
 
-    cov = np.dot(np.asarray(xs)-meanx, np.asarray(ys)-meany) / len(xs)
+    cov = np.dot(xs-meanx, ys-meany) / len(xs)
     return cov
 
 
@@ -2205,14 +2346,18 @@ def Corr(xs, ys):
     return corr
 
 
-def SerialCorr(xs):
-    """Computes the serial correlation of a sequence.
+def SerialCorr(series, lag=1):
+    """Computes the serial correlation of a series.
 
-    xs: sequence of numbers
+    series: Series
+    lag: integer number of intervals to shift
 
-    returns: float correlation coefficient
+    returns: float correlation
     """
-    return Corr(xs[:-1], xs[1:])
+    xs = series[lag:]
+    ys = series.shift(lag)[lag:]
+    corr = Corr(xs, ys)
+    return corr
 
 
 def SpearmanCorr(xs, ys):
@@ -2334,7 +2479,7 @@ def CorrelatedGenerator(rho):
         yield x
 
 
-def CorrelatedGaussianGenerator(mu, sigma, rho):
+def CorrelatedNormalGenerator(mu, sigma, rho):
     """Generates normal variates with serial correlation.
 
     mu: mean of variate
@@ -2347,7 +2492,6 @@ def CorrelatedGaussianGenerator(mu, sigma, rho):
         yield x * sigma + mu
 
 
-
 def RawMoment(xs, k):
     """Computes the kth raw moment of xs.
     """
@@ -2357,8 +2501,8 @@ def RawMoment(xs, k):
 def CentralMoment(xs, k):
     """Computes the kth central moment of xs.
     """
-    meanx = RawMoment(xs, 1)
-    return sum((x - meanx)**k for x in xs) / len(xs)
+    mean = RawMoment(xs, 1)
+    return sum((x - mean)**k for x in xs) / len(xs)
 
 
 def StandardizedMoment(xs, k):
@@ -2377,6 +2521,10 @@ def Skewness(xs):
 
 def Median(xs):
     """Computes the median (50th percentile) of a sequence.
+
+    xs: sequence or anything else that can initialize a Cdf
+
+    returns: float
     """
     cdf = Cdf(xs)
     return cdf.Value(0.5)
@@ -2384,6 +2532,10 @@ def Median(xs):
 
 def IQR(xs):
     """Computes the interquartile of a sequence.
+
+    xs: sequence or anything else that can initialize a Cdf
+
+    returns: pair of floats
     """
     cdf = Cdf(xs)
     return cdf.Value(0.25), cdf.Value(0.75)
@@ -2429,22 +2581,33 @@ class FixedWidthVariables(object):
 
         returns: DataFrame
         """
+<<<<<<< HEAD
         frame = pandas.read_fwf(filename,
                                            colspecs=self.colspecs, 
                                            names=self.names,
                                            **options)
         return frame
+=======
+        df = pandas.read_fwf(filename,
+                             colspecs=self.colspecs, 
+                             names=self.names,
+                             **options)
+        return df
+>>>>>>> a41b24bd07a6b6abe22c698e27b93c3908f6a7cb
 
 
-def ReadStataDct(dct_file):
+def ReadStataDct(dct_file, **options):
     """Reads a Stata dictionary file.
+
+    dct_file: string filename
+    options: dict of options passed to open()
 
     returns: FixedWidthVariables object
     """
     type_map = dict(byte=int, int=int, long=int, float=float, double=float)
 
     var_info = []
-    for line in open(dct_file):
+    for line in open(dct_file, **options):
         match = re.search( r'_column\(([^)]*)\)', line)
         if match:
             start = int(match.group(1))
@@ -2463,20 +2626,23 @@ def ReadStataDct(dct_file):
 
     # fill in the end column by shifting the start column
     variables['end'] = variables.start.shift(-1)
-    variables['end'][len(variables)-1] = 0
+    variables.loc[len(variables)-1, 'end'] = 0
 
     dct = FixedWidthVariables(variables, index_base=1)
     return dct
 
 
-def Resample(xs):
+def Resample(xs, n=None):
     """Draw a sample from xs with the same length as xs.
 
     xs: sequence
+    n: sample size (default: len(xs))
 
     returns: NumPy array
     """
-    return np.random.choice(xs, len(xs), replace=True)
+    if n is None:
+        n = len(xs)
+    return np.random.choice(xs, n, replace=True)
 
 
 def SampleRows(df, nrows, replace=False):
@@ -2486,7 +2652,7 @@ def SampleRows(df, nrows, replace=False):
     nrows: number of rows
     replace: whether to sample with replacement
 
-    returns: DataFrame
+    returns: DataDf
     """
     indices = np.random.choice(df.index, nrows, replace=replace)
     sample = df.loc[indices]
@@ -2503,13 +2669,61 @@ def ResampleRows(df):
     return SampleRows(df, len(df), replace=True)
 
 
+def ResampleRowsWeighted(df, column='finalwgt'):
+    """Resamples a DataFrame using probabilities proportional to given column.
+
+    df: DataFrame
+    column: string column name to use as weights
+
+    returns: DataFrame
+    """
+    weights = df[column]
+    cdf = Cdf(dict(weights))
+    indices = cdf.Sample(len(weights))
+    sample = df.loc[indices]
+    return sample
+
+
+def PercentileRow(array, p):
+    """Selects the row from a sorted array that maps to percentile p.
+
+    p: float 0--100
+
+    returns: NumPy array (one row)
+    """
+    rows, cols = array.shape
+    index = int(rows * p / 100)
+    return array[index,]
+
+
+def PercentileRows(ys_seq, percents):
+    """Selects rows from a sequence that map to percentiles.
+
+    ys_seq: sequence of unsorted rows
+    percents: list of percentiles (0-100) to select
+
+    returns: list of NumPy arrays
+    """
+    nrows = len(ys_seq)
+    ncols = len(ys_seq[0])
+    array = np.zeros((nrows, ncols))
+
+    for i, ys in enumerate(ys_seq):
+        array[i,] = ys
+
+    array = np.sort(array, axis=0)
+
+    rows = [PercentileRow(array, p) for p in percents]
+    return rows
+
+
 def Smooth(xs, sigma=2, **options):
     """Smooths a NumPy array with a Gaussian filter.
 
     xs: sequence
     sigma: standard deviation of the filter
     """
-    return scipy.ndimage.filters.gaussian_filter1d(xs, sigma, **options)
+    return ndimage.filters.gaussian_filter1d(xs, sigma, **options)
 
 
 class HypothesisTest(object):
@@ -2545,7 +2759,7 @@ class HypothesisTest(object):
         """
         return max(self.test_stats)
 
-    def PlotCdf(self, label=''):
+    def PlotCdf(self, label=None):
         """Draws a Cdf with vertical lines at the observed test stat.
         """
         def VertLine(x):

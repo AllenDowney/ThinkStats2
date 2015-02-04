@@ -5,13 +5,13 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
+from __future__ import print_function, division
+
 import numpy as np
-import urllib
 
 import thinkplot
 import thinkstats2
 
-results = 'http://www.coolrunning.com/results/10/ma/Apr25_27thAn_set1.shtml'
 
 """
 Sample line.
@@ -25,7 +25,7 @@ def ConvertPaceToSpeed(pace):
     """Converts pace in MM:SS per mile to MPH."""
     m, s = [int(x) for x in pace.split(':')]
     secs = m*60 + s
-    mph  = 1.0 / secs * 60 * 60 
+    mph  = 1 / secs * 60 * 60 
     return mph
 
 
@@ -47,11 +47,10 @@ def CleanLine(line):
     return place, divtot, div, gun, net, pace
 
 
-def ReadResults(url=results):
-    """Read results from coolrunning and return a list of tuples."""
+def ReadResults(filename='Apr25_27thAn_set1.shtml'):
+    """Read results from a file and return a list of tuples."""
     results = []
-    conn = urllib.urlopen(url)
-    for line in conn.fp:
+    for line in open(filename):
         t = CleanLine(line)
         if t:
             results.append(t)
@@ -78,7 +77,6 @@ def BinData(data, low, high, n):
 
     returns: sequence of numbers
     """
-    bins = np.linspace(low, high, n)
     data = (np.array(data) - low) / (high - low) * n
     data = np.round(data) * (high - low) / n + low
     return data

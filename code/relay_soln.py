@@ -26,7 +26,7 @@ def ObservedPmf(pmf, speed, label=None):
         Pmf object
     """
     new = pmf.Copy(label=label)
-    for val, prob in new.Items():
+    for val in new.Values():
         diff = abs(val - speed)
         new.Mult(val, diff)
     new.Normalize()
