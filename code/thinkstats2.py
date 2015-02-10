@@ -1496,6 +1496,14 @@ class Pdf(object):
     def Render(self, **options):
         """Generates a sequence of points suitable for plotting.
 
+        If options includes low and high, it must also include n;
+        in that case the density is evaluated an n locations between
+        low and high, including both.
+
+        If options includes xs, the density is evaluate at those location.
+
+        Otherwise, self.GetLinspace is invoked to provide the locations.
+
         Returns:
             tuple of (xs, densities)
         """
