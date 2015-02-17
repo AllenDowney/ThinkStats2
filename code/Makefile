@@ -30,6 +30,10 @@ git:
 
 DEST = /home/downey/public_html/greent/thinkstats2
 
+distrib:
+	rsync *.html $(DEST)
+	cd /home/downey/public_html/greent; sh back
+
 FIGS = observed_speeds.* \
 pareto_cdf.* \
 pareto_height.* \

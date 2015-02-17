@@ -570,9 +570,6 @@ def PlotResampledByDecade(resps, iters=11, predict_flag=False, omit=None):
 
 
 def main():
-    resp8 = ReadFemResp2013()
-    return
-
     thinkstats2.RandomSeed(17)
     
     preg = nsfg.ReadFemPreg()
@@ -589,7 +586,6 @@ def main():
     # read Cycles 5 and 7
     resp5 = ReadFemResp1995()
     resp7 = ReadFemResp2010()
-    resp8 = ReadFemResp2013()
 
     # plot resampled survival functions by decade
     resps = [resp5, resp6, resp7]
