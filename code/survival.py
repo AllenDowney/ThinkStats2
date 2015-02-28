@@ -539,6 +539,50 @@ def ReadFemResp1995():
     CleanData(df)
     return df
 
+def ReadFemResp1982():
+    """Reads respondent data from NSFG Cycle 4.
+
+    returns: DataFrame 
+    """
+    dat_file = '1982NSFGData.dat.gz'
+    names = ['cmmarrhx', 'MARNO', 'cmintvw', 'cmbirth', 'finalwgt']
+    #actual = ['MARIMO', 'MARNO', 'TL', 'TL', 'W5']
+    colspecs = [(1028, 1031), 
+                (1258, 1259), 
+                (841, 844), 
+                (12, 15), 
+                (976, 982)]
+    df = pandas.read_fwf(dat_file, compression='gzip', colspecs=colspecs, names=names)
+    df.MARNO.replace([98, 99], np.nan, inplace=True)
+    df['evrmarry'] = (df.MARNO > 0).astype(int)
+
+    CleanData(df)
+    return df[:7969]
+
+def ReadFemResp1988():
+    """Reads respondent data from NSFG Cycle 4.
+
+    returns: DataFrame 
+    """
+    dat_file = '1988FemRespData.dat.gz'
+    names = ['F_13'] #['CMOIMO', 'F_13', 'F19M1MO', 'A_3']
+    # colspecs = [(799, 803)], 
+    colspecs = [(20, 22)]#, 
+                # (1538, 1542),
+                # (26, 30),
+                # (2568, 2574)]
+    df = pandas.read_fwf(dat_file, compression='gzip', colspecs=colspecs, names=names)
+    # df['cmmarrhx'] = df.F19M1MO
+    # df['cmbirth'] = df.A_3
+    # df['cmintvw'] = df.CMOIMO
+    # df['finalwgt'] = df.W5
+
+    df.F_13.replace([98, 99], np.nan, inplace=True)
+    df['evrmarry'] = (df.F_13 > 0).astype(int)
+    # CleanData(df)
+
+    return df
+
 
 def PlotResampledByDecade(resps, iters=11, predict_flag=False, omit=None):
     """Plots survival curves for resampled data.
