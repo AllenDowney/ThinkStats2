@@ -90,7 +90,9 @@ def GoMining(df):
             if df[name].var() < 1e-7:
                 continue
 
-            formula='totalwgt_lb ~ agepreg + ' + name
+            formula = 'totalwgt_lb ~ agepreg + ' + name
+            formula = formula.encode('ascii')
+
             model = smf.ols(formula, data=df)
             if model.nobs < len(df)/2:
                 continue
@@ -363,13 +365,12 @@ def RunLogisticModels(live):
 
 def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
-    #LogisticRegressionExample()
+    LogisticRegressionExample()
 
     live, firsts, others = first.MakeFrames()
     live['isfirst'] = (live.birthord == 1)
 
     RunLogisticModels(live)
-    return
 
     RunSimpleRegression(live)
     RunModels(live)
