@@ -17,6 +17,7 @@ import matplotlib.pyplot as pyplot
 import thinkplot
 import thinkstats2
 
+FORMATS = ['png']
 
 def ReadData():
     """Reads data about cannabis transactions.
@@ -93,7 +94,8 @@ def PlotDailies(dailies):
         else:
             thinkplot.Config(xticks=[])
 
-    thinkplot.Save(root='timeseries1')
+    thinkplot.Save(root='timeseries1',
+                   formats=FORMATS)
 
 
 def RunLinearModel(daily):
@@ -504,7 +506,8 @@ def MakeAcfPlot(dailies):
     thinkplot.Save(root='timeseries9',
                    axis=axis,
                    loc='lower right',
-                   xlabel='lag (days)')
+                   xlabel='lag (days)',
+                   formats=FORMATS)
 
 
 def PlotRollingMean(daily, name):
@@ -527,7 +530,8 @@ def PlotRollingMean(daily, name):
     ewma = pandas.ewma(reindexed.ppg, span=30)
     thinkplot.Plot(ewma, label='EWMA')
     pyplot.xticks(rotation=30)
-    thinkplot.Save(root='timeseries10')
+    thinkplot.Save(root='timeseries10',
+                   formats=FORMATS)
 
 
 def PlotFilled(daily, name):
@@ -540,7 +544,8 @@ def PlotFilled(daily, name):
     thinkplot.Plot(filled.ewma, label='EWMA', alpha=0.4)
     pyplot.xticks(rotation=30)
     thinkplot.Save(root='timeseries8',
-                   ylabel='price per gram ($)')
+                   ylabel='price per gram ($)',
+                   formats=FORMATS)
     
 
 def PlotLinearModel(daily, name):
@@ -555,13 +560,15 @@ def PlotLinearModel(daily, name):
                    title='fitted values',
                    xlabel='years',
                    xlim=[-0.1, 3.8],
-                   ylabel='price per gram ($)')
+                   ylabel='price per gram ($)',
+                   formats=FORMATS)
 
     PlotResidualPercentiles(model, results)
     thinkplot.Save(root='timeseries3',
                    title='residuals',
                    xlabel='years',
-                   ylabel='price per gram ($)')
+                   ylabel='price per gram ($)',
+                   formats=FORMATS)
     
     #years = np.linspace(0, 5, 101)
     #predict = GenerateSimplePrediction(results, years)
@@ -592,7 +599,8 @@ def main(name):
                    title='predictions',
                    xlabel='years',
                    xlim=xlim,
-                   ylabel='price per gram ($)')
+                   ylabel='price per gram ($)',
+                   formats=FORMATS)
 
     name = 'medium'
     daily = dailies[name]
@@ -605,7 +613,8 @@ def main(name):
                    title='predictions',
                    xlabel='years',
                    xlim=xlim,
-                   ylabel='price per gram ($)')
+                   ylabel='price per gram ($)',
+                   formats=FORMATS)
 
 
 if __name__ == '__main__':

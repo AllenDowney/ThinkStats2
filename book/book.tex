@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.24}
+\newcommand{\theversion}{2.0.25}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -623,6 +623,8 @@ helpful suggestions.
 
 \item Nir Soffer sent several excellent pull requests for both the
   book and the supporting code.
+
+\item Joanne Pratt found a number that was off by a factor of 10.
 
 % ENDCONTRIB
 
@@ -2876,7 +2878,7 @@ the corresponding percentile:
 \begin{verbatim}
 def Percentile2(scores, percentile_rank):
     scores.sort()
-    index = percentile_rank * (len(scores)-1) / 100
+    index = percentile_rank * (len(scores)-1) // 100
     return scores[index]
 \end{verbatim}
 
@@ -2904,16 +2906,16 @@ $x$, we compute the fraction of values in the distribution less
 than or equal to $x$.
 
 Here's what that looks like as a function that takes a sequence,
-{\tt t}, and a value, {\tt x}:
+{\tt sample}, and a value, {\tt x}:
 %
 \begin{verbatim}
-def EvalCdf(t, x):
+def EvalCdf(sample, x):
     count = 0.0
-    for value in t:
+    for value in sample:
         if value <= x:
             count += 1
 
-    prob = count / len(t)
+    prob = count / len(sample)
     return prob
 \end{verbatim}
 
@@ -3777,21 +3779,15 @@ scale with a lognormal model.  The lognormal model is a better fit,
 but this representation of the data does not make the difference
 particularly dramatic.  \index{respondent} \index{model}
 
-Figure~\ref{brfss_weight_normal} shows normal probability plots
-for adult weights, $w$, and for their logarithms, $\log_{10} w$.
-Now it is apparent that the data deviate substantially from the
-normal model.  The lognormal model is a good match for the data
-within a few standard deviations of the mean, but it deviates in
-the tails.  I conclude that the lognormal distribution is
-a good model for this data.
+Figure~\ref{brfss_weight_normal} shows normal probability plots for
+adult weights, $w$, and for their logarithms, $\log_{10} w$.  Now it
+is apparent that the data deviate substantially from the normal model.
+On the other hand, the lognormal model is a good match for the data.
 \index{normal distribution} \index{distribution!normal}
 \index{Gaussian distribution} \index{distribution!Gaussian}
 \index{lognormal distribution} \index{distribution!lognormal}
-\index{standard deviation}
-\index{adult weight}
-\index{weight!adult}
-\index{model}
-\index{normal probability plot}
+\index{standard deviation} \index{adult weight} \index{weight!adult}
+\index{model} \index{normal probability plot}
 
 
 \section{The Pareto distribution}
@@ -4356,7 +4352,7 @@ distribution and then makes an EstimatedPdf to fit it:
 \begin{verbatim}
 >>> sample = [random.gauss(mean, std) for i in range(500)]
 >>> sample_pdf = thinkstats2.EstimatedPdf(sample)
->>> thinkplot.Pdf(pdf, label='sample KDE')
+>>> thinkplot.Pdf(sample_pdf, label='sample KDE')
 \end{verbatim}
 
 \verb"sample" is a list of 500 random heights.
@@ -4686,7 +4682,7 @@ ruler at each location, $x_i$, and then spin the ruler around
 the mean, the moment of inertia of the spinning weights is the variance
 of the values.  If you are not familiar with moment of inertia, see
 \url{http://en.wikipedia.org/wiki/Moment_of_inertia}.  \index{moment
-  of inertia}.
+  of inertia}
 
 When you report moment-based statistics, it is important to think
 about the units.  For example, if the values $x_i$ are in cm, the
@@ -4765,7 +4761,7 @@ $S$ is the standard deviation.  Or in Python:
 
 \begin{verbatim}
 def Median(xs):
-    cdf = thinkstats2.MakeCdfFromList(xs)
+    cdf = thinkstats2.Cdf(xs)
     return cdf.Value(0.5)
 
 def PearsonMedianSkewness(xs):
@@ -5488,8 +5484,8 @@ Spearman's method:
 
 \begin{verbatim}
 def SpearmanCorr(xs, ys):
-    xranks = pandas.Series(xs)
-    yranks = pandas.Series(ys)
+    xs = pandas.Series(xs)
+    ys = pandas.Series(ys)
     return xs.corr(ys, method='spearman')
 \end{verbatim}
 
@@ -5993,7 +5989,7 @@ def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
         xbar = np.mean(xs)
         means.append(xbar)
 
-    cdf = thinkstats2.MakeCdfFromList(means)
+    cdf = thinkstats2.Cdf(means)
     ci = cdf.Percentile(5), cdf.Percentile(95)
     stderr = RMSE(means, mu)
 \end{verbatim}
@@ -7162,12 +7158,12 @@ Here's the code that tests pregnancy lengths:
 \end{verbatim}
 
 The result is about 70\%, which means that if the actual difference in
-mean pregnancy length is 0.78 weeks, we expect an experiment with this
+mean pregnancy length is 0.078 weeks, we expect an experiment with this
 sample size to yield a negative test 70\% of the time.
 \index{pregnancy length}
 
 This result is often presented the other way around: if the actual
-difference is 0.78 weeks, we should expect a positive test only 30\%
+difference is 0.078 weeks, we should expect a positive test only 30\%
 of the time.  This ``correct positive rate'' is called the {\bf power}
 of the test, or sometimes ``sensitivity''.  It reflects the ability of
 the test to detect an effect of a given size.
@@ -7176,7 +7172,7 @@ the test to detect an effect of a given size.
 \index{correct positive}
 
 In this example, the test had only a 30\% chance of yielding a
-positive result (again, assuming that the difference is 0.78 weeks).
+positive result (again, assuming that the difference is 0.078 weeks).
 As a rule of thumb, a power of 80\% is considered acceptable, so
 we would say that this test was ``underpowered.''
 \index{underpowered}
@@ -8020,21 +8016,22 @@ the resampled rows:
 \index{resampling}
 
 \begin{verbatim}
-def ResampleRowsWeighted(df):
-    weights = df.finalwgt
-    pmf = thinkstats2.Pmf(weights.iteritems())
-    cdf = pmf.MakeCdf()
+def ResampleRowsWeighted(df, column='finalwgt'):
+    weights = df[column]
+    cdf = Cdf(dict(weights))
     indices = cdf.Sample(len(weights))
     sample = df.loc[indices]
     return sample
 \end{verbatim}
 
-{\tt pmf} maps from each row index to its normalized weight.  Converting
-to a Cdf makes the sampling process faster.  {\tt indices} is a sequence
-of row indices; {\tt sample} is a DataFrame that contains the selected
-rows.  Since we sample with replacement, the same row might appear
-more than once.
-\index{Cdf}
+{\tt weights} is a Series; converting it to a dictionary makes
+a map from the indices to the weights.  In {\tt cdf} the values
+are indices and the probabilities are proportional to the
+weights.
+
+{\tt indices} is a sequence of row indices; {\tt sample} is a
+DataFrame that contains the selected rows.  Since we sample with
+replacement, the same row might appear more than once.  \index{Cdf}
 \index{replacement}
 
 Now we can compare the effect of resampling with and without
@@ -8655,7 +8652,7 @@ we already know that it has some predictive power.
 
 I check that each explanatory variable has some variability; otherwise
 the results of the regression are unreliable.  I also check the number
-of observations for each model.  Variables that contains a large number
+of observations for each model.  Variables that contain a large number
 of {\tt nan}s are not good candidates for prediction.
 \index{explanatory variable}
 \index{NaN}
