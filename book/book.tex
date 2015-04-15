@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.25}
+\newcommand{\theversion}{2.0.27}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -626,6 +626,11 @@ helpful suggestions.
 
 \item Joanne Pratt found a number that was off by a factor of 10.
 
+\item GitHub user flothesof sent a number of corrections.
+
+\item Toshiaki Kurokawa, who is working on the Japanese translation of
+this book, has sent many corrections and helpful suggestions.
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -905,6 +910,9 @@ rows/records and 244 columns/variables.
 ...
 [13593 rows x 244 columns]
 \end{verbatim}
+
+The DataFrame is too big to display, so the output is truncated.  The
+last line reports the number of rows and columns.
 
 The attribute {\tt columns} returns a sequence of column
 names as Unicode strings:
@@ -1318,12 +1326,16 @@ background and open a browser to view the notebook.  If you are not
 familiar with IPython, I suggest you start at
 \url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
 
-You can add a command-line option that makes figures appear ``inline'';
-that is, in the notebook rather than a pop-up window:
+To launch the IPython notebook server, run:
 
 \begin{verbatim}
-$ ipython notebook --pylab=inline &
+$ ipython notebook &
 \end{verbatim}
+
+It should open a new browser window, but if not, the startup
+message provides a URL you can load in a browser, usually
+\url{http://localhost:8888}.  The new window should list the notebooks
+in the repository.
 
 Open \verb"chap01ex.ipynb".  Some cells are already filled in, and
 you should execute them.  Other cells give you instructions for
@@ -10408,9 +10420,7 @@ each window.
 \item exponentially-weighted moving average (EWMA): A moving
 average based on a weighted mean that gives the highest weight
 to the most recent values, and exponentially decreasing weights
-to earlier values.
-\index{exponentially-weighted moving average}
-\index{EWMA}
+to earlier values. \index{exponentially-weighted moving average} \index{EWMA}
 
 \item span: A parameter of EWMA that determines how quickly the
 weights decrease.
@@ -10499,14 +10509,14 @@ evaluates it for each row, selecting the rows that yield True.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=3.0in]{figs/survival1.pdf}}
-\caption{Cdf and survival function for pregnancy length (top),
-hazard function (bottom).}
+\caption{Cdf and survival curve for pregnancy length (top),
+hazard curve (bottom).}
 \label{survival1}
 \end{figure}
 
 Figure~\ref{survival1} (top) shows the CDF of pregnancy length
-and its complement, the survival function.  To represent the
-survival function, I define an object that wraps a Cdf and 
+and its complement, the survival curve.  To represent the
+survival curve, I define an object that wraps a Cdf and 
 adapts the interface:
 \index{Cdf}
 \index{pregnancy length}
@@ -10529,7 +10539,7 @@ class SurvivalFunction(object):
 
 {\tt SurvivalFunction} provides two properties: {\tt ts}, which
 is the sequence of lifetimes, and {\tt ss}, which is the survival
-function.  In Python, a ``property'' is a method that can be
+curve.  In Python, a ``property'' is a method that can be
 invoked as if it were a variable.
 
 We can instantiate a {\tt SurvivalFunction} by passing
@@ -10541,7 +10551,7 @@ the CDF of lifetimes:
 \end{verbatim}
 
 {\tt SurvivalFunction} also provides \verb"__getitem__" and
-{\tt Prob}, which evaluate the survival function:
+{\tt Prob}, which evaluates the survival curve:
 
 \begin{verbatim}
 # class SurvivalFunction
@@ -10585,7 +10595,7 @@ weeks, which is the most common pregnancy length.
 \section{Hazard function}
 \label{hazard}
 
-From the survival function we can derive the {\bf hazard function};
+From the survival curve we can derive the {\bf hazard function};
 for pregnancy lengths, the hazard function maps from a time, $t$, to
 the fraction of pregnancies that continue until $t$ and then end at
 $t$.  To be more precise:
@@ -10710,7 +10720,7 @@ algorithms in survival analysis, {\bf Kaplan-Meier estimation}.
 \index{Kaplan-Meier estimation}
 
 The general idea is that we can use the data to estimate the hazard
-function, then convert the hazard function to a survival function.
+function, then convert the hazard function to a survival curve.
 To estimate the hazard function, we consider, for each age,
 (1) the number of women who got married at that age and (2) the number
 of women ``at risk'' of getting married, which includes all women
@@ -10745,10 +10755,10 @@ when they were interviewed.
 
 First, we precompute \verb"hist_complete", which is the Hist
 of ages when women were married, \verb"sf_complete", the
-survival function for married women, and \verb"sf_ongoing",
-the survival function for unmarried women.
+survival curve for married women, and \verb"sf_ongoing",
+the survival curve for unmarried women.
 \index{Hist}
-\index{survival function}
+\index{survival curve}
 
 The loop iterates through the ages when respondents got married.
 For each value of {\tt t}, we have {\tt ended}, which is the number
@@ -10847,13 +10857,13 @@ higher in the 20s, and declining in the 30s.  It increases again in
 the 40s, but that is an artifact of the estimation process; as the
 number of respondents ``at risk'' decreases, a small number of
 women getting married yields a large estimated hazard.  The survival
-function will smooth out this noise.
+curve will smooth out this noise.
 \index{noise}
 
 
-\section{Estimating the survival function}
+\section{Estimating the survival curve}
 
-Once we have the hazard function, we can estimate the survival function.
+Once we have the hazard function, we can estimate the survival curve.
 The chance of surviving past time {\tt t} is the chance of surviving
 all times up through {\tt t}, which is the cumulative product of
 the complementary hazard function:
@@ -10878,7 +10888,7 @@ computes this product:
 
 {\tt ts} is the sequence of times where the hazard function is
 estimated.  {\tt ss} is the cumulative product of the complementary
-hazard function, so it is the survival function.
+hazard function, so it is the survival curve.
 
 Because of the way {\tt SurvivalFunction} is implemented, we have
 to compute the complement of {\tt ss}, make a Cdf, and then instantiate
@@ -10891,7 +10901,7 @@ a SurvivalFunction object.
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival2.pdf}}
 \caption{Hazard function for age at first marriage (top) and
-survival function (bottom).}
+survival curve (bottom).}
 \label{survival2}
 \end{figure}
 
@@ -10955,7 +10965,7 @@ def ResampleSurvival(resp, iters=101):
 {\tt ResampleSurvival} takes {\tt resp}, a DataFrame of respondents,
 and {\tt iters}, the number of times to resample.  It computes {\tt
   ts}, which is the sequence of ages where we will evaluate the survival
-functions.
+curves.
 \index{DataFrame}
 
 Inside the loop, {\tt ResampleSurvival}:
@@ -10982,13 +10992,13 @@ curve.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival3.pdf}}
-\caption{Survival function for age at first marriage and a 90\%
+\caption{Survival curve for age at first marriage and a 90\%
 confidence interval based on weighted resampling.}
 \label{survival3}
 \end{figure}
 
 Figure~\ref{survival3} shows the result along with the survival
-function we estimated in the previous section.  The confidence
+curve we estimated in the previous section.  The confidence
 interval takes into account the sampling weights, unlike the estimated
 curve.  The discrepancy between them indicates that the sampling
 weights have a substantial effect on the estimate---we will have
@@ -11089,7 +11099,7 @@ def EstimateSurvivalByDecade(resp):
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival4.pdf}}
-\caption{Survival functions for respondents born during different decades.}
+\caption{Survival curves for respondents born during different decades.}
 \label{survival4}
 \end{figure}
 
@@ -11189,7 +11199,7 @@ a SurvivalFunction and plots it.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival5.pdf}}
-\caption{Survival functions for respondents born during different decades,
+\caption{Survival curves for respondents born during different decades,
 with predictions for the later cohorts.}
 \label{survival5}
 \end{figure}
@@ -11205,7 +11215,7 @@ with fewer than 20\% never married.
 
 Given a survival curve, we can compute the expected remaining
 lifetime as a function of current age.  For example, given the
-survival function of pregnancy length from Section~\ref{survival},
+survival curve of pregnancy length from Section~\ref{survival},
 we can compute the expected time until delivery.
 \index{pregnancy length}
 
@@ -11285,7 +11295,7 @@ mean remaining pregnancy length.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival6.pdf}}
-\caption{Expected remaining lifetime for pregnancy length (left) and
+\caption{Expected remaining pregnancy length (left) and
 years until first marriage (right).}
 \label{survival6}
 \end{figure}
@@ -11357,11 +11367,11 @@ Here's the code that computes and plots these functions:
     thinkplot.Plot(rem_life2)
 \end{verbatim}
 
-{\tt sf1} is the survival function for pregnancy length;
+{\tt sf1} is the survival curve for pregnancy length;
 in this case we can use the default values for {\tt RemainingLifetime}.
 \index{pregnancy length}
 
-{\tt sf2} is the survival function for age at first marriage;
+{\tt sf2} is the survival curve for age at first marriage;
 {\tt func} is a function that takes a Pmf and computes its
 median (50th percentile).
 \index{Pmf}
@@ -11380,7 +11390,7 @@ encoded in century-months.
 
 Compute the duration of marriages that have ended in divorce, and
 the duration, so far, of marriages that are ongoing.  Estimate the
-hazard and survival function for the duration of marriage.
+hazard and survival curve for the duration of marriage.
 
 Use resampling to take into account sampling weights, and plot
 data from several resamples to visualize sampling error.
