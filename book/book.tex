@@ -1346,9 +1346,9 @@ A solution to this exercise is in \verb"chap01soln.ipynb"
 
 
 \begin{exercise}
-Create a file named \verb"chap01ex.py" and write code that reads
-the respondent file, {\tt 2002FemResp.dat.gz}.  You might want to
-start with a copy of {\tt nsfg.py} and modify it.
+In the repository you downloaded, you should find a file named
+\verb"chap01ex.py"; using this file as a starting place, write a
+function that reads the respondent file, {\tt 2002FemResp.dat.gz}.
 
 The variable {\tt pregnum} is a recode that indicates how many
 times each respondent has been pregnant.  Print the value counts
@@ -2053,8 +2053,10 @@ exercises.  Follow the instructions and fill in the answers.
 A solution to this exercise is in \verb"chap02soln.ipynb"
 \end{exercise}
 
-For the following exercises, create a file named {\tt chap02ex.py}.
-You can find a solution in \verb"chap02soln.py".
+In the repository you downloaded, you should find a file named
+\verb"chap01ex.py"; you can use this file as a starting place
+for the following exercises.
+My solution is in \verb"chap02soln.py".
 
 \begin{exercise}
 The mode of a distribution is the most frequent value; see
@@ -10666,7 +10668,7 @@ important tool for estimating survival curves, as we'll see in the
 next section.
 
 
-\section{Estimating survival curves}
+\section{Inferring survival curves}
 
 If someone gives you the CDF of lifetimes, it is easy to compute the
 survival and hazard functions.  But in many real-world
@@ -10992,8 +10994,8 @@ curve.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival3.pdf}}
-\caption{Survival curve for age at first marriage and a 90\%
-confidence interval based on weighted resampling.}
+\caption{Survival curve for age at first marriage (dark line) and a 90\%
+confidence interval based on weighted resampling (gray line).}
 \label{survival3}
 \end{figure}
 
