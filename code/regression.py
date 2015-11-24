@@ -9,6 +9,7 @@ from __future__ import print_function, division
 
 import math
 import pandas
+import patsy
 import random
 import numpy as np
 import statsmodels.api as sm
@@ -77,6 +78,15 @@ def JoinFemResp(df):
     return join
 
 
+MESSAGE = """If you get this error, it's probably because 
+you are running Python 3 and the nice people who maintain
+Patsy have not fixed this problem:
+https://github.com/pydata/patsy/issues/34
+
+While we wait, I suggest running this example in
+Python 2, or skipping this example."""
+
+
 def GoMining(df):
     """Searches for variables that predict birth weight.
 
@@ -100,6 +110,8 @@ def GoMining(df):
             results = model.fit()
         except (ValueError, TypeError):
             continue
+        except patsy.PatsyError:
+            raise ValueError(MESSAGE)
 
         variables.append((results.rsquared, name))
 
@@ -376,7 +388,6 @@ def main(name, data_dir='.'):
     RunModels(live)
 
     PredictBirthWeight(live)
-
 
 
 if __name__ == '__main__':
