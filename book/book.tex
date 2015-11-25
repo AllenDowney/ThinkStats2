@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.29}
+\newcommand{\theversion}{2.0.30}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -632,6 +632,8 @@ helpful suggestions.
 this book, has sent many corrections and helpful suggestions.
 
 \item Lucian Ursu spotted a vestigial sentence.
+
+\item Paul Glezen found a decimal point in the wrong place.
 
 % ENDCONTRIB
 
@@ -8379,7 +8381,7 @@ results = smf.ols('totalwgt_lb ~ agepreg', data=live).fit()
 slope = results.params['agepreg']
 \end{verbatim}
 
-The slope is 0.175 pounds per year.  If we multiply the slope by
+The slope is 0.0175 pounds per year.  If we multiply the slope by
 the difference in ages, we get the expected difference in birth
 weight for first babies and others, due to mother's age:
 
