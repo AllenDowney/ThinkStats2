@@ -1,0 +1,952 @@
+
+
+\chapter{회귀 (Regression)}
+\label{regression}
+
+앞장에서 선형최소적합은 {\bf 회귀 (regression)}의 한 사례다. 회귀는 어떤 종류의 데이터를 어떤 종류의 모형에도 적합하는 더 일반적인 문제다. ``회귀 (regression)'' 용어 사용은 역사적 우연이다; 단어의 본래 의미와는 간접적으로 연관된다.
+\index{모형 (model)}
+\index{회귀 (regression)}
+
+회귀분석의 목적은 {\bf 종속변수 (dependent variables)}라고 불리는 변수집합과 {\bf 설명변수 (explanatory variables)}라고 불리는 또 다른 집합변수 사이 관계를 기술하는 것이다.
+\index{설명변수 (explanatory variable)}
+\index{종속변수 (dependent variable)}
+
+앞장에서 종속변수로 출생 체중을 예측하는데 설명변수로 산모 연령을 사용했다.
+단지 종속변수가 하나 설명변수도 하나라면, {\bf 단순회귀(simple regression)}가 된다. 이번 장에서는 하나 이상 설명변수를 갖는 {\bf 다중회귀(multiple regression)}로 옮겨간다. 만약 종속변수가 하나이상이라면, 다변량회귀(multivariate regression)이 된다.
+\index{출생 체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+\index{단순회귀 (simple regression)}
+\index{다중회귀 (multiple regression)}
+
+
+만약 종속변수와 설명변수 간 관계가 선형이면, {\bf 선형회귀 (linear regression)}가 된다. 예를 들어, 종속변수가 $y$이고, 설명변수가 $x_1$과 $x_2$라면, 
+다음과 같이 선형회귀모형을 작성할 수 있다.
+%
+\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \eps \]
+%
+
+여기서 $\beta_0$는 절편, $\beta_1$은 $x_1$과 연관된 모수, $\beta_2$는 
+$x_2$와 연관된 모수, 그리고 $\eps$는 확률변동 혹은 다른 미지 요인으로 인한 잔차다.
+\index{회귀모형 (regression model)}
+\index{선형회귀 (linear regression)}
+
+$y$에 대한 시퀀스 값과 $x_1$과 $x_2$에 대한 시퀀스 값이 주어지면, $\eps^2$ 합을 최소화하는 $\beta_0$, $\beta_1$, $\beta_2$ 모수를 찾을 수 있다. 이 과정을 {\bf 보통최소제곱(ordinary least squares)}이라고 부른다. 
+연산은 {\tt thinkstats2.LeastSquare}와 유사하지만, 하나 이상의 설명변수를 다루도록 일반화되었다. 자세한 정보는 웹사이트를 참조한다. \url{https://en.wikipedia.org/wiki/Ordinary_least_squares}
+\index{설명변수 (explanatory variable)}
+\index{보통최소제곱 (ordinary least squares)}
+\index{모수 (parameter)}
+
+이번 장에서 사용되는 코드는 {\tt regression.py}에 있다.
+코드를 다운로드하고 작업하는 것에 대한 정보는 ~\ref{code}을 참조한다.
+
+\section{StatsModels}
+\label{statsmodels}
+
+앞장에서 가독성이 좋은 단순선형회귀모형을 구현한 {\tt thinkstats2.LeastSquares}를 제시했다. 다중회귀에 대해서 StatsModels로 전환한다. 파이썬 팩키지로 몇가지 형태 회귀분석와 다른 분석 기능을 제공한다. 만약 아나콘다(Anaconda)를 사용하고 있다면, 이미 StatsModels이 설치되어 있다; 그렇지 않다면, 설치해야할지 모른다.
+\index{아나콘다 (Anaconda)}
+
+예제로, StatModels을 가지고 앞장 모형을 실행한다.
+\index{StatsModels}
+\index{모형 (model)}
+
+\begin{verbatim}
+    import statsmodels.formula.api as smf
+
+    live, firsts, others = first.MakeFrames()
+    formula = 'totalwgt_lb ~ agepreg'
+    model = smf.ols(formula, data=live)
+    results = model.fit()
+\end{verbatim}
+
+{\tt statsmodels}은 인터페이스(APIs) 두개를 제공한다; ``formula'' API는 문자열로 종속변화 설명변수를 식별한다.
+{\tt patsy}라는 구문(syntax)을 사용한다; 상기 예제에서, \verb"~" 연산자가 왼편에 종속변수와 오른편에 설명변수를 구별한다.
+\index{설명변수 (explanatory variable)}
+\index{종속변수 (dependent variable)}
+\index{Patsy}
+
+{\tt smf.ols}는 인자로 문자열 공식과 데이터프레임 {\tt live}를 받고,
+모형을 표현하는 OLS객체를 반환한다.
+{\tt ols} 는 ``ordinary least squares'' 약자다.
+\index{데이터프레임 (DataFrame)}
+\index{모형 (model)}
+\index{보통최소제곱 (ordinary least squares)}
+
+{\tt fit}메쏘드는 모형을 데이터에 적합하고 결과를 담고 있는 객체 RegressionResults를 반환한다.
+\index{RegressionResults}
+
+결과는 또한 속성(attribute)으로도 접근가능하다.
+{\tt params}은 시리즈로 변수명을 모수에 매핑한다.
+그래서, 다음과 같은 절편과 기울기를 얻을 수 있다.
+\index{시리즈 (Series)}
+
+\begin{verbatim}
+    inter = results.params['Intercept']
+    slope = results.params['agepreg']
+\end{verbatim}
+
+추정한 모수는 6.83 와 0.0175으로 {\tt LeastSquares}로 추정한 것과 동일한다.
+\index{모수 (parameter)}
+
+{\tt pvalues}는 시리즈로 변수명과 연관된 p-값을 매핑한다.
+그래서 추정한 기울기가 통계적으로 유의한지 점검할 수 있다.
+\index{p-값 (p-value)}
+\index{유의성 (significant)} 
+\index{통계적 유의성 (statistically significant)}
+
+\begin{verbatim}
+    slope_pvalue = results.pvalues['agepreg']
+\end{verbatim}
+
+{\tt agepreg}와 연관된 p-값은 {\tt 5.7e-11} 으로 예상한 것처럼 $0.001$ 보다 적다.
+\index{연령 (age)}
+
+{\tt results.rsquared}는 $R^2$ 정보를 담고 있는데 $0.0047$이다.  
+{\tt results}는 또한 전체 모형과 연관된 p-값인 \verb"f_pvalue"도 제공하는데 $R^2$가 통계적으로 유의한가를 점검하는 검정과 유사하다. 
+\index{모형 (model)}
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+
+{\tt results}는 잔차 시퀀스인 {\tt resid}와 {\tt agepreg}에 상응하는 적합한 값 시퀀스 {\tt fittedvalues}도 제공한다.
+\index{잔차 (residuals)}
+
+{\tt results} 객체는 {\tt summary()} 메쏘드도 제공하는데,
+가독성이 좋은 형식으로 결과를 표현한다.
+
+\begin{verbatim}
+    print(results.summary())
+\end{verbatim}
+하지만 (아직) 관련되지도 않은 많은 정보를 출력한다.
+그래서 {\tt SummarizeResults}로 불리는 더 간단한 함수를 사용한다.
+다음에 모형 결과가 있다.
+
+\begin{verbatim}
+Intercept       6.83    (0)
+agepreg         0.0175  (5.72e-11)
+R^2 0.004738
+Std(ys) 1.408
+Std(res) 1.405
+\end{verbatim}
+
+{\tt Std(ys)}는 만약 어떤 설명변수 도움없이 출생 체중을 추측해야 한다면 갖게될 종속변수 표준편차 RMSE가 된다.
+{\tt Std(res)}는 만약 추측에 산모 연령 정보를 안다면 갖게될 잔차 표준편차 RMSE가 된다. 
+이미 살펴봤듯이, 산모 연령을 아는 것이 그다지 예측에 향상을 가져오지는 않는다.
+
+\index{표준편차 (standard deviation)}
+\index{출생체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+\index{설명변수 (explanatory variable)}
+\index{종속변수 (dependent variable)}
+\index{RMSE}
+\index{예측력 (predictive power)}
+
+
+\section{다중회귀 (Multiple regression)}
+\label{multiple}
+
+~\ref{birth_weights}절에서 첫째 아이 체중이 첫째가 아닌 아이들 체중보다 가벼운 경향이 있고, 그 효과가 통계적 유의적성이 있다는 것을 봤다.
+하지만, 이상한 결과로 이유는 첫번째 아이 체중이 더 가볍다고 할 수 있는 분명한 메커니즘(mechanism)은 없다. 그래서 이러한 관계가 {\bf 거짓(spurious)}인지 궁금하다.
+\index{다중회귀 (multiple regression)}
+\index{거짓관계(spurious relationship)}
+
+사실 이 효과에 대한 가능한 설명이 있기는 하다. 출생 체중이 산모 연령에 의존한 것을 봤다. 그리고 첫째 아이 산모는 첫째가 아닌 아이 산모보다 더 어리다는 것을 예상할 수 있다.
+\index{체중 (weight)}
+\index{연령 (age)}
+계산 몇번으로 상기 설명이 그럴듯한지 점검할 수 있다.
+그리고 나서, 다중회귀를 사용해서 좀더 자세히 조사할 것이다. 먼저 체중 차이가 얼마나 큰지 살펴본다.
+
+\begin{verbatim}
+diff_weight = firsts.totalwgt_lb.mean() - others.totalwgt_lb.mean()
+\end{verbatim}
+
+첫째 아이는 0.125 lbs, 즉 2 온스 가볍다. 그리고 연령 차이는 다음과 같다.
+
+\begin{verbatim}
+diff_age = firsts.agepreg.mean() - others.agepreg.mean()
+\end{verbatim}
+
+첫째 아이 산모 나이가 3.59 년 더 젊다.
+다시 선형 모형을 돌리게 되면, 연령 함수로 출생체중에 변화값를 얻는다.
+\index{출생 체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+
+\begin{verbatim}
+results = smf.ols('totalwgt_lb ~ agepreg', data=live).fit()
+slope = results.params['agepreg']
+\end{verbatim}
+
+기울기는 년당 0.175 파운드다. 만약 기울기를 연령 차이와 곱하게 되면, 산모 연령 때문에 첫째 아이와 첫째가 아닌 아이들에 대한 출생 체중 평균 차이를 얻게된다. 
+
+\begin{verbatim}
+slope * diff_age
+\end{verbatim}
+
+결과는 0.063 으로 관측 차이의 약 절반이다. 
+그래서 잠정적으로 출생 체중에 관측 차이는 부분적으로 산모 연령 차이로 설명될 수 있다고 결론낸다.
+
+다중 회귀를 사용해서, 관계를 좀더 체계적으로 탐색할 수 있다.
+\index{다중 회귀 (multiple regression)}
+
+\begin{verbatim}
+    live['isfirst'] = live.birthord == 1
+    formula = 'totalwgt_lb ~ isfirst'
+    results = smf.ols(formula, data=live).fit()
+\end{verbatim}
+
+첫번째 행은 {\tt isfirst}라는 새로운 칼럼(열)을 생성한다. 첫번째 아이는 참(True), 첫번째 아이가 아니면 거싲(False)다. 그리고 나서, 설명변수로 {\tt isfirst}를 사용해서 모형에 적합한다.
+\index{모형 (model)}
+\index{설명 변수 (explanatory variable)}
+
+다음에 결과가 있다.
+
+\begin{verbatim}
+Intercept         7.33   (0)
+isfirst[T.True]  -0.125  (2.55e-05)
+R^2 0.00196
+\end{verbatim}
+
+{\tt isfirst}는 부울(boolean)이기 때문에, 
+{\tt ols}는 이 변수를 {\bf 범주형 변수 (categorical variable)}로 처리한다. 의미하는 바는 값이 참(true)과 거짓(false) 같은 범주에 속하기 때문에 숫자로 처리되면 안된다는 것이다.
+추정된 모수는 {\tt isfirst}가 참일때 출생 체중에 대한 효과다. 그래서 결과 -0.125 lbs 는 첫번째 아이와 첫째가 아닌 아이들 간에 출생체중 차이다.
+\index{출생 체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+\index{범주형 변수 (categorical variable)}
+\index{부울 (boolean)}
+
+기울기와 절편이 통계적 유의성이 있다. 의미하는 바는 우연으로 발생한 것 같지는 않다. 하지만, 모형 $R^2$ 값이 작다. 의미하는 바는 {\tt isfirst} 가 출생체중 변동 상당부분을 설명하지는 못한다는 것이다.
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+
+결과는 {\tt agepreg}와 비슷하다.
+
+\begin{verbatim}
+Intercept       6.83    (0)
+agepreg         0.0175  (5.72e-11)
+R^2 0.004738
+\end{verbatim}
+
+다시 한번, 모수는 통계적 유의성이 있으나, $R^2$ 값은 낮다.
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+
+상기 모형은 지금까지 살펴본 결과를 다시 확인해 준다. 하지만, 이제 변수 두개를 넣어서 모형을 적합할 수 있다. 구문 공식 \verb"totalwgt_lb ~ isfirst + agepreg"을 대입하면, 다음을 얻는다:
+
+\begin{verbatim}
+Intercept        6.91    (0)
+isfirst[T.True] -0.0698  (0.0253)
+agepreg          0.0154  (3.93e-08)
+R^2 0.005289
+\end{verbatim}
+
+조합 모형에서, {\tt isfirst}에 대한 모수는 약 절반 작아졌다. 의미하는 것은 {\tt isfirst}의 외관효과가 사실 {\tt agepreg}으로 설명이 된다는 것이다.
+그리고 {\tt isfirst}에 대한 p-값은 약 2.5\%로, 통계적 유의성 경계선상에 있다.
+\index{p-값 (p-value)}
+\index{모형 (model)}
+
+모형에 $R^2$값이 약간 더 크다. 따라서 변수 두개가 혼자보다 출산 체중에 변동성을 더 많이 (하지만 그다지 많지는 않다) 설명하는 것을 나타낸다.
+
+\index{출생 체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+
+
+\section{비선형 관계 (Nonlinear relationships)}
+\label{nonlinear}
+
+{\tt agepreg} 변수 기여분이 비선형일지 모른다는 것을 기억하면,
+이 관계에 더 많은 것을 잡아내기 위해서 변수 추가를 생각해볼 수 있다.
+한가지 선택옵션은 연령 제곱 정보을 담고 있는 {\tt agepreg2} 칼럼(열)을 생성하는 것이다.
+\index{비선형 (nonlinear)}
+
+\begin{verbatim}
+    live['agepreg2'] = live.agepreg**2
+    formula = 'totalwgt_lb ~ isfirst + agepreg + agepreg2'
+\end{verbatim}
+
+이제 {\tt agepreg}와 {\tt agepreg2}에 대한 모수를 추정함으로써,
+효과적으로 포물선에 적합한다.
+
+\begin{verbatim}
+Intercept        5.69     (1.38e-86)
+isfirst[T.True] -0.0504   (0.109)
+agepreg          0.112    (3.23e-07)
+agepreg2        -0.00185  (8.8e-06)
+R^2 0.007462
+\end{verbatim}
+
+{\tt agepreg2} 모수가 음수라서, 포물선 곡선이 아래쪽 방향으로,
+그림~\ref{linear2}에 나와있는 선 모양과 일관성을 갖는다.
+\index{포물선 (parabola)}
+
+{\tt agepreg} 이차 모형이 출생 체중에 더 많은 변동성을 설명한다;
+{\tt isfirst}에 대한 모수가 이 모형에서 더 작아졌고, 더이상 통계적 유의성은 없다.
+\index{출생 체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+\index{이차모형 (quadratic model)}
+\index{모형 (model)}
+\index{유의성 (significant)} 
+\index{통계적 유의성 (statistically significant)}
+
+{\tt agepreg2} 처럼 계산된 변수를 사용하는 것이 데이터에 다항식과 다른 함수를 적합하는 흔한 방식이다.
+이 과정은 여전히 선형회귀로 간주되는데 이유는 
+변수가 다른 변수의 비선형 함수가 되는지에 관계없이, 종속 변수가 설명변수의 선형 함수이가 되기 때문이다.
+\index{설명변수 (explanatory variable)}
+\index{종속변수 (dependent variable)}
+\index{비선형 (nonlinear)}
+
+다음 표에 요약된 회귀결과가 있다.
+
+\begin{center}
+\begin{tabular}{|l|c|c|c|c|}
+\hline & isfirst & agepreg & agepreg2 & $R^2$ \\ \hline
+Model 1 & -0.125 * & -- & -- & 0.002 \\
+Model 2 & -- & 0.0175 * & -- & 0.0047 \\
+Model 3 & -0.0698 (0.025) & 0.0154 * & -- & 0.0053 \\
+Model 4 & -0.0504 (0.11) & 0.112 * & -0.00185 * & 0.0075 \\
+\hline
+\end{tabular}
+\end{center}
+
+상기 표에 칼럼(열)은 설명변수 이름과 결정계수 $R^2$다. 
+각 항목은 추정한 모수와 p-값이 괄호에 들어있고, 0.001보다 작은 p-값을 표기하기 위한 별표가 있다.
+\index{p-값 (p-value)}
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+\index{설명변수 (explanatory variable)}
+
+출생 체중에 외관 차이는 적어도 부분적으로 산모 연령의 차이로 설명된다고 결론낸다. 모형에 산모 연령을 포함할 때, {\tt isfirst} 효과는 더 작아지고, 잔존효과는 유연일지도 모른다.
+\index{연령 (age)}
+
+상기 예제에서, 산모 연령이 {\bf 제어변수 (control variable)}로 역할을 한다; 모형에 {\tt agepreg} 변수를 포함하게 되면 첫 출산 산모와 그렇지 않은 산모 간 연령 차이를 ``제어한다(controls for).''
+그래서, (혹시 있다면) {\tt isfirst} 효과를 격리할 수 있게 한다.
+\index{제어 변수 (control variable)}
+
+
+\section{Data mining}
+\label{mining}
+
+지금까지 설명을 위해서 회귀모형을 사용했다; 예를 들어, 앞절에서 출생체중 외관 효과는 사실 산모 연령 차이 때문이라는 것을 밝혀냈다.
+하지만, 이 모형의 $R^2$ 값이 매우 낮아서, 의미하는 것은 거의 예측력이 없다는 것이다. 이번 절에서 더 잘해보려고 한다.
+
+\index{출생 체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+\index{회귀모형 (regression model)}
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+
+동료중 한명이 곧 출산한다고 하고, 태어날 아이 출생 체중을 맞추는 공식 복권판매소(betting pool)가 있다고 가정하자. (만약 여럿이 어울려 돈을 걸는데 친숙하지 않다면, 다음을 참조 한다 \url{https://en.wikipedia.org/wiki/Betting_pool}).
+\index{복권판매소 (betting pool)}
+
+이제 정말 내기에서 {\em 정말} 이기고 싶다고 가정하자.
+우승 가능성을 높이기 위해서 무엇을 할 수 있을까?
+NSFG 데이터셋은 각 임신에 관해서 244개 변수, 각 응답자에 대해서 추가로 308개 변수를 포함하고 있다. 아마도, 변수 중 일부는 예측력이 있다.
+어느 변수가 가장 유용한지 알아내기 위해서, 모든 변수를 시도해보면 안될까?
+\index{NSFG}
+
+임신 테이블(pregnancy table)에 있는 변수를 검정하는 것은 쉽다. 하지만, 응답자 테이블(respondent table)에 있는 변수를 사용하기 위해서는, 각 임신과 응답자를 매칭해야 한다. 이론적으로 임신 테이블 행을 반복 돌리고, {\tt caseid}를 사용해서 해당하는 응답자를 찾아내고, 해당 테이블에 있는 값을 임신 테이블로 복사한다. 하지만, 시간이 많이 걸리고 느릴것 같다.
+\index{결합 (join)}
+\index{SQL}
+
+더 좋은 선택옵션은 SQL과 다른 관계형 데이터베이스 언어에 정의된 {\bf 결합(join)} 연산으로 이 과정을 인식하는 것이다. (\url{https://en.wikipedia.org/wiki/Join_(SQL) 참조}).
+결합(Join)이 데이터프레임 메쏘드로 구현되어 있어서, 다음과 같이 연산을 수행한다.
+\index{데이터프레임 (DataFrame)}
+
+\begin{verbatim}
+    live = live[live.prglngth>30]
+    resp = chap01soln.ReadFemResp()
+    resp.index = resp.caseid
+    join = live.join(resp, on='caseid', rsuffix='_r')
+\end{verbatim}
+
+복권판매소가 마감일 몇주 전에 문을 연다고 가정하고, 첫번째 행은 임신 기간이 30 주차 이상된 레코드만 선택한다. 
+\index{복권판매소 (betting pool)}
+
+다음 행은 응답자 파일을 읽는다. 결과는 정수 인덱스를 갖는 데이터프레임이다; 응답자를 효율적으로 조회하기 위해서, {\tt resp.index} 를 {\tt resp.caseid}으로 교체했다.
+
+``왼편(left)'' 테이블인 {\tt live}가 {\tt join} 메쏘드를 호출하고, ``오른편(right)'' 테이블 {\tt resp}에 전달된다. 키워드 인자 {\tt on}이 두 테이블에서 행을 매칭하는데 사용되는 변수를 지칭한다.
+
+이 예제에서, 칼럼(열) 이름 몇개가 양쪽 테이블에 나타난다. 그래서, {\tt rsuffix}를 통해서, 오른편 테이블에 중복되는 칼럼 명칭에 추가한다.
+예를 들어, 양쪽 테이블 모두 응답자 인종을 기호화한 {\tt race}라는 칼럼이 있다. 결합(Join) 결과에는 {\tt race}와 \verb"race_r" 이라는 두 칼럼이 있게 된다.
+\index{인종 (race)}
+
+판다스 구현은 빠르다. NSFG 테이블을 결합(Join)하는 것은 보통의 데스크탑 컴퓨터에서 1초도 걸리지 않는다. 이제 변수 검정을 시작할 수 있다.
+\index{판다스 (pandas)}
+\index{결합 (join)}
+
+\begin{verbatim}
+    t = []
+    for name in join.columns:
+        try:
+            if join[name].var() < 1e-7:
+                continue
+
+            formula = 'totalwgt_lb ~ agepreg + ' + name
+            model = smf.ols(formula, data=join)
+            if model.nobs < len(join)/2:
+                continue
+
+            results = model.fit()
+        except (ValueError, TypeError):
+            continue
+
+        t.append((results.rsquared, name))
+\end{verbatim}
+
+모형을 구축한 각 변수에 대해서, $R^2$를 계산하고, 리스트에 결과값을 덧붙인다. 모든 모형은 {\tt agepreg} 변수를 포함하는데, 이미 일정부분 예측력이 있다는 것을 확인했기 때문이다.
+\index{모형 (model)}
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+
+각 설명변수에 변동성이 있는지 점검한다; 만약 그렇지 않다면, 회귀 결과는 신뢰성이 없다. 또한 각 모형에 대해서 관측점 숫자도 점검한다.
+너무 많은 {\tt nan} 을 포함한 변수는 예측에 좋은 후보는 아니다.
+\index{설명변수 (explanatory variable)}
+\index{NaN}
+
+대부분의 변수에 대해서 어떠한 정제(cleaning)도 수행하지 않았다.
+변수 중 일부는 선형회귀에 잘 동작하지 않는 방식으로 부호화되어 있다.
+결과로 만약 적절하게 변수를 정제하지 않는다면, 유용할지도 모른 변수 몇개를 간과하게 된다.
+\index{정제(cleaning)}
+
+
+\section{예측 (Prediction)}
+
+다음 단계는 결과를 정렬하고 가장 높은 $R^2$ 값을 산출하는 변수를 선택하는 것이다.
+\index{예측 (prediction)}
+
+\begin{verbatim}
+    t.sort(reverse=True)
+    for mse, name in t[:30]:
+        print(name, mse)
+\end{verbatim}
+
+리스트에 첫 변수는 \verb"totalwgt_lb"고, \verb"birthwgt_lb"가 다음이다. 
+분명하게, 출생 체중을 사용해서, 출생 체중을 예측할 수는 없다.
+\index{출생 체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+
+비슷하게 {\tt prglngth} 변수가 유용한 예측력이 있지만, 복권판매소에 대해 임신기간(그리고 연관된 변수)은 아직 알려지지 않았다고 가정한다.
+\index{예측력 (predictive power)}
+\index{임신 기간 (pregnancy length)}
+
+첫번째 유용한 예측변수는 {\tt babysex}으로 아기 성별이 남자인지 여자인지 나타낸다. NSFG 데이터셋에서 남자가 약 0.3 lbs 더 무겁다. 
+그래서, 아이 성별을 알고 있다고 가정하면, 예측에 설명변수로 사용할 수 있다.
+\index{성별 (sex)}
+
+다음은 {\tt 인종 (race)}이다. 응답자가 백인, 흑인, 혹은 다른 인종인지를 나타낸다. 설명 변수로서, 인종은 문제소지가 있다. NSFG 같은 데이터셋에서 인종은 많은 다른 변수와 상관이 있는데, 소득 그리고 다른 사회경제적 요인이 포함된다. 회귀모형에서, 인종은 {\bf 대리변수 (proxy variable)}로 동작한다. 그래서 인종과 외관 상관이 적어도 부분적으로 다른 요인에 의해서 종종 발생된다.
+\index{설명변수 (explanatory variable)}
+\index{인종 (race)}
+
+리스트에 다음 변수는 {\tt nbrnaliv}다. 임신이 다둥인지를 나타낸다.
+쌍둥이와 세쌍둥는 다른 아이보다 더 작은 경향이 있다. 그래서 만약 가상 동료가 쌍둥이를 기대하고 있다는 것을 알고 있다면, 도움이 될 수 있다.
+\index{다둥이 출생 (multiple birth)}
+
+리스트에 있는 다음 변수는 {\tt paydu}다.
+응답자가 집을 가지고 있는지를 나타낸다.
+소득과 관련된 변수중의 하나로 예측력이 있는 것으로 밝혀졌다.
+NSFG같은 데이터셋에서, 소득과 재산은 거의 모든 것과 상관관계가 있다. 
+상기 예제에서, 소득은 식단, 건강, 건강보험 그리고 출생 체중에 영향을 줄 것 같은 다른 요인과 관련있다.
+\index{출생 체중 (birth weight)}
+\index{체중 (weight)!출생 (birth)}
+\index{소득 (income)}
+\index{재산 (wealth)}
+
+리스트에 있는 다른 변수중 일부는 아이가 모유 수유한 주차(week) 정보 {\tt bfeedwks}로 나중까지도 알수 없는 변수다.
+이러한 변수를 예측에 사용할 수 없지만, {\tt bfeedwks} 변수가 출생 체중과 상관될 수 있는 이유를 추측할 필요가 있다.
+
+때때로, 이론에서 시작해서 이론을 검정하는데 데이터를 사용한다. 
+다르게는 데이터로 시작해서 가능한 이론을 살펴보는 방향으로 추진한다.
+이번절에서 시연한 두번째 접근법을 {\bf 데이터 마이닝 (data mining)}이라고 부른다. 데이터 마이닝의 장점은 기대하지 않은 패턴을 발견할 수 있다는 것이다. 위험성은 발견한 많은 패턴이 확률 변동(random)이거나 거짓(spurious)이라는 것이다. 
+\index{이론 (theory)}
+\index{데이터 마이닝 (data mining)}
+
+잠재성 있는 설명변수를 식별했기 때문에 모형 몇개를 검정하고 이중 하나를 정한다.
+\index{모형 (model)}
+\index{예측 변수 (explanatory variable)}
+
+\begin{verbatim}
+    formula = ('totalwgt_lb ~ agepreg + C(race) + babysex==1 + '
+               'nbrnaliv>1 + paydu==1 + totincr')
+    results = smf.ols(formula, data=join).fit()
+\end{verbatim}
+
+상기 공식(formula)에는 지금까지 보지 못한 구문이 있다:
+{\tt C(race)}은 Patsy 공식 파서 (formula parser)에 인종(race)변수를 숫자형식으로 부호화 되어 있지만, 범주형 변수로 처리하게 한다.
+\index{Patsy}
+\index{범주형 변수 (categorical variable)}
+
+{\tt babysex} 변수에 대한 부호화는 남자는 1, 여자는 2로 되어 있다; 
+{\tt babysex==1} 이것은 숫자를 부울(boolean) 전환해서 남자는 참(true), 여자는 거짓(false)가 된다.
+\index{부울 (boolean)}
+
+비슷하게, {\tt nbrnaliv>1}은 다둥이 출산은 참(true)가 되고,
+{\tt paydu==1}는 집을 소유한 응답자가 참(true)가 된다.
+
+{\tt totincr} 변수는 숫자 1--14 로 부호화되어 있어, 연간 소득으로 숫자가 하나 증가할때 마다 \$5000을 나타낸다. 그래서 \$5000 단위로 표현된 숫자 값을 처리할 수 있다.
+\index{소득 (income)}
+
+다음에 모형 적합 결과가 있다.
+
+\begin{verbatim}
+Intercept               6.63    (0)
+C(race)[T.2]            0.357   (5.43e-29)
+C(race)[T.3]            0.266   (2.33e-07)
+babysex == 1[T.True]    0.295   (5.39e-29)
+nbrnaliv > 1[T.True]   -1.38    (5.1e-37)
+paydu == 1[T.True]      0.12    (0.000114)
+agepreg                 0.00741 (0.0035)
+totincr                 0.0122  (0.00188)
+\end{verbatim}
+
+특히 소득 요인을 제어했는데, 인종에 대한 추정 모수는 저자가 예상한 것보다 더 크다. 흑인은 1, 백인은 2, 나머지 인종은 3으로 부호화했다.
+흑인 산모 아이가 0.27--0.36 lbs 만큼 다른 인종 아이보다 더 가볍다.
+\index{제어 변수 (control variable)}
+\index{인종 (race)}
+
+이미 살펴본 것처럼, 남자 아이가 약 0.3 lbs 더 무겁다;
+쌍둥이와 다둥이는 약 1.4 lbs 정도 더 가볍다.
+\index{체중 (weight)}
+
+소득을 제어했을 때, 자기 집을 소유한 사람은 약 0.12 lbs 정도 더 아이가 무겁다. 산모 연령 모수는 ~\ref{multiple} 절에서 살펴본 것보다 더 작다. {\tt paydu}와 {\tt totincr}을 포함하여 다른 변수 일부와 연령이 상관됨을 시사한다.
+\index{소득 (income)}
+
+이들 변수 모두가 통계적으로 유의하고 몇몇은 매우 낮은 p-값을 보인다. 하지만, $R^2$ 값은 겨우 0.06 으로 여전히 매우 작다.
+모형을 사용하지 않은 RMSE는 1.27 lbs; 모형을 사용하면 1.23으로 떨어진다.
+그래서 내기에서 우승할 가능성은 상당하게 증가하지는 않는다. 미안합니다!
+\index{p-값 (p-value)}
+\index{모형 (model)}
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+\index{유의성 (significant)} 
+\index{통계적 유의성 (statistically significant)}
+
+
+\section{로지스틱 회귀 (Logistic regression)}
+
+이전 예제에서, 설명 변수 몇개는 숫자형이고, (부울을 포함하여) 몇개는 범주형이다. 하지만, 종속변수가 항상 숫자형이다.
+
+\index{설명변수 (explanatory variable)}
+\index{종속변수 (dependent variable)}
+\index{범주형 변수 (categorical variable)}
+
+선형회귀는 다른 유형 종속변수를 처리하도록 일반화될 수 있다.
+만약 종속변수가 부울(boolean)이라면, 일반화모형은 {\bf 로지스틱 회귀(logistic regression)}라고 불린다. 만약 종속변수가 정수 갯수라면, {\bf 포아송 회귀 (Poisson regression)}라고 불린다..
+\index{모형 (model0}
+\index{로지스틱 회귀 (logistic regression)}
+\index{포아송 회귀 (Poisson regression)}
+\index{부울 (boolean)}
+
+로지스틱 회귀 사례로, 복권판매소 시나리오 변형을 생각해보자.
+여러분 친구중 한명이 임신했고, 아기가 남자인지 여자인지 예측한다고 가정하자. NSFG 데이터를 사용해서 관례로 남자 아이가 태어나는 확률로 정의되는 ``성비(sex ratio)''에 영향을 주는 요인을 찾아낸다.
+\index{복권판매소 (betting pool)}
+\index{성별 (sex)}
+
+예를 들어 여자를 0, 남자를 1로 종속변수를 숫자형으로 부호화한다면, 보통최소제곱(ordinary least square) 방법을 적용할 수 있지만, 문제가 있다.
+선형 모형은 다음과 같은 형태다.
+%
+\[ y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \eps \]
+%
+여기서 $y$ 는 종속변수, $x_1$과 $x_2$는 설명변수다.
+그리고 나서 잔차를 최소화하는 모수를 찾는다.
+\index{회귀 모형 (regression model)}
+\index{설명 변수 (explanatory variable)}
+\index{종속 변수 (dependent variable)}
+\index{보통최소제곱 (ordinary least squares)}
+
+상기 접근법 문제는 해석하기 어려운 예측을 산출한다는 것이다.
+추정 모수와 $x_1$와 $x_2$에 대한 값이 주어지면, 모형은 $y=0.5$ 으로 예측할 수 있다. 하지만 $y$ 의 유의미한 값은 0과 1이다.
+\index{모수 (parameter)}
+
+확률로 결과를 해석하고자 하는 유혹이 있다; 예를 들어, $x_1$와 $x_2$의 특정 값을 가진 응답자가 남자 아이를 가질 확률이 50\%라고 말하고 싶다. 하지만 모형이 $y=1.1$ 혹 $y=-0.1$으로 예측하는 것도 가능하다. 하지만 타당한 확률값은 아니다.
+\index{확률 (probability)}
+
+로지스틱 회귀는 확률보다는 {\bf 오즈(odds)} 용어로 예측을 표현함으로써 이러한 문제를 피해간다. 만약 오즈에 친숙하지 않다면, 사건에 대한 ``선호 오즈 (odds in favor)''는 일어나지 않을 확률에 대한 일어날 확률 비율이다.
+\index{오즈 (odds)}
+
+그래서 만약 우리팀 승리 가능성이 75\% 라면, 선호 오즈가 3대 1 인데, 이유는 승리 가능성이 패배 가능성보다 3배가 되기 때문이다.
+
+오즈와 확률은 동일한 정보를 다르게 표현한다.
+확률이 주어지면, 다음과 같이 오즈를 계산한다.
+
+\begin{verbatim}
+    o = p / (1-p)
+\end{verbatim}
+
+선호 오즈(odds in favor)가 주어지면, 다음과 같이 확률로 전환한다.
+
+\begin{verbatim}
+    p = o / (o+1)
+\end{verbatim}
+
+로지스틱 회귀는 다음 모형에 기반한다.
+%
+\[ \log o = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \eps \]
+%
+
+여기서, $o$ 는 특정 결과에 대한 선호 오즈다; 예제에서 $o$ 는 남자 아이를 갖는 오즈가 된다.
+\index{회귀 모형 (regression model)}
+
+모수 $\beta_0$, $\beta_1$, $\beta_2$ 를 추정한다고 가정하자.
+ (잠시 후에 추정방법을 설명한다)
+그리고, $x_1$와 $x_2$에 값이 주어졌다. 
+$\log o$ 예측 값을 계산하고 나서 확률로 전환한다.
+
+\begin{verbatim}
+    o = np.exp(log_o)
+    p = o / (o+1)
+\end{verbatim}
+
+그래서 복권판매소 시나리오에서 남자아이를 갖는 예측 확률을 계산할 수 있다. 하지만, 모수를 어떻게 추정할가요?
+\index{모수 (parameter)}
+
+\section{모수 추정 (Estimating parameters)}
+
+선형회귀와 달리, 로지스틱 회귀는 닫힌 형식 해답(closed form solution)이 없다. 그래서, 초기 해답(solution)을 추측하고 반복적으로 해답에 접근해 간다.
+\index{로지스틱 회귀 (logistic regression)}
+\index{닫힌 형식 (closed form)}
+
+통상적인 목표는 최대우도추정량(maximum-likelihood estimate, MLE)을 찾는 것으로, 데이터 우도(likelihood)를 최대화하는 모수 집합이다.
+예를 들어, 다음 데이터가 있다고 가정하자.
+\index{MLE}
+\index{최대우도추정량 (maximum likelihood estimator)}
+
+\begin{verbatim}
+>>> y = np.array([0, 1, 0, 1])
+>>> x1 = np.array([0, 0, 0, 1])
+>>> x2 = np.array([0, 1, 1, 1])
+\end{verbatim}
+
+최초 추측값 $\beta_0=-1.5$, $\beta_1=2.8$, $\beta_2=1.1$ 에서 출발한다.
+
+\begin{verbatim}
+>>> beta = [-1.5, 2.8, 1.1]
+\end{verbatim}
+
+그리고 나서, 각 행에 대해서 \verb"log_o"을 계산한다:
+
+\begin{verbatim}
+>>> log_o = beta[0] + beta[1] * x1 + beta[2] * x2 
+[-1.5 -0.4 -0.4  2.4]
+\end{verbatim}
+
+그리고 로그 오즈를 확률로 전환한다.
+\index{로그 오즈 (log odds)}
+
+\begin{verbatim}
+>>> o = np.exp(log_o)
+[  0.223   0.670   0.670  11.02  ]
+
+>>> p = o / (o+1)
+[ 0.182  0.401  0.401  0.916 ]
+\end{verbatim}
+
+\verb"log_o"가 0 보다 클 때, 
+{\tt o}는 1 보다 크고 {\tt p}는 0.5 보다 크다는 것을 주목한다.
+
+결과 우도는 {\tt y==1}일 때 {\tt p}, {\tt y==0}일 때 {\tt 1-p}다.
+예를 들어, 남아가 태어날 확률이 0.8이고, 결과가 남아라고 생각한다면, 우도는 0.8이다; 만약 결과가 여아라면, 우도는 0.2다. 다음과 같이 계산할 수 있다.
+\index{우도 (likelihood)}
+
+\begin{verbatim}
+>>> likes = y * p + (1-y) * (1-p)
+[ 0.817  0.401  0.598  0.916 ]
+\end{verbatim}
+
+데이터 전체 우도는 {\tt likes} 곱이다.:
+
+\begin{verbatim}
+>>> like = np.prod(likes)
+0.18
+\end{verbatim}
+
+{\tt beta} 값에 대해, 데이터 우도는 0.18이다. 로지스틱 회귀 목표는 우도를 최대화하는 모수를 찾아내는 것이다. 이를 위해서, 대부분의 통계 팩키지는 뉴톤 방법(Newton's Method) 같은 반복 해결사(iterative solver)를 사용한다.(
+\url{https://en.wikipedia.org/wiki/Logistic_regression#Model_fitting} 참조).
+\index{뉴톤 방법 (Newton's method)}
+\index{반복 해결사 (iterative solver)}
+
+
+\section{구현 (Implementation)}
+\label{implementation}
+
+StatsModels에는 로지스틱 회귀 기능을 제공하는 확률을 로그 오즈(log odds)로 전환하는 함수 이름을 따서 {\tt logit}이라고 부른다.
+사용법을 시연하기 위해서, 성비(sex ratio)에 영향을 주는 변수를 찾는다.
+\index{StatsModels}
+\index{성비 (sex ratio)}
+\index{로짓 함수 (logit function)}
+
+다시, NSFG 데이터를 적재하고 임신 30 주차 이상된 정보만 선택한다.
+
+\begin{verbatim}
+    live, firsts, others = first.MakeFrames()
+    df = live[live.prglngth>30]
+\end{verbatim}
+
+{\tt logit}에 종속변수는 (부울 자료형 보다) 이진(binary)이 되어야 한다. 그래서 이진 정수(binary integer)로 전환하는 {\tt astype(int)} 메쏘드를 사용해서 새로운 칼럼(열) {\tt boy}를 생성한다.
+
+\index{종속변수 (dependent variable)}
+\index{부울 (boolean)}
+\index{이진 (binary)}
+
+\begin{verbatim}
+    df['boy'] = (df.babysex==1).astype(int)
+\end{verbatim}
+
+성비에 영향을 주는 것을 밝혀진 요인은 부모 연령, 출생 순서, 인종, 사회적 지위가 포함된다. 로지스틱 회귀를 사용해서 이러한 효과가 NSFG 데이터에 나타나는지 살펴보자. 산모 연령부터 시작하자.
+
+\index{연령 (age)}
+\index{인종 (race)}
+
+\begin{verbatim}
+    import statsmodels.formula.api as smf
+
+    model = smf.logit('boy ~ agepreg', data=df)
+    results = model.fit()
+    SummarizeResults(results)
+\end{verbatim}
+
+{\tt logit}은 {\tt ols}와 동일한 인자, Patsy 구문 공식(formula)과 데이터프레임을 받는다.
+결과는 모형을 표현하는 Logit 객체다.
+객체 내부에는 {\tt endog}와 {\tt exog} 속성이 포함된다; 종속변수를 부르는 다른 이름 {\bf 내생 변수 (endogenous variable)}와 설명변수를 부르는 다른 이름 {\bf 외생 변수 (exogenous variables)}가 있다.
+넘파이(NumPy) 배열이기 때문에, 때때로 배열을 데이터프레임으로 변환하는 것이 편리하다.
+\index{넘파이 (NumPy)}
+\index{판다스 (pandas)}
+\index{데이터프레임 (DataFrame)}
+\index{설명 변수 (explanatory variable)}
+\index{종속 변수 (dependent variable)}
+\index{외생 변수 (exogenous variable)}
+\index{내생 변수 (endogenous variable)}
+\index{Patsy}
+
+\begin{verbatim}
+    endog = pandas.DataFrame(model.endog, columns=[model.endog_names])
+    exog = pandas.DataFrame(model.exog, columns=model.exog_names)
+\end{verbatim}
+
+{\tt model.fit} 결과는 BinaryResults 객체로, {\tt ols} 적합에서 얻은 RegressionResults 객체와 유사하다.
+다음에 요약결과가 있다.
+
+\begin{verbatim}
+Intercept   0.00579   (0.953)
+agepreg     0.00105   (0.783)
+R^2 6.144e-06
+\end{verbatim}
+
+{\tt agepreg} 모수는 양수다. 나이가 더 많은 산모가 남아를 더 선호하는 것같지만, p-값은 0.783으로 외관효과는 우연에 의한 것으로 볼 수 있다.
+\index{p-값 (p-value)}
+\index{연령 (age)}
+
+결정계수, $R^2$는 로지스틱 회귀에 적용되지 않는다.
+하지만, ``의사 $R^2$ 값 (pseudo $R^2$ values)''으로 사용될 수 있는 대안이 몇개 있는데 모형을 비교하는데 유용하다.
+예를 들어, 성비와 연관되어 있다고 믿어지는 요인 몇개를 포함한 모형이 다음에 있다.
+\index{모형 (model)}
+\index{결정계수 (coefficient of determination)}
+\index{r-제곱 (r-squared)}
+\index{의사 r-제곱 (pseudo r-squared)}
+
+\begin{verbatim}
+    formula = 'boy ~ agepreg + hpagelb + birthord + C(race)'
+    model = smf.logit(formula, data=df)
+    results = model.fit()
+\end{verbatim}
+
+산모 연령과 함께, 모형에는 출생시점에 아버지 연령 ({\tt hpagelb}), 
+출생 순서 ({\tt birthord}), 범주형 변수로 인종이 포함된다.
+다음에 결과가 있다.
+\index{범주형 변수 (categorical variable)}
+
+\begin{verbatim}
+Intercept      -0.0301     (0.772)
+C(race)[T.2]   -0.0224     (0.66)
+C(race)[T.3]   -0.000457   (0.996)
+agepreg        -0.00267    (0.629)
+hpagelb         0.0047     (0.266)
+birthord        0.00501    (0.821)
+R^2 0.000144
+\end{verbatim}
+
+추정 모수 어떤 것도 통계적 유의성이 없다. 의사-$R^2$ 값은 약간 더 높다. 하지만 우연적인 요인 때문일 수 있다.
+\index{의사 r-제곱 (pseudo r-squared)}
+\index{유의성 (significant)} 
+\index{통계적 유의성 (statistically significant)}
+
+
+\section{정밀도 (Accuracy)}
+\label{accuracy}
+
+복권판매소 시나리오에서, 모형 정밀도(accuracy of the model)에 더 관심이 있다: 우연한 기대와 비교하여 성공적으로 예측한 횟수.
+
+\index{모형 (model)}
+\index{정밀도 (accuracy)}
+
+NSFG 데이터에는 여아보다 남아가 더 많다. 그래서 기본 전략은 매번 ``남아''로 추측한다. 이 전략 정확도는 단지 남아 비율이 된다.
+
+\begin{verbatim}
+    actual = endog['boy']
+    baseline = actual.mean()
+\end{verbatim}
+
+{\tt actual}이 이진 정수로 부호화되어 있어서, 평균은 남아 비율, 0.507이 된다.
+
+다음에 모형 정확도를 계산한 방법이 나와있다.
+
+\begin{verbatim}
+    predict = (results.predict() >= 0.5)
+    true_pos = predict * actual
+    true_neg = (1 - predict) * (1 - actual)
+\end{verbatim}
+
+{\tt results.predict}는 확률 넘파이(NumPy) 배열을 반환하는데, 0 혹은 1로 반올림한다. {\tt actual}을 곱해서 만약 남아를 예측하고 맞다면 1, 그렇지 않다면 0 을 산출한다. 그래서 \verb"true_pos" 는 ``참양성(true positives)''을 나타낸다.
+\index{넘파이 (NumPy)}
+\index{참양성 (true positive)}
+\index{참음성 (true negative)}
+% 새로 용어정의해야함... true positive, true negative, false positive(거짓 양성), false naegative 
+
+마찬가지로 \verb"true_neg"는 ``여아''라고 추측하고 맞춘 경우를 나타낸다. 정밀도는 추측이 적중한 비율이다.
+
+\begin{verbatim}
+    acc = (sum(true_pos) + sum(true_neg)) / len(actual)
+\end{verbatim}
+
+결과값이 0.512 로 기본 전략 0.507 보다 다소 높게 나온다.
+하지만, 이 결과를 너무 심각하게 받아들이면 안된다. 
+동일한 데이터를 사용해서 모형을 구축했고 검정했다.
+그래서 모형이 새로운 데이터에 예측력을 갖추지 못할 수 있다.
+\index{모형 (model)}
+
+그럼에도 불구하고, 모형을 사용해서 복권판매소에 대한 예측을 해보자.
+친구 나이가 35세이고, 백인, 친구 남편 나이는 39, 그리고 세번째 아이를 임신하고 있다고 가정하자.
+
+\begin{verbatim}
+    columns = ['agepreg', 'hpagelb', 'birthord', 'race']
+    new = pandas.DataFrame([[35, 39, 3, 2]], columns=columns)
+    y = results.predict(new)
+\end{verbatim}
+
+신규 사례에 대해서 {\tt results.predict}을 호출하기 위해서, 
+모형에 각 변수에 대한 칼럼을 갖는 데이터프레임을 작성해야 한다. 
+이 경우에 0.52가 나와서 ``남아''로 추정해야 한다. 하지만, 만약 모형이 승리 가능성을 향상시키지만, 차이는 매우 작다.
+\index{데이터프레임 (DataFrame)}
+
+
+\section{연습 문제}
+
+이번 연습문제에 대한 저자 해답은 \verb"chap11soln.ipynb" 파일에 나와있다.
+
+\begin{exercise}
+동료중 한명이 출산이 예정되어 있고, 출생일을 예측하는 사무실 내기게임에 참여한다고 가정하자. 임신 30주차에 내기를 건다고 가정하자. 가장 최선의 예측을 하는데 어떤 변수를 사용하면 될까? 출생전에 알려진 변수로 한정해야하고, 내기에 참여한 사람들에게 이용가능해야할 것 같다.
+\index{내기}
+\index{출생일}
+
+\end{exercise}
+
+
+\begin{exercise}
+트리버스-윌라드(Trivers-Willard) 가설은 많은 포유류에 있어, 성비는 
+``어머니 상태(maternal condition)''에 달려있다고 제시한다; 즉,
+산모 연령, 크기, 건강, 사회적 지위 같은 요인.
+\url{https://en.wikipedia.org/wiki/Trivers-Willard_hypothesis} 참조한다.
+
+\index{트리버스-윌라드 가설}
+\index{성비}
+
+일부 연구는 사람사이에 이런 효과를 보여주고 있지만, 결과는 혼재한다.
+이번 장에서, 이런 요인과 연관된 일부 변수를 검정하지만, 
+성비에 통계적으로 유의적인 효과를 갖는 어떤 변수도 발견하지 못했다.
+  \index{유의적인} \index{통계적으로 유의적인}
+
+연습으로, 데이터 마이닝 접근법을 사용해서 임신파일과 응답자파일에서 
+다른 변수를 검정하라. 실질적인 효과를 갖는 다른 요인을 발견할 수 있는가?
+
+\index{데이터 마이닝}
+
+\end{exercise}
+
+
+\begin{exercise}
+예측하고자 하는 수량(quantity)이 갯수(count)라면, 포아송 회귀를 사용할 수 있다.
+StatModels에 {\tt poisson} 함수로 구현되어 있다.
+{\tt ols} 나 {\tt logit} 과 동일한 방식으로 작동한다.
+연습으로, 이것을 사용해서 한 여성에 대해서 얼마나 많은 아기가 태어나는지 예측한다;
+NSFG 데이터셋에서, 이 변수는 {\tt numbabes}로 불린다..
+\index{StatsModels}
+\index{포아송 회귀}
+
+나이가 35세, 흑인, 연가구소득이 \$75,000을 넘는 대학을 졸업한 여성을 가정해보자.
+그녀가 얼마나 많은 자녀를 출산할 것으로 예상되는가?
+\end{exercise}
+
+
+\begin{exercise}
+만약 예측하고자 하는 수량이 범주형이라면, 
+다항 로지스틱 회귀를 사용한다.
+StatModels에서 {\tt mnlogit} 함수로 구현되어 있다.
+연습으로, 이를 사용해서, 한 여성이 혼인상태, 동거상태, 과부상태,
+이혼상태, 별거상태, 미혼인지 추측해본다;
+NSFG 데이터셋에서, 혼인상태는 변수명 {\tt rmarital}로 부호화되어 있다.
+
+\index{범주형 변수}
+\index{혼인상태}
+
+연령이 25세, 백인, 연가구소득이 약 \$45,000 달러인 고졸 여성을 만났다고 가정해보자.
+그녀가 혼인, 동거, 등일 확률은 얼마나 될까?
+
+\end{exercise}
+
+
+\section{용어 사전}
+
+\begin{itemize}
+
+\item 회귀 (regression): 데이터에 모형을 적합하는 모형을 추정하기 위한 몇가지 관련된 과정 중의 하나.
+\index{회귀 (regression)}
+
+\item 종속변수 (dependent variables): 회귀모형에서 예측하려는 변수. 또한, 내생변수로도 알려져있다.
+\index{종속변수 (dependent variable)}
+\index{내생변수 (endogenous variable)}
+
+\item 설명변수 (explanatory variables): 종속변수를 예측하거나 설명하는데 사용되는 변수. 또한, 독립변수 혹은 외생변수로도 알려져 있다.
+\index{설명변수 (explanatory variable)}
+\index{외생변수 (exogenous variable)}
+
+\item 단순회귀 (simple regression): 단지 하나의 종속변수, 하나의 독립변수만을 갖는 회귀.
+\index{단순회귀 (simple regression)}
+
+\item 다중회귀 (multiple regression): 설명변수 다수를 갖는 회귀, 하지만 종속변수는 하나다.
+\index{다중회귀 (multiple regression)}
+
+\item 선형회귀 (linear regression): 선형 모형에 기반한 회귀.
+\index{선형회귀 (linear regression)}
+
+\item 보통최소제곱 (ordinary least squares): 잔차 제곱 오차를 최소화함으로써 모수를 추정하는 선형회귀.
+\index{보통최소제곱 (ordinary least squares)}
+
+\item 거짓 관계 (spurious relationship): 
+모형에 포함되지 않는 통계적 산출물 혹은 요인으로 발생하여 두 변수가 연관된 두 변수 사이 관계. 
+\index{거짓 관계 (spurious relationship)}
+
+\item 제어변수 (control variable): 거짓관계를 ``제어 목적으로'' 혹은 제거하는데 회귀에 포함되는 변수.
+\index{제어변수 (control variable)}
+
+\item 대리변수 (proxy variable): 다른 요인과 관계때문에 간접적으로 회귀 모형에 정보를 기여하는 변수. 그래서 그 요인에 대한 대리(proxy) 역할을 한다.
+\index{대리변수 (proxy variable)}
+
+\item 범주형 변수 (categorical variable): 이산형 순서없는 값을 갖는 변수.
+\index{범주형 변수 (categorical variable)}
+
+\item 결합 (join): 두 프레임에 행을 매칭하는 키(key)르 사용해서 두 데이터프레임에 데이터를 결합하는 연산.
+\index{결합 (join)}
+\index{데이터프레임 (DataFrame)}
+
+\item 데이터마이닝 (data mining): 많은 모형을 검정함으로써 변수 사이 관계를 찾아내는 접근법.
+\index{데이터마이닝 (data mining)}
+
+\item 로지스틱 회귀 (logistic regression): 종속변수가 부울(boolean) 자료형식일 때 사용되는 회귀 형태.
+\index{로지스틱 회귀 (logistic regression)}
+
+\item 포아송 회귀 (Poisson regression): 종속변수가 음수가 아닌 정수, 통상 갯수일 때, 사용되는 회귀 형식.
+\index{포아송 회귀 (Poisson regression)}
+
+\item 오즈 (odds): 확률 $p$를 확률과 확률보(complement) 비율로 $p / (1-p)$로 나타내는 대안적인 방법.
+\index{오즈 (odds)}
+
+\end{itemize}
+

@@ -52,3 +52,11 @@ coverage.xml
 # Sphinx documentation
 docs/_build/
 
+# Korean Image Files
+book/figs
+book/book.aux
+book/book.idx
+book/book.pdf
+book/book.synctex.gz
+book/book.toc
+

@@ -1,0 +1,646 @@
+
+\chapter{탐색적 자료 분석}
+\label{intro}
+이 책의 주요 논지는 실용적인 방법과 결합된 데이터가 질문에 대답하고, 불확실성하에서 의사결정을 안내하는 것이다.
+
+한가지 사례로, 집사람과 함께 첫번째 아이를 기대할 때 전해들은 질문에 모디브를 얻어 한가지 사례 연구를 제시한다: 첫째 애기는 늦게 낳는 경향이 있을까요?  
+\index{첫째 아이 (first babies)}
+
+만약 이 질문을 구글에 검색하면, 상당한 토론글을 볼 수 있다. 몇몇 사람은 사실이라고하고, 다른 사람은 미신이라고 하고,
+다른 사람은 첫째 얘들이 일찍 나온다고 애둘러 말하곤 한다. 
+
+많은 토론글에서, 사람들은 자신의 주장을 뒷받침하기 위해서 데이터를 제공한다. 다음과 같은 많은 사례를 찾아볼 수 있다.
+
+
+\begin{quote}
+
+``최근에 첫째 아이를 출산한 내 친구 두명은 모두 자연분만 혹은 제왕절개하기 전에 예정일에서 거의 2주나 지났다.''
+
+
+``첫째는 2주 늦게 나왔고 이제 생각하기에 둘째는 2주 빨리 나올것 같다.!!''
+
+``제 생각에는 사실이 아니라고 생각하는데 왜냐하면 언니가 엄마의 첫째인데 다른 많은 사촌과 마찬가지로 빨리 나왔기 때문이다.''
+
+\end{quote}
+
+이와 같은 보고를 {\bf 일화적 증거(anecdotal evidence)}라고 부르는데, 이유는 논문으로 출판되지 않고 대체로 개인적인 데이터에 기반하고 있기 때문이다. 일상적인 대화에서, 일화와 관련해서 잘못된 것은 없다. 그래서 인용한 사람을 콕 집어서 뭐라고 할 의도는 없다.
+\index{일화적 증거(anecdotal evidence)}
+
+하지만, 좀더 설득적인 증거와, 좀더 신빙성있는 답을 원할지도 모른다. 이런 기준으로 본다면, 일화적 증거는 대체로 성공적이지 못하다. 왜냐하면:
+
+\begin{itemize}
+
+\item 적은 관측치(Small number of observations): 만약 첫째 아기에 대해서 임신 기간이 좀더 길다면, 아마도 차이는 자연적인 변동과 비교하여 적을 것이다. 이 경우에, 차이가 존재한다는 것을 확실히 하기 위해서는 많은 임신 사례를 비교해야할 것이다. 
+\index{임신기간 (pregnancy length)}
+
+\item 선택 편의(Selection bias): 임신기간에 관한 토론에 참가한 사람들은 첫째 아이가 늦게 태어났기 때문에 관심이 있을 수 있다. 이 경우에 데이터를 선택하는 과정이 결과를 왜곡할 수도 있다.
+\index{선택 편의(selection bias)}
+\index{편의(bias)!선택(selection)}
+
+\item 확증 편의(Confirmation bias): 주장을 믿는 사람들은 주장을 확증해주는 사례에 좀더 기여할 듯 하다. 주장에 의구심을 갖는 사람들은  반례를 좀더 들것 같다. 
+\index{확증 편의 (confirmation bias)}
+\index{편의(bias)!확증(confirmation)}
+
+\item 부정확(Inaccuracy): 일화는 종종 개인 이야기로, 기억이 부정확하고, 잘못 표현되며, 부정확하게 반복된다. 
+
+\end{itemize}
+
+그렇다면, 어떻게 더 잘 할 수 있을까요?
+
+
+\section{통계적 접근방법}
+
+일화적 접근법의 한계를 극복하기 위해서 통계도구를 사용하는데 다음을 포함한다:
+
+\begin{itemize}
+
+\item 자료 수집(Data collection): 
+  대규모 국가적 조사에서 나온 자료를 사용한다. 통상 국가적 조사는 명시적으로 U.S 모집단에 대한 
+  통계적으로 타당한 추론을 도출하도록 설계된다.
+\index{자료 수집 (data collection)}
+
+\item 기술통계(Descriptive statistics): 
+  데이터를 간결하게 요약하는 통계량을 생성하고 다른 방식으로 평가하는데 데이터를 시각화한다.
+\index{기술 통계 (descriptive statistics)}
+
+\item 탐색적 데이터 분석 (Exploratory data analysis): 
+  관심있는 질문을 다룰 수 있는 패턴, 차이점, 다른 특징을 찾는다. 
+  동시에 일관되지 못함을 점검하고 한계를 식별한다.
+\index{탐색적 데이터 분석 (exploratory data analysis)}
+
+\item 추정(Estimation): 
+  일반적인 모집단의 특징을 추정하는데 샘플에서 추출된 데이터를 사용한다.
+\index{추정 (estimation)}
+
+\item 가설 검증 (Hypothesis testing): 
+  두 그룹간에 차이처럼 명백한 효과를 확인하는데 있어서 효과가 우연히 발생했는지 평가한다.
+\index{가설 검증 (hypothesis testing)}
+
+\end{itemize}
+
+함정에 빠지는 것을 피하기 위해서 상기 단계를 조심스럽게 밟아서 좀더 당위성을 가지고 좀더 옳을 것 같은 결론에 도달할 수 있다.
+
+
+\section{가족 성장 국가 조사 (National Survey of Family Growth)}
+\label{nsfg}
+
+1973년 이래로 미국 질병 통제예방 센터 (Disease Control and Prevention, CDC)에서 
+가족 성장 국가 조사 (National Survey of Family Growth, NSFG)를 수행하고 있다.
+조사 목적은 ``가족 생활, 결혼 및 이혼, 임신, 출산, 피임, 그리고 남녀 건강에 대한 정보를 수집하고,''
+조사 결과는 ``건강 서비스 및 건강 교육 프로그램, 그리고 가족, 출산, 건강에 대한 통계적 조사를 수행''하는데 사용된다.
+자세한 사항은 다음 웹사이트를 참조한다. \url{http://cdc.gov/nchs/nsfg.htm}.
+\index{가족 성장 국가 조사 (National Survey of Family Growth)}
+\index{NSFG}
+
+첫째 아이가 늦게 낳는지와 다른 문제를 조사하려고 상기 조사로 수집된 데이터를 사용한다.
+데이터를 효과적으로 사용하기 위해서는, 조사 설계(design of the study)를 이해할 필요가 있다.
+
+NSFG는 {\bf 횡단적 연구(cross-sectional study)}로 특정 시점에 한 집단에 대한 스냅샷 정보를 수집한다.
+가장 흔한 대안 연구는 {\bf 종단적 연구(longitudinal study)}로 한 집단을 여러 시점에 걸쳐 반복적으로 관찰하는 것이다. 
+
+\index{횡단적 연구 (cross-sectional study)}
+\index{연구 (study)!횡단(cross-sectional)}
+\index{종단적 연구 (longitudinal study)}
+\index{연구 (study)!종단 (longitudinal)}
+
+NSFG는 7번 조사를 수행했다; 각 조사 전개를 {\bf 사이클(cycle)}이라고 한다. 
+2002년 1월에서 2003년 3월까지 수행된 여섯번째 사이클에서 나온 데이터를 사용한다.  
+
+\index{사이클 (cycle)}
+
+조사 목적은 {\bf 모집단(population)}에 대한 결론을 도출하는 것으로, NSFG 목표 모집단은 15-44 연령의 미국민이다.
+이상적으로 데이터를 전체 모집단의 모든 사람에게서 데이터를 수집하여야 하지만, 현실적으로 불가능하다.
+대신에 {\bf 표본(sample)}으로 불리는 모집단의 일부에서 데이터를 수집한다.
+조사에 참여한 사람을 {\bf 응답자(respondents)}라고 부른다.
+
+\index{모집단 (population)}
+
+일반적으로 종단적 연구는 {\bf 대표성(representative)}을 가져야 하는데 목표 모집단의 모든 멤버가 동일한 참여 가능성을 가져야한다는 의미다. 이러한 이상은 실무에서 달성하기는 어렵다. 하지만 조사를 수행함에 있어 최대한 근접하도록 노력해야 한다.
+
+\index{응답자 (respondent)} 
+\index{대표성 (representative)}
+
+NSFG는 대표적이지 않다; 대신에 의도적으로 {\bf 오버샘플링(oversampling)}했다.
+조사 설계자가 세 집단 (히스패닉, 흑인, 10대)에 대해서 미국인구에서 차지하는 것보다 높은 비율로 조사를 실시한다.
+사유는 유효한 통계적 추론을 이끌어 내기 위해서 각 그룹에 대해 충분이 큰 응답자를 확보하기 위해서다.
+
+\index{오버샘플링 (oversampling)}
+
+물론, 오버샘플링 단점은 조사로부터 나온 통계량에 기반하여 일반 모집단에 대한 결론을 도출하기는 쉽지 않다. 
+나중에 이점에 대해서는 다시 다룰 것이다.
+
+이러한 유형의 데이터를 작업할 때, {\bf 코드북(codebook)}과 친근해지는 것이 중요하다.
+코드북은 조사 서례, 조사 질문, 응답자 기록을 문서화한다. 코드북과 NSFG 데이터에 대한 사용자 가이드는 웹사이트에서 찾아볼 수 있다. \url{http://www.cdc.gov/nchs/nsfg/nsfg_cycle6.htm}
+
+
+\section{데이터 가져오기}
+
+이 책에 사용된 코드와 데이터는 \url{https://github.com/AllenDowney/ThinkStats2} 사이트에서 사용할 수 있다.
+다운로드와 코드로 작업하는 것에 대한 자세한 정보는 ~\ref{code}을 참조한다.
+
+코드를 다운로드하면, {\tt ThinkStats2/code/nsfg.py}이라는 파일이 있다. 
+실행하면, 데이터 파일을 읽고, 몇가지 테스트를 수행하고, ``All tests passed.'' 라는 메시지를 출력한다.
+\begin{verbatim}
+$ python nsfg.py
+(13593, 244)
+nsfg.py: All tests passed.
+\end{verbatim}
+
+프로그램이 무엇을 수행하는지 살펴보자. NSFG 6번째 사이클에서 임신 데이터는 파일명이 {\tt 2002FemPreg.dat.gz}이다.
+고정폭 칼럼을 가진 일반 텍스트(ASCII) 파일형식으로 gzip으로 압축되어 있다. 
+파일 각각 라인은 한개 임신에 대한 데이터를 포함하는 {\bf 레코드(record)}가 된다.
+
+파일 형식(format)은 {\tt 2002FemPreg.dct} 파일에 문서화되어 기술되어 있고 Stata 딕셔너리 파일이다.
+Stata는 통계 소프트웨어 시스템 (통계 팩키지)의 일종으로 이러한 맥락에서 ``딕셔너리''는 각 행마다 각 변수의 위치를 식별하는데 사용되는 인덱스, 형식, 변수명 목록 정보를 담고 있다.  
+
+예를 들어 {\tt 2002FemPreg.dct} 파일에서 몇줄이 다음에 있다.
+
+%
+\begin{verbatim}
+infile dictionary {
+  _column(1)  str12  caseid    %12s  "RESPONDENT ID NUMBER"
+  _column(13) byte   pregordr   %2f  "PREGNANCY ORDER (NUMBER)"
+}
+\end{verbatim}
+
+딕셔너리는 변수 두개를 기술한다: {\tt caseid}는 응답자 ID를 대표하는 12 자리 문자로 된 문자열이다;
+ {\tt pregorder}는 1 바이트 정수형으로 응답자에 대한 임신 정보를 나타낸다.
+
+다운로드한 코드에는 {\tt thinkstats2.py} 파일이 있는데 파이썬 모듈로 이 책에서 사용되는 많은 클래스와 함수를 포함하고 있다. 
+Stata 딕셔너리와 NSFG 데이터 파일을 읽어 들일 수 있다. 다음에 {\tt nsfg.py} 프로그램에서 어떻게 사용되는지 사용례가 있다.
+
+\begin{verbatim}
+def ReadFemPreg(dct_file='2002FemPreg.dct',
+                dat_file='2002FemPreg.dat.gz'):
+    dct = thinkstats2.ReadStataDct(dct_file)
+    df = dct.ReadFixedWidth(dat_file, compression='gzip')
+    CleanFemPreg(df)
+    return df
+\end{verbatim}
+
+{\tt ReadStataDct}은 딕셔너리 파일이름을 받아서 {\tt dct}를 반환한다.
+{\tt dct}는 딕셔너리에서 받은 정보를 담고 있는 {\tt FixedWidthVariables} 객체다.
+{\tt dct}는 데이터 파일을 읽는 {\tt FixedWidthVariables}을 제공한다.
+
+\section{데이터프레임(DataFrames)}
+\label{dataframe}
+
+{\tt ReadFixedWidth} 결과는 데이터프레임(DataFrame)으로 판다스(pandas)에서 제공하는 가장 근원적인 자료구조다. 판다스는 이 책에서 사용하는 파이썬 자료 및 통계 팩키지 이름이다. 데이터프레임은 각 레코드마다 행(이 경우에 각 임신마다 한 행이 됨)과 각 변수에 대한 열을 포함하고 있다. 
+
+\index{판다스 (pandas)}
+\index{데이터프레임 (DataFrame)}
+
+데이터외에 데이터프레임은 변수명과 변수 자료형을 포함하고 있으며, 데이터에 접근 및 변경하는 방법을 제공한다. 
+
+{\tt df}를 출력하면, 행과 열, 데이터프레임 모양(13593 행/레코드, 244 열/변수)에 대한 잘려진 일부를 볼 수 있다. 
+
+\begin{verbatim}
+>>> import nsfg
+>>> df = nsfg.ReadFemPreg()
+>>> df
+...
+[13593 rows x 244 columns]
+\end{verbatim}
+
+{\tt columns} 속성은 유니코드 문자열로 칼럼명 시퀀스(sequence)를 반환한다. 
+
+\begin{verbatim}
+>>> df.columns
+Index([u'caseid', u'pregordr', u'howpreg_n', u'howpreg_p', ... ])
+\end{verbatim}
+
+결과는 인덱스(Index)로 또다른 판다스 자료구조다. 추후 인덱스(Index)에 관해서 좀더 배울 것이지만, 지금은 리스트처럼 다루기로 한다.
+
+\index{판다스 (pandas)}
+\index{인덱스 (Index)}
+
+\begin{verbatim}
+>>> df.columns[1]
+'pregordr'
+\end{verbatim}
+
+데이터프레임 칼럼에 접근하기 위해서는 칼럼이름을 키(key)로 사용할 수도 있다.
+
+\index{데이터프레임 (DataFrame)}
+
+\begin{verbatim}
+>>> pregordr = df['pregordr']
+>>> type(pregordr)
+<class 'pandas.core.series.Series'>
+\end{verbatim}
+
+결과는 시리즈(Series)로 또다른 판다스 자료구조다. 시리즈는 몇가지 추가 기능을 가진 파이썬 리스트다. 시리즈를 출력하면, 인덱스와 상응하는 값이 출력된다. 
+
+\index{시리즈 (Series)}
+
+\begin{verbatim}
+>>> pregordr
+0     1
+1     2
+2     1
+3     2
+...
+13590    3
+13591    4
+13592    5
+Name: pregordr, Length: 13593, dtype: int64
+\end{verbatim}
+
+상기 예제에서, 인덱스는 0에서 13592 정수형 자료지만, 일반적으로 정렬가능한 임의의 자료형도 가능하다. 요소값도 정수형이지만, 임의의 자료형도 가능하다.
+
+마지막 행은 변수명, 시리즈 길이, 그리고 자료형 정보가 있다; {\tt int64}은 NumPy에서 제공하는 자료형 중의 하나다. 만약 32-비트 컴퓨터에서 상기 예제를 실행한다면, {\tt int32}가 출력된다.
+\index{넘파이 (NumPy)}
+
+정수 인덱스와 슬라이스(slice)를 사용해서 시리즈 요소값(element)에 접근할 수 있다.
+
+\begin{verbatim}
+>>> pregordr[0]
+1
+>>> pregordr[2:5]
+2    1
+3    2
+4    3
+Name: pregordr, dtype: int64
+\end{verbatim}
+
+인덱스 연산자 실행 결과는 {\tt int64}이고, 슬라이스 연산자 결과는 또 다른 시리즈다. 
+
+점 표기법(dot notation)을 사용해서 데이터프레임 칼럼을 접근할 수도 있다.
+
+\index{데이터프레임 (DataFrame)}
+
+\begin{verbatim}
+>>> pregordr = df.pregordr
+\end{verbatim}
+
+칼럼명이 유효한 파이썬 식별자라면 이 표기법은 잘 동작한다. 그래서 문자로 시작해야 하고, 공백을 포함하지 말아야 하고 등등을 지켜줘야 있다.  
+\section{변수 (Variables)}
+
+NSFG 데이터셋에서 이미 변수 두개, {\tt caseid}와 {\tt pregordr}을 살펴봤다. 전체적으로 244개 변수가 있다는 것도 확인했다. 책에서 탐색적 자료분석으로 다음 변수를 사용한다.
+
+\begin{itemize}
+
+\item {\tt caseid}는 응답자의 정수형 ID다.
+
+\item {\tt prglngth}는 정수형으로 주로 임신 기간을 나타낸다.
+\index{임신 기간 (pregnancy length)}
+
+\item {\tt outcome}은 출산 결과에 대한 정수형 코드값이다. 코드값 1 은 정상출산을 나타낸다.
+
+\item {\tt pregordr}은 임신 일련번호다; 예를 들어, 응답자의 첫번째 임신 코드값은 1, 두번째 임신 코드값은 2, 등등.
+
+\item {\tt birthord}는 정상출산에 대한 일련번호다; 응답자의 첫번째 아이 코드값은 1 등등. 정상출산이 아닌 경우에는 필드값이 공백이다. 
+
+
+\item \verb"birthwgt_lb"와 \verb"birthwgt_oz"은 출산시 아이 체중에 대한 파운드와 온스 정보를 담고 있다.
+
+\index{출산 체중 (birth weight)}
+\index{체중 (weight)!출산 (birth)}
+
+\item {\tt agepreg}는 임신 후기 산모 나이를 나타낸다.
+
+\item {\tt finalwgt}는 응답자와 연관된 통계적 가중치다. 부동소수점 값으로 응답자가 대표하는 미국 인구중에 비중을 나타낸다.
+
+\index{가중치 (weight)!표본 (sample)}
+
+\end{itemize}
+
+주의깊이 코드북을 읽게되면, 변수 중의 상당수가 {\bf 재코드(recodes)}된 것을 볼 수 있는데 조사에서 수집된 {\bf 원자료 (raw data)} 일부분은 아니다. 재코드된 변수는 원자료를 이용하여 계산된 것이다.
+\index{재코드 (recode)} 
+\index{원자료 (raw data)}
+
+예를 들어, 정상출산에 대한 {\tt prglngth} 변수는 만약 있다면 {\tt wksgest} (회임기간 주차 정보)와 동일하다; 만약 회임기간 정보가 없다면 {\tt mosgest * 4.33} 공식(회임기간 월차 정보 곱하기 한달 평균 주차 정보)을 사용해서 추정한다. 
+
+재코드는 자료 정합성과 일관성을 점검하는 로직에 기반한다. 스스로 원자료를 처리할 납득이갈만한 이유가 없다면, 일반적으로 재코드된 자료가 있다면 그대로 사용하는 것이 좋은 생각이다. 
+
+\section{변환 (Transformation)}
+\label{cleaning}
+
+이와 같이 데이터를 가져올 때, 오류를 점검하고, 특수값을 처리하고, 데이터를 다른 형식으로 변환하고, 계산을 수행해야 한다. 이와 같은 작업을 통상 {\bf 데이터 정제(data cleaning)}라고 부른다.
+
+{\tt nsfg.py}는 {\tt CleanFemPreg} 함수가 있어서 사용할 변수를 사전에 정제한다.
+
+\begin{verbatim}
+def CleanFemPreg(df):
+    df.agepreg /= 100.0
+
+    na_vals = [97, 98, 99]
+    df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
+    df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
+
+    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0    
+\end{verbatim}
+
+{\tt agepreg} 변수는 임신 말기에 산모 나이정보를 담고 있다. 
+데이터 파일에서 {\tt agepreg} 변수는 백분의 정수로 인코딩되어 있다.
+그래서 첫번째은 100으로 {\tt agepreg} 변수를 나눠서 연도로 부동소수점 값을 생성한다.
+
+\verb"birthwgt_lb"와 \verb"birthwgt_oz" 변수는 정상출산 임신에 대한 
+신생아의 체중으로 파운드와 온스 표현된 정보를 담고 있다. 
+추가로 몇몇 특수값도 있다.
+
+\begin{verbatim}
+97	NOT ASCERTAINED
+98	REFUSED	 
+99	DON'T KNOW
+\end{verbatim}
+
+숫자 부호로 표현된 특수값은 {\em 위험}한데, 이유는 만약 적절하게 처리되지 않는다면,
+99 파운드 신생아처럼 가공된 결과를 생성할 수 있다. 
+{\tt replace} 메쏘드는 특수값을 {\tt np.nan}으로 바꾼다. {\tt np.nan}는 
+``not a number.''를 나타내는 특수 부동소수점값이다. 
+{\tt inplace} 플래그는 {\tt replace}에 새로운 시리즈를 생성하는 대신에 
+기존 시리즈를 변경하게 한다.
+
+\index{NaN}
+
+IEEE 부동소수점 표준의 일부분으로, 만약 인자중 하나가 {\tt nan} 이면,
+모든 수학 연산은 {\tt nan}을 반환한다.
+
+\begin{verbatim}
+>>> import numpy as np
+>>> np.nan / 100.0
+nan
+\end{verbatim}
+
+그래서, {\tt nan}으로 연산한 것은 올바른 연산을 하고, 대부분의 판다스 함수는
+{\tt nan}을 적절하게 다룬다. 하지만 결측값(missing value)을 다루는 것은 반복되는 이슈가 된다.
+
+\index{판다스 (pandas)}
+\index{결측값 (missing values)}
+
+{\tt CleanFemPreg} 함수 마지막 줄은 파운드와 온스를 하나의 값, 
+파운드로 조합하는 새로운 칼럼 \verb"totalwgt_lb"을 생성한다.
+
+중요한 사항: 데이터프레임에 새로운 칼럼을 추가할 때, 다음과 같은 딕셔너리 구문을 사용해야 한다.
+
+\index{데이터프레임 (DataFrame)}
+
+\begin{verbatim}
+    # CORRECT
+    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0 
+\end{verbatim}
+
+다음과 같은 점표기법은 안된다.
+
+\begin{verbatim}
+    # WRONG!
+    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0 
+\end{verbatim}
+
+점표기법 버젼은 데이터프레임 객체에 속성을 추가하지만, 
+그 속성이 새로운 칼럼으로 다뤄지는 것은 아니다.
+
+\section{타당성 검사(Validation)}
+
+데이터를 다른 소프트웨어 환경에서 내보내고 또 다른 소프트웨어 환경으로 가져오기 할 때, 오류가 발생할지도 모른다. 그리고 전혀 새로운 데이터셋에 익숙해질 때, 데이터를 부정확하게 해석하거나 오해가 생겨나기도 한다. 만약 데이터의 타당성을 확보할 시간을 갖게 된다면, 나중에 업무시간을 절약하고 오류를 회필할 수 있다.
+
+데이터 타당성을 확보하는 한 방법은 기초 통계량을 계산하고 공표된 결과값과 비교하는 것이다. 예를 들어, NSFG 코드북에는 각 변수를 요약한 장표가 있다. {\tt outcome}에 대한 테이블이 있는데 각 임신 결과값을 코드화한 것이다.
+
+\begin{verbatim}
+value	label	 	        Total
+1	LIVE BIRTH              9148
+2	INDUCED ABORTION        1862
+3	STILLBIRTH               120
+4	MISCARRIAGE             1921
+5	ECTOPIC PREGNANCY        190
+6	CURRENT PREGNANCY        352
+\end{verbatim}
+
+시리즈 클래스는 \verb"value_counts" 라는 메쏘드를 제공하는데 각 값이 출현하는 횟수를 계수한다. 만약 데이터프레임에서 {\tt
+  outcome} 시리즈를 선택한다면, \verb"value_counts"를 사용해서 공표된 값과 비교할 수 있다. 
+
+\index{데이터프레임 (DataFrame)}
+\index{시리즈 (Series)}
+
+\begin{verbatim}
+>>> df.outcome.value_counts().sort_index()
+1    9148
+2    1862
+3     120
+4    1921
+5     190
+6     352
+\end{verbatim}
+
+\verb"value_counts" 결과는 시리즈이고 \verb"sort_index"가 인덱스별로 시리즈를 정렬한다. 그래서 ㄱ결과값이 순서대로 나타난다.
+
+결과값을 공표된 장표와 비교하면, {\tt outcome} 값이 올바른 것처럼 보인다. 마찬가지로, \verb"birthwgt_lb"에 대한 공표된 장표가 다음에 있다.
+
+\begin{verbatim}
+value	label                  Total
+.	INAPPLICABLE            4449
+0-5	UNDER 6 POUNDS          1125
+6	6 POUNDS                2223
+7	7 POUNDS                3049
+8	8 POUNDS                1889
+9-95	9 POUNDS OR MORE         799
+\end{verbatim}
+
+그리고, 계수된 값이 다음에 있다.
+
+\begin{verbatim}
+>>> df.birthwgt_lb.value_counts().sort_index()
+0        8
+1       40
+2       53
+3       98
+4      229
+5      697
+6     2223
+7     3049
+8     1889
+9      623
+10     132
+11      26
+12      10
+13       3
+14       3
+15       1
+51       1
+\end{verbatim}
+
+6, 7, 8 에 대한 계수는 확인됐고, 만약 0-5와 9-95 범위 숫자를 더한다면, 계수도 맞는 것으로 확인된다. 하지만, 만약 좀더 자세히 들여다본다면, 오류가 있는 값을 하나 발견할 것이다. 51 파운드 신생아!
+
+이 오류를 다루기 위해서, {\tt CleanFemPreg} 프로그램에 한줄 코드를 추가한다.
+
+\begin{verbatim}
+df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
+\end{verbatim}
+
+상기 문장은 유효하지 않은 값을 {\tt np.nan}으로 바꾼다. 꺾쇠괄호에 있는 표현식은 {\tt 부울(bool)} 자료형 시리즈를 산출한다. 여기서 True는 조건이 참인 것을 나타낸다. 불리언 시리즈가 인덱스로 사용될 때, 조건을 만족하는 요소값(element)만 선택한다. 
+
+\index{시리즈 (Series)}
+\index{불리언 (boolean)}
+\index{NaN}
+
+
+\section{해석 (Interpretation)}
+
+효과적으로 데이터를 가지고 작업하기 위해서는 동시에 두 관점에 대해서 생각해야만 한다: 통계적관점과 문맥적 관점.
+
+사례로 응답자 몇명에 대한 응답 시퀀스를 살펴보자. 
+데이터 파일이 구성된 방식 때문에 각 응답자에 대한 임신 데이터를 수집하기 위해서는 몇가지 작업을 해야 한다. 다음이 작업을 수행하는 함수다.
+
+\begin{verbatim}
+def MakePregMap(df):
+    d = defaultdict(list)
+    for index, caseid in df.caseid.iteritems():
+        d[caseid].append(index)
+    return d
+\end{verbatim}
+
+{\tt df}는 임신 데이터가 있는 데이터프레임이다. 
+{\tt iteritems} 메쏘드는 임신 각각에 대해 인덱스(행 번호)와 {\tt caseid}를 하나씩 열거한다.
+
+\index{데이터프레임 (DataFrame)}
+
+{\tt d}는 딕셔너리로 각 ID에서 인덱스 리스트로 매핑한다. 
+만약 {\tt defaultdict}과 친숙하지 않다면, 파이썬 {\tt collections} 모듈로 생각하면 된다.
+{\tt d}를 사용해서, 응답자를 찾아내고 해당 응답자 임신에 대한 인덱스를 얻을 수 있다. 
+
+다음 사례는 응답자 한명을 찾아 응답자하신 여성분의 임신 결과를 리스트로 출력한다. 
+
+\begin{verbatim}
+>>> caseid = 10229
+>>> indices = preg_map[caseid]
+>>> df.outcome[indices].values
+[4 4 4 4 4 4 1]
+\end{verbatim}
+
+{\tt indices}는 응답자 번호 {\tt 10229}에 대응되는 임신 인덱스 리스트다.
+
+인덱스로 {\tt df.outcome}에 리스트를 사용하서 표식된 행을 선택하고 시리즈를 산출한다.
+전체 시리즈를 출력하는 대신에 NumPy 배열인 {\tt values} 속성을 선택했다.
+\index{넘파이 (NumPy)}
+\index{시리즈 (Series)}
+
+코드 결과값 {\tt 1}은 정상출산을 나타낸다. 코드 결과값 {\tt 4}는 유산을 나타낸다; 
+즉, 통상 알려진 의학적인 원인 없이 자연스럽게 끝난 임신.
+
+통계적으로 해당 응답자가 유별난 것은 아니다. 유산은 흔하며, 다수 혹은 그 이상을 보고한 다른 응답자도 있다. 
+
+하지만 문맥을 기억한다면, 데이터가 말하는 것은 6번 임신했고, 매번 유산으로 끝난 한 여성의 이야기다.
+7번째로 가장 최근 임신은 정상출산으로 마무리 되었다. 만약 연민을 가지고 데이터를 생각한다면, 데이터가 전하는 이야기로 감동받는 것은 어쩌면 자연스럽다. 
+
+NSFG 데이터셋의 각 레코드는 아주 많은 개인적이고 어려운 질문에 대한 정직한 응답을 제공한 사람을 대표한다. 해당 데이터를 사용해서 가족 생활, 출산, 건강에 관한 통계적 질문에 답할 수 있다. 동시에 데이터로 대표되는 사람을 사려깊이 생각하고, 존경과 감사를 가질 의무도 있다.
+
+\index{윤리 (ethics)}
+
+
+\section{연습 문제 (Exercises)}
+
+\begin{exercise}
+다운로드 받은 저장소에서, \verb"chap01ex.ipynb" 파일을 찾아라. IPython 노트북 파일이다. 
+명령라인에서 다음과 같이 입력해서 IPython 노트북을 실행한다:
+\index{IPython}
+
+\begin{verbatim}
+$ ipython notebook &
+\end{verbatim}
+
+만약 IPython이 설치되어 있으면, 백그라운드로 실행되는 서버를 실행시키고,
+노트북을 볼 수 있도록 브라우져가 열린다. 만약 IPython과 친숙하지 않다면, 
+\url{http://ipython.org/ipython-doc/stable/notebook/notebook.html} 웹사이트에서
+시작해 보는 것을 권장한다.
+
+그림을 ``쭉 줄지어(inline)'' 나오도록 명령라인 선택옵션을 추가할 수 있다; 
+즉, ``쭉 줄지어(inline)''는 팝업 윈도우가 아닌 노트북에 그림이 나오게 한다:
+
+\begin{verbatim}
+$ ipython notebook --pylab=inline &
+\end{verbatim}
+
+\verb"chap01ex.ipynb" 파일을 연다. 일부 셀이 이미 채워져 있고, 채워진 셀은 실행해야 한다.
+다른 셀은 연습문제로 명령어를 넣어 주어야 된다.
+
+연습문제에 대한 해답은 \verb"chap01soln.ipynb" 파일에 나와 있다.
+\end{exercise}
+
+
+\begin{exercise}
+\verb"chap01ex.py"라는 파일을 생성하고, {\tt 2002FemResp.dat.gz} 응답자 파일을 불러 읽는 코드를 작성한다.
+{\tt nsfg.py} 파일을 복사한 뒤 변형해도 좋다.
+
+{\tt pregnum} 변수는 각 응답자가 얼마나 많이 임신했는지 재부호화(recode)한 것이다.
+이 변수의 값에 대한 갯수를 출력하고 NSFG 코드책에 출판된 결과와 비교하라.
+
+각 응답자에 대한 {\tt pregnum}와 임신 파일에 레코드 숫자와 비교해서 응답자 파일과 임신 파일을 상호 타당성을 검증할 수도 있다. 
+
+각 색인 목록에 {\tt caseid}에서 임신 데이터프레임으로 매핑하는 딕셔너리를 만드는데 {\tt nsfg.MakePregMap}을 사용할 수 있다.
+\index{데이터프레임}
+
+이 연습문제에 대한 해답은 \verb"chap01soln.py"에 나와 있다.
+\end{exercise}
+
+
+\begin{exercise}
+통계를 학습하는 가장 좋은 방법은 관심있는 프로젝트로 작업해보는 것이다.
+``첫째 아이가 늦게 태어날까?'' 같은 질문이 조사하고자 하는 것인가?
+
+개인적으로 관심이 있는 질문, 논란이 있는 주제, 정치적 영향을 갖는 질문, 사회적 통념을 생각해 보라.
+그리고 통계적 연구로 이끌게 되는 질문으로 공식화할 있는지 살펴보라.
+
+질문을 다루는데 도움이 되는 자료를 찾아보라. 정부가 좋은 원천정보가 될 수 있는데 이유는 공공 연구로부터 나온 데이터가 
+흔히 자유로이 이용가능하기 때문이다. 시작하기 좋은 웹사이는 다음과 같다. \url{http://www.data.gov/}, \url{http://www.science.gov/}, 영국에는 \url{http://data.gov.uk/}.
+
+저자가 선호하는 두가지 데이터셋은 일반사회조사(General Social Survey), \url{http://www3.norc.org/gss+website/}, 
+그리고 유럽사회조사, \url{http://www.europeansocialsurvey.org/}.
+
+만약 누군가 이미 관심있는 질문에 답을 한 것처럼 보인다면, 해당 대답이 정당화될 수 있는지 꼼꼼히 살펴보라. 
+데이터에 오류가 있거나 결론에 신뢰가 가지 않는 분석일 수 있다. 이런 경우, 동일한 데이터에 다른 분석을 수행하거나, 더 좋은 데이터 원천정보를 찾아나선다.
+
+만약 관심있는 질문을 다룬 출판된 논문을 찾게 되면, 원자료를 얻을 수 있어야 된다. 많은 저자는 웹에 데이터를 공개하고 있다. 
+하지만, 민감한 데이터에 대해서는 저자에게 편지를 써서 데이터 사용계획에 관한 정보를 제공하고, 사용 조건에 동의해야만 한다. 
+끈기를 가지세요!
+
+\end{exercise}
+
+
+\section{용어사전}
+
+\begin{itemize}
+
+\item {\bf 일화적 증거 (anecdotal evidence)}: 
+제대로 설계된 조사에 의한 것보다는 우연히 수집된 종종 개인적인 증거.
+\index{일화적 증거 (anecdotal evidence)}
+
+\item {\bf 모집단 (population)}: 조사에서 관심을 가지는 그룹. ``모집단''은 종종
+한 무리의 사람을 가르키지만, 용어가 또한 다른 대상에 대해서도 사용된다. 
+\index{모집단 (population)}
+
+\item {\bf 종단적 연구 (cross-sectional study)}: 특정 시점에 모집단에 관한 자료를 수집하는 연구.
+\index{종단적 연구 (cross-sectional study)}
+\index{연구 (study)!종단 (cross-sectional)}
+
+\item {\bf 사이클 (cycle)}: 반복되는 종단 연구에서, 연구 반복을 사이클이라고 한다.
+
+\item {\bf 횡단적 연구 (longitudinal study)}: 
+시간을 두고 모집단을 추적하는 연구로 동일 그룹에서 반복적으로 데이터를 수집한다.
+\index{횡단적 연구 (longitudinal study)}
+\index{연구 (study)!횡단 (longitudinal)}
+
+\item {\bf 레코드(record)}: 데이셋에서, 한 사람 혹은 다른 피험자에 관한 정보 집합.
+\index{레코드 (record)}
+
+\item {\bf 응답자 (respondent)}: 조사에 응답한 사람.
+\index{응답자 (respondent)}
+
+\item {\bf 표본 (sample)}: 자료 수집하는데 사용된 모집단의 부분집합.
+\index{표본 (sample)}
+
+\item {\bf 대표성 (representative)}: 만약 모집단의 모든 멤버가 표본에 뽑힐 가능성이 동일한다면 표본은 대표성이 있다.
+\index{대표성 (representative)}
+
+\item {\bf 오버샘플링 (oversampling)}: 적은 표본 크리로 생기는 오류를 피하기 위해서 하위 모집단의 대표성을 키우는 기법.
+\index{오버샘플링 (oversampling)}
+
+\item {\bf 원자료 (raw data)}: 점검, 계산, 해석이 거의 없거나 전혀 없는 상태로 기록되고 수집된 값.
+\index{원자료 (raw data)}
+
+\item {\bf 재코드 (recode)}: 원자료에 적용된 계산 혹은 다른 로직으로 생성된 값.
+\index{재코드 (recode)}
+
+\item {\bf 자료 정제 (data cleaning)}: 데이터 타당성 확보, 오류 식별, 자료형간의 변환, 자료 표현 등을 포함하는 프로세스.
+\end{itemize}
+
