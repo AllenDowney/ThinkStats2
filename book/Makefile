@@ -20,12 +20,12 @@ all:	book.tex
 	pdflatex book
 	makeindex book.idx
 	mv book.pdf thinkstats2.pdf
-	evince thinkstats2.pdf
+#	evince thinkstats2.pdf
 
 hevea:
 	sed 's/\(figs\/[^.]*\).\(pdf\|png\)/\1.eps/' book.tex > thinkstats2.tex
 	rm -rf html
-	mkdir html
+#	mkdir html
 	hevea -O -e latexonly htmlonly thinkstats2
 # the following greps are a kludge to prevent imagen from seeing
 # the definitions in latexonly, and to avoid headers on the images
@@ -34,6 +34,13 @@ hevea:
 	imagen -png thinkstats2
 	hacha thinkstats2.html
 	cp up.png next.png back.png html
+	mv index.html thinkstats2.css thinkstats2*.html thinkstats2*.png *motif.gif html
+
+html:
+	mkdir html
+	hacha thinkstats2.html
+	cp up.png next.png back.png html
+	cp -r img/ html
 	mv index.html thinkstats2.css thinkstats2*.html thinkstats2*.png *motif.gif html
 
 DEST = /home/downey/public_html/greent/thinkstats2
