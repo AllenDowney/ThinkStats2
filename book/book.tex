@@ -14,10 +14,10 @@
 % for some of these packages, you might have to install
 % texlive-latex-extra (in Ubuntu)
 
+\usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{textcomp}
 \usepackage{mathpazo}
-
 \usepackage{url}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
@@ -30,10 +30,6 @@
 \usepackage{hevea}                           
 \usepackage{upquote}
 \usepackage[hangul]{kotex}
-%\usepackage[cjk,hangul,usecjkt1font]{kotex}
-%\usepackage{spec}
-%\setmainfont {Linux Libertine}
-%\setmainhangulfont{NanumMyeongjo}
 
 \title{통계적 사고}
 \author{Allen B. Downey \\
@@ -104,8 +100,8 @@
 %%% EXERCISE
 
 \newtheoremstyle{exercise}% name of the style to be used
-  {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
-  {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
+%  {\topsep}% measure of space to leave above the theorem. E.g.: 3pt
+%  {\topsep}% measure of space to leave below the theorem. E.g.: 3pt
   {}% name of font to use in the body of the theorem
   {}% measure of space to indent
   {\bfseries}% name of head font
@@ -116,122 +112,14 @@
 \theoremstyle{exercise}
 \newtheorem{exercise}{Exercise}[chapter]
 
-%\newcounter{exercise}[chapter]
-%\newcommand{\nextexercise}{\refstepcounter{exercise}}
-
-%\newenvironment{exercise}{\nextexercise \noindent \textbf{Exercise \thechapter.\theexercise} \begin{itshape} \noindent}{\end{itshape}}
-
 \input{latexonly}
 
 \begin{latexonly}
 
 \renewcommand{\blankpage}{\thispagestyle{empty} \quad \newpage}
 
-%\blankpage
-%\blankpage
-
 % TITLE PAGES FOR LATEX VERSION
-
-%-half title--------------------------------------------------
-\thispagestyle{empty}
-
-\begin{flushright}
-\vspace*{2.0in}
-
-\begin{spacing}{3}
-{\huge \thetitle}\\
-{\Large \thesubtitle }
-\end{spacing}
-
-\vspace{0.25in}
-
-Version \theversion
-
-\vfill
-
-\end{flushright}
-
-%--verso------------------------------------------------------
-
-\blankpage
-\blankpage
-%\clearemptydoublepage
-%\pagebreak
-%\thispagestyle{empty}
-%\vspace*{6in}
-
-%--title page--------------------------------------------------
-\pagebreak
-\thispagestyle{empty}
-
-\begin{flushright}
-\vspace*{2.0in}
-
-\begin{spacing}{3}
-{\huge \thetitle}\\
-{\Large \thesubtitle}
-\end{spacing}
-
-\vspace{0.25in}
-
-Version \theversion
-
-\vspace{1in}
-
-
-{\Large
-번역: 이광춘\\
-원저자: Allen B. Downey
-}
-
-
-\vspace{0.5in}
-
-{\Large xwMOOC\\}
-{\small http://www.xwmooc.net}
-
-%{\Large Green Tea Press}
-%{\small Needham, Massachusetts}
-
-%\includegraphics[width=1in]{figs/logo1.eps}
-\vfill
-
-\end{flushright}
-
-
-%--copyright--------------------------------------------------
-\pagebreak
-\thispagestyle{empty}
-
-{\small
-한국어 저작권 \copyright ~2015 이광춘 \\
-Copyright \copyright ~2014 Allen B. Downey.
-
-
-\vspace{0.2in}
-
-\begin{flushleft}
-Green Tea Press       \\
-9 Washburn Ave \\  
-Needham MA 02492
-\end{flushleft}
-
-Permission is granted to copy, distribute, and/or modify this document
-under the terms of the Creative Commons
-Attribution-NonCommercial-ShareAlike 4.0 International License, which
-is available at
-\url{http://creativecommons.org/licenses/by-nc-sa/4.0/}.
-
-The original form of this book is \LaTeX\ source code.  Compiling this
-code has the effect of generating a device-independent representation
-of a textbook, which can be converted to other formats and printed.
-
-The \LaTeX\ source for this book is available from
-\url{http://thinkstats2.com}.
-
-\vspace{0.2in}
-
-} % end small
+\input{00-title-latex}
 
 \end{latexonly}
 
@@ -241,35 +129,14 @@ The \LaTeX\ source for this book is available from
 \begin{htmlonly}
 
 % TITLE PAGE FOR HTML VERSION
-
-{\Large \thetitle: \thesubtitle}
-
-{\large Allen B. Downey}
-
-Version \theversion
-
-\vspace{0.25in}
-
-Copyright 2014 Allen B. Downey
-
-\vspace{0.25in}
-
-Permission is granted to copy, distribute, and/or modify this document
-under the terms of the Creative Commons 
-Attribution-NonCommercial-ShareAlike 4.0 International
-Unported License, which is available at
-\url{http://creativecommons.org/licenses/by-nc-sa/4.0/}.
-
-\setcounter{chapter}{-1}
+\input{00-title-html}
 
 \end{htmlonly}
 
 \fi
 % END OF THE PART WE SKIP FOR PLASTEX
 
-%%%%%%%%%%%%%%%%%%%%%%
-% 서문
-%%%%%%%%%%%%%%%%%%%%%%
+% PREFACE INCLUDING KOREAN
 \input{00-preface}
 
 \normalsize
@@ -289,7 +156,6 @@ Unported License, which is available at
 % START THE BOOK
 \mainmatter
 
-
 \input{01-intro}
 \input{02-distribution}
 \input{03-pmf}
@@ -304,7 +170,6 @@ Unported License, which is available at
 \input{12-time-series}
 \input{13-survival}
 \input{14-analytic-method}
-
 
 \printindex
 
