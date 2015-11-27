@@ -41,6 +41,7 @@ html:
 	hacha thinkstats2.html
 	cp up.png next.png back.png html
 	cp -r img/ html
+	cp thinkstats2.pdf html/thinkstats2.pdf
 	mv index.html thinkstats2.css thinkstats2*.html thinkstats2*.png *motif.gif html
 
 DEST = /home/downey/public_html/greent/thinkstats2
