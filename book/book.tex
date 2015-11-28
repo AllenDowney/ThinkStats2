@@ -1230,7 +1230,7 @@ an error, a 51 pound baby!
 To deal with this error, I added a line to {\tt CleanFemPreg}:
 
 \begin{verbatim}
-df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
+df.loc[df.birthwgt_lb > 20] = np.nan
 \end{verbatim}
 
 This statement replaces invalid values with {\tt np.nan}.
