@@ -635,6 +635,8 @@ this book, has sent many corrections and helpful suggestions.
 
 \item Paul Glezen found a decimal point in the wrong place.
 
+\item Benjamin White suggested more idiomatic Pandas code.
+
 % ENDCONTRIB
 
 \end{itemize}
@@ -1230,17 +1232,23 @@ an error, a 51 pound baby!
 To deal with this error, I added a line to {\tt CleanFemPreg}:
 
 \begin{verbatim}
-df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
+df.loc[df.birthwgt_lb > 20, 'birthwgt_lb'] = np.nan
 \end{verbatim}
 
 This statement replaces invalid values with {\tt np.nan}.
-The expression in brackets yields a Series of type {\tt bool}, 
-where True indicates that the condition is true.  When a boolean
-Series is used as an index, it selects only the elements that
+The attribute {\tt loc} provides several ways to select
+rows and columns from a DataFrame.  In this example, the
+first expression in brackets is the row indexer; the second
+expression selects the column.
+\index{loc indexer}
+\index{indexer!loc}
+
+The expression \verb"df.birthwgt_lb > 20" yields a Series of type
+{\tt bool}, where True indicates that the condition is true.  When a
+boolean Series is used as an index, it selects only the elements that
 satisfy the condition.
-\index{Series}
-\index{boolean}
-\index{NaN}
+\index{Series} \index{boolean} \index{NaN}
+
 
 
 \section{Interpretation}
