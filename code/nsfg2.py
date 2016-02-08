@@ -67,9 +67,7 @@ def CleanFemPreg(df):
     # not attribute assignment (like df.totalwgt_lb)
     df['totalwgt_lb'] = df.birthwgt_lb1 + df.birthwgt_oz1 / 16.0    
 
-    # due to a bug in ReadStataDct, the last variable gets clipped;
-    # so for now set it to NaN
-    #df.phase = np.nan
+
 
 
 def main():
