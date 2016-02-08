@@ -69,7 +69,7 @@ def CleanFemPreg(df):
 
     # due to a bug in ReadStataDct, the last variable gets clipped;
     # so for now set it to NaN
-    df.phase = np.nan
+    #df.phase = np.nan
 
 
 def main():
