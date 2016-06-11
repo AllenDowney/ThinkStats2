@@ -1174,7 +1174,7 @@ to compare with the published data:
 \index{Series}
 
 \begin{verbatim}
->>> df.outcome.value_counts().sort_index()
+>>> df.outcome.value_counts(sort=False)
 1    9148
 2    1862
 3     120
@@ -1184,8 +1184,8 @@ to compare with the published data:
 \end{verbatim}
 
 The result of \verb"value_counts" is a Series;
-\verb"sort_index" sorts the Series by index, so the
-values appear in order.
+\verb"sort=False" doesn't sort the Series by values, so them
+appear in order.
 
 Comparing the results with the published table, it looks like the
 values in {\tt outcome} are correct.  Similarly, here is the published
@@ -1204,7 +1204,7 @@ value	label                  Total
 And here are the value counts:
 
 \begin{verbatim}
->>> df.birthwgt_lb.value_counts().sort_index()
+>>> df.birthwgt_lb.value_counts(sort=False)
 0        8
 1       40
 2       53
