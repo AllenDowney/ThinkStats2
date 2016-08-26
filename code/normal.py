@@ -327,7 +327,7 @@ def TestCorrelation(live):
                    xlabel='correlation',
                    ylabel='CDF')
 
-    t = r * math.sqrt((n-2) / (1-r))
+    t = r * math.sqrt((n-2) / (1-r**2))
     p_value = 1 - scipy.stats.t.cdf(t, df=n-2)
     print(r, p_value)
 
@@ -407,7 +407,6 @@ def main():
     PlotPregLengths(live, firsts, others)
 
     TestChiSquared()
-
 
 
 if __name__ == '__main__':

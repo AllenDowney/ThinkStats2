@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.31}
+\newcommand{\theversion}{2.0.32}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -636,6 +636,8 @@ this book, has sent many corrections and helpful suggestions.
 \item Paul Glezen found a decimal point in the wrong place.
 
 \item Benjamin White suggested more idiomatic Pandas code.
+
+\item Takashi Sato spotted an code error.
 
 % ENDCONTRIB
 
@@ -12162,13 +12164,13 @@ Using the analytic distribution, we can compute just how unlikely:
 \index{analytic distribution}
 
 \begin{verbatim}
-    t = r * math.sqrt((n-2) / (1-r))
+    t = r * math.sqrt((n-2) / (1-r**2))
     p_value = 1 - scipy.stats.t.cdf(t, df=n-2)
 \end{verbatim}
 
 We compute the value of {\tt t} that corresponds to {\tt r=0.07}, and
 then evaluate the t-distribution at {\tt t}.  The result is {\tt
-  6.4e-12}.  This example demonstrates an advantage of the analytic
+  2.9e-11}.  This example demonstrates an advantage of the analytic
 method: we can compute very small p-values.  But in practice it
 usually doesn't matter.
 \index{SciPy}
