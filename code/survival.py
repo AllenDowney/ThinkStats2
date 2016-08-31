@@ -171,12 +171,17 @@ class HazardFunction(object):
 
     def Extend(self, other):
         """Extends this hazard function by copying the tail from another.
-
         other: HazardFunction
         """
-        last = self.series.index[-1]
-        more = other.series[other.series.index > last]
+        last_index = self.series.index[-1] if len(self) else 0
+        more = other.series[other.series.index > last_index]
         self.series = pd.concat([self.series, more])
+
+    def Truncate(self, t):
+        """Truncates this hazard function at the given value of t.
+        t: number
+        """
+        self.series = self.series[self.series.index < t]
 
 
 def ConditionalSurvival(pmf, t0):
