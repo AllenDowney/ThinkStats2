@@ -16,7 +16,7 @@ import thinkstats2
 import thinkplot
 
 from collections import Counter
-import pandas as pd
+import pandas
 
 FORMATS = ['pdf', 'eps', 'png']
 
@@ -266,7 +266,7 @@ def EstimateHazardFunction(complete, ongoing, label='', verbose=False):
 
     at_risk = len(complete) + len(ongoing)
 
-    lams = pd.Series(index=ts)
+    lams = pandas.Series(index=ts)
     for t in ts:
         ended = hist_complete[t]
         censored = hist_ongoing[t]
