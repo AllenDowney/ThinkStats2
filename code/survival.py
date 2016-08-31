@@ -8,7 +8,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 from __future__ import print_function, division
 
 import numpy as np
-import pandas
+import pandas as pd
 
 import nsfg
 
@@ -16,44 +16,34 @@ import thinkstats2
 import thinkplot
 
 from collections import Counter
-import pandas
 
 FORMATS = ['pdf', 'eps', 'png']
+
 
 class SurvivalFunction(object):
     """Represents a survival function."""
 
-    def __init__(self, cdf, label=''):
-        self.cdf = cdf
-        self.label = label or cdf.label
+    def __init__(self, ts, ss, label=''):
+        self.ts = ts
+        self.ss = ss
+        self.label = label
 
-    @property
-    def ts(self):
-        return self.cdf.xs
-
-    @property
-    def ss(self):
-        return 1 - self.cdf.ps
+    def __len__(self):
+        return len(self.ts)
 
     def __getitem__(self, t):
         return self.Prob(t)
 
     def Prob(self, t):
         """Returns S(t), the probability that corresponds to value t.
-
         t: time
-
         returns: float probability
         """
-        return 1 - self.cdf.Prob(t)
+        return np.interp(t, self.ts, self.ss, left=1.0)
 
-    def Probs(self, xs):
+    def Probs(self, ts):
         """Gets probabilities for a sequence of values."""
-        return [self.Prob(x) for x in xs]
-
-    def Mean(self):
-        """Mean survival time."""
-        return self.cdf.Mean()
+        return np.interp(ts, self.ts, self.ss, left=1.0)
 
     def Items(self):
         """Sorted list of (t, s) pairs."""
@@ -61,23 +51,28 @@ class SurvivalFunction(object):
 
     def Render(self):
         """Generates a sequence of points suitable for plotting.
-
         returns: tuple of (sorted times, survival function)
         """
         return self.ts, self.ss
 
-    def MakeHazard(self, label=''):
+    def MakeHazardFunction(self, label=''):
         """Computes the hazard function.
 
-        sf: survival function
+        This simple version does not take into account the
+        spacing between the ts.  If the ts are not equally
+        spaced, it is not valid to compare the magnitude of
+        the hazard function across different time steps.
 
-        returns: Pmf that maps times to hazard rates
+        label: string
+
+        returns: HazardFunction object
         """
-        ss = self.ss
-        lams = {}
-        for i, t in enumerate(self.ts[:-1]):
-            hazard = (ss[i] - ss[i+1]) / ss[i]
-            lams[t] = hazard
+        lams = pd.Series(index=self.ts)
+
+        prev = 1.0
+        for t, s in zip(self.ts, self.ss):
+            lams[t] = (prev - s) / prev
+            prev = s
 
         return HazardFunction(lams, label=label)
 
@@ -88,11 +83,12 @@ class SurvivalFunction(object):
 
         returns: Pmf
         """
+        cdf = thinkstats2.Cdf(self.ts, 1-self.ss)
         pmf = thinkstats2.Pmf()
-        for val, prob in self.cdf.Items():
+        for val, prob in cdf.Items():
             pmf.Set(val, prob)
 
-        cutoff = self.cdf.ps[-1]
+        cutoff = cdf.ps[-1]
         if filler is not None:
             pmf[filler] = 1-cutoff
 
@@ -100,9 +96,7 @@ class SurvivalFunction(object):
 
     def RemainingLifetime(self, filler=None, func=thinkstats2.Pmf.Mean):
         """Computes remaining lifetime as a function of age.
-
         func: function from conditional Pmf to expected liftime
-
         returns: Series that maps from age to remaining lifetime
         """
         pmf = self.MakePmf(filler=filler)
@@ -111,9 +105,36 @@ class SurvivalFunction(object):
             pmf[t] = 0
             pmf.Normalize()
             d[t] = func(pmf) - t
-            #print(t, d[t])
 
-        return pandas.Series(d)
+        return pd.Series(d)
+
+
+def MakeSurvivalFromSeq(values, label=''):
+    """Makes a survival function based on a complete dataset.
+
+    values: sequence of observed lifespans
+    
+    returns: SurvivalFunction
+    """
+    counter = Counter(values)
+    ts, freqs = zip(*sorted(counter.items()))
+    ts = np.asarray(ts)
+    ps = np.cumsum(freqs, dtype=np.float)
+    ps /= ps[-1]
+    ss = 1 - ps
+    return SurvivalFunction(ts, ss, label)
+
+
+def MakeSurvivalFromCdf(cdf, label=''):
+    """Makes a survival function based on a CDF.
+
+    cdf: Cdf
+    
+    returns: SurvivalFunction
+    """
+    ts = cdf.xs
+    ss = 1 - cdf.ps
+    return SurvivalFunction(ts, ss, label)
 
 
 class HazardFunction(object):
@@ -125,7 +146,7 @@ class HazardFunction(object):
         d: dictionary (or anything that can initialize a series)
         label: string
         """
-        self.series = pandas.Series(d)
+        self.series = pd.Series(d)
         self.label = label
 
     def __getitem__(self, t):
@@ -145,8 +166,7 @@ class HazardFunction(object):
         """
         ts = self.series.index
         ss = (1 - self.series).cumprod()
-        cdf = thinkstats2.Cdf(ts, 1-ss)
-        sf = SurvivalFunction(cdf, label=label)
+        sf = SurvivalFunction(ts, ss, label=label)
         return sf
 
     def Extend(self, other):
@@ -156,7 +176,7 @@ class HazardFunction(object):
         """
         last = self.series.index[-1]
         more = other.series[other.series.index > last]
-        self.series = pandas.concat([self.series, more])
+        self.series = pd.concat([self.series, more])
 
 
 def ConditionalSurvival(pmf, t0):
@@ -174,8 +194,8 @@ def ConditionalSurvival(pmf, t0):
     for t, p in pmf.Items():
         if t >= t0:
             cond.Set(t-t0, p)
-
-    return SurvivalFunction(thinkstats2.Cdf(cond))
+    cond.Normalize()
+    return MakeSurvivalFromCdf(cond.MakeCdf())
 
 
 def PlotConditionalSurvival(durations):
@@ -204,7 +224,7 @@ def PlotSurvival(complete):
     thinkplot.PrePlot(3, rows=2)
 
     cdf = thinkstats2.Cdf(complete, label='cdf')
-    sf = SurvivalFunction(cdf, label='survival')
+    sf = MakeSurvivalFromCdf(cdf, label='survival')
     print(cdf[13])
     print(sf[13])
 
@@ -213,7 +233,7 @@ def PlotSurvival(complete):
     thinkplot.Config()
 
     thinkplot.SubPlot(2)
-    hf = sf.MakeHazard(label='hazard')
+    hf = sf.MakeHazardFunction(label='hazard')
     print(hf[39])
     thinkplot.Plot(hf)
     thinkplot.Config(ylim=[0, 0.75])
@@ -226,8 +246,7 @@ def PlotHazard(complete, ongoing):
     ongoing: list of ongoing lifetimes
     """
     # plot S(t) based on only complete pregnancies
-    cdf = thinkstats2.Cdf(complete)
-    sf = SurvivalFunction(cdf)
+    sf = MakeSurvivalFromSeq(complete)
     thinkplot.Plot(sf, label='old S(t)', alpha=0.1)
 
     thinkplot.PrePlot(2)
@@ -266,7 +285,7 @@ def EstimateHazardFunction(complete, ongoing, label='', verbose=False):
 
     at_risk = len(complete) + len(ongoing)
 
-    lams = pandas.Series(index=ts)
+    lams = pd.Series(index=ts)
     for t in ts:
         ended = hist_complete[t]
         censored = hist_ongoing[t]
@@ -487,7 +506,7 @@ def PlotResampledByDecade(resps, iters=11, predict_flag=False, omit=None):
     for i in range(iters):
         samples = [thinkstats2.ResampleRowsWeighted(resp) 
                    for resp in resps]
-        sample = pandas.concat(samples, ignore_index=True)
+        sample = pd.concat(samples, ignore_index=True)
         groups = sample.groupby('decade')
 
         if omit:

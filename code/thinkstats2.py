@@ -1039,6 +1039,9 @@ class Cdf(object):
 
         Note: in Python3, returns an iterator.
         """
+        # TODO: rethink this function: should it just iterate
+        # over xs and ps (cumulative probabilities) and not compute
+        # differences?
         a = self.ps
         b = np.roll(a, 1)
         b[0] = 0
