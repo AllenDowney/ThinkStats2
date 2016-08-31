@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.32}
+\newcommand{\theversion}{2.0.33}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -10749,17 +10749,21 @@ Here's the code:
 \begin{verbatim}
 def EstimateHazardFunction(complete, ongoing, label=''):
 
-    n = len(complete)
-    hist_complete = thinkstats2.Hist(complete)
-    sf_complete = SurvivalFunction(thinkstats2.Cdf(complete))
+    hist_complete = Counter(complete)
+    hist_ongoing = Counter(ongoing)
 
-    m = len(ongoing)
-    sf_ongoing = SurvivalFunction(thinkstats2.Cdf(ongoing))
+    ts = list(hist_complete | hist_ongoing)
+    ts.sort()
 
-    lams = {}
-    for t, ended in sorted(hist_complete.Items()):
-        at_risk = ended + n * sf_complete[t] + m * sf_ongoing[t]
+    at_risk = len(complete) + len(ongoing)
+
+    lams = pandas.Series(index=ts)
+    for t in ts:
+        ended = hist_complete[t]
+        censored = hist_ongoing[t]
+
         lams[t] = ended / at_risk
+        at_risk -= ended + censored
 
     return HazardFunction(lams, label=label)
 \end{verbatim}
@@ -10769,37 +10773,42 @@ the ages when respondents got married.  {\tt ongoing} is the set
 of incomplete observations; that is, the ages of unmarried women
 when they were interviewed.
 
-First, we precompute \verb"hist_complete", which is the Hist
-of ages when women were married, \verb"sf_complete", the
-survival curve for married women, and \verb"sf_ongoing",
-the survival curve for unmarried women.
-\index{Hist}
+First, we precompute \verb"hist_complete", which is a Counter
+that maps from each age to the number of women married at that
+age, and \verb"hist_ongoing" which maps from each age to the
+number of unmarried women interviewed at that age.
+
+\index{Counter}
 \index{survival curve}
 
-The loop iterates through the ages when respondents got married.
-For each value of {\tt t}, we have {\tt ended}, which is the number
-of women who got married at age {\tt t}.  Then we compute
-the number of women ``at risk'', which is the sum of:
+{\tt ts} is the union of ages when respondents got married
+and ages when unmarried women were interviewed, sorted in
+increasing order.
 
-\begin{itemize}
+\verb"at_risk" keeps track of the number of respondents considered
+``at risk'' at each age; initially, it is the total number of
+respondents.
 
-\item {\tt ended}, the number of respondents married at age {\tt t},
+The result is stored in a Pandas {\tt Series} that maps from
+each age to the estimated hazard function at that age.
 
-\item \verb"n * sf_complete[t]", the number of respondents
-married after age {\tt t}.
+Each time through the loop, we consider one age, {\tt t},
+and compute the number of events that end at {\tt t} (that is,
+the number of respondents married at that age) and the number
+of events censored at {\tt t} (that is, the number of women
+interviewed at {\tt t} whose future marriage dates are
+censored).  In this context, ``censored'' means that the
+data are unavailable because of the data collection process.
 
-\item \verb"m * sf_ongoing[t]", the number of unmarried respondents
-interviewed after {\tt t}, and therefore known not to
-have been married at or before {\tt t}.
+The estimated hazard function is the fraction of the cases
+at risk that end at {\tt}.
 
-\end{itemize}
+At the end of the loop, we subtract from \verb"at_risk" the
+number of cases that ended or were censored at {\tt t}.
 
-The estimated value of the hazard function at {\tt t} is the ratio of
-{\tt ended} to \verb"at_risk".
+Finally, we pass {\tt lams} to the {\tt HazardFunction}
+constructor and return the result.
 
-{\tt lams} is a dictionary that maps
-from $t$ to $\lambda(t)$.  The result is a {\tt HazardFunction}
-object.
 \index{HazardFunction}
 
 
@@ -10848,8 +10857,7 @@ interviewed:
     resp['age'] = (resp.cmintvw - resp.cmbirth) / 12.0
 \end{verbatim}
 
-Next
-we extract {\tt complete}, which is the age at marriage for
+Next we extract {\tt complete}, which is the age at marriage for
 women who have been married, and {\tt ongoing}, which is the
 age at interview for women who have not:
 \index{age}

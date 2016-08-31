@@ -1625,6 +1625,15 @@ class EstimatedPdf(Pdf):
         """
         return self.kde.evaluate(xs)
 
+    def Sample(self, n):
+        """Generates a random sample from the estimated Pdf.
+
+        n: size of sample
+        """
+        # NOTE: we have to flatten because resample returns a 2-D
+        # array for some reason.
+        return self.kde.resample(n).flatten()
+
 
 def CredibleInterval(pmf, percentage=90):
     """Computes a credible interval for a given distribution.
@@ -1761,6 +1770,16 @@ def EvalBinomialPmf(k, n, p):
     """
     return stats.binom.pmf(k, n, p)
     
+
+def MakeBinomialPmf(n, p):
+    """Evaluates the binomial PMF.
+
+    Returns the distribution of successes in n trials with probability p.
+    """
+    pmf = Pmf()
+    for k in range(n+1):
+        pmf[k] = stats.binom.pmf(k, n, p)
+    return pmf
 
 def EvalHypergeomPmf(k, N, K, n):
     """Evaluates the hypergeometric PMF.
@@ -1997,6 +2016,11 @@ class Beta(object):
         more careful because the PDF goes to infinity at x=0
         and x=1.  In that case we evaluate the CDF and compute
         differences.
+
+        The result is a little funny, because the values at 0 and 1
+        are not symmetric.  Nevertheless, it is a reasonable discrete
+        model of the continuous distribution, and behaves well as
+        the number of values increases.
         """
         if self.alpha < 1 or self.beta < 1:
             cdf = self.MakeCdf()
@@ -2011,9 +2035,18 @@ class Beta(object):
     def MakeCdf(self, steps=101):
         """Returns the CDF of this distribution."""
         xs = [i / (steps - 1.0) for i in range(steps)]
-        ps = [special.betainc(self.alpha, self.beta, x) for x in xs]
+        ps = special.betainc(self.alpha, self.beta, xs)
         cdf = Cdf(xs, ps)
         return cdf
+
+    def Percentile(self, ps):
+        """Returns the given percentiles from this distribution.
+
+        ps: scalar, array, or list of [0-100]
+        """
+        ps = np.asarray(ps) / 100
+        xs = special.betaincinv(self.alpha, self.beta, ps)
+        return xs
 
 
 class Dirichlet(object):
@@ -2165,7 +2198,7 @@ def Jitter(values, jitter=0.5):
     returns: new numpy array
     """
     n = len(values)
-    return np.random.uniform(-jitter, +jitter, n) + values
+    return np.random.normal(0, jitter, n) + values
 
 
 def NormalProbabilityPlot(sample, fit_color='0.8', **options):

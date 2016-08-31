@@ -39,15 +39,9 @@ class _Brewer(object):
     """
     color_iter = None
 
-    colors = ['#081D58',
-              '#253494',
-              '#225EA8',
-              '#1D91C0',
-              '#41B6C4',
-              '#7FCDBB',
-              '#C7E9B4',
-              '#EDF8B1',
-              '#FFFFD9']
+    colors = ['#f7fbff', '#deebf7', '#c6dbef',
+              '#9ecae1', '#6baed6', '#4292c6',
+              '#2171b5','#08519c','#08306b'][::-1]
 
     # lists that indicate which colors to use depending on how many are used
     which_colors = [[],
@@ -58,7 +52,11 @@ class _Brewer(object):
                     [0, 2, 3, 5, 6],
                     [0, 2, 3, 4, 5, 6],
                     [0, 1, 2, 3, 4, 5, 6],
+                    [0, 1, 2, 3, 4, 5, 6, 7],
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8],
                     ]
+
+    current_figure = None
 
     @classmethod
     def Colors(cls):
@@ -67,17 +65,17 @@ class _Brewer(object):
         return cls.colors
 
     @classmethod
-    def ColorGenerator(cls, n):
+    def ColorGenerator(cls, num):
         """Returns an iterator of color strings.
 
         n: how many colors will be used
         """
-        for i in cls.which_colors[n]:
+        for i in cls.which_colors[num]:
             yield cls.colors[i]
-        raise StopIteration('Ran out of colors in _Brewer.ColorGenerator')
+        raise StopIteration('Ran out of colors in _Brewer.')
 
     @classmethod
-    def InitializeIter(cls, num):
+    def InitIter(cls, num):
         """Initializes the color iterator with the given number of colors."""
         cls.color_iter = cls.ColorGenerator(num)
 
@@ -87,12 +85,38 @@ class _Brewer(object):
         cls.color_iter = None
 
     @classmethod
-    def GetIter(cls):
+    def GetIter(cls, num):
         """Gets the color iterator."""
+        fig = pyplot.gcf()
+        if fig != cls.current_figure:
+            cls.InitIter(num)
+            cls.current_figure = fig  
+
         if cls.color_iter is None:
-            cls.InitializeIter(7)
+            cls.InitIter(num)
 
         return cls.color_iter
+
+
+def _UnderrideColor(options):
+    """If color is not in the options, chooses a color.
+    """
+    if 'color' in options:
+        return options
+
+    # get the current color iterator; if there is none, init one
+    color_iter = _Brewer.GetIter(5)
+
+    try:
+        options['color'] = next(color_iter)
+    except StopIteration:
+        # if you run out of colors, initialize the color iterator
+        # and try again
+        warnings.warn('Ran out of colors.  Starting over.')
+        _Brewer.ClearIter()
+        _UnderrideColor(options)
+
+    return options
 
 
 def PrePlot(num=None, rows=None, cols=None):
@@ -103,7 +127,7 @@ def PrePlot(num=None, rows=None, cols=None):
     cols: number of columns of subplots
     """
     if num:
-        _Brewer.InitializeIter(num)
+        _Brewer.InitIter(num)
 
     if rows is None and cols is None:
         return
@@ -116,11 +140,12 @@ def PrePlot(num=None, rows=None, cols=None):
 
     # resize the image, depending on the number of rows and cols
     size_map = {(1, 1): (8, 6),
-                (1, 2): (14, 6),
-                (1, 3): (14, 6),
+                (1, 2): (12, 6),
+                (1, 3): (12, 6),
                 (2, 2): (10, 10),
                 (2, 3): (16, 10),
                 (3, 1): (8, 10),
+                (4, 1): (8, 12),
                 }
 
     if (rows, cols) in size_map:
@@ -129,22 +154,26 @@ def PrePlot(num=None, rows=None, cols=None):
 
     # create the first subplot
     if rows > 1 or cols > 1:
-        pyplot.subplot(rows, cols, 1)
+        ax = pyplot.subplot(rows, cols, 1)
         global SUBPLOT_ROWS, SUBPLOT_COLS
         SUBPLOT_ROWS = rows
         SUBPLOT_COLS = cols
+    else:
+        ax = pyplot.gca()
 
+    return ax
 
-def SubPlot(plot_number, rows=None, cols=None):
+def SubPlot(plot_number, rows=None, cols=None, **options):
     """Configures the number of subplots and changes the current plot.
 
     rows: int
     cols: int
     plot_number: int
+    options: passed to subplot
     """
     rows = rows or SUBPLOT_ROWS
     cols = cols or SUBPLOT_COLS
-    pyplot.subplot(rows, cols, plot_number)
+    return pyplot.subplot(rows, cols, plot_number, **options)
 
 
 def _Underride(d, **options):
@@ -180,22 +209,6 @@ def Figure(**options):
     pyplot.figure(**options)
 
 
-def _UnderrideColor(options):
-    if 'color' in options:
-        return options
-
-    color_iter = _Brewer.GetIter()
-
-    if color_iter:
-        try:
-            options['color'] = next(color_iter)
-        except StopIteration:
-            # TODO: reconsider whether this should warn
-            # warnings.warn('Warning: Brewer ran out of colors.')
-            _Brewer.ClearIter()
-    return options
-
-
 def Plot(obj, ys=None, style='', **options):
     """Plots a line.
 
@@ -207,7 +220,7 @@ def Plot(obj, ys=None, style='', **options):
     """
     options = _UnderrideColor(options)
     label = getattr(obj, 'label', '_nolegend_')
-    options = _Underride(options, linewidth=3, alpha=0.8, label=label)
+    options = _Underride(options, linewidth=3, alpha=0.7, label=label)
 
     xs = obj
     if ys is None:
@@ -223,8 +236,36 @@ def Plot(obj, ys=None, style='', **options):
         pyplot.plot(xs, ys, style, **options)
 
 
+def Vlines(xs, y1, y2, **options):
+    """Plots a set of vertical lines.
+
+    Args:
+      xs: sequence of x values
+      y1: sequence of y values
+      y2: sequence of y values
+      options: keyword args passed to pyplot.vlines
+    """
+    options = _UnderrideColor(options)
+    options = _Underride(options, linewidth=1, alpha=0.5)
+    pyplot.vlines(xs, y1, y2, **options)
+
+
+def Hlines(ys, x1, x2, **options):
+    """Plots a set of horizontal lines.
+
+    Args:
+      ys: sequence of y values
+      x1: sequence of x values
+      x2: sequence of x values
+      options: keyword args passed to pyplot.vlines
+    """
+    options = _UnderrideColor(options)
+    options = _Underride(options, linewidth=1, alpha=0.5)
+    pyplot.hlines(ys, x1, x2, **options)
+
+
 def FillBetween(xs, y1, y2=None, where=None, **options):
-    """Plots a line.
+    """Fills the space between two lines.
 
     Args:
       xs: sequence of x values
@@ -591,19 +632,6 @@ def Config(**options):
         if name in options:
             getattr(pyplot, name)(options[name])
 
-    # looks like this is not necessary: matplotlib understands text loc specs
-    loc_dict = {'upper right': 1,
-                'upper left': 2,
-                'lower left': 3,
-                'lower right': 4,
-                'right': 5,
-                'center left': 6,
-                'center right': 7,
-                'lower center': 8,
-                'upper center': 9,
-                'center': 10,
-                }
-
     global LEGEND
     LEGEND = options.get('legend', LEGEND)
 
@@ -611,6 +639,20 @@ def Config(**options):
         global LOC
         LOC = options.get('loc', LOC)
         pyplot.legend(loc=LOC)
+
+    val = options.get('xticklabels', None)
+    if val is not None:
+        if val == 'invisible':
+            ax = pyplot.gca()
+            labels = ax.get_xticklabels()
+            pyplot.setp(labels, visible=False)
+
+    val = options.get('yticklabels', None)
+    if val is not None:
+        if val == 'invisible':
+            ax = pyplot.gca()
+            labels = ax.get_yticklabels()
+            pyplot.setp(labels, visible=False)
 
 
 def Show(**options):
@@ -690,6 +732,9 @@ subplot = SubPlot
 clf = Clf
 figure = Figure
 plot = Plot
+vlines = Vlines
+hlines = Hlines
+fill_between = FillBetween
 text = Text
 scatter = Scatter
 pmf = Pmf
