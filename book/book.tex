@@ -1802,6 +1802,7 @@ Then I plotted their histograms on the same axis:
     thinkplot.PrePlot(2)
     thinkplot.Hist(first_hist, align='right', width=width)
     thinkplot.Hist(other_hist, align='left', width=width)
+    thinkplot.config(xlim=[27, 46])
     thinkplot.Show(xlabel='weeks', ylabel='frequency')
 \end{verbatim}
 
