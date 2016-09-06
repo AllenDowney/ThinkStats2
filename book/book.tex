@@ -38,7 +38,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.33}
+\newcommand{\theversion}{2.0.34}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1802,7 +1802,8 @@ Then I plotted their histograms on the same axis:
     thinkplot.PrePlot(2)
     thinkplot.Hist(first_hist, align='right', width=width)
     thinkplot.Hist(other_hist, align='left', width=width)
-    thinkplot.Show(xlabel='weeks', ylabel='frequency')
+    thinkplot.Show(xlabel='weeks', ylabel='frequency',
+                   xlim=[27, 46])
 \end{verbatim}
 
 {\tt thinkplot.PrePlot} takes the number of histograms
