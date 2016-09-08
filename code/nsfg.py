@@ -10,12 +10,15 @@ from __future__ import print_function
 from collections import defaultdict
 import numpy as np
 import sys
+import os
 
 import thinkstats2
 
+datapath = os.path.abspath(os.path.dirname(__file__)) + '/'
 
-def ReadFemPreg(dct_file='2002FemPreg.dct',
-                dat_file='2002FemPreg.dat.gz'):
+
+def ReadFemPreg(dct_file=datapath + '2002FemPreg.dct',
+                dat_file=datapath + '2002FemPreg.dat.gz'):
     """Reads the NSFG pregnancy data.
 
     dct_file: string file name
