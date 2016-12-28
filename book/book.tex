@@ -1265,15 +1265,12 @@ Here's a function that does that:
 
 \begin{verbatim}
 def MakePregMap(df):
-    d = defaultdict(list)
-    for index, caseid in df.caseid.iteritems():
-        d[caseid].append(index)
-    return d
+    return df.groupby('caseid').apply(lambda x: list(x.index))
 \end{verbatim}
 
-{\tt df} is the DataFrame with pregnancy data.  The {\tt iteritems}
-method enumerates the index (row number)
-and {\tt caseid} for each pregnancy.
+{\tt df} is the DataFrame with pregnancy data.
+We return a Series where the index is each caseid, and the values are
+a list of indices corresponding to that respondent.
 \index{DataFrame}
 
 {\tt d} is a dictionary that maps from each case ID to a list of
