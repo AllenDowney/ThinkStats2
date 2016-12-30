@@ -5,13 +5,37 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
+
+import sys
+import numpy as np
+import thinkstats2
 
 from collections import defaultdict
-import numpy as np
-import sys
 
-import thinkstats2
+
+def ReadFemResp(dct_file='2002FemResp.dct',
+                dat_file='2002FemResp.dat.gz',
+                nrows=None):
+    """Reads the NSFG respondent data.
+
+    dct_file: string file name
+    dat_file: string file name
+
+    returns: DataFrame
+    """
+    dct = thinkstats2.ReadStataDct(dct_file)
+    df = dct.ReadFixedWidth(dat_file, compression='gzip', nrows=nrows)
+    CleanFemResp(df)
+    return df
+
+
+def CleanFemResp(df):
+    """Recodes variables from the respondent frame.
+
+    df: DataFrame
+    """
+    pass
 
 
 def ReadFemPreg(dct_file='2002FemPreg.dct',
@@ -61,12 +85,35 @@ def CleanFemPreg(df):
     df.cmintvw = np.nan
 
 
+def ValidatePregnum(resp, preg):
+    """Validate pregnum in the respondent file.
+
+    resp: respondent DataFrame
+    preg: pregnancy DataFrame
+    """
+    # make the map from caseid to list of pregnancy indices
+    preg_map = MakePregMap(preg)
+    
+    # iterate through the respondent pregnum series
+    for index, pregnum in resp.pregnum.iteritems():
+        caseid = resp.caseid[index]
+        indices = preg_map[caseid]
+
+        # check that pregnum from the respondent file equals
+        # the number of records in the pregnancy file
+        if len(indices) != pregnum:
+            print(caseid, len(indices), pregnum)
+            return False
+
+    return True
+
+
 def MakePregMap(df):
     """Make a map from caseid to list of preg indices.
 
     df: DataFrame
 
-    returns: dict that maps from caseid to list of indices into preg df
+    returns: dict that maps from caseid to list of indices into `preg`
     """
     d = defaultdict(list)
     for index, caseid in df.caseid.iteritems():
@@ -79,28 +126,41 @@ def main(script):
 
     script: string script name
     """
-    df = ReadFemPreg()
-    print(df.shape)
 
-    assert len(df) == 13593
+    # read and validate the respondent file
+    resp = ReadFemResp()
 
-    assert df.caseid[13592] == 12571
-    assert df.pregordr.value_counts()[1] == 5033
-    assert df.nbrnaliv.value_counts()[1] == 8981
-    assert df.babysex.value_counts()[1] == 4641
-    assert df.birthwgt_lb.value_counts()[7] == 3049
-    assert df.birthwgt_oz.value_counts()[0] == 1037
-    assert df.prglngth.value_counts()[39] == 4744
-    assert df.outcome.value_counts()[1] == 9148
-    assert df.birthord.value_counts()[1] == 4413
-    assert df.agepreg.value_counts()[22.75] == 100
-    assert df.totalwgt_lb.value_counts()[7.5] == 302
+    assert(len(resp) == 7643)
+    assert(resp.pregnum.value_counts()[1] == 1267)
 
-    weights = df.finalwgt.value_counts()
+    # read and validate the pregnancy file
+    preg = ReadFemPreg()
+    print(preg.shape)
+
+    assert len(preg) == 13593
+    assert preg.caseid[13592] == 12571
+    assert preg.pregordr.value_counts()[1] == 5033
+    assert preg.nbrnaliv.value_counts()[1] == 8981
+    assert preg.babysex.value_counts()[1] == 4641
+    assert preg.birthwgt_lb.value_counts()[7] == 3049
+    assert preg.birthwgt_oz.value_counts()[0] == 1037
+    assert preg.prglngth.value_counts()[39] == 4744
+    assert preg.outcome.value_counts()[1] == 9148
+    assert preg.birthord.value_counts()[1] == 4413
+    assert preg.agepreg.value_counts()[22.75] == 100
+    assert preg.totalwgt_lb.value_counts()[7.5] == 302
+
+    weights = preg.finalwgt.value_counts()
     key = max(weights.keys())
-    assert df.finalwgt.value_counts()[key] == 6
+    assert preg.finalwgt.value_counts()[key] == 6
+
+    # validate that the pregnum column in `resp` matches the number
+    # of entries in `preg`
+    assert(ValidatePregnum(resp, preg))
+
 
     print('%s: All tests passed.' % script)
+
 
 if __name__ == '__main__':
     main(*sys.argv)
