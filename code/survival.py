@@ -149,8 +149,14 @@ class HazardFunction(object):
         self.series = pd.Series(d)
         self.label = label
 
+    def __len__(self):
+        return len(self.series)
+
     def __getitem__(self, t):
         return self.series[t]
+
+    def Get(self, t, default=np.nan):
+        return self.series.get(t, default)
 
     def Render(self):
         """Generates a sequence of points suitable for plotting.
