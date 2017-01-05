@@ -9,19 +9,20 @@
 
 %\documentclass[10pt,b5paper]{book}
 \documentclass[12pt]{book}
-\usepackage[width=5.5in,height=8.5in,
-  hmarginratio=3:2,vmarginratio=1:1]{geometry}
+
+%\usepackage[width=5.5in,height=8.5in,
+%  hmarginratio=3:2,vmarginratio=1:1]{geometry}
 
 % for some of these packages, you might have to install
 % texlive-latex-extra (in Ubuntu)
 
-\usepackage[T1]{fontenc}
-\usepackage{textcomp}
-\usepackage{mathpazo}
-
+%\usepackage[T1]{fontenc}
+%\usepackage{textcomp}
+%\usepackage{mathpazo}
 %\usepackage{pslatex}
 
 \usepackage{url}
+\usepackage{hyperref}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{subfig}
@@ -38,7 +39,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.34}
+\newcommand{\theversion}{2.0.36}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -566,15 +567,11 @@ corrections and suggestions.
 \item Andy Pethan and Molly Farison helped debug some of the solutions,
 and Molly spotted several typos.
 
-\item Andrew Heine found an error in my error function.
-
 \item Dr. Nikolas Akerblom knows how big a Hyracotherium is.
 
 \item Alex Morrow clarified one of the code examples.
 
 \item Jonathan Street caught an error in the nick of time.
-
-\item G\'{a}bor Lipt\'{a}k found a typo in the book and the relay race solution.
 
 \item Many thanks to Kevin Smith and Tim Arnold for their work on
 plasTeX, which I used to convert this book to DocBook.
@@ -586,23 +583,12 @@ plasTeX, which I used to convert this book to DocBook.
 \item Stijn Debrouwere, Leo Marihart III, Jonathan Hammler, and Kent Johnson
 found errors in the first print edition.
 
-\item Dan Kearney found a typo.
-
-\item Jeff Pickhardt found a broken link and a typo.
-
 \item J\"{o}rg Beyer found typos in the book and made many corrections
 in the docstrings of the accompanying code.
 
 \item Tommie Gannert sent a patch file with a number of corrections.
 
-\item Alexander Gryzlov suggested a clarification in an exercise.
-
-\item Martin Veillette reported an error in one of the formulas for
-Pearson's correlation.
-
 \item Christoph Lendenmann submitted several errata.
-
-\item Haitao Ma noticed a typo and and sent me a note.
 
 \item Michael Kearney sent me many excellent suggestions.
 
@@ -615,8 +601,6 @@ Pearson's correlation.
 reviews of the book.  They found many errors and made many
 helpful suggestions.
 
-\item Rohit Deshpande found a typesetting error.
-
 \item David Palmer sent many helpful suggestions and corrections.
 
 \item Erik Kulyk found many typos.
@@ -624,16 +608,10 @@ helpful suggestions.
 \item Nir Soffer sent several excellent pull requests for both the
   book and the supporting code.
 
-\item Joanne Pratt found a number that was off by a factor of 10.
-
 \item GitHub user flothesof sent a number of corrections.
 
 \item Toshiaki Kurokawa, who is working on the Japanese translation of
 this book, has sent many corrections and helpful suggestions.
-
-\item Lucian Ursu spotted a vestigial sentence.
-
-\item Paul Glezen found a decimal point in the wrong place.
 
 \item Benjamin White suggested more idiomatic Pandas code.
 
@@ -642,6 +620,22 @@ this book, has sent many corrections and helpful suggestions.
 % ENDCONTRIB
 
 \end{itemize}
+
+Other people who found typos and similar errors are Andrew Heine,
+G\'{a}bor Lipt\'{a}k,
+Dan Kearney,
+Alexander Gryzlov, 
+Martin Veillette, 
+Haitao Ma, 
+Jeff Pickhardt,
+Rohit Deshpande,
+Joanne Pratt,
+Lucian Ursu,
+Paul Glezen,
+Ting-kuang Lin,
+Scott Miller.
+
+
 
 \normalsize
 
@@ -839,7 +833,8 @@ user's guide for the NSFG data are available from
 
 The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  For information
-about downloading and working with this code, see Section~\ref{code}.
+about downloading and working with this code, 
+see Section~\ref{code}.
 
 Once you download the code, you should have a file called {\tt
   ThinkStats2/code/nsfg.py}.  If you run it, it should read a data
@@ -1186,8 +1181,8 @@ to compare with the published data:
 \end{verbatim}
 
 The result of \verb"value_counts" is a Series;
-\verb"sort=False" doesn't sort the Series by values, so them
-appear in order.
+\verb"sort=False" doesn't sort the Series by count, so they
+appear in order by value.
 
 Comparing the results with the published table, it looks like the
 values in {\tt outcome} are correct.  Similarly, here is the published
@@ -8128,7 +8123,7 @@ someone's weight, how much would it help to know their height?
 
 Like the NSFG, the BRFSS oversamples some groups and provides
 a sampling weight for each respondent.  In the BRFSS data, the variable
-name for these weights is {\tt totalwt}.
+name for these weights is {\tt finalwt}.
 Use resampling, with and without weights, to estimate the mean height
 of respondents in the BRFSS, the standard error of the mean, and a
 90\% confidence interval.  How much does correct weighting affect the
