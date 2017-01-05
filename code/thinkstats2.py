@@ -2713,9 +2713,9 @@ def ResampleRowsWeighted(df, column='finalwgt'):
 
     returns: DataFrame
     """
-    weights = df[column]
-    cdf = Cdf(dict(weights))
-    indices = cdf.Sample(len(weights))
+    weights = df[column].copy()
+    weights /= sum(weights)
+    indices = np.random.choice(df.index, len(df), replace=True, p=weights)
     sample = df.loc[indices]
     return sample
 

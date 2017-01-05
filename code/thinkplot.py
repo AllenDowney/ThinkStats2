@@ -305,7 +305,7 @@ def Scatter(xs, ys=None, **options):
     options: options passed to plt.scatter
     """
     options = _Underride(options, color='blue', alpha=0.2, 
-                        s=30, edgecolors='none')
+                         s=30, edgecolors='none')
 
     if ys is None and isinstance(xs, pandas.Series):
         ys = xs.values
