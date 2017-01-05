@@ -31,9 +31,14 @@ class Normal(object):
         self.sigma2 = sigma2
         self.label = label
 
-    def __str__(self):
+    def __repr__(self):
         """Returns a string representation."""
-        return 'N(%g, %g)' % (self.mu, self.sigma2)
+        if self.label:
+            return 'Normal(%g, %g, %s)' % (self.mu, self.sigma2, self.label)
+        else:
+            return 'Normal(%g, %g)' % (self.mu, self.sigma2)
+
+    __str__ = __repr__
 
     @property
     def sigma(self):
