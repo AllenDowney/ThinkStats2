@@ -121,12 +121,11 @@ def MakePregMap(df):
     return d
 
 
-def main(script):
+def main():
     """Tests the functions in this module.
 
     script: string script name
     """
-
     # read and validate the respondent file
     resp = ReadFemResp()
 
@@ -163,4 +162,4 @@ def main(script):
 
 
 if __name__ == '__main__':
-    main(*sys.argv)
+    main()
