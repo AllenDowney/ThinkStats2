@@ -157,8 +157,8 @@ def main():
     # of entries in `preg`
     assert(ValidatePregnum(resp, preg))
 
-
-    print('%s: All tests passed.' % script)
+    
+    print('All tests passed.')
 
 
 if __name__ == '__main__':
