@@ -1,0 +1,23 @@
+# Description
+These are my notes, organized by chapter, from ThinkStats2.
+
+# Chapter 1
+
+## Data Frames
+First, you need to read the data in as a dataframe (df).  Find a way to read in
+the data appropriately based on its type.  Enter df name to see truncated view.
+
+*Note: Assume we've assigned our dataframe the variable df*
+
+### Useful Commands for DataFrames
+Treat dataframes like sql tables.  Here's how to access their columns.
+- **List all columns:** df.columns
+- **Access column:**
+    - df.columns[*{column index}*]
+    - df['*{column name}*']
+    - df.*{column name}*
+
+### Useful Commands for Series
+DF columns are read as series.  Series are like arrays.
+- **Get element from series:** series[*{index}*]
+- **Get range from series:** series[*{start index}*:*{end index}*]
