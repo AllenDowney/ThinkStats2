@@ -1,21 +1,40 @@
 # Description
 These are my notes, organized by chapter, from ThinkStats2.
 
+# Quick Links
+- [Book](http://greenteapress.com/wp/think-stats-2e/)
+    - PDF of book at ~/Documents/learning/thinkstats2/thinkstats2.pdf
+- NSFG
+    - [index](https://www.cdc.gov/nchs/nsfg/index.htm)
+    - [codebooks](https://www.cdc.gov/nchs/nsfg/nsfg_cycle6.htm)
+- Launch ipython notebook
+    - `ipython notebook &`
+
 # Chapter 1
 
 ## Data Frames
-First, you need to read the data in as a dataframe (df).  Find a way to read in
+First, you need to read the data in as a DataFrame (df).  Find a way to read in
 the data appropriately based on its type.  Enter df name to see truncated view.
 
-*Note: Assume we've assigned our dataframe the variable df*
+*Note: Assume we've assigned our DataFrame the variable df*
 
 ### Useful Commands for DataFrames
-Treat dataframes like sql tables.  Here's how to access their columns.
+Treat DataFrame like sql tables.  Here's how to access their columns.
 - **List all columns:** df.columns
 - **Access column:**
-    - df.columns[*{column index}*]
-    - df['*{column name}*']
-    - df.*{column name}*
+    - df.columns[*{column_index}*]
+    - df['*{column_name}*']
+    - df.*{column_name}*
+        - Don't use this when creating new columns in a DataFrame
+- **Transform columns:**
+    - {column_name}**.replace**(*value_to_replace, desired_value, inplace=boolean*)
+        - Replace specific values in a column with a specific value
+        - e.g.: *df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)*
+    - df**.loc**[*{label or condition}, {column_to_update}*] = *{value to enter}*
+        - Enter a value in specific locations in a column.
+        - e.g.: df.loc[df.birthwgt_lb > 20, 'birthwgt_lb'] = np.nan
+- **Summarize data:**
+    - {column_name}**.value_counts**(*sort=boolean*)
 
 ### Useful Commands for Series
 DF columns are read as series.  Series are like arrays.
