@@ -11,8 +11,6 @@ import sys
 import numpy as np
 import thinkstats2
 
-from collections import defaultdict
-
 
 def ReadFemResp(dct_file='2002FemResp.dct',
                 dat_file='2002FemResp.dat.gz',
@@ -116,7 +114,7 @@ def MakePregMap(df):
     returns: dict that maps from caseid to list of indices into `preg`
     """
     d = defaultdict(list)
-    for index, caseid in df.caseid.iteritems():
+    for index, caseid in df.caseid.items():
         d[caseid].append(index)
     return d
 

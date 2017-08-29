@@ -6,8 +6,11 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
 
+from builtins import range
+from past.utils import old_div
 import random
 import numpy as np
 import scipy.stats
@@ -27,7 +30,7 @@ def triangular_sample(n):
     return [random.triangular(0, 100) for i in range(n)]
         
 def expo_sample(n):
-    return [random.expovariate(1.0/50) for i in range(n)]
+    return [random.expovariate(old_div(1.0,50)) for i in range(n)]
         
 def gauss_sample(n):
     return [random.gauss(50, 25) for i in range(n)]

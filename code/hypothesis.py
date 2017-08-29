@@ -7,6 +7,7 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function, division
 
+from builtins import range
 import nsfg
 import nsfg2
 import first
@@ -197,7 +198,7 @@ class PregLengthTest(thinkstats2.HypothesisTest):
         self.pool = np.hstack((firsts, others))
 
         pmf = thinkstats2.Pmf(self.pool)
-        self.values = range(35, 44)
+        self.values = list(range(35, 44))
         self.expected_probs = np.array(pmf.Probs(self.values))
 
     def RunModel(self):

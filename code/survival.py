@@ -7,6 +7,9 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function, division
 
+from builtins import zip
+from builtins import range
+from builtins import object
 import numpy as np
 import pandas as pd
 
@@ -47,7 +50,7 @@ class SurvivalFunction(object):
 
     def Items(self):
         """Sorted list of (t, s) pairs."""
-        return zip(self.ts, self.ss)
+        return list(zip(self.ts, self.ss))
 
     def Render(self):
         """Generates a sequence of points suitable for plotting.

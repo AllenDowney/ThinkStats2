@@ -6,7 +6,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from builtins import zip
+from past.utils import old_div
 import math
 
 import numpy as np
@@ -19,7 +22,7 @@ import thinkstats2
 
 def ParetoMedian(xmin, alpha):
     """Computes the median of a Pareto distribution."""
-    return xmin * pow(2, 1/alpha)
+    return xmin * pow(2, old_div(1,alpha))
 
 
 def MakeExpoCdf():

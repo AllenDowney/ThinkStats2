@@ -6,7 +6,13 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from builtins import zip
+from builtins import next
+from builtins import range
+from past.utils import old_div
+from builtins import object
 import math
 import matplotlib
 import matplotlib.pyplot as plt
@@ -192,7 +198,7 @@ def _Underride(d, **options):
     if d is None:
         d = {}
 
-    for key, val in options.items():
+    for key, val in list(options.items()):
         d.setdefault(key, val)
 
     return d
@@ -445,11 +451,11 @@ def Pmf(pmf, **options):
         lastx = x + width
         lasty = y
     points.append((lastx, 0))
-    pxs, pys = zip(*points)
+    pxs, pys = list(zip(*points))
 
     align = options.pop('align', 'center')
     if align == 'center':
-        pxs = np.array(pxs) - width/2.0
+        pxs = np.array(pxs) - old_div(width,2.0)
     if align == 'right':
         pxs = np.array(pxs) - width
 
@@ -565,7 +571,7 @@ def Contour(obj, pcolor=False, contour=True, imshow=False, **options):
 
     _Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
-    xs, ys = zip(*d.keys())
+    xs, ys = list(zip(*list(d.keys())))
     xs = sorted(set(xs))
     ys = sorted(set(ys))
 

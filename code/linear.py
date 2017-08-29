@@ -7,6 +7,8 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function, division
 
+from builtins import zip
+from builtins import range
 import math
 import numpy as np
 
@@ -44,7 +46,7 @@ def SamplingDistributions(live, iters=101):
         estimates = thinkstats2.LeastSquares(ages, weights)
         t.append(estimates)
 
-    inters, slopes = zip(*t)
+    inters, slopes = list(zip(*t))
     return inters, slopes
 
 

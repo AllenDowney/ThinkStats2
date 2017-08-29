@@ -6,7 +6,9 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from past.utils import old_div
 import numpy as np
 import pandas
 
@@ -115,7 +117,7 @@ def MakeFigures(df):
     # percentile-based statistics
     median = cdf_log.Percentile(50)
     iqr = cdf_log.Percentile(75) - cdf_log.Percentile(25)
-    std = iqr / 1.349
+    std = old_div(iqr, 1.349)
 
     # choose std to match the upper tail
     std = 0.35

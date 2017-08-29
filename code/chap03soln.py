@@ -23,7 +23,7 @@ def PmfMean(pmf):
         float mean
     """
     mean = 0.0
-    for x, p in pmf.d.items():
+    for x, p in list(pmf.d.items()):
         mean += p * x
     return mean
 
@@ -42,7 +42,7 @@ def PmfVar(pmf, mu=None):
         mu = pmf.Mean()
 
     var = 0.0
-    for x, p in pmf.d.items():
+    for x, p in list(pmf.d.items()):
         var += p * (x - mu) ** 2
     return var
 
@@ -69,7 +69,7 @@ def PairWiseDifferences(live):
     preg_map = nsfg.MakePregMap(live)
 
     diffs = []
-    for caseid, indices in preg_map.items():
+    for caseid, indices in list(preg_map.items()):
         lengths = live.loc[indices].prglngth.values
         if len(lengths) >= 2:
             diffs.extend(Diffs(lengths))

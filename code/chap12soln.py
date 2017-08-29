@@ -6,7 +6,9 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from past.utils import old_div
 import pandas
 import numpy as np
 import statsmodels.formula.api as smf
@@ -80,7 +82,7 @@ def PlotEwmaPredictions(daily, name):
     # generate predicted values and add them to the end
     predicted['date'] = predicted.index
     one_day = np.timedelta64(1, 'D')
-    predicted['days'] = (predicted.date - start) / one_day
+    predicted['days'] = old_div((predicted.date - start), one_day)
     predict = inter + slope * predicted.days
     predicted.ewma.fillna(predict, inplace=True)
 
