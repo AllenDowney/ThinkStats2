@@ -5,7 +5,7 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import pandas
 import numpy as np
@@ -41,7 +41,7 @@ def tmean(series):
     n = len(t)
     if n <= 3:
         return t.mean()
-    trim = max(1, n/10)
+    trim = max(1, n//10)
     return np.mean(sorted(t)[trim:n-trim])
 
 
@@ -460,7 +460,7 @@ def SimulateAutocorrelation(daily, iters=1001, nlags=40):
 
     high = thinkstats2.PercentileRows(t, [97.5])[0]
     low = -high
-    lags = range(1, nlags+1)
+    lags = list(range(1, nlags+1))
     thinkplot.FillBetween(lags, low, high, alpha=0.2, color='gray')
 
 

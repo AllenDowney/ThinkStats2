@@ -152,7 +152,7 @@ class _DictWrapper(object):
         elif isinstance(obj, (_DictWrapper, Cdf, Pdf)):
             self.d.update(obj.Items())
         elif isinstance(obj, pandas.Series):
-            self.d.update(obj.value_counts().iteritems())
+            self.d.update(obj.value_counts().items())
         else:
             # finally, treat it like a list
             self.d.update(Counter(obj))
