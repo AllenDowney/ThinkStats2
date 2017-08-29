@@ -6,7 +6,12 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from builtins import zip
+from builtins import str
+from builtins import range
+from past.utils import old_div
 import pandas
 import numpy as np
 import statsmodels.formula.api as smf
@@ -40,7 +45,7 @@ def tmean(series):
     n = len(t)
     if n <= 3:
         return t.mean()
-    trim = max(1, n/10)
+    trim = max(1, old_div(n,10))
     return np.mean(sorted(t)[trim:n-trim])
 
 
@@ -57,7 +62,7 @@ def GroupByDay(transactions, func=np.mean):
     daily['date'] = daily.index
     start = daily.date[0]
     one_year = np.timedelta64(1, 'Y')
-    daily['years'] = (daily.date - start) / one_year
+    daily['years'] = old_div((daily.date - start), one_year)
 
     return daily
 
@@ -257,7 +262,7 @@ def PlotPredictions(daily, years, iters=101, percent=90, func=RunLinearModel):
     func: function that fits a model to the data
     """
     result_seq = SimulateResults(daily, iters=iters, func=func)
-    p = (100 - percent) / 2
+    p = old_div((100 - percent), 2)
     percents = p, 100-p
 
     predict_seq = GeneratePredictions(result_seq, years, add_resid=True)
@@ -279,7 +284,7 @@ def PlotIntervals(daily, years, iters=101, percent=90, func=RunLinearModel):
     func: function that fits a model to the data
     """
     result_seq = SimulateIntervals(daily, iters=iters, func=func)
-    p = (100 - percent) / 2
+    p = old_div((100 - percent), 2)
     percents = p, 100-p
 
     predict_seq = GeneratePredictions(result_seq, years, add_resid=True)
@@ -295,7 +300,7 @@ def Correlate(dailies):
     returns: correlation matrix
     """
     df = pandas.DataFrame()
-    for name, daily in dailies.items():
+    for name, daily in list(dailies.items()):
         df[name] = daily.ppg
 
     return df.corr()
@@ -309,7 +314,7 @@ def CorrelateResid(dailies):
     returns: correlation matrix
     """
     df = pandas.DataFrame()
-    for name, daily in dailies.items():
+    for name, daily in list(dailies.items()):
         _, results = RunLinearModel(daily)
         df[name] = results.resid
 
@@ -349,7 +354,7 @@ def RunModels(dailies):
     dailies: map from group name to DataFrame
     """
     rows = []
-    for daily in dailies.values():
+    for daily in list(dailies.values()):
         _, results = RunLinearModel(daily)
         intercept, slope = results.params
         p1, p2 = results.pvalues
@@ -411,18 +416,18 @@ def PrintSerialCorrelations(dailies):
     dailies: map from category name to DataFrame of daily prices
     """
     filled_dailies = {}
-    for name, daily in dailies.items():
+    for name, daily in list(dailies.items()):
         filled_dailies[name] = FillMissing(daily, span=30)
 
     # print serial correlations for raw price data
-    for name, filled in filled_dailies.items():            
+    for name, filled in list(filled_dailies.items()):            
         corr = thinkstats2.SerialCorr(filled.ppg, lag=1)
         print(name, corr)
 
     rows = []
     for lag in [1, 7, 30, 365]:
         row = [str(lag)]
-        for name, filled in filled_dailies.items():            
+        for name, filled in list(filled_dailies.items()):            
             corr = thinkstats2.SerialCorr(filled.resid, lag)
             row.append('%.2g' % corr)
         rows.append(row)
@@ -458,7 +463,7 @@ def SimulateAutocorrelation(daily, iters=1001, nlags=40):
 
     high = thinkstats2.PercentileRows(t, [97.5])[0]
     low = -high
-    lags = range(1, nlags+1)
+    lags = list(range(1, nlags+1))
     thinkplot.FillBetween(lags, low, high, alpha=0.2, color='gray')
 
 
@@ -473,7 +478,7 @@ def PlotAutoCorrelation(dailies, nlags=40, add_weekly=False):
     daily = dailies['high']
     SimulateAutocorrelation(daily)
 
-    for name, daily in dailies.items():
+    for name, daily in list(dailies.items()):
 
         if add_weekly:
             daily = AddWeeklySeasonality(daily)

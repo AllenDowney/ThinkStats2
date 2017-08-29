@@ -6,7 +6,9 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from past.utils import old_div
 from collections import defaultdict
 import numpy as np
 import sys
@@ -54,7 +56,7 @@ def CleanFemPreg(df):
     # convert to a single column in lb
     # NOTE: creating a new column requires dictionary syntax,
     # not attribute assignment (like df.totalwgt_lb)
-    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0    
+    df['totalwgt_lb'] = df.birthwgt_lb + old_div(df.birthwgt_oz, 16.0)    
 
     # due to a bug in ReadStataDct, the last variable gets clipped;
     # so for now set it to NaN
@@ -69,7 +71,7 @@ def MakePregMap(df):
     returns: dict that maps from caseid to list of indices into preg df
     """
     d = defaultdict(list)
-    for index, caseid in df.caseid.iteritems():
+    for index, caseid in df.caseid.items():
         d[caseid].append(index)
     return d
 

@@ -7,6 +7,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function, division
 
+from builtins import str
+from builtins import zip
+from builtins import range
+from builtins import object
 """This file contains class definitions for:
 
 Hist: represents a histogram (map from values to integer frequencies).
@@ -148,11 +152,11 @@ class _DictWrapper(object):
             self.label = label if label is not None else obj.label
 
         if isinstance(obj, dict):
-            self.d.update(obj.items())
+            self.d.update(list(obj.items()))
         elif isinstance(obj, (_DictWrapper, Cdf, Pdf)):
             self.d.update(obj.Items())
         elif isinstance(obj, pandas.Series):
-            self.d.update(obj.value_counts().iteritems())
+            self.d.update(iter(obj.value_counts().items()))
         else:
             # finally, treat it like a list
             self.d.update(Counter(obj))
@@ -237,7 +241,7 @@ class _DictWrapper(object):
         if m is None:
             m = self.MaxLike()
 
-        for x, p in self.d.items():
+        for x, p in list(self.d.items()):
             if p:
                 self.Set(x, math.log(p / m))
             else:
@@ -257,7 +261,7 @@ class _DictWrapper(object):
         if m is None:
             m = self.MaxLike()
 
-        for x, p in self.d.items():
+        for x, p in list(self.d.items()):
             self.Set(x, math.exp(p - m))
 
     def GetDict(self):
@@ -275,11 +279,11 @@ class _DictWrapper(object):
         dictionary are the values of the Hist/Pmf, and the
         values of the dictionary are frequencies/probabilities.
         """
-        return self.d.keys()
+        return list(self.d.keys())
 
     def Items(self):
         """Gets an unsorted sequence of (value, freq/prob) pairs."""
-        return self.d.items()
+        return list(self.d.items())
 
     def Render(self, **options):
         """Generates a sequence of points suitable for plotting.
@@ -292,7 +296,7 @@ class _DictWrapper(object):
         if min(self.d.keys()) is np.nan:
             logging.warning('Hist: contains NaN, may not render correctly.')
 
-        return zip(*sorted(self.Items()))
+        return list(zip(*sorted(self.Items())))
 
     def MakeCdf(self, label=None):
         """Makes a Cdf."""
@@ -355,14 +359,14 @@ class _DictWrapper(object):
 
         n: number of items to return
         """
-        return sorted(self.d.items(), reverse=True)[:n]
+        return sorted(list(self.d.items()), reverse=True)[:n]
 
     def Smallest(self, n=10):
         """Returns the smallest n values, with frequency/probability.
 
         n: number of items to return
         """
-        return sorted(self.d.items(), reverse=False)[:n]
+        return sorted(list(self.d.items()), reverse=False)[:n]
 
 
 class Hist(_DictWrapper):
@@ -449,7 +453,7 @@ class Pmf(_DictWrapper):
         if isinstance(x, _DictWrapper):
             return PmfProbGreater(self, x)
         else:
-            t = [prob for (val, prob) in self.d.items() if val > x]
+            t = [prob for (val, prob) in list(self.d.items()) if val > x]
             return sum(t)
 
     def ProbLess(self, x):
@@ -462,7 +466,7 @@ class Pmf(_DictWrapper):
         if isinstance(x, _DictWrapper):
             return PmfProbLess(self, x)
         else:
-            t = [prob for (val, prob) in self.d.items() if val < x]
+            t = [prob for (val, prob) in list(self.d.items()) if val < x]
             return sum(t)
 
     def __lt__(self, obj):
@@ -535,7 +539,7 @@ class Pmf(_DictWrapper):
         """
         target = random.random()
         total = 0.0
-        for x, p in self.d.items():
+        for x, p in list(self.d.items()):
             total += p
             if total >= target:
                 return x
@@ -550,7 +554,7 @@ class Pmf(_DictWrapper):
             float mean
         """
         mean = 0.0
-        for x, p in self.d.items():
+        for x, p in list(self.d.items()):
             mean += p * x
         return mean
 
@@ -566,7 +570,7 @@ class Pmf(_DictWrapper):
             mu = self.Mean()
 
         var = 0.0
-        for x, p in self.d.items():
+        for x, p in list(self.d.items()):
             var += p * (x - mu) ** 2
         return var
 
@@ -989,7 +993,7 @@ class Cdf(object):
             self.ps = np.asarray([])
             return
 
-        xs, freqs = zip(*sorted(dw.Items()))
+        xs, freqs = list(zip(*sorted(dw.Items())))
         self.xs = np.asarray(xs)
         self.ps = np.cumsum(freqs, dtype=np.float)
         self.ps /= self.ps[-1]
@@ -1042,7 +1046,7 @@ class Cdf(object):
         a = self.ps
         b = np.roll(a, 1)
         b[0] = 0
-        return zip(self.xs, a-b)
+        return list(zip(self.xs, a-b))
 
     def Shift(self, term):
         """Adds a term to the xs.
@@ -1491,7 +1495,7 @@ class Pdf(object):
         """
         label = options.pop('label', '')
         xs, ds = self.Render(**options)
-        return Pmf(dict(zip(xs, ds)), label=label)
+        return Pmf(dict(list(zip(xs, ds))), label=label)
 
     def Render(self, **options):
         """Generates a sequence of points suitable for plotting.
@@ -1522,7 +1526,7 @@ class Pdf(object):
     def Items(self):
         """Generates a sequence of (value, probability) pairs.
         """
-        return zip(*self.Render())
+        return list(zip(*self.Render()))
 
 
 class NormalPdf(Pdf):
@@ -2005,7 +2009,7 @@ class Beta(object):
 
         xs = [i / (steps - 1.0) for i in range(steps)]
         probs = [self.EvalPdf(x) for x in xs]
-        pmf = Pmf(dict(zip(xs, probs)), label=label)
+        pmf = Pmf(dict(list(zip(xs, probs))), label=label)
         return pmf
 
     def MakeCdf(self, steps=101):
@@ -2107,7 +2111,7 @@ class Dirichlet(object):
         """
         alpha0 = self.params.sum()
         ps = self.params / alpha0
-        return Pmf(zip(xs, ps), label=label)
+        return Pmf(list(zip(xs, ps)), label=label)
 
 
 def BinomialCoef(n, k):

@@ -7,6 +7,9 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 
 from __future__ import print_function, division
 
+from builtins import zip
+from builtins import str
+from builtins import range
 import unittest
 import random
 
@@ -166,7 +169,7 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(pmf4.Mean(), 1.4291667)
 
     def testPmfProbLess(self):
-        d6 = thinkstats2.Pmf(range(1,7))
+        d6 = thinkstats2.Pmf(list(range(1,7)))
         self.assertEqual(d6.ProbLess(4), 0.5)
         self.assertEqual(d6.ProbGreater(3), 0.5)
         two = d6 + d6
@@ -177,7 +180,7 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(two.ProbLess(three), 0.778549382716049)
 
     def testPmfMax(self):
-        d6 = thinkstats2.Pmf(range(1,7))
+        d6 = thinkstats2.Pmf(list(range(1,7)))
         two = d6 + d6
         three = two + d6
         cdf = three.Max(6)
@@ -200,7 +203,7 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(cdf[5], 1)
         self.assertAlmostEqual(cdf[6], 1)
 
-        xs = range(7)
+        xs = list(range(7))
         ps = cdf.Probs(xs)
         for p1, p2 in zip(ps, [0, 0.2, 0.6, 0.8, 0.8, 1, 1]):
             self.assertAlmostEqual(p1, p2)

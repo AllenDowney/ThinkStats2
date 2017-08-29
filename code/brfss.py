@@ -6,7 +6,9 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from past.utils import old_div
 import math
 import sys
 import pandas
@@ -30,7 +32,7 @@ def Summarize(df, column, title):
     for key, series in items:
         mean, var = series.mean(), series.var()
         std = math.sqrt(var)
-        cv = std / mean
+        cv = old_div(std, mean)
         t = key, len(series), mean, var, std, cv
         print('%s\t%d\t%4.2f\t%4.2f\t%4.2f\t%4.4f' % t)
 
@@ -52,7 +54,7 @@ def CleanBrfssFrame(df):
 
     # clean weight a year ago
     df.wtyrago.replace([7777, 9999], float('NaN'), inplace=True)
-    df['wtyrago'] = df.wtyrago.apply(lambda x: x/2.2 if x < 9000 else x-9000)
+    df['wtyrago'] = df.wtyrago.apply(lambda x: old_div(x,2.2) if x < 9000 else x-9000)
 
 
 def ReadBrfss(filename='CDBRFS08.ASC.gz', compression='gzip', nrows=None):
@@ -164,7 +166,7 @@ def main(script, nrows=1000):
         assert(df.age.value_counts()[40] == 28)
         assert(df.sex.value_counts()[2] == 668)
         assert(df.wtkg2.value_counts()[90.91] == 49)
-        assert(df.wtyrago.value_counts()[160/2.2] == 49)
+        assert(df.wtyrago.value_counts()[old_div(160,2.2)] == 49)
         assert(df.htm3.value_counts()[163] == 103)
         assert(df.finalwt.value_counts()[185.870345] == 13)
         print('%s: All tests passed.' % script)

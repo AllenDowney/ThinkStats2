@@ -6,7 +6,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from builtins import range
+from past.utils import old_div
 import math
 import numpy as np
 
@@ -65,7 +68,7 @@ def MakeFigures(firsts, others):
                    axis=[27, 46, 0, 0.6])
 
     # plot the differences in the PMFs
-    weeks = range(35, 46)
+    weeks = list(range(35, 46))
     diffs = []
     for week in weeks:
         p1 = first_pmf.Prob(week)
@@ -119,7 +122,7 @@ def UnbiasPmf(pmf, label=''):
     new_pmf = pmf.Copy(label=label)
 
     for x, p in pmf.Items():
-        new_pmf.Mult(x, 1.0/x)
+        new_pmf.Mult(x, old_div(1.0,x))
         
     new_pmf.Normalize()
     return new_pmf

@@ -6,7 +6,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from builtins import range
+from past.utils import old_div
 import pandas
 import numpy as np
 
@@ -23,8 +26,8 @@ def CleanData(resp):
     resp.cmdivorcx.replace([9998, 9999], np.nan, inplace=True)
 
     resp['notdivorced'] = resp.cmdivorcx.isnull().astype(int)
-    resp['duration'] = (resp.cmdivorcx - resp.cmmarrhx) / 12.0
-    resp['durationsofar'] = (resp.cmintvw - resp.cmmarrhx) / 12.0
+    resp['duration'] = old_div((resp.cmdivorcx - resp.cmmarrhx), 12.0)
+    resp['durationsofar'] = old_div((resp.cmintvw - resp.cmmarrhx), 12.0)
 
     month0 = pandas.to_datetime('1899-12-15')
     dates = [month0 + pandas.DateOffset(months=cm) 

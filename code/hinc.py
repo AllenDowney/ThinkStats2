@@ -6,7 +6,9 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from past.utils import old_div
 import numpy as np
 import pandas
 
@@ -53,7 +55,7 @@ def ReadData(filename='hinc06.csv'):
     df[2] = df[1].cumsum()
     # normalize the cumulative freqs
     total = df[2][41]
-    df[3] = df[2] / total
+    df[3] = old_div(df[2], total)
     # add column names
     df.columns = ['income',  'freq', 'cumsum', 'ps']
     return df

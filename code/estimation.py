@@ -6,7 +6,10 @@ License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
 from __future__ import print_function
+from __future__ import division
 
+from builtins import range
+from past.utils import old_div
 import thinkstats2
 import thinkplot
 
@@ -97,9 +100,9 @@ def Estimate3(n=7, m=1000):
     means = []
     medians = []
     for _ in range(m):
-        xs = np.random.exponential(1.0/lam, n)
-        L = 1 / np.mean(xs)
-        Lm = math.log(2) / np.median(xs)
+        xs = np.random.exponential(old_div(1.0,lam), n)
+        L = old_div(1, np.mean(xs))
+        Lm = old_div(math.log(2), np.median(xs))
         means.append(L)
         medians.append(Lm)
 
