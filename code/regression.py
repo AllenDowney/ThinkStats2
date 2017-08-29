@@ -9,6 +9,7 @@ from __future__ import print_function, division
 
 import math
 import pandas
+import patsy
 import random
 import numpy as np
 import statsmodels.api as sm
@@ -77,6 +78,15 @@ def JoinFemResp(df):
     return join
 
 
+MESSAGE = """If you get this error, it's probably because 
+you are running Python 3 and the nice people who maintain
+Patsy have not fixed this problem:
+https://github.com/pydata/patsy/issues/34
+
+While we wait, I suggest running this example in
+Python 2, or skipping this example."""
+
+
 def GoMining(df):
     """Searches for variables that predict birth weight.
 
@@ -90,7 +100,9 @@ def GoMining(df):
             if df[name].var() < 1e-7:
                 continue
 
-            formula='totalwgt_lb ~ agepreg + ' + name
+            formula = 'totalwgt_lb ~ agepreg + ' + name
+            formula = formula.encode('ascii')
+
             model = smf.ols(formula, data=df)
             if model.nobs < len(df)/2:
                 continue
@@ -98,6 +110,8 @@ def GoMining(df):
             results = model.fit()
         except (ValueError, TypeError):
             continue
+        except patsy.PatsyError:
+            raise ValueError(MESSAGE)
 
         variables.append((results.rsquared, name))
 
@@ -363,19 +377,17 @@ def RunLogisticModels(live):
 
 def main(name, data_dir='.'):
     thinkstats2.RandomSeed(17)
-    #LogisticRegressionExample()
+    LogisticRegressionExample()
 
     live, firsts, others = first.MakeFrames()
     live['isfirst'] = (live.birthord == 1)
 
     RunLogisticModels(live)
-    return
 
     RunSimpleRegression(live)
     RunModels(live)
 
     PredictBirthWeight(live)
-
 
 
 if __name__ == '__main__':

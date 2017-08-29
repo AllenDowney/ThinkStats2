@@ -50,7 +50,7 @@ def ReadData(filename='hinc06.csv'):
 
     df = pandas.DataFrame(res)
     # correct the first range
-    df[0][0] -= 1
+    df.loc[0, 0] -= 1
     # compute the cumulative sum of the freqs
     df[2] = df[1].cumsum()
     # normalize the cumulative freqs

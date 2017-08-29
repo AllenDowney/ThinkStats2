@@ -1,24 +1,8 @@
-LATEX = latex
-
-DVIPS = dvips
-
-PDFFLAGS = -dCompatibilityLevel=1.4 -dPDFSETTINGS=/prepress \
-           -dCompressPages=true -dUseFlateCompression=true  \
-           -dEmbedAllFonts=true -dSubsetFonts=true -dMaxSubsetPct=100
-
-
-%.dvi: %.tex
-	$(LATEX) $<
-
-%.ps: %.dvi
-	$(DVIPS) -o $@ $<
-
-%.pdf: %.ps
-	ps2pdf $(PDFFLAGS) $<
 
 all:	book.tex
 	pdflatex book
 	makeindex book.idx
+	pdflatex book
 	mv book.pdf thinkstats2.pdf
 	evince thinkstats2.pdf
 
@@ -30,7 +14,7 @@ hevea:
 # the following greps are a kludge to prevent imagen from seeing
 # the definitions in latexonly, and to avoid headers on the images
 	grep -v latexonly thinkstats2.image.tex > a; mv a thinkstats2.image.tex
-	grep -v fancyhdr thinkstats2.image.tex > a; mv a thinkstats2.image.tex
+	sed s/\\\\usepackage{fancyhdr}// < thinkstats2.image.tex > a; mv a thinkstats2.image.tex
 	imagen -png thinkstats2
 	hacha thinkstats2.html
 	cp up.png next.png back.png html

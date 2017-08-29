@@ -33,9 +33,14 @@ class Normal(object):
         self.sigma2 = sigma2
         self.label = label
 
-    def __str__(self):
+    def __repr__(self):
         """Returns a string representation."""
-        return 'N(%g, %g)' % (self.mu, self.sigma2)
+        if self.label:
+            return 'Normal(%g, %g, %s)' % (self.mu, self.sigma2, self.label)
+        else:
+            return 'Normal(%g, %g)' % (self.mu, self.sigma2)
+
+    __str__ = __repr__
 
     @property
     def sigma(self):
@@ -329,7 +334,7 @@ def TestCorrelation(live):
                    xlabel='correlation',
                    ylabel='CDF')
 
-    t = r * math.sqrt((n-2) / (1-r))
+    t = r * math.sqrt((n-2) / (1-r**2))
     p_value = 1 - scipy.stats.t.cdf(t, df=n-2)
     print(r, p_value)
 
@@ -409,7 +414,6 @@ def main():
     PlotPregLengths(live, firsts, others)
 
     TestChiSquared()
-
 
 
 if __name__ == '__main__':

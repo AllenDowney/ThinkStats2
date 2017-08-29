@@ -133,7 +133,7 @@ def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
     stderr = RMSE(means, mu)
     print('standard error', stderr)
 
-    cdf = thinkstats2.MakeCdfFromList(means)
+    cdf = thinkstats2.Cdf(means)
     ci = cdf.Percentile(5), cdf.Percentile(95)
     print('confidence interval', ci)
     VertLine(ci[0])

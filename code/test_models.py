@@ -28,7 +28,7 @@ def ReadFile(filename):
 
 def main(script, filename='mystery0.dat'):
     data = ReadFile(filename)
-    cdf = thinkstats2.MakeCdfFromList(data)
+    cdf = thinkstats2.Cdf(data)
 
     thinkplot.PrePlot(rows=2, cols=3)
     thinkplot.SubPlot(1)

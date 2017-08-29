@@ -9,19 +9,20 @@
 
 %\documentclass[10pt,b5paper]{book}
 \documentclass[12pt]{book}
-\usepackage[width=5.5in,height=8.5in,
-  hmarginratio=3:2,vmarginratio=1:1]{geometry}
+
+%\usepackage[width=5.5in,height=8.5in,
+%  hmarginratio=3:2,vmarginratio=1:1]{geometry}
 
 % for some of these packages, you might have to install
 % texlive-latex-extra (in Ubuntu)
 
-\usepackage[T1]{fontenc}
-\usepackage{textcomp}
-\usepackage{mathpazo}
-
+%\usepackage[T1]{fontenc}
+%\usepackage{textcomp}
+%\usepackage{mathpazo}
 %\usepackage{pslatex}
 
 \usepackage{url}
+\usepackage{hyperref}
 \usepackage{fancyhdr}
 \usepackage{graphicx}
 \usepackage{subfig}
@@ -38,7 +39,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.24}
+\newcommand{\theversion}{2.0.36}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -566,15 +567,11 @@ corrections and suggestions.
 \item Andy Pethan and Molly Farison helped debug some of the solutions,
 and Molly spotted several typos.
 
-\item Andrew Heine found an error in my error function.
-
 \item Dr. Nikolas Akerblom knows how big a Hyracotherium is.
 
 \item Alex Morrow clarified one of the code examples.
 
 \item Jonathan Street caught an error in the nick of time.
-
-\item G\'{a}bor Lipt\'{a}k found a typo in the book and the relay race solution.
 
 \item Many thanks to Kevin Smith and Tim Arnold for their work on
 plasTeX, which I used to convert this book to DocBook.
@@ -586,23 +583,12 @@ plasTeX, which I used to convert this book to DocBook.
 \item Stijn Debrouwere, Leo Marihart III, Jonathan Hammler, and Kent Johnson
 found errors in the first print edition.
 
-\item Dan Kearney found a typo.
-
-\item Jeff Pickhardt found a broken link and a typo.
-
 \item J\"{o}rg Beyer found typos in the book and made many corrections
 in the docstrings of the accompanying code.
 
 \item Tommie Gannert sent a patch file with a number of corrections.
 
-\item Alexander Gryzlov suggested a clarification in an exercise.
-
-\item Martin Veillette reported an error in one of the formulas for
-Pearson's correlation.
-
 \item Christoph Lendenmann submitted several errata.
-
-\item Haitao Ma noticed a typo and and sent me a note.
 
 \item Michael Kearney sent me many excellent suggestions.
 
@@ -615,8 +601,6 @@ Pearson's correlation.
 reviews of the book.  They found many errors and made many
 helpful suggestions.
 
-\item Rohit Deshpande found a typesetting error.
-
 \item David Palmer sent many helpful suggestions and corrections.
 
 \item Erik Kulyk found many typos.
@@ -624,9 +608,34 @@ helpful suggestions.
 \item Nir Soffer sent several excellent pull requests for both the
   book and the supporting code.
 
+\item GitHub user flothesof sent a number of corrections.
+
+\item Toshiaki Kurokawa, who is working on the Japanese translation of
+this book, has sent many corrections and helpful suggestions.
+
+\item Benjamin White suggested more idiomatic Pandas code.
+
+\item Takashi Sato spotted an code error.
+
 % ENDCONTRIB
 
 \end{itemize}
+
+Other people who found typos and similar errors are Andrew Heine,
+G\'{a}bor Lipt\'{a}k,
+Dan Kearney,
+Alexander Gryzlov, 
+Martin Veillette, 
+Haitao Ma, 
+Jeff Pickhardt,
+Rohit Deshpande,
+Joanne Pratt,
+Lucian Ursu,
+Paul Glezen,
+Ting-kuang Lin,
+Scott Miller.
+
+
 
 \normalsize
 
@@ -824,7 +833,8 @@ user's guide for the NSFG data are available from
 
 The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  For information
-about downloading and working with this code, see Section~\ref{code}.
+about downloading and working with this code, 
+see Section~\ref{code}.
 
 Once you download the code, you should have a file called {\tt
   ThinkStats2/code/nsfg.py}.  If you run it, it should read a data
@@ -903,6 +913,9 @@ rows/records and 244 columns/variables.
 ...
 [13593 rows x 244 columns]
 \end{verbatim}
+
+The DataFrame is too big to display, so the output is truncated.  The
+last line reports the number of rows and columns.
 
 The attribute {\tt columns} returns a sequence of column
 names as Unicode strings:
@@ -1158,7 +1171,7 @@ to compare with the published data:
 \index{Series}
 
 \begin{verbatim}
->>> df.outcome.value_counts().sort_index()
+>>> df.outcome.value_counts(sort=False)
 1    9148
 2    1862
 3     120
@@ -1168,8 +1181,8 @@ to compare with the published data:
 \end{verbatim}
 
 The result of \verb"value_counts" is a Series;
-\verb"sort_index" sorts the Series by index, so the
-values appear in order.
+\verb"sort=False" doesn't sort the Series by count, so they
+appear in order by value.
 
 Comparing the results with the published table, it looks like the
 values in {\tt outcome} are correct.  Similarly, here is the published
@@ -1188,7 +1201,7 @@ value	label                  Total
 And here are the value counts:
 
 \begin{verbatim}
->>> df.birthwgt_lb.value_counts().sort_index()
+>>> df.birthwgt_lb.value_counts(sort=False)
 0        8
 1       40
 2       53
@@ -1216,17 +1229,23 @@ an error, a 51 pound baby!
 To deal with this error, I added a line to {\tt CleanFemPreg}:
 
 \begin{verbatim}
-df.birthwgt_lb[df.birthwgt_lb > 20] = np.nan
+df.loc[df.birthwgt_lb > 20, 'birthwgt_lb'] = np.nan
 \end{verbatim}
 
 This statement replaces invalid values with {\tt np.nan}.
-The expression in brackets yields a Series of type {\tt bool}, 
-where True indicates that the condition is true.  When a boolean
-Series is used as an index, it selects only the elements that
+The attribute {\tt loc} provides several ways to select
+rows and columns from a DataFrame.  In this example, the
+first expression in brackets is the row indexer; the second
+expression selects the column.
+\index{loc indexer}
+\index{indexer!loc}
+
+The expression \verb"df.birthwgt_lb > 20" yields a Series of type
+{\tt bool}, where True indicates that the condition is true.  When a
+boolean Series is used as an index, it selects only the elements that
 satisfy the condition.
-\index{Series}
-\index{boolean}
-\index{NaN}
+\index{Series} \index{boolean} \index{NaN}
+
 
 
 \section{Interpretation}
@@ -1263,6 +1282,7 @@ for her pregnancies:
 
 \begin{verbatim}
 >>> caseid = 10229
+>>> preg_map = nsfg.MakePregMap(df)
 >>> indices = preg_map[caseid]
 >>> df.outcome[indices].values
 [4 4 4 4 4 4 1]
@@ -1316,12 +1336,16 @@ background and open a browser to view the notebook.  If you are not
 familiar with IPython, I suggest you start at
 \url{http://ipython.org/ipython-doc/stable/notebook/notebook.html}.
 
-You can add a command-line option that makes figures appear ``inline'';
-that is, in the notebook rather than a pop-up window:
+To launch the IPython notebook server, run:
 
 \begin{verbatim}
-$ ipython notebook --pylab=inline &
+$ ipython notebook &
 \end{verbatim}
+
+It should open a new browser window, but if not, the startup
+message provides a URL you can load in a browser, usually
+\url{http://localhost:8888}.  The new window should list the notebooks
+in the repository.
 
 Open \verb"chap01ex.ipynb".  Some cells are already filled in, and
 you should execute them.  Other cells give you instructions for
@@ -1332,9 +1356,9 @@ A solution to this exercise is in \verb"chap01soln.ipynb"
 
 
 \begin{exercise}
-Create a file named \verb"chap01ex.py" and write code that reads
-the respondent file, {\tt 2002FemResp.dat.gz}.  You might want to
-start with a copy of {\tt nsfg.py} and modify it.
+In the repository you downloaded, you should find a file named
+\verb"chap01ex.py"; using this file as a starting place, write a
+function that reads the respondent file, {\tt 2002FemResp.dat.gz}.
 
 The variable {\tt pregnum} is a recode that indicates how many
 times each respondent has been pregnant.  Print the value counts
@@ -1773,7 +1797,8 @@ Then I plotted their histograms on the same axis:
     thinkplot.PrePlot(2)
     thinkplot.Hist(first_hist, align='right', width=width)
     thinkplot.Hist(other_hist, align='left', width=width)
-    thinkplot.Show(xlabel='weeks', ylabel='frequency')
+    thinkplot.Show(xlabel='weeks', ylabel='frequency',
+                   xlim=[27, 46])
 \end{verbatim}
 
 {\tt thinkplot.PrePlot} takes the number of histograms
@@ -2039,8 +2064,10 @@ exercises.  Follow the instructions and fill in the answers.
 A solution to this exercise is in \verb"chap02soln.ipynb"
 \end{exercise}
 
-For the following exercises, create a file named {\tt chap02ex.py}.
-You can find a solution in \verb"chap02soln.py".
+In the repository you downloaded, you should find a file named
+\verb"chap02ex.py"; you can use this file as a starting place
+for the following exercises.
+My solution is in \verb"chap02soln.py".
 
 \begin{exercise}
 The mode of a distribution is the most frequent value; see
@@ -2876,7 +2903,7 @@ the corresponding percentile:
 \begin{verbatim}
 def Percentile2(scores, percentile_rank):
     scores.sort()
-    index = percentile_rank * (len(scores)-1) / 100
+    index = percentile_rank * (len(scores)-1) // 100
     return scores[index]
 \end{verbatim}
 
@@ -2904,16 +2931,16 @@ $x$, we compute the fraction of values in the distribution less
 than or equal to $x$.
 
 Here's what that looks like as a function that takes a sequence,
-{\tt t}, and a value, {\tt x}:
+{\tt sample}, and a value, {\tt x}:
 %
 \begin{verbatim}
-def EvalCdf(t, x):
+def EvalCdf(sample, x):
     count = 0.0
-    for value in t:
+    for value in sample:
         if value <= x:
             count += 1
 
-    prob = count / len(t)
+    prob = count / len(sample)
     return prob
 \end{verbatim}
 
@@ -3075,7 +3102,7 @@ and percentile ranks.  The Cdf class provides these two methods:
 \item {\tt PercentileRank(x)}: Given a value {\tt x}, computes its
   percentile rank, $100 \cdot \CDF(x)$.
 
-\item {\tt Percentile(p)}: Given a percentile rank {\tt rank},
+\item {\tt Percentile(p)}: Given a percentile rank {\tt p},
   computes the corresponding value, {\tt x}.  Equivalent to {\tt
     Value(p/100)}.
 
@@ -3777,21 +3804,15 @@ scale with a lognormal model.  The lognormal model is a better fit,
 but this representation of the data does not make the difference
 particularly dramatic.  \index{respondent} \index{model}
 
-Figure~\ref{brfss_weight_normal} shows normal probability plots
-for adult weights, $w$, and for their logarithms, $\log_{10} w$.
-Now it is apparent that the data deviate substantially from the
-normal model.  The lognormal model is a good match for the data
-within a few standard deviations of the mean, but it deviates in
-the tails.  I conclude that the lognormal distribution is
-a good model for this data.
+Figure~\ref{brfss_weight_normal} shows normal probability plots for
+adult weights, $w$, and for their logarithms, $\log_{10} w$.  Now it
+is apparent that the data deviate substantially from the normal model.
+On the other hand, the lognormal model is a good match for the data.
 \index{normal distribution} \index{distribution!normal}
 \index{Gaussian distribution} \index{distribution!Gaussian}
 \index{lognormal distribution} \index{distribution!lognormal}
-\index{standard deviation}
-\index{adult weight}
-\index{weight!adult}
-\index{model}
-\index{normal probability plot}
+\index{standard deviation} \index{adult weight} \index{weight!adult}
+\index{model} \index{normal probability plot}
 
 
 \section{The Pareto distribution}
@@ -4356,13 +4377,12 @@ distribution and then makes an EstimatedPdf to fit it:
 \begin{verbatim}
 >>> sample = [random.gauss(mean, std) for i in range(500)]
 >>> sample_pdf = thinkstats2.EstimatedPdf(sample)
->>> thinkplot.Pdf(pdf, label='sample KDE')
+>>> thinkplot.Pdf(sample_pdf, label='sample KDE')
 \end{verbatim}
 
 \verb"sample" is a list of 500 random heights.
 \verb"sample_pdf" is a Pdf object that contains the estimated
-KDE of the sample.  {\tt pmf} is a Pmf object that approximates the Pdf by
-evaluating the density at a sequence of equally spaced values.
+KDE of the sample.
 \index{thinkplot}
 \index{Pmf}
 
@@ -4686,7 +4706,7 @@ ruler at each location, $x_i$, and then spin the ruler around
 the mean, the moment of inertia of the spinning weights is the variance
 of the values.  If you are not familiar with moment of inertia, see
 \url{http://en.wikipedia.org/wiki/Moment_of_inertia}.  \index{moment
-  of inertia}.
+  of inertia}
 
 When you report moment-based statistics, it is important to think
 about the units.  For example, if the values $x_i$ are in cm, the
@@ -4765,7 +4785,7 @@ $S$ is the standard deviation.  Or in Python:
 
 \begin{verbatim}
 def Median(xs):
-    cdf = thinkstats2.MakeCdfFromList(xs)
+    cdf = thinkstats2.Cdf(xs)
     return cdf.Value(0.5)
 
 def PearsonMedianSkewness(xs):
@@ -5229,7 +5249,7 @@ There are two common solutions to these problems:
 
 \begin{enumerate}
 
-\item Transform each value to a {\bf standard scores}, which is the
+\item Transform each value to a {\bf standard score}, which is the
 number of standard deviations from the mean.  
 This transform leads to
 the ``Pearson product-moment correlation coefficient.''
@@ -5488,8 +5508,8 @@ Spearman's method:
 
 \begin{verbatim}
 def SpearmanCorr(xs, ys):
-    xranks = pandas.Series(xs)
-    yranks = pandas.Series(ys)
+    xs = pandas.Series(xs)
+    ys = pandas.Series(ys)
     return xs.corr(ys, method='spearman')
 \end{verbatim}
 
@@ -5993,7 +6013,7 @@ def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
         xbar = np.mean(xs)
         means.append(xbar)
 
-    cdf = thinkstats2.MakeCdfFromList(means)
+    cdf = thinkstats2.Cdf(means)
     ci = cdf.Percentile(5), cdf.Percentile(95)
     stderr = RMSE(means, mu)
 \end{verbatim}
@@ -7162,12 +7182,12 @@ Here's the code that tests pregnancy lengths:
 \end{verbatim}
 
 The result is about 70\%, which means that if the actual difference in
-mean pregnancy length is 0.78 weeks, we expect an experiment with this
+mean pregnancy length is 0.078 weeks, we expect an experiment with this
 sample size to yield a negative test 70\% of the time.
 \index{pregnancy length}
 
 This result is often presented the other way around: if the actual
-difference is 0.78 weeks, we should expect a positive test only 30\%
+difference is 0.078 weeks, we should expect a positive test only 30\%
 of the time.  This ``correct positive rate'' is called the {\bf power}
 of the test, or sometimes ``sensitivity''.  It reflects the ability of
 the test to detect an effect of a given size.
@@ -7176,7 +7196,7 @@ the test to detect an effect of a given size.
 \index{correct positive}
 
 In this example, the test had only a 30\% chance of yielding a
-positive result (again, assuming that the difference is 0.78 weeks).
+positive result (again, assuming that the difference is 0.078 weeks).
 As a rule of thumb, a power of 80\% is considered acceptable, so
 we would say that this test was ``underpowered.''
 \index{underpowered}
@@ -8020,21 +8040,22 @@ the resampled rows:
 \index{resampling}
 
 \begin{verbatim}
-def ResampleRowsWeighted(df):
-    weights = df.finalwgt
-    pmf = thinkstats2.Pmf(weights.iteritems())
-    cdf = pmf.MakeCdf()
+def ResampleRowsWeighted(df, column='finalwgt'):
+    weights = df[column]
+    cdf = Cdf(dict(weights))
     indices = cdf.Sample(len(weights))
     sample = df.loc[indices]
     return sample
 \end{verbatim}
 
-{\tt pmf} maps from each row index to its normalized weight.  Converting
-to a Cdf makes the sampling process faster.  {\tt indices} is a sequence
-of row indices; {\tt sample} is a DataFrame that contains the selected
-rows.  Since we sample with replacement, the same row might appear
-more than once.
-\index{Cdf}
+{\tt weights} is a Series; converting it to a dictionary makes
+a map from the indices to the weights.  In {\tt cdf} the values
+are indices and the probabilities are proportional to the
+weights.
+
+{\tt indices} is a sequence of row indices; {\tt sample} is a
+DataFrame that contains the selected rows.  Since we sample with
+replacement, the same row might appear more than once.  \index{Cdf}
 \index{replacement}
 
 Now we can compare the effect of resampling with and without
@@ -8102,7 +8123,7 @@ someone's weight, how much would it help to know their height?
 
 Like the NSFG, the BRFSS oversamples some groups and provides
 a sampling weight for each respondent.  In the BRFSS data, the variable
-name for these weights is {\tt totalwt}.
+name for these weights is {\tt finalwt}.
 Use resampling, with and without weights, to estimate the mean height
 of respondents in the BRFSS, the standard error of the mean, and a
 90\% confidence interval.  How much does correct weighting affect the
@@ -8366,7 +8387,7 @@ results = smf.ols('totalwgt_lb ~ agepreg', data=live).fit()
 slope = results.params['agepreg']
 \end{verbatim}
 
-The slope is 0.175 pounds per year.  If we multiply the slope by
+The slope is 0.0175 pounds per year.  If we multiply the slope by
 the difference in ages, we get the expected difference in birth
 weight for first babies and others, due to mother's age:
 
@@ -8655,7 +8676,7 @@ we already know that it has some predictive power.
 
 I check that each explanatory variable has some variability; otherwise
 the results of the regression are unreliable.  I also check the number
-of observations for each model.  Variables that contains a large number
+of observations for each model.  Variables that contain a large number
 of {\tt nan}s are not good candidates for prediction.
 \index{explanatory variable}
 \index{NaN}
@@ -10411,9 +10432,7 @@ each window.
 \item exponentially-weighted moving average (EWMA): A moving
 average based on a weighted mean that gives the highest weight
 to the most recent values, and exponentially decreasing weights
-to earlier values.
-\index{exponentially-weighted moving average}
-\index{EWMA}
+to earlier values. \index{exponentially-weighted moving average} \index{EWMA}
 
 \item span: A parameter of EWMA that determines how quickly the
 weights decrease.
@@ -10502,14 +10521,14 @@ evaluates it for each row, selecting the rows that yield True.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=3.0in]{figs/survival1.pdf}}
-\caption{Cdf and survival function for pregnancy length (top),
-hazard function (bottom).}
+\caption{Cdf and survival curve for pregnancy length (top),
+hazard curve (bottom).}
 \label{survival1}
 \end{figure}
 
 Figure~\ref{survival1} (top) shows the CDF of pregnancy length
-and its complement, the survival function.  To represent the
-survival function, I define an object that wraps a Cdf and 
+and its complement, the survival curve.  To represent the
+survival curve, I define an object that wraps a Cdf and 
 adapts the interface:
 \index{Cdf}
 \index{pregnancy length}
@@ -10532,7 +10551,7 @@ class SurvivalFunction(object):
 
 {\tt SurvivalFunction} provides two properties: {\tt ts}, which
 is the sequence of lifetimes, and {\tt ss}, which is the survival
-function.  In Python, a ``property'' is a method that can be
+curve.  In Python, a ``property'' is a method that can be
 invoked as if it were a variable.
 
 We can instantiate a {\tt SurvivalFunction} by passing
@@ -10544,7 +10563,7 @@ the CDF of lifetimes:
 \end{verbatim}
 
 {\tt SurvivalFunction} also provides \verb"__getitem__" and
-{\tt Prob}, which evaluate the survival function:
+{\tt Prob}, which evaluates the survival curve:
 
 \begin{verbatim}
 # class SurvivalFunction
@@ -10588,7 +10607,7 @@ weeks, which is the most common pregnancy length.
 \section{Hazard function}
 \label{hazard}
 
-From the survival function we can derive the {\bf hazard function};
+From the survival curve we can derive the {\bf hazard function};
 for pregnancy lengths, the hazard function maps from a time, $t$, to
 the fraction of pregnancies that continue until $t$ and then end at
 $t$.  To be more precise:
@@ -10659,7 +10678,7 @@ important tool for estimating survival curves, as we'll see in the
 next section.
 
 
-\section{Estimating survival curves}
+\section{Inferring survival curves}
 
 If someone gives you the CDF of lifetimes, it is easy to compute the
 survival and hazard functions.  But in many real-world
@@ -10713,7 +10732,7 @@ algorithms in survival analysis, {\bf Kaplan-Meier estimation}.
 \index{Kaplan-Meier estimation}
 
 The general idea is that we can use the data to estimate the hazard
-function, then convert the hazard function to a survival function.
+function, then convert the hazard function to a survival curve.
 To estimate the hazard function, we consider, for each age,
 (1) the number of women who got married at that age and (2) the number
 of women ``at risk'' of getting married, which includes all women
@@ -10726,17 +10745,21 @@ Here's the code:
 \begin{verbatim}
 def EstimateHazardFunction(complete, ongoing, label=''):
 
-    n = len(complete)
-    hist_complete = thinkstats2.Hist(complete)
-    sf_complete = SurvivalFunction(thinkstats2.Cdf(complete))
+    hist_complete = Counter(complete)
+    hist_ongoing = Counter(ongoing)
 
-    m = len(ongoing)
-    sf_ongoing = SurvivalFunction(thinkstats2.Cdf(ongoing))
+    ts = list(hist_complete | hist_ongoing)
+    ts.sort()
 
-    lams = {}
-    for t, ended in sorted(hist_complete.Items()):
-        at_risk = ended + n * sf_complete[t] + m * sf_ongoing[t]
+    at_risk = len(complete) + len(ongoing)
+
+    lams = pandas.Series(index=ts)
+    for t in ts:
+        ended = hist_complete[t]
+        censored = hist_ongoing[t]
+
         lams[t] = ended / at_risk
+        at_risk -= ended + censored
 
     return HazardFunction(lams, label=label)
 \end{verbatim}
@@ -10746,37 +10769,42 @@ the ages when respondents got married.  {\tt ongoing} is the set
 of incomplete observations; that is, the ages of unmarried women
 when they were interviewed.
 
-First, we precompute \verb"hist_complete", which is the Hist
-of ages when women were married, \verb"sf_complete", the
-survival function for married women, and \verb"sf_ongoing",
-the survival function for unmarried women.
-\index{Hist}
-\index{survival function}
+First, we precompute \verb"hist_complete", which is a Counter
+that maps from each age to the number of women married at that
+age, and \verb"hist_ongoing" which maps from each age to the
+number of unmarried women interviewed at that age.
 
-The loop iterates through the ages when respondents got married.
-For each value of {\tt t}, we have {\tt ended}, which is the number
-of women who got married at age {\tt t}.  Then we compute
-the number of women ``at risk'', which is the sum of:
+\index{Counter}
+\index{survival curve}
 
-\begin{itemize}
+{\tt ts} is the union of ages when respondents got married
+and ages when unmarried women were interviewed, sorted in
+increasing order.
 
-\item {\tt ended}, the number of respondents married at age {\tt t},
+\verb"at_risk" keeps track of the number of respondents considered
+``at risk'' at each age; initially, it is the total number of
+respondents.
 
-\item \verb"n * sf_complete[t]", the number of respondents
-married after age {\tt t}.
+The result is stored in a Pandas {\tt Series} that maps from
+each age to the estimated hazard function at that age.
 
-\item \verb"m * sf_ongoing[t]", the number of unmarried respondents
-interviewed after {\tt t}, and therefore known not to
-have been married at or before {\tt t}.
+Each time through the loop, we consider one age, {\tt t},
+and compute the number of events that end at {\tt t} (that is,
+the number of respondents married at that age) and the number
+of events censored at {\tt t} (that is, the number of women
+interviewed at {\tt t} whose future marriage dates are
+censored).  In this context, ``censored'' means that the
+data are unavailable because of the data collection process.
 
-\end{itemize}
+The estimated hazard function is the fraction of the cases
+at risk that end at {\tt}.
 
-The estimated value of the hazard function at {\tt t} is the ratio of
-{\tt ended} to \verb"at_risk".
+At the end of the loop, we subtract from \verb"at_risk" the
+number of cases that ended or were censored at {\tt t}.
 
-{\tt lams} is a dictionary that maps
-from $t$ to $\lambda(t)$.  The result is a {\tt HazardFunction}
-object.
+Finally, we pass {\tt lams} to the {\tt HazardFunction}
+constructor and return the result.
+
 \index{HazardFunction}
 
 
@@ -10825,8 +10853,7 @@ interviewed:
     resp['age'] = (resp.cmintvw - resp.cmbirth) / 12.0
 \end{verbatim}
 
-Next
-we extract {\tt complete}, which is the age at marriage for
+Next we extract {\tt complete}, which is the age at marriage for
 women who have been married, and {\tt ongoing}, which is the
 age at interview for women who have not:
 \index{age}
@@ -10850,13 +10877,13 @@ higher in the 20s, and declining in the 30s.  It increases again in
 the 40s, but that is an artifact of the estimation process; as the
 number of respondents ``at risk'' decreases, a small number of
 women getting married yields a large estimated hazard.  The survival
-function will smooth out this noise.
+curve will smooth out this noise.
 \index{noise}
 
 
-\section{Estimating the survival function}
+\section{Estimating the survival curve}
 
-Once we have the hazard function, we can estimate the survival function.
+Once we have the hazard function, we can estimate the survival curve.
 The chance of surviving past time {\tt t} is the chance of surviving
 all times up through {\tt t}, which is the cumulative product of
 the complementary hazard function:
@@ -10881,7 +10908,7 @@ computes this product:
 
 {\tt ts} is the sequence of times where the hazard function is
 estimated.  {\tt ss} is the cumulative product of the complementary
-hazard function, so it is the survival function.
+hazard function, so it is the survival curve.
 
 Because of the way {\tt SurvivalFunction} is implemented, we have
 to compute the complement of {\tt ss}, make a Cdf, and then instantiate
@@ -10894,7 +10921,7 @@ a SurvivalFunction object.
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival2.pdf}}
 \caption{Hazard function for age at first marriage (top) and
-survival function (bottom).}
+survival curve (bottom).}
 \label{survival2}
 \end{figure}
 
@@ -10958,7 +10985,7 @@ def ResampleSurvival(resp, iters=101):
 {\tt ResampleSurvival} takes {\tt resp}, a DataFrame of respondents,
 and {\tt iters}, the number of times to resample.  It computes {\tt
   ts}, which is the sequence of ages where we will evaluate the survival
-functions.
+curves.
 \index{DataFrame}
 
 Inside the loop, {\tt ResampleSurvival}:
@@ -10985,13 +11012,13 @@ curve.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival3.pdf}}
-\caption{Survival function for age at first marriage and a 90\%
-confidence interval based on weighted resampling.}
+\caption{Survival curve for age at first marriage (dark line) and a 90\%
+confidence interval based on weighted resampling (gray line).}
 \label{survival3}
 \end{figure}
 
 Figure~\ref{survival3} shows the result along with the survival
-function we estimated in the previous section.  The confidence
+curve we estimated in the previous section.  The confidence
 interval takes into account the sampling weights, unlike the estimated
 curve.  The discrepancy between them indicates that the sampling
 weights have a substantial effect on the estimate---we will have
@@ -11092,7 +11119,7 @@ def EstimateSurvivalByDecade(resp):
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival4.pdf}}
-\caption{Survival functions for respondents born during different decades.}
+\caption{Survival curves for respondents born during different decades.}
 \label{survival4}
 \end{figure}
 
@@ -11192,7 +11219,7 @@ a SurvivalFunction and plots it.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival5.pdf}}
-\caption{Survival functions for respondents born during different decades,
+\caption{Survival curves for respondents born during different decades,
 with predictions for the later cohorts.}
 \label{survival5}
 \end{figure}
@@ -11208,7 +11235,7 @@ with fewer than 20\% never married.
 
 Given a survival curve, we can compute the expected remaining
 lifetime as a function of current age.  For example, given the
-survival function of pregnancy length from Section~\ref{survival},
+survival curve of pregnancy length from Section~\ref{survival},
 we can compute the expected time until delivery.
 \index{pregnancy length}
 
@@ -11288,7 +11315,7 @@ mean remaining pregnancy length.
 \begin{figure}
 % survival.py
 \centerline{\includegraphics[height=2.5in]{figs/survival6.pdf}}
-\caption{Expected remaining lifetime for pregnancy length (left) and
+\caption{Expected remaining pregnancy length (left) and
 years until first marriage (right).}
 \label{survival6}
 \end{figure}
@@ -11360,11 +11387,11 @@ Here's the code that computes and plots these functions:
     thinkplot.Plot(rem_life2)
 \end{verbatim}
 
-{\tt sf1} is the survival function for pregnancy length;
+{\tt sf1} is the survival curve for pregnancy length;
 in this case we can use the default values for {\tt RemainingLifetime}.
 \index{pregnancy length}
 
-{\tt sf2} is the survival function for age at first marriage;
+{\tt sf2} is the survival curve for age at first marriage;
 {\tt func} is a function that takes a Pmf and computes its
 median (50th percentile).
 \index{Pmf}
@@ -11383,7 +11410,7 @@ encoded in century-months.
 
 Compute the duration of marriages that have ended in divorce, and
 the duration, so far, of marriages that are ongoing.  Estimate the
-hazard and survival function for the duration of marriage.
+hazard and survival curve for the duration of marriage.
 
 Use resampling to take into account sampling weights, and plot
 data from several resamples to visualize sampling error.
@@ -12141,13 +12168,13 @@ Using the analytic distribution, we can compute just how unlikely:
 \index{analytic distribution}
 
 \begin{verbatim}
-    t = r * math.sqrt((n-2) / (1-r))
+    t = r * math.sqrt((n-2) / (1-r**2))
     p_value = 1 - scipy.stats.t.cdf(t, df=n-2)
 \end{verbatim}
 
 We compute the value of {\tt t} that corresponds to {\tt r=0.07}, and
 then evaluate the t-distribution at {\tt t}.  The result is {\tt
-  6.4e-12}.  This example demonstrates an advantage of the analytic
+  2.9e-11}.  This example demonstrates an advantage of the analytic
 method: we can compute very small p-values.  But in practice it
 usually doesn't matter.
 \index{SciPy}

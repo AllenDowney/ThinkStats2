@@ -44,7 +44,7 @@ pearson skewness 0.391564509277
 cdf[mean] 0.856563066521
 
 With a higher upper bound, the moment-based skewness increases, as
-expected.  Surprisingly, the Person skewness goes down!  The reason
+expected.  Surprisingly, the Pearson skewness goes down!  The reason
 seems to be that increasing the upper bound has a modest effect on the
 mean, and a stronger effect on standard deviation.  Since std is in
 the denominator with exponent 3, it has a stronger effect on the

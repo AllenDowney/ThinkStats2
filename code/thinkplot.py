@@ -15,7 +15,7 @@ from past.utils import old_div
 from builtins import object
 import math
 import matplotlib
-import matplotlib.pyplot as pyplot
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas
 
@@ -45,15 +45,9 @@ class _Brewer(object):
     """
     color_iter = None
 
-    colors = ['#081D58',
-              '#253494',
-              '#225EA8',
-              '#1D91C0',
-              '#41B6C4',
-              '#7FCDBB',
-              '#C7E9B4',
-              '#EDF8B1',
-              '#FFFFD9']
+    colors = ['#f7fbff', '#deebf7', '#c6dbef',
+              '#9ecae1', '#6baed6', '#4292c6',
+              '#2171b5','#08519c','#08306b'][::-1]
 
     # lists that indicate which colors to use depending on how many are used
     which_colors = [[],
@@ -64,7 +58,11 @@ class _Brewer(object):
                     [0, 2, 3, 5, 6],
                     [0, 2, 3, 4, 5, 6],
                     [0, 1, 2, 3, 4, 5, 6],
+                    [0, 1, 2, 3, 4, 5, 6, 7],
+                    [0, 1, 2, 3, 4, 5, 6, 7, 8],
                     ]
+
+    current_figure = None
 
     @classmethod
     def Colors(cls):
@@ -73,32 +71,61 @@ class _Brewer(object):
         return cls.colors
 
     @classmethod
-    def ColorGenerator(cls, n):
+    def ColorGenerator(cls, num):
         """Returns an iterator of color strings.
 
         n: how many colors will be used
         """
-        for i in cls.which_colors[n]:
+        for i in cls.which_colors[num]:
             yield cls.colors[i]
-        raise StopIteration('Ran out of colors in _Brewer.ColorGenerator')
+        raise StopIteration('Ran out of colors in _Brewer.')
 
     @classmethod
-    def InitializeIter(cls, num):
+    def InitIter(cls, num):
         """Initializes the color iterator with the given number of colors."""
         cls.color_iter = cls.ColorGenerator(num)
+        fig = plt.gcf()
+        cls.current_figure = fig  
 
     @classmethod
     def ClearIter(cls):
         """Sets the color iterator to None."""
         cls.color_iter = None
+        cls.current_figure = None
 
     @classmethod
-    def GetIter(cls):
+    def GetIter(cls, num):
         """Gets the color iterator."""
+        fig = plt.gcf()
+        if fig != cls.current_figure:
+            cls.InitIter(num)
+            cls.current_figure = fig  
+
         if cls.color_iter is None:
-            cls.InitializeIter(7)
+            cls.InitIter(num)
 
         return cls.color_iter
+
+
+def _UnderrideColor(options):
+    """If color is not in the options, chooses a color.
+    """
+    if 'color' in options:
+        return options
+
+    # get the current color iterator; if there is none, init one
+    color_iter = _Brewer.GetIter(5)
+
+    try:
+        options['color'] = next(color_iter)
+    except StopIteration:
+        # if you run out of colors, initialize the color iterator
+        # and try again
+        warnings.warn('Ran out of colors.  Starting over.')
+        _Brewer.ClearIter()
+        _UnderrideColor(options)
+
+    return options
 
 
 def PrePlot(num=None, rows=None, cols=None):
@@ -109,7 +136,7 @@ def PrePlot(num=None, rows=None, cols=None):
     cols: number of columns of subplots
     """
     if num:
-        _Brewer.InitializeIter(num)
+        _Brewer.InitIter(num)
 
     if rows is None and cols is None:
         return
@@ -122,35 +149,42 @@ def PrePlot(num=None, rows=None, cols=None):
 
     # resize the image, depending on the number of rows and cols
     size_map = {(1, 1): (8, 6),
-                (1, 2): (14, 6),
-                (1, 3): (14, 6),
+                (1, 2): (12, 6),
+                (1, 3): (12, 6),
+                (1, 4): (12, 5),
+                (1, 5): (12, 4),
                 (2, 2): (10, 10),
                 (2, 3): (16, 10),
                 (3, 1): (8, 10),
+                (4, 1): (8, 12),
                 }
 
     if (rows, cols) in size_map:
-        fig = pyplot.gcf()
+        fig = plt.gcf()
         fig.set_size_inches(*size_map[rows, cols])
 
     # create the first subplot
     if rows > 1 or cols > 1:
-        pyplot.subplot(rows, cols, 1)
+        ax = plt.subplot(rows, cols, 1)
         global SUBPLOT_ROWS, SUBPLOT_COLS
         SUBPLOT_ROWS = rows
         SUBPLOT_COLS = cols
+    else:
+        ax = plt.gca()
 
+    return ax
 
-def SubPlot(plot_number, rows=None, cols=None):
+def SubPlot(plot_number, rows=None, cols=None, **options):
     """Configures the number of subplots and changes the current plot.
 
     rows: int
     cols: int
     plot_number: int
+    options: passed to subplot
     """
     rows = rows or SUBPLOT_ROWS
     cols = cols or SUBPLOT_COLS
-    pyplot.subplot(rows, cols, plot_number)
+    return plt.subplot(rows, cols, plot_number, **options)
 
 
 def _Underride(d, **options):
@@ -175,31 +209,15 @@ def Clf():
     global LOC
     LOC = None
     _Brewer.ClearIter()
-    pyplot.clf()
-    fig = pyplot.gcf()
+    plt.clf()
+    fig = plt.gcf()
     fig.set_size_inches(8, 6)
 
 
 def Figure(**options):
     """Sets options for the current figure."""
     _Underride(options, figsize=(6, 8))
-    pyplot.figure(**options)
-
-
-def _UnderrideColor(options):
-    if 'color' in options:
-        return options
-
-    color_iter = _Brewer.GetIter()
-
-    if color_iter:
-        try:
-            options['color'] = next(color_iter)
-        except StopIteration:
-            # TODO: reconsider whether this should warn
-            # warnings.warn('Warning: Brewer ran out of colors.')
-            _Brewer.ClearIter()
-    return options
+    plt.figure(**options)
 
 
 def Plot(obj, ys=None, style='', **options):
@@ -208,12 +226,12 @@ def Plot(obj, ys=None, style='', **options):
     Args:
       obj: sequence of x values, or Series, or anything with Render()
       ys: sequence of y values
-      style: style string passed along to pyplot.plot
-      options: keyword args passed to pyplot.plot
+      style: style string passed along to plt.plot
+      options: keyword args passed to plt.plot
     """
     options = _UnderrideColor(options)
     label = getattr(obj, 'label', '_nolegend_')
-    options = _Underride(options, linewidth=3, alpha=0.8, label=label)
+    options = _Underride(options, linewidth=3, alpha=0.7, label=label)
 
     xs = obj
     if ys is None:
@@ -224,24 +242,52 @@ def Plot(obj, ys=None, style='', **options):
             xs = obj.index
 
     if ys is None:
-        pyplot.plot(xs, style, **options)
+        plt.plot(xs, style, **options)
     else:
-        pyplot.plot(xs, ys, style, **options)
+        plt.plot(xs, ys, style, **options)
+
+
+def Vlines(xs, y1, y2, **options):
+    """Plots a set of vertical lines.
+
+    Args:
+      xs: sequence of x values
+      y1: sequence of y values
+      y2: sequence of y values
+      options: keyword args passed to plt.vlines
+    """
+    options = _UnderrideColor(options)
+    options = _Underride(options, linewidth=1, alpha=0.5)
+    plt.vlines(xs, y1, y2, **options)
+
+
+def Hlines(ys, x1, x2, **options):
+    """Plots a set of horizontal lines.
+
+    Args:
+      ys: sequence of y values
+      x1: sequence of x values
+      x2: sequence of x values
+      options: keyword args passed to plt.vlines
+    """
+    options = _UnderrideColor(options)
+    options = _Underride(options, linewidth=1, alpha=0.5)
+    plt.hlines(ys, x1, x2, **options)
 
 
 def FillBetween(xs, y1, y2=None, where=None, **options):
-    """Plots a line.
+    """Fills the space between two lines.
 
     Args:
       xs: sequence of x values
       y1: sequence of y values
       y2: sequence of y values
       where: sequence of boolean
-      options: keyword args passed to pyplot.fill_between
+      options: keyword args passed to plt.fill_between
     """
     options = _UnderrideColor(options)
     options = _Underride(options, linewidth=0, alpha=0.5)
-    pyplot.fill_between(xs, y1, y2, where, **options)
+    plt.fill_between(xs, y1, y2, where, **options)
 
 
 def Bar(xs, ys, **options):
@@ -250,11 +296,11 @@ def Bar(xs, ys, **options):
     Args:
       xs: sequence of x values
       ys: sequence of y values
-      options: keyword args passed to pyplot.bar
+      options: keyword args passed to plt.bar
     """
     options = _UnderrideColor(options)
     options = _Underride(options, linewidth=0, alpha=0.6)
-    pyplot.bar(xs, ys, **options)
+    plt.bar(xs, ys, **options)
 
 
 def Scatter(xs, ys=None, **options):
@@ -262,16 +308,16 @@ def Scatter(xs, ys=None, **options):
 
     xs: x values
     ys: y values
-    options: options passed to pyplot.scatter
+    options: options passed to plt.scatter
     """
     options = _Underride(options, color='blue', alpha=0.2, 
-                        s=30, edgecolors='none')
+                         s=30, edgecolors='none')
 
     if ys is None and isinstance(xs, pandas.Series):
         ys = xs.values
         xs = xs.index
 
-    pyplot.scatter(xs, ys, **options)
+    plt.scatter(xs, ys, **options)
 
 
 def HexBin(xs, ys, **options):
@@ -279,10 +325,10 @@ def HexBin(xs, ys, **options):
 
     xs: x values
     ys: y values
-    options: options passed to pyplot.scatter
+    options: options passed to plt.scatter
     """
     options = _Underride(options, cmap=matplotlib.cm.Blues)
-    pyplot.hexbin(xs, ys, **options)
+    plt.hexbin(xs, ys, **options)
 
 
 def Pdf(pdf, **options):
@@ -290,7 +336,7 @@ def Pdf(pdf, **options):
 
     Args:
       pdf: Pdf, Pmf, or Hist object
-      options: keyword args passed to pyplot.plot
+      options: keyword args passed to plt.plot
     """
     low, high = options.pop('low', None), options.pop('high', None)
     n = options.pop('n', 101)
@@ -307,7 +353,7 @@ def Pdfs(pdfs, **options):
     
     Args:
       pdfs: sequence of PDF objects
-      options: keyword args passed to pyplot.plot
+      options: keyword args passed to plt.plot
     """
     for pdf in pdfs:
         Pdf(pdf, **options)
@@ -323,10 +369,19 @@ def Hist(hist, **options):
 
     Args:
       hist: Hist or Pmf object
-      options: keyword args passed to pyplot.bar
+      options: keyword args passed to plt.bar
     """
     # find the minimum distance between adjacent values
     xs, ys = hist.Render()
+
+    # see if the values support arithmetic
+    try:
+        xs[0] - xs[0]
+    except TypeError:
+        # if not, replace values with numbers
+        labels = [str(x) for x in xs]
+        xs = np.arange(len(xs))
+        plt.xticks(xs+0.5, labels)
 
     if 'width' not in options:
         try:
@@ -356,7 +411,7 @@ def Hists(hists, **options):
 
     Args:
       hists: list of two Hist or Pmf objects
-      options: keyword args passed to pyplot.plot
+      options: keyword args passed to plt.plot
     """
     for hist in hists:
         Hist(hist, **options)
@@ -367,7 +422,7 @@ def Pmf(pmf, **options):
 
     Args:
       pmf: Hist or Pmf object
-      options: keyword args passed to pyplot.plot
+      options: keyword args passed to plt.plot
     """
     xs, ys = pmf.Render()
     low, high = min(xs), max(xs)
@@ -416,7 +471,7 @@ def Pmfs(pmfs, **options):
     
     Args:
       pmfs: sequence of PMF objects
-      options: keyword args passed to pyplot.plot
+      options: keyword args passed to plt.plot
     """
     for pmf in pmfs:
         Pmf(pmf, **options)
@@ -442,7 +497,7 @@ def Cdf(cdf, complement=False, transform=None, **options):
       cdf: Cdf object
       complement: boolean, whether to plot the complementary CDF
       transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
-      options: keyword args passed to pyplot.plot
+      options: keyword args passed to plt.plot
 
     Returns:
       dictionary with the scale options that should be passed to
@@ -494,7 +549,7 @@ def Cdfs(cdfs, complement=False, transform=None, **options):
     cdfs: sequence of CDF objects
     complement: boolean, whether to plot the complementary CDF
     transform: string, one of 'exponential', 'pareto', 'weibull', 'gumbel'
-    options: keyword args passed to pyplot.plot
+    options: keyword args passed to plt.plot
     """
     for cdf in cdfs:
         Cdf(cdf, complement, transform, **options)
@@ -506,8 +561,8 @@ def Contour(obj, pcolor=False, contour=True, imshow=False, **options):
     d: map from (x, y) to z, or object that provides GetDict
     pcolor: boolean, whether to make a pseudocolor plot
     contour: boolean, whether to make a contour plot
-    imshow: boolean, whether to use pyplot.imshow
-    options: keyword args passed to pyplot.pcolor and/or pyplot.contour
+    imshow: boolean, whether to use plt.imshow
+    options: keyword args passed to plt.pcolor and/or plt.contour
     """
     try:
         d = obj.GetDict()
@@ -526,17 +581,17 @@ def Contour(obj, pcolor=False, contour=True, imshow=False, **options):
     Z = func(X, Y)
 
     x_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
-    axes = pyplot.gca()
+    axes = plt.gca()
     axes.xaxis.set_major_formatter(x_formatter)
 
     if pcolor:
-        pyplot.pcolormesh(X, Y, Z, **options)
+        plt.pcolormesh(X, Y, Z, **options)
     if contour:
-        cs = pyplot.contour(X, Y, Z, **options)
-        pyplot.clabel(cs, inline=1, fontsize=10)
+        cs = plt.contour(X, Y, Z, **options)
+        plt.clabel(cs, inline=1, fontsize=10)
     if imshow:
         extent = xs[0], xs[-1], ys[0], ys[-1]
-        pyplot.imshow(Z, extent=extent, **options)
+        plt.imshow(Z, extent=extent, **options)
         
 
 def Pcolor(xs, ys, zs, pcolor=True, contour=False, **options):
@@ -547,7 +602,7 @@ def Pcolor(xs, ys, zs, pcolor=True, contour=False, **options):
     zs:
     pcolor: boolean, whether to make a pseudocolor plot
     contour: boolean, whether to make a contour plot
-    options: keyword args passed to pyplot.pcolor and/or pyplot.contour
+    options: keyword args passed to plt.pcolor and/or plt.contour
     """
     _Underride(options, linewidth=3, cmap=matplotlib.cm.Blues)
 
@@ -555,15 +610,15 @@ def Pcolor(xs, ys, zs, pcolor=True, contour=False, **options):
     Z = zs
 
     x_formatter = matplotlib.ticker.ScalarFormatter(useOffset=False)
-    axes = pyplot.gca()
+    axes = plt.gca()
     axes.xaxis.set_major_formatter(x_formatter)
 
     if pcolor:
-        pyplot.pcolormesh(X, Y, Z, **options)
+        plt.pcolormesh(X, Y, Z, **options)
 
     if contour:
-        cs = pyplot.contour(X, Y, Z, **options)
-        pyplot.clabel(cs, inline=1, fontsize=10)
+        cs = plt.contour(X, Y, Z, **options)
+        plt.clabel(cs, inline=1, fontsize=10)
         
 
 def Text(x, y, s, **options):
@@ -572,13 +627,13 @@ def Text(x, y, s, **options):
     x: number
     y: number
     s: string
-    options: keyword args passed to pyplot.text
+    options: keyword args passed to plt.text
     """
     options = _Underride(options,
                          fontsize=16,
                          verticalalignment='top',
                          horizontalalignment='left')
-    pyplot.text(x, y, s, **options)
+    plt.text(x, y, s, **options)
 
 
 LEGEND = True
@@ -588,27 +643,14 @@ def Config(**options):
     """Configures the plot.
 
     Pulls options out of the option dictionary and passes them to
-    the corresponding pyplot functions.
+    the corresponding plt functions.
     """
     names = ['title', 'xlabel', 'ylabel', 'xscale', 'yscale',
              'xticks', 'yticks', 'axis', 'xlim', 'ylim']
 
     for name in names:
         if name in options:
-            getattr(pyplot, name)(options[name])
-
-    # looks like this is not necessary: matplotlib understands text loc specs
-    loc_dict = {'upper right': 1,
-                'upper left': 2,
-                'lower left': 3,
-                'lower right': 4,
-                'right': 5,
-                'center left': 6,
-                'center right': 7,
-                'lower center': 8,
-                'upper center': 9,
-                'center': 10,
-                }
+            getattr(plt, name)(options[name])
 
     global LEGEND
     LEGEND = options.get('legend', LEGEND)
@@ -616,7 +658,29 @@ def Config(**options):
     if LEGEND:
         global LOC
         LOC = options.get('loc', LOC)
-        pyplot.legend(loc=LOC)
+        frameon = options.get('frameon', True)
+
+        warnings.filterwarnings('error', category=UserWarning)
+        try:
+            plt.legend(loc=LOC, frameon=frameon)
+        except UserWarning:
+            pass
+        warnings.filterwarnings('default', category=UserWarning)
+
+    # x and y ticklabels can be made invisible
+    val = options.get('xticklabels', None)
+    if val is not None:
+        if val == 'invisible':
+            ax = plt.gca()
+            labels = ax.get_xticklabels()
+            plt.setp(labels, visible=False)
+
+    val = options.get('yticklabels', None)
+    if val is not None:
+        if val == 'invisible':
+            ax = plt.gca()
+            labels = ax.get_yticklabels()
+            plt.setp(labels, visible=False)
 
 
 def Show(**options):
@@ -624,11 +688,11 @@ def Show(**options):
 
     For options, see Config.
 
-    options: keyword args used to invoke various pyplot functions
+    options: keyword args used to invoke various plt functions
     """
     clf = options.pop('clf', True)
     Config(**options)
-    pyplot.show()
+    plt.show()
     if clf:
         Clf()
 
@@ -638,12 +702,12 @@ def Plotly(**options):
 
     For options, see Config.
 
-    options: keyword args used to invoke various pyplot functions
+    options: keyword args used to invoke various plt functions
     """
     clf = options.pop('clf', True)
     Config(**options)
     import plotly.plotly as plotly
-    url = plotly.plot_mpl(pyplot.gcf())
+    url = plotly.plot_mpl(plt.gcf())
     if clf:
         Clf()
     return url
@@ -657,9 +721,15 @@ def Save(root=None, formats=None, **options):
     Args:
       root: string filename root
       formats: list of string formats
-      options: keyword args used to invoke various pyplot functions
+      options: keyword args used to invoke various plt functions
     """
     clf = options.pop('clf', True)
+
+    save_options = {}
+    for option in ['bbox_inches', 'pad_inches']:
+        if option in options:
+            save_options[option] = options.pop(option)
+
     Config(**options)
 
     if formats is None:
@@ -673,29 +743,33 @@ def Save(root=None, formats=None, **options):
 
     if root:
         for fmt in formats:
-            SaveFormat(root, fmt)
+            SaveFormat(root, fmt, **save_options)
     if clf:
         Clf()
 
 
-def SaveFormat(root, fmt='eps'):
+def SaveFormat(root, fmt='eps', **options):
     """Writes the current figure to a file in the given format.
 
     Args:
       root: string filename root
       fmt: string format
     """
+    _Underride(options, dpi=300)
     filename = '%s.%s' % (root, fmt)
     print('Writing', filename)
-    pyplot.savefig(filename, format=fmt, dpi=300)
+    plt.savefig(filename, format=fmt, **options)
 
 
-# provide aliases for calling functons with lower-case names
+# provide aliases for calling functions with lower-case names
 preplot = PrePlot
 subplot = SubPlot
 clf = Clf
 figure = Figure
 plot = Plot
+vlines = Vlines
+hlines = Hlines
+fill_between = FillBetween
 text = Text
 scatter = Scatter
 pmf = Pmf

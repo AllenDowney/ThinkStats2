@@ -205,7 +205,7 @@ class Test(unittest.TestCase):
 
         xs = list(range(7))
         ps = cdf.Probs(xs)
-        for p1, p2 in zip(ps, [0, 0.2, 0.6, 0.8, 0.8, 1, 1]):
+        for p1, p2 in zip(ps, [0, 0, 0.2, 0.6, 0.8, 0.8, 1, 1]):
             self.assertAlmostEqual(p1, p2)
 
         self.assertEqual(cdf.Value(0), 1)
@@ -402,6 +402,13 @@ class Test(unittest.TestCase):
         self.assertEqual(len(dct.colspecs), 243)
         self.assertEqual(len(dct.names), 243)
         self.assertEqual(dct.colspecs[-1][1], -1)
+
+    def testCdfProbs(self):
+        t = [-1, 1, 2, 2, 3, 5]
+        cdf = thinkstats2.Cdf(t)
+        ps = cdf.Probs(t)
+        print(ps)
+
 
 if __name__ == "__main__":
     unittest.main()

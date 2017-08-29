@@ -58,27 +58,27 @@ for percentile_rank in [0, 20, 25, 40, 50, 60, 75, 80, 100]:
           Percentile2(scores, percentile_rank))
 
 
-def EvalCdf(t, x):
+def EvalCdf(sample, x):
     """Computes CDF(x) in a sample.
 
-    t: sequence
+    sample: sequence
     x: value
 
     returns: cumulative probability
     """
     count = 0.0
-    for value in t:
+    for value in sample:
         if value <= x:
             count += 1.0
 
-    prob = count / len(t)
+    prob = count / len(sample)
     return prob
 
-t = [1, 2, 2, 3, 5]
+sample = [1, 2, 2, 3, 5]
 
 print('x', 'CDF(x)')
 for x in range(0, 7):
-    print(x, EvalCdf(t, x))
+    print(x, EvalCdf(sample, x))
 
 
 
