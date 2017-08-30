@@ -31,8 +31,8 @@ The mini Anaconda installs are available at https://conda.io/miniconda.html.
 Once your Anaconda package is installed and available, create a Python 2.7
 and 3.6 environment in Anaconda --
 
- - conda create -q -n thinkstats2-py27 python=2.7 scipy numpy matplotlib statsmodels patsy future
- - conda create -q -n thinkstats2-py36 python=3.6 scipy numpy matplotlib statsmodels patsy future
+ - conda create -q -n thinkstats2-py27 python=2.7 scipy numpy matplotlib statsmodels patsy future jupyter
+ - conda create -q -n thinkstats2-py36 python=3.6 scipy numpy matplotlib statsmodels patsy future jupyter
 
 Each of these commands will take a bit of time -- give it a few minutes
 to download and install the packages and their dependences. Once complete,
@@ -48,6 +48,15 @@ Activate the 3.6 environment and install nose
  - source activate thinkstats2-py36
  - pip install nose
 
+Extras that are helpful --
+
+ - runipy allows you to run IPython Notebooks on the command line which
+   can help validating the code there without having to click through
+   a browser session
+ - flake8 for styles checks. PEP8 styles are not strictly enforced,
+   but flake8 can call point out style and formatting fixes that can
+   enhance readability
+   
 ##### Run the tests
 
 Tests are automatically detected and run with nose. To run them, use
