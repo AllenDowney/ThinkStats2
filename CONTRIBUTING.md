@@ -31,22 +31,22 @@ The mini Anaconda installs are available at https://conda.io/miniconda.html.
 Once your Anaconda package is installed and available, create a Python 2.7
 and 3.6 environment in Anaconda --
 
- - conda create -q -n thinkstats2-py27 python=2.7 scipy numpy matplotlib statsmodels patsy future jupyter
- - conda create -q -n thinkstats2-py36 python=3.6 scipy numpy matplotlib statsmodels patsy future jupyter
+ - conda create -q -n thinkstats2-py27 python=2.7 scipy numpy matplotlib statsmodels patsy future jupyter seaborn
+ - conda create -q -n thinkstats2-py36 python=3.6 scipy numpy matplotlib statsmodels patsy future jupyter seaborn
 
 Each of these commands will take a bit of time -- give it a few minutes
 to download and install the packages and their dependences. Once complete,
 switch to each and install additional packages needed to run and test.
 
-Activate the 2.7 environment and install nose
+Activate the 2.7 environment and install nose and lifelines
 
  - source activate thinkstats2-py27
- - pip install nose
+ - pip install nose lifelines
 
 Activate the 3.6 environment and install nose
 
  - source activate thinkstats2-py36
- - pip install nose
+ - pip install nose lifelines
 
 Extras that are helpful --
 
