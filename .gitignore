@@ -56,3 +56,12 @@ docs/_build/
 *.eps
 *.png
 *~
+
+# OS X Files
+*.DS_Store
+
+# Jetbrain's Softwares
+.idea/
+
+# Jupyter Files
+.ipynb_checkpoints/
