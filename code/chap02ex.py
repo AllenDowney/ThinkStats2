@@ -21,7 +21,13 @@ def Mode(hist):
 
     returns: value from Hist
     """
-    return 0
+    f = 0
+    v = 0
+    for value, freq in hist.Items():
+        if f < freq: 
+            f = freq
+            v = value
+    return v
 
 
 def AllModes(hist):
@@ -31,7 +37,12 @@ def AllModes(hist):
 
     returns: iterator of value-freq pairs
     """
-    return []
+
+    return sorted(hist.Items(), key=itemgetter(1), reverse=True)
+
+def WeightDifference(firsts, others):
+    print(firsts.totalwgt_lb.mean() - others.totalwgt_lb.mean())
+    print(thinkstats2.CohenEffectSize(firsts.totalwgt_lb, others.totalwgt_lb))
 
 
 def main(script):
@@ -53,6 +64,8 @@ def main(script):
 
     for value, freq in modes[:5]:
         print(value, freq)
+
+    WeightDifference(firsts, others)
 
     print('%s: All tests passed.' % script)
 
