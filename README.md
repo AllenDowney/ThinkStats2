@@ -1,4 +1,4 @@
-ThinkStats2.1, a branch mine of ThinkStats2
+ThinkStats2.1, a branch of mine of ThinkStats2
 ===========
 
 Text and supporting code for [Think Stats, 2nd Edition](http://greenteapress.com/thinkstats2/index.html)
