@@ -5185,8 +5185,17 @@ NumPy and pandas provide functions for binning data:
 
 {\tt digitize} computes the index of the bin that contains each value
 in {\tt df.htm3}.  The result is a NumPy array of integer indices.
-Values that fall below the lowest bin are mapped to index 0.  Values
-above the highest bin are mapped to {\tt len(bins)}.
+Values that fall below the lowest bin are mapped to index 0, which means that they are less than the value in {\tt bins[0]}.  
+Values above the highest bin are mapped to {\tt len(bins)}, which implies that they are greater than or equal to {\tt bins[len(bins)-1]}.
+
+\begin{verbatim}
+    >>> import numpy as np
+    >>> x = np.array([-1., 0.0, 0.2, 6.4, 3.0, 1.6, 10., 30.])
+    >>> bins = np.array([  0. ,   1. ,   2.5,   4. ,  10. ])
+    >>> inds = np.digitize(x, bins)
+    >>> inds
+    array([0, 1, 1, 4, 3, 2, 5, 5])
+\end{verbatim}
 
 \begin{figure}
 % scatter.py
