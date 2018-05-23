@@ -34,12 +34,14 @@
 \usepackage{hevea}                           
 \usepackage{upquote}
 
+\usepackage{xcolor}
+
 \title{Think Stats}
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.36}
+\newcommand{\theversion}{2.0.36 {\tt + yndk@sogang.ac.kr} }
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -225,6 +227,8 @@ The \LaTeX\ source for this book is available from
 
 \vspace{0.2in}
 
+{\tt yndk@sogang.ac.kr}
+Some parts are added into the original tex file for myself in order to make notes at the proper spots when I read the original book. I will try to distinguish mines by using a color, something like that.
 } % end small
 
 \end{latexonly}
@@ -5188,6 +5192,7 @@ in {\tt df.htm3}.  The result is a NumPy array of integer indices.
 Values that fall below the lowest bin are mapped to index 0, which means that they are less than the value in {\tt bins[0]}.  
 Values above the highest bin are mapped to {\tt len(bins)}, which implies that they are greater than or equal to {\tt bins[len(bins)-1]}.
 
+{\color{blue}
 \begin{verbatim}
     >>> import numpy as np
     >>> x = np.array([-1., 0.0, 0.2, 6.4, 3.0, 1.6, 10., 30.])
@@ -5196,6 +5201,7 @@ Values above the highest bin are mapped to {\tt len(bins)}, which implies that t
     >>> inds
     array([0, 1, 1, 4, 3, 2, 5, 5])
 \end{verbatim}
+}
 
 \begin{figure}
 % scatter.py
