@@ -34,12 +34,14 @@
 \usepackage{hevea}                           
 \usepackage{upquote}
 
+\usepackage{xcolor}
+
 \title{Think Stats}
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.36}
+\newcommand{\theversion}{2.0.36 {\tt + yndk@sogang.ac.kr} }
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -225,6 +227,8 @@ The \LaTeX\ source for this book is available from
 
 \vspace{0.2in}
 
+{\tt yndk@sogang.ac.kr}
+Some parts are added into the original tex file for myself in order to make notes at the proper spots when I read the original book. I will try to distinguish mines by using a color, something like that.
 } % end small
 
 \end{latexonly}
@@ -5185,8 +5189,19 @@ NumPy and pandas provide functions for binning data:
 
 {\tt digitize} computes the index of the bin that contains each value
 in {\tt df.htm3}.  The result is a NumPy array of integer indices.
-Values that fall below the lowest bin are mapped to index 0.  Values
-above the highest bin are mapped to {\tt len(bins)}.
+Values that fall below the lowest bin are mapped to index 0, which means that they are less than the value in {\tt bins[0]}.  
+Values above the highest bin are mapped to {\tt len(bins)}, which implies that they are greater than or equal to {\tt bins[len(bins)-1]}.
+
+{\color{blue}
+\begin{verbatim}
+    >>> import numpy as np
+    >>> x = np.array([-1., 0.0, 0.2, 6.4, 3.0, 1.6, 10., 30.])
+    >>> bins = np.array([  0. ,   1. ,   2.5,   4. ,  10. ])
+    >>> inds = np.digitize(x, bins)
+    >>> inds
+    array([0, 1, 1, 4, 3, 2, 5, 5])
+\end{verbatim}
+}
 
 \begin{figure}
 % scatter.py
@@ -7441,7 +7456,7 @@ are the ones that minimize the residuals.
 We might try to minimize the absolute value of the
 residuals, or their squares, or their cubes; but the most common
 choice is to minimize the sum of squared residuals,
-{\tt sum(res**2)}.
+{\tt sum(res**2))}.
 
 Why?  There are three good reasons and one less important one:
 
@@ -8436,7 +8451,7 @@ birth weight between first babies and others.
 \index{boolean}
 
 The slope and the intercept are statistically significant,
-which means that they were unlikely to occur by chance, but 
+which means that they were unlikely to occur by chance, but the
 the $R^2$ value for this model is small, which means that
 {\tt isfirst} doesn't account for a substantial part of the
 variation in birth weight.
