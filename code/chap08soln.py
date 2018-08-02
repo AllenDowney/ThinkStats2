@@ -5,7 +5,7 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import thinkstats2
 import thinkplot
@@ -159,8 +159,8 @@ def SimulateSample(lam=2, n=10, m=1000):
 
     estimates = []
     for j in range(m):
-        xs = np.random.exponential(1.0/lam, n)
-        lamhat = 1.0 / np.mean(xs)
+        xs = np.random.exponential(1/lam, n)
+        lamhat = 1/np.mean(xs)
         estimates.append(lamhat)
 
     stderr = RMSE(estimates, lam)
