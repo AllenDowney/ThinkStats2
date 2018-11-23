@@ -47,7 +47,7 @@ class SurvivalFunction(object):
         return np.interp(ts, self.ts, self.ss, left=1.0)
 
     def Items(self):
-        """Sorted list of (t, s) pairs."""
+        """Sorted sequence of (t, s) pairs."""
         return zip(self.ts, self.ss)
 
     def Render(self):

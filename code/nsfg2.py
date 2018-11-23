@@ -54,7 +54,7 @@ def CleanFemPreg(df):
 
     # birthwgt_lb contains at least one bogus value (51 lbs)
     # replace with NaN
-    df.birthwgt_lb1[df.birthwgt_lb1 > 20] = np.nan
+    df.loc[df.birthwgt_lb1 > 20, 'birthwgt_lb1'] = np.nan
     
     # replace 'not ascertained', 'refused', 'don't know' with NaN
     na_vals = [97, 98, 99]

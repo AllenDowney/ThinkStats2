@@ -160,7 +160,7 @@ def SummarizeResults(results):
 
     results: RegressionResults object
     """
-    for name, param in results.params.iteritems():
+    for name, param in results.params.items():
         pvalue = results.pvalues[name]
         print('%s   %0.3g   (%.3g)' % (name, param, pvalue))
 

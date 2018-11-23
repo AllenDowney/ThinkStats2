@@ -209,7 +209,7 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(cdf[5], 1)
         self.assertAlmostEqual(cdf[6], 1)
 
-        xs = range(-1, 7)
+        xs = list(range(-1, 7))
         ps = cdf.Probs(xs)
         for p1, p2 in zip(ps, [0, 0, 0.2, 0.6, 0.8, 0.8, 1, 1]):
             self.assertAlmostEqual(p1, p2)

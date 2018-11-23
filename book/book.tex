@@ -1787,8 +1787,8 @@ babies and others.  I divided the DataFrame of live births using
     firsts = live[live.birthord == 1]
     others = live[live.birthord != 1]
 
-    first_hist = thinkstats2.Hist(firsts.prglngth)
-    other_hist = thinkstats2.Hist(others.prglngth)
+    first_hist = thinkstats2.Hist(firsts.prglngth, label='first')
+    other_hist = thinkstats2.Hist(others.prglngth, label='other')
 \end{verbatim}
 
 Then I plotted their histograms on the same axis:

@@ -5,7 +5,7 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import numpy as np
 import sys
@@ -50,7 +50,7 @@ def ValidatePregnum(resp):
     preg_map = nsfg.MakePregMap(preg)
     
     # iterate through the respondent pregnum series
-    for index, pregnum in resp.pregnum.iteritems():
+    for index, pregnum in resp.pregnum.items():
         caseid = resp.caseid[index]
         indices = preg_map[caseid]
 
