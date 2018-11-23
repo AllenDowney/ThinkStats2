@@ -39,7 +39,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.36}
+\newcommand{\theversion}{2.0.38}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -633,7 +633,8 @@ Joanne Pratt,
 Lucian Ursu,
 Paul Glezen,
 Ting-kuang Lin,
-Scott Miller.
+Scott Miller,
+Luigi Patruno.
 
 
 
@@ -1171,7 +1172,7 @@ to compare with the published data:
 \index{Series}
 
 \begin{verbatim}
->>> df.outcome.value_counts(sort=False)
+>>> df.outcome.value_counts().sort_index()
 1    9148
 2    1862
 3     120
@@ -1181,8 +1182,8 @@ to compare with the published data:
 \end{verbatim}
 
 The result of \verb"value_counts" is a Series;
-\verb"sort=False" doesn't sort the Series by count, so they
-appear in order by value.
+\verb"sort_index()" sorts the Series by index, so the values
+appear in order.
 
 Comparing the results with the published table, it looks like the
 values in {\tt outcome} are correct.  Similarly, here is the published
@@ -10797,7 +10798,7 @@ censored).  In this context, ``censored'' means that the
 data are unavailable because of the data collection process.
 
 The estimated hazard function is the fraction of the cases
-at risk that end at {\tt}.
+at risk that end at {\tt t}.
 
 At the end of the loop, we subtract from \verb"at_risk" the
 number of cases that ended or were censored at {\tt t}.
