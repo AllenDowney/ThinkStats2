@@ -1,3 +1,4 @@
+
 """This file contains code for use with "Think Stats",
 by Allen B. Downey, available from greenteapress.com
 
@@ -303,7 +304,8 @@ def EstimateHazardFunction(complete, ongoing, label='', verbose=False):
 
         lams[t] = ended / at_risk
         if verbose:
-            print(t, at_risk, ended, censored, lams[t])
+            print('%0.3g\t%d\t%d\t%d\t%0.2g' % 
+                  (t, at_risk, ended, censored, lams[t]))
         at_risk -= ended + censored
 
     return HazardFunction(lams, label=label)
