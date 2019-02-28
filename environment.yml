@@ -22,10 +22,10 @@ dependencies:
   - icu=58.2=h9c2bf20_1
   - intel-openmp=2019.1=144
   - ipykernel=5.1.0=py37h39e3cac_0
-  - ipython=7.2.0=py37h39e3cac_0
+  - ipython=7.3.0=py37h39e3cac_0
   - ipython_genutils=0.2.0=py37_0
   - ipywidgets=7.4.2=py37_0
-  - jedi=0.13.2=py37_0
+  - jedi=0.13.3=py37_0
   - jinja2=2.10=py37_0
   - jpeg=9b=h024ee3a_2
   - jsonschema=2.6.0=py37_0
@@ -44,7 +44,7 @@ dependencies:
   - libuuid=1.0.3=h1bed415_2
   - libxcb=1.13=h1bed415_1
   - libxml2=2.9.9=he19cac6_0
-  - markupsafe=1.1.0=py37h7b6447c_0
+  - markupsafe=1.1.1=py37h7b6447c_0
   - matplotlib=3.0.2=py37h5429711_0
   - mistune=0.8.4=py37h7b6447c_0
   - mkl=2019.1=144
@@ -56,26 +56,26 @@ dependencies:
   - notebook=5.7.4=py37_0
   - numpy=1.15.4=py37h7e9f1db_0
   - numpy-base=1.15.4=py37hde5b4d6_0
-  - openssl=1.1.1a=h7b6447c_0
+  - openssl=1.1.1b=h7b6447c_0
   - pandas=0.24.1=py37he6710b0_0
   - pandoc=2.2.3.2=0
   - pandocfilters=1.4.2=py37_1
-  - parso=0.3.2=py37_0
+  - parso=0.3.4=py37_0
   - patsy=0.5.1=py37_0
   - pcre=8.42=h439df22_0
   - pexpect=4.6.0=py37_0
   - pickleshare=0.7.5=py37_0
-  - pip=19.0.1=py37_0
-  - prometheus_client=0.5.0=py37_0
-  - prompt_toolkit=2.0.8=py_0
+  - pip=19.0.3=py37_0
+  - prometheus_client=0.6.0=py37_0
+  - prompt_toolkit=2.0.9=py37_0
   - ptyprocess=0.6.0=py37_0
   - pygments=2.3.1=py37_0
   - pyparsing=2.3.1=py37_0
   - pyqt=5.9.2=py37h05f1152_2
   - python=3.7.2=h0371630_0
-  - python-dateutil=2.7.5=py37_0
+  - python-dateutil=2.8.0=py37_0
   - pytz=2018.9=py37_0
-  - pyzmq=17.1.2=py37he6710b0_2
+  - pyzmq=18.0.0=py37he6710b0_0
   - qt=5.9.7=h5867ecd_1
   - qtconsole=4.4.3=py37_0
   - readline=7.0=h7b6447c_5
@@ -94,7 +94,7 @@ dependencies:
   - traitlets=4.3.2=py37_0
   - wcwidth=0.1.7=py37_0
   - webencodings=0.5.1=py37_1
-  - wheel=0.32.3=py37_0
+  - wheel=0.33.1=py37_0
   - widgetsnbextension=3.4.2=py37_0
   - xz=5.2.4=h14c3975_4
   - zeromq=4.3.1=he6710b0_3
