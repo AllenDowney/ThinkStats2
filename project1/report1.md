@@ -82,6 +82,68 @@ The age at which people first try a drug can say a lot about which demographics 
 To get an idea of the distribution of the ages of respondants, I made a histogram of the age groups, which can be seen below.
 ![histogram of age group distribution](figures/age_group_dist.png)
 
-#### Distribution of Age of First Trying Oxycontin Nonmedically
+The 35-49 year old age group has almost twice more respondants than any other category. I was intrigued by this, which is why I chose to break down the age of first trying Oxycontin nonmedically by age. The rest of the distribution looks fairly flat. I am surprised by the number of young respondants in the survey.
 
-#### Distribution of Age of First Try By Age of Respondant
+#### Distribution of Age of First Trying Oxycontin Nonmedically
+I first decided to look at the distribution of responses for the OXYCAGE and OXCNNMAGE variables separately because the questions were worded slightly differently. The distributions of the answers to these questions can be seen below.
+![histogram of responses to OXYCAGE](figures/oxycage_hist.png)
+![cdf of reponses to OXYCAGE](figures/oxycage_cdf.png)
+![histogram of responses to OXCNNMAGE](figures/oxcnnmage_hist.png)
+![cdf of responses to OXCNNMAGE](figures/oxcnnmage_cdf.png)
+
+For both questions, it appears that people were much more likely to try Oxycontin for the first time nonmedically in their late 40s and early 50s than at any other time in their lives. I found it intriguing that there is a much smaller cluster of respondants that tried Oxycontin when they were less than 20 years old, but there aren't any data points for peple trying it in their 20s and 30s. This makes me wary of the data. Nothing in the codebook points to the responses to the question being coded in a special way, but this clustering is very fishy. In the responses to OXCNNMAGE, there are only a handful of reported ages, which I am also surprised by.
+
+I then combined the responses to OXYCAGE and OXCNNMAGE together into the column `agefirst`. The distributions of the combined responses are shown below.
+![histogram of agefirst](figures/agefirst_hist.png)
+![cdf of agefirst](figures/agefirst_cdf.png)
+
+As expected, the combined distributions look very similar to the distribution for responses to OXYCAGE alone. I chose to use this combined distribution for analyzing the answers grouped by respondant age. The median age is 50 and the IQR is 2 years, which is an extremely tight window for most people to have tried the drug for the first time.
+
+#### Distribution of Age of First Try By Grouped by Age of Respondant
+In order to get a better idea of the trend in ages that people try Oxycontin nonmedically for the first time, I created histograms for age groupings. These are shown below.
+
+For the most part, I chose to use the age groupings that the survey put respondants into initially. However, for the younger ages, I decided to further group them together. The groupings I chose to look at were:
+* Ages 12 - 19
+* Ages 20 - 25
+* Ages 26 - 29
+* Ages 30 - 34
+* Ages 35 - 49
+* Ages 50 - 64
+* Ages 65 and over
+
+![histogram of ages 12-19](figures/age12_19.png)
+![histogram of ages 20-25](figures/age20_25.png)
+![histogram of ages 26-29](figures/age26_29.png)
+![histogram of ages 30-34](figures/age30_34.png)
+![histogram of ages 30-34](figures/age30_34.png)
+![histogram of ages 35-49](figures/age35-49.png)
+![histogram of ages 50-64](figures/age50_64.png)
+![histogram of ages 65 and over](figures/age65_over.png)
+
+I was very puzzled by the fact that in all age groups, the majority of the respondants reported trying Oxycontin for the first time nonmedically in their 40s and 50s, which doesn't make sense because this is older than the age of the respondants reporting it. I can't find anything in the codebook to indicate why this would be the case, but it may be related to the observation I made that none of the respondants reported first trying Oxycontin in their 20s and 30s. I'm hesistant to draw any conclusions from this analysis because the data doesn't seem to make sense. However, one interesting thing to note is that for younger respondants, there are more people who reported trying Oxycontin between the ages of 8 and 25. I wonder if there is some trend in that data that is being obscured by the strange cluster around 50 years.
+
+### Frequency of Using Oxycontin Nonmedically
+I chose to also explore the frequency that people used Oxycontin in addition to the age at which they first tried it nonmedically. This is important to understand because it points to the severity of the problem. If someone tried Oxycontin once nonmedically and never tried it again, I would not be concerned for that person, but if they are a frequent or regular user, that is a much stronger indicator of there being a problem. The questions I analyzed in this section all came from the 2007 - 2014 surveys because the more recent surveys do not include similar questions or information.
+
+#### Last Time Using Oxycontin Nonmedically
+I first wanted to look at the last time people who took Oxycontin nonmedically used it. The histogram of some of the responses to OXYCREC is shown below.
+
+![histogram of last time using oxy](figures/last_use.png)
+
+This is only representative of the people who used oxycontin nonmedically at all. In the data I cleaned, there appear to be no responses coded for people who never used Oxycontin nonmedically or ever, which is inconsistent with what is reported in the codebooks. However, I couldn't find the reason for the missing data. It appears that most people hwo had ever taken Oxycontin nonmedically took it within 12 months of the survey, which could make sense given that opioids are highly addictive, and if someone were to use them nonmedically, they would be likely to use them frequently. The large majority reported using Oxycontin at least a month prior to the survey.
+
+#### Total Days Using Oxycontin in the Last Year
+I next wanted to look at the total number of days that people used Oxycontin in the last year to get a better indicator of the frequency of use. The PMF and CDF of the responses to OXDAYPYR are shown below
+
+![pmf of total days using oxycontin in last year](figures/days_pmf.png)
+![cdf of total days using oxycontin in last year](figures/days_cdf.png)
+
+The first thing I noticed is that very few people reported 0 days of use in the past year, which is highly improbable considering that so many of the people surveyed were children, and even among adults, I wouldn't expect to see close to everyone having taken Oxycontin in the last year at some point. This is, however, probably indicative of the fact that there seem to be missing respondants in the data who have never taken oxycontin, as discussed in the previous section. The likelihood of a respondant having taken Oxycontin at least 30 days in the last year is close to 50%. Another indicator that this data is not correct is that no respondants took Oxycontin for more than 50 days in the year prior to the survey. This is confusing because I would expect at least a handful of respondant to have reported using Oxycontin nearly every day in the year. Given these observations about the data, I cannot confidently draw any hypotheses or conclusions from these distributions.
+
+## Conclusion
+I ended up not coming to a great number of conclusions based on this data. Although I could not pinpoint a specific reason, the responses to the questions I was looking at did not make sense or were missing large pieces of information. Some trends I observed that could merit future analysis were that young people were more likely to try Oxycontin nonmedically earlier than the age of 20, and that most people who used Oxycontin nonmedically at some point in their lives had also used it nonmedically in the year prior to the survey they participated in.
+
+## Future Work
+Although this analysis yielded very little useful information, I still believe that there is a lot to be learned from the NSDUH data set with some more understanding of how responses to questions were recorded and coded. In addition to making sure data was interpretted and collected correctly, I would be intereseted in the future to dive deeper into the relationship between the age of respondants and the age at which they first tried Oxycontin.
+
+Finally, I think that it is important in future work to look at the relationship between oxycontin use and other opioid use. I do not think that Oxycontin alone is representative of opioid use in the United States, and I would be especially interested to see how prescription and non prescriptions opioids like heroine are related.
