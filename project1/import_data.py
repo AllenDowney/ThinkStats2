@@ -1,3 +1,15 @@
+"""Import all data from the selected NSDUH years into pandas dataframes for analysis.
+
+To use this script, a directory named nsduh_data must exist. It should contain
+stata files from all selected nsduh survey years. These files can be downloaded
+from the SAMHDA website:
+https://www.datafiles.samhsa.gov/study-series/national-survey-drug-use-and-health-nsduh-nid13517
+Click through the links in the "Studies in this series" column on the right
+hand side to navigate to the individual stata files.
+
+The final hdf file will contain a pandas object for each year, identified by a
+key 'NSDUH_20XX'.
+"""
 import pandas as pd
 import pathlib
 
