@@ -29,6 +29,8 @@ For the later surveys, I decided to look at the following question:
 Although the wording of the question changed, I chose to treat the answers to OXYCAGE and OXCNNMAGE as answers to the same question.
 
 #### Preparing the Data for Analysis
+To create a more manageable amount of data for analysis, I created a dataframe that just contained the columns I wanted to analyze (the questions listed in the previous section), the sample weights ('ANALWT\_C'), the age group of the respondant ('AGE2'), and the year of the survey, which I added as a column to the data.
+
 To clean the data, I replaced several categorical codes to answers with NaNs, or with 0s, depending on the question's application. Below is a list of the variables, the codes that were replaced by another value, and the values that were substituted. These codes come from the codebooks for each survey year.:
 - OXCNNMAGE:
     - 981: NEVER USED PAIN RLVRS Logically assigned -> NaN
@@ -66,3 +68,20 @@ To clean the data, I replaced several categorical codes to answers with NaNs, or
     - 997: REFUSED -> NaN
     - 998: BLANK (NO ANSWER) -> NaN
     - 999: LEGITIMATE SKIP -> NaN
+
+Due to time constraints, I chose not to resample the data, however, I provided a column of weights in order to resample the data in future analysis.
+
+After the data was cleaned, I saved the new data frame to `oxy.hdf5` under the key `oxycontin` in order to more quickly load the relevant data in the furture.
+
+## Analysis of the Data
+
+### Age of First Use
+The age at which people first try a drug can say a lot about which demographics are at a high risk of choosing to use the drug. I decided to look at the distribution of the age of the respondants, the distribution of ages that respondants first tried oxycontin nonmedically, and the breakdown of that distribution by age group.
+
+#### Distribution of Age of Respondants
+To get an idea of the distribution of the ages of respondants, I made a histogram of the age groups, which can be seen below.
+![histogram of age group distribution](figures/age_group_dist.png)
+
+#### Distribution of Age of First Trying Oxycontin Nonmedically
+
+#### Distribution of Age of First Try By Age of Respondant
