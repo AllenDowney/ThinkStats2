@@ -27,22 +27,31 @@ There are limitations of the 2014 survey listed in the codebook for this survey,
 2. The survey is cross-sectional. Pariticpants were interviewed once and not followed for additional interviews in the future, so the survey does not provide information on how an individual's drug use changes over time.
 3. The survey targets the civilian population of the United States, so active-duty military and individuals in institutional group quarters such as prisons and nursing homes are excluded. The codebook estimates that about 3% of the US population is excluded for this year.
 
-#### Questions
-The NSDUH series provides several questions about OxyContin use under the painkillers category relating to OxyContin use. OxyContin is one of the most commonly used prescription opioids [according to the CDC](https://www.cdc.gov/drugoverdose/opioids/prescribed.html). The questions related to OxyContin use in the 2007 - 2014 surveys differ from the questions in the 2015 - 2017 surveys. For the earlier surveys, I decided to use the following questions:
+### Survey Variables Used in Study
+The 2014 NSDUH survey includes several variables pertaining to OxyContin use. I decided to use the following questions:
 
-1. OXYCAGE: How old were you the first time you used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
-2. OXYCREC: How long has it been since you last used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
-3. OXYYRTOT: Total number of days used OxyContin in the past 12 months.
-4. OXDAYPYR: On how may days in the past 12 months did you use OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
+1. OXYCAGE: AGE WHEN FIRST USED OXYCONTIN NONMEDICALLY
+    -How old were you the first time you used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
+2. OXYCREC: TIME SINCE LAST USED OXYCONTIN NONMEDICALLY*
+    -How long has it been since you last used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
+3. OXYYRTOT: TOTAL # DAYS USED OXYCONTIN PAST 12 MONTHS
+    -Total number of days used OxyContin in the past 12 months.
+4. OXDAYPYR: # DAYS USED OXYCONTIN "NM" PAST 12 MONTHS
+    -On how may days in the past 12 months did you use OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
 
-For the later surveys, I decided to look at the following question:
+It is important here to define the term *non-medically* as "use of the substance that was not prescribed for the respondent, or that the respondent took only for the experience or feeling it caused. I will be using this term frequently throughout this report.
 
-1. OXCNNMAGE: How old were you when you first used OxyContin in a way a doctor did not direct you to use it?
+All of these questions came from the painreliver section of the self-administered substance use questions of the data set. Some logical editing was performed on these questions. The full procedure can be found in the codebook under the Logical Editing section, but in summary, variables were reassigned for consistency across respondent answers. an example is if the respondent answered that they have never used a particular drug, but later listed a version of that drug as something they had used, their answer to the first question was logically assigned to be that they had used it at some point.
 
-Although the wording of the question changed, I chose to treat the answers to OXYCAGE and OXCNNMAGE as answers to the same question.
+Along with the OxyContin-specific questions, I also looked at a variable relating to the age of the participants.
+1. AGE2: RECODE - FINAL EDITED AGE
+
+This variable was determined using the respondents' answers reported age, birthday, and the time the study was conducted. It groups respondents into 17 age groups, with the range of ages in each group varying.
+
+Finally, I also used the final person-level weights calculated for each participant for resampling ('ANALWT_C'). This variable indicates the number of people one respondent represents in the study.
 
 #### Preparing the Data for Analysis
-To create a more manageable amount of data for analysis, I created a DataFrame that just contained the columns I wanted to analyze (the questions listed in the previous section), the sample weights ('ANALWT\_C'), the age group of the respondent ('AGE2'), and the year of the survey, which I added as a column to the data.
+To create a more manageable amount of data for analysis, I created a DataFrame that only contained the columns of the 2014 NSDUH survey that I wanted to analyze (the questions listed in the previous section), the sample weights ('ANALWT\_C'), the age group of the respondent ('AGE2'), and the year of the survey, which I added as a column to the data.
 
 To clean the data, I replaced several categorical codes to answers with NaNs, or with 0s, depending on the question's application. Below is a list of the variables, the codes that were replaced by another value, and the values that were substituted. These codes come from the codebooks for each survey year.:
 - OXCNNMAGE:
