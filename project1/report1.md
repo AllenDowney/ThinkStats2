@@ -51,7 +51,7 @@ This variable was determined using the respondents' answers reported age, birthd
 Finally, I also used the final person-level weights calculated for each participant for resampling ('ANALWT_C'). This variable indicates the number of people one respondent represents in the study.
 
 #### Preparing the Data for Analysis
-To create a more manageable amount of data for analysis, I created a DataFrame that only contained the columns of the 2014 NSDUH survey that I wanted to analyze (the questions listed in the previous section), the sample weights ('ANALWT\_C'), the age group of the respondent ('AGE2'), and the year of the survey, which I added as a column to the data.
+To create a more manageable amount of data for analysis, I created a DataFrame that only contained the columns of the 2014 NSDUH survey that I wanted to analyze (the questions listed in the previous section), the sample weights ('ANALWT\_C'), the age group of the respondent ('AGE2'), and the year of the survey, which I added as a column to the data. Because the data was given categorically, I converted it to numeric values as well.
 
 To clean the data, I replaced several categorical codes to answers with NaNs, or with 0s, depending on the question's application. Below is a list of the variables, the codes that were replaced by another value, and the values that were substituted. These codes come from the codebooks for each survey year.:
 - OXCNNMAGE:
@@ -90,10 +90,10 @@ To clean the data, I replaced several categorical codes to answers with NaNs, or
     - 997: REFUSED -> NaN
     - 998: BLANK (NO ANSWER) -> NaN
     - 999: LEGITIMATE SKIP -> NaN
+    
+I chose to replace some codes in the last two variables with 0s because respondents could either give a number of days or answer that they never used OxyContin in the last 12 months or ever. I wanted to make it easier to visulalize these answers along with the responses from people who had used OxyContin in the past year, so I converted them to a usable numeric value. This has the added benefit of being very easy to filter out when looking at only the people who used OxyContin in the 12 months prior to the survey.
 
-Due to time constraints, I chose not to resample the data, however, I provided a column of weights in order to resample the data in future analysis.
-
-After the data was cleaned, I saved the new data frame to `oxy.hdf5` under the key `OxyContin` in order to more quickly load the relevant data in the future.
+Finally, I resampled the cleaned data using the person-level sample weights.
 
 ## Analysis of the Data
 
