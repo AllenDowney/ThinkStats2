@@ -159,27 +159,43 @@ The 'OXYCREC' variable represents the time since respondents reported last using
 
 ![PMF of OXCYCREC with "never used" answers](figures/oxycrec_w_nevers.png)
 
-An overwhelming majority of respondents reported never using OxyContin in their lives, so it is hard to get a clear idea of what the distribution of the respondent who have ever used OxyContin non-medically looks like.
+An overwhelming majority of respondents reported never using OxyContin in their lives, so it is hard to get a clear idea of what the distribution of the respondent who have ever used OxyContin non-medically looks like. I removed the respondents who mapped to having never used OxyContin to better visualize this group. The PMF of the result is shown below.
 
 ![PMF of OXYCREC without "never used" answers](figures/oxycrec_wo_nevers.png)
 
+Out of the people who reported ever using OxyContin, an overwhelming majority (82%) used it over 12 months ago. This is consistent with the finding that respondents were much more likely to use OxyContin non-medically for the first time in their 20s coupled with the finding that a majority of the respondents were over 30 at the time of taking the survey.
+
 ###### Total Number of Days Using OxyContin in 12 Months Prior to Survey
 
+The 'OXYYRTOT' variable represents the total number of days respondents reported having used OxyContin at all (medically or non-medically) in the 12 months prior to the survey. Recall that answers to this question that were coded as some form of "never used OxyContin" or "haven't used OxyContin in the last 12 months" were mapped to 0s for analysis.  This distribution is representative of both respondents who have ever used OxyContin and who have never used OxyContin. The PMF of the responses to this question are shown below.
+
 ![PMF of OXYYRTOT with '0' answers](figures/oxyyrtot_w_0s.png)
+
+As expected based on the previous variable, almost all respondents (99.6%) have a 0 for this variable. I then looked at just the respondents who had ever used OxyContin in order to get a better idea of the distribution. The PMF and CDF of the non-0 responses are shown below.
 
 ![PMF of OXYYRTOT without '0' answers](figures/oxyyrtot_wo_0s_pmf.png)
 
 ![CDF of OXYYRTOT without '0' answers](figures/oxyyrtot_wo_0s_cdf.png)
 
+For the non-0 responses, the median number of days is 10, the mean is 40.3 days, and the maximum is 364 days. The IQR is 33 days. These plots are consistent with what I would expect. The majority of the respondents who have ever used OxyContin used it less than two weeks out of the year. The data is skewed right with a very long tail, which makes sense because I would expect to see a small number of heavier users (these people may be prescribed the drug for severe chronic pain and use it as directed, or have an addiction to the drug to name a couple of scenarios for heavier use).
+
 ###### Number of Days Using OxyContin Non-Medically in 12 Months Prior to Survey
 
-![PMF of OXYYRTOT with '0' answers](figures/oxdaypyr_w_0s_pmf.png)
+The variable 'OXDAYPY' differs from 'OXYYRTOT' in that it only represents the number of days that the respondents reported having used OxyContin non-medically, as opposed to any use of the drug. I expected to see a similarly shaped distribution to 'OXYYRTOT' with most respondents never having used the drug and most who had having used it for a small number of days. Recall that I assigned 0s to respondents who reported never having used the drug or not having used it in the last 12 months.
 
-![PMF of OXYYRTOT without '0' answers](figures/oxdaypyr_wo_0s_pmf.png)
+99.8% of respondents had 0 days, so I again decided to look at just the respondents who had 1 or more days. The PMF and CDF of the distribution of these respondents are shown below.
 
-![CDF of OXYYRTOT without '0' answers](figures/oxdaypyr_wo_0s_cdf.png)
+![PMF of OXDAYPY without '0' answers](figures/oxdaypyr_wo_0s_pmf.png)
+
+![CDF of OXDAYPY without '0' answers](figures/oxdaypyr_wo_0s_cdf.png)
+
+The mean number of days is 6, the maximum number of days is 50, the median number of days is 3, and the IQR is 5. Like the distribution for 'OXYYRTOT', this distribution is also skewed right. The majority of people who took OxyContin non-medically in the past 12 months took it for less than a week total. It is interesting to note that almost all respondents took it non-medically for no more than 50 days, as opposed to in the previous section where there were a significant number of people who reported in the hundreds of days. I can imagine a couple of reasons why. One is that people who used OxyContin non-medically had a prescription, or knew someone with a prescription, and they may have used it non-medically for a temporary severe pain they were experiencing instead of going to the doctor. I have anecdotal evidence from several acquaintances that is consistent with this guess. Another reason may be that it is more difficult to obtain OxyContin so regularly without a prescription, so people are much less likely to use the drug frequently unless they have a medical reason to use it. A final reason may be that OxyContin is very strong, and people with opioid dependencies may be more likely to use a less strong drug more frequently. This would require more data on other types of opioids to test.
 
 ##### Relationships by Age
+
+I next set out to see if there was a relationship between the age of respondents and the age that the respondents reported first trying OxyContin non medically for the first time, in order to see if there is an increasing problem with non-medical OxyContin use, and if so, which age groups are most at risk.
+
+The CDFs of 'OXYCAGE' (The age respondents reported first using OxyContin non-medically for the first time) are shown below.
 
 ![Oxycage for under 20s group](figures/oxycage_under_20.png)
 
@@ -193,3 +209,21 @@ An overwhelming majority of respondents reported never using OxyContin in their 
 
 ![Oxycage for 65 and over group](figures/oxycage_65.png)
 
+There are some aspects of these CDFs that are expected. The first is that the maximum age increases with the ages represented. This makes sense because of the upper bounds of the age range. People cannot report having tried OxyContin non-medically for the first time at an age greater than the age they were when they took the survey. It might be worth noting that the three youngest age groups have a maximum that is within 1 year of the oldest respondents in the group, and the three older age groups have a larger gap between the maximum value and the oldest age represented by the group. This is consistent with the fact that people are more likely to try OxyContin non-medically for the first time in their 20s.
+
+The plots below show the maximum, minimum, and median ages that people reported for this question by age group.
+
+![Maximum age by age group](figures/max_oxycages.png)
+
+![Minimum age by age group](figures/min_oxycages.png)
+
+![Median age by age group](figures/median_oxycages.png)
+
+Interestingly, all age groups have a minimum between 10 and 13, except for the oldest group. So, that indicates that some participants reported trying the drug before it was available. The wording of the question, according to the codebook, is "How old were you the first time you used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?"
+
+Another interesting point about the minimums of these age groups is that the youngest age group also has the smallest minimum, at 10. I think if I were to look at multiple years of the NSDUH survey, I would investigate if this minimum is consistently smaller than the minimums of the other age groups. If it is, and this is a statistically significant result, that might indicate that people are trying OxyContin at increasingly younger ages.
+
+Finally, the median age decreases with age. To a certain extent, this is expected because older age groups would not have had access to the drug until they were older because it wasn't available yet. However, this trend is concerning for the 3 youngest age groups who did have access to the drug at a very young age. The decrease in the median age for younger age groups could indicate that younger people are more likely to try OxyContin at a younger age, which could mean that they are more at risk of becoming addicted to the drug over the course of their lives. Of course, there are limitations to this conclusion, due to the fact that the data was self reported and is only for one year of survey data. I would hesitate to draw strong conclusions, but I think it is worth considering looking into this trend more for future analysis.
+
+#### Future Work
+This exploration of the 2014 NSDUH on OxyContin use was great for recognizing trends for one year of responses, but I would want to explore more years of the survey to draw stronger conclusions. Unfortunately, the surveys after 2014 only include OxyContin-specific questions about the year respondents first tried OxyContin for the first time. This is useful for continuing to examine the relationship between age and OxyContin use, but any information about the frequency of use is lost.
