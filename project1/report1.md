@@ -1,35 +1,57 @@
 # Exploring OxyContin Use in the United States 
-The primary focus of this investigation was to investigate and interpret information in the NSDUH data set on OxyContin use.
+## Abstract
+## Introduction
+The primary focus of this investigation was to investigate and interpret information in the NSDUH data set on medical and non-medical OxyContin use.  [According to the CDC](https://www.cdc.gov/drugoverdose/opioids/prescribed.html), OxyContin is among the most common prescription opioids involved in overdose death. OxyContin was approved for use by the FDA in 1995. The FDA at the time believed that because the drug was formulated to be slowly released in the body it would be less easy to abuse. However, since its approval OxyContin became the center of the opioid problem ([source](https://www.fda.gov/downloads/Drugs/DrugSafety/InformationbyDrugClass/UCM566985.pdf)).
 
 ## The Data Set
 
-For this exploration, I chose to look at data from the National Survey on Drug Use and Health from 2007 to 2017.
+For this exploration, I chose to look at data from the 2014 National Survey on Drug Use and Health (NSDUH). This survey includes a number of questions asking participants about their history of OxyContin use, among other painkillers. NSDUH surveys after this year scaled back their specific OxyContin-related questions, so I chose to use the most recent survey in this study that provided a fair amount of information.
 
 According to the [Substance Abuse and Mental Health Data Archive's page on the NSDUH data set](https://www.datafiles.samhsa.gov/study-series/national-survey-drug-use-and-health-nsduh-nid13517),
 
 > "The National Survey on Drug Use and Health (NSDUH) series, formerly titled National Household Survey on Drug Abuse, is a major source of statistical information on the use of illicit drugs, alcohol, and tobacco and on mental health issues among U.S. civilians who are non-institutional population aged 12 or older. The survey tracks trends in specific substance use and mental illness measures and assesses the consequences of these conditions by examining mental and/or substance use disorders and treatment for these disorders."
 
-This data set can be used to identify the risk of populations abusing drugs and to find links between mental health and drug use.
+This data set can be used to identify demographics of people at risk for abusing drugs and to find links between mental health and drug use.
 
-The terms of use for using this data can be found on the [SAMDHA terms of use page](https://www.datafiles.samhsa.gov/info/terms-use-nid3422). One of the primary terms of use is that this data cannot be used to identify individuals who participated in the survey.
+The terms of use for using this data can be found on the [SAMDHA terms of use page](https://www.datafiles.samhsa.gov/info/terms-use-nid3422). One of the primary terms of use is that this data cannot be used to identify individuals who participated in the survey. I have not provided any identifying information about participants in this study.
 
-### Opioid Use.
-#### Questions
-I chose to look at patterns in prescription opioid use. The NSDUH series provides several questions about OxyContin use under the painkillers category relating to OxyContin use. OxyContin is one of the most commonly used prescription opioids [according to the CDC](https://www.cdc.gov/drugoverdose/opioids/prescribed.html). The questions related to OxyContin use in the 2007 - 2014 surveys differ from the questions in the 2015 - 2017 surveys. For the earlier surveys, I decided to use the following questions:
+### Study Details
+The codebook for the 2014 NSDUH study can be found [here](http://samhda.s3-us-gov-west-1.amazonaws.com/s3fs-public/field-uploads-protected/studies/NSDUH-2014/NSDUH-2014-datasets/NSDUH-2014-DS0001/NSDUH-2014-DS0001-info/NSDUH-2014-DS0001-info-codebook.pdf).
 
-1. OXYCAGE: How old were you the first time you used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
-2. OXYCREC: How long has it been since you last used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
-3. OXYYRTOT: Total number of days used OxyContin in the past 12 months.
-4. OXDAYPYR: On how may days in the past 12 months did you use OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
+The target demographic of the survey is the civilian, noninstitutionalized population of the United States who were 12 years of age or older at the time of the survey. The sample population includes the household population of all 50 states and the District of Columbia. Along with households, residents of non-institutional group quarters, such as dormitories, and people with no permanent resisdence. States with larger populations had larger sample sizes than smaller states and the District of Columbia. The sample allocations for the age groups susrveyed are as follows: 25% for 12-17 year olds, 25% for 18-25 year olds, 15% for 26-34 year olds, 20% for 35-49 year olds, and 15% for adults over 50 years old.
 
-For the later surveys, I decided to look at the following question:
+The study was conducted using computer-assisted-interviewing (CAI) methods. This includes both computer-assisted personal interviews, and computer-assited self interviews. The core of the study includes questions on the use of tobacco, alcohol, marijuana, cocaine, crack cocaine, heroine, hallucinogens, inhalents, pain relieves, tranquilizers, stimulants, and sedatives. There are also supplemental questions on demographics and mental health.
 
-1. OXCNNMAGE: How old were you when you first used OxyContin in a way a doctor did not direct you to use it?
+There are limitations of the 2014 survey listed in the codebook for this survey, which are important to note:
+1. The data in the survey is self-reported, which means that it relies on the memory and truthfulness of the respondents' answers.
+2. The survey is cross-sectional. Pariticpants were interviewed once and not followed for additional interviews in the future, so the survey does not provide information on how an individual's drug use changes over time.
+3. The survey targets the civilian population of the United States, so active-duty military and individuals in institutional group quarters such as prisons and nursing homes are excluded. The codebook estimates that about 3% of the US population is excluded for this year.
 
-Although the wording of the question changed, I chose to treat the answers to OXYCAGE and OXCNNMAGE as answers to the same question.
+### Survey Variables Used in Study
+The 2014 NSDUH survey includes several variables pertaining to OxyContin use. I decided to use the following questions:
+
+1. OXYCAGE: AGE WHEN FIRST USED OXYCONTIN NONMEDICALLY
+    -How old were you the first time you used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
+2. OXYCREC: TIME SINCE LAST USED OXYCONTIN NONMEDICALLY*
+    -How long has it been since you last used OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
+3. OXYYRTOT: TOTAL # DAYS USED OXYCONTIN PAST 12 MONTHS
+    -Total number of days used OxyContin in the past 12 months.
+4. OXDAYPYR: # DAYS USED OXYCONTIN "NM" PAST 12 MONTHS
+    -On how may days in the past 12 months did you use OxyContin that was not prescribed for you or that you took only for the experience or feeling it caused?
+
+It is important here to define the term *non-medically* as "use of the substance that was not prescribed for the respondent, or that the respondent took only for the experience or feeling it caused. I will be using this term frequently throughout this report.
+
+All of these questions came from the painreliver section of the self-administered substance use questions of the data set. Some logical editing was performed on these questions. The full procedure can be found in the codebook under the Logical Editing section, but in summary, variables were reassigned for consistency across respondent answers. an example is if the respondent answered that they have never used a particular drug, but later listed a version of that drug as something they had used, their answer to the first question was logically assigned to be that they had used it at some point.
+
+Along with the OxyContin-specific questions, I also looked at a variable relating to the age of the participants.
+1. AGE2: RECODE - FINAL EDITED AGE
+
+This variable was determined using the respondents' answers reported age, birthday, and the time the study was conducted. It groups respondents into 17 age groups, with the range of ages in each group varying.
+
+Finally, I also used the final person-level weights calculated for each participant for resampling ('ANALWT_C'). This variable indicates the number of people one respondent represents in the study.
 
 #### Preparing the Data for Analysis
-To create a more manageable amount of data for analysis, I created a DataFrame that just contained the columns I wanted to analyze (the questions listed in the previous section), the sample weights ('ANALWT\_C'), the age group of the respondent ('AGE2'), and the year of the survey, which I added as a column to the data.
+To create a more manageable amount of data for analysis, I created a DataFrame that only contained the columns of the 2014 NSDUH survey that I wanted to analyze (the questions listed in the previous section), the sample weights ('ANALWT\_C'), the age group of the respondent ('AGE2'), and the year of the survey, which I added as a column to the data. Because the data was given categorically, I converted it to numeric values as well.
 
 To clean the data, I replaced several categorical codes to answers with NaNs, or with 0s, depending on the question's application. Below is a list of the variables, the codes that were replaced by another value, and the values that were substituted. These codes come from the codebooks for each survey year.:
 - OXCNNMAGE:
@@ -68,38 +90,60 @@ To clean the data, I replaced several categorical codes to answers with NaNs, or
     - 997: REFUSED -> NaN
     - 998: BLANK (NO ANSWER) -> NaN
     - 999: LEGITIMATE SKIP -> NaN
+    
+I chose to replace some codes in the last two variables with 0s because respondents could either give a number of days or answer that they never used OxyContin in the last 12 months or ever. I wanted to make it easier to visulalize these answers along with the responses from people who had used OxyContin in the past year, so I converted them to a usable numeric value. This has the added benefit of being very easy to filter out when looking at only the people who used OxyContin in the 12 months prior to the survey.
 
-Due to time constraints, I chose not to resample the data, however, I provided a column of weights in order to resample the data in future analysis.
-
-After the data was cleaned, I saved the new data frame to `oxy.hdf5` under the key `OxyContin` in order to more quickly load the relevant data in the future.
+Finally, I resampled the cleaned data using the person-level sample weights.
 
 ## Analysis of the Data
 
-### Age of First Use
-The age at which people first try a drug can say a lot about which demographics are at a high risk of choosing to use the drug. I decided to look at the distribution of the age of the respondents, the distribution of ages that respondents first tried OxyContin non-medically, and the breakdown of that distribution by age group.
+### Individual Variables
+I started my analysis by looking at the individual varibles to get an idea of the responses to the survey and to pull out any information that may generate more analysis questions.
 
-#### Distribution of Age of Respondents
-To get an idea of the distribution of the ages of respondents, I made a histogram of the age groups, which can be seen below.
-![histogram of age group distribution](figures/age_group_dist.png)
+#### Age of Respondents.
 
-The 35-49 year old age group has almost twice more respondents than any other category. I was intrigued by this, which is why I chose to break down the age of first trying OxyContin non-medically by age. The rest of the distribution looks fairly flat. I am surprised by the number of young respondents in the survey.
+The 'AGE2' variable groups respondents into 17 categories:
+1. Respondent is 12 years old
+2. Respondent is 13 years old
+3. Respondent is 14 years old
+4. Respondent is 15 years old
+5. Respondent is 16 years old
+6. Respondent is 17 years old
+7. Respondent is 18 years old
+8. Respondent is 19 years old
+9. Respondent is 20 years old
+10. Respondent is 21 years old
+11. Respondent is 22 or 23 years old
+12. Respondent is 24 or 25 years old
+13. Respondent is between 26 and 29 years old
+14. Respondent is between 30 and 34 years old
+15. Respondent is between 35 and 49 years old
+16. Respondent is between 50 and 64 years old
+17. Respondent is 65 years old or older
 
-#### Distribution of Age of First Trying OxyContin Non-medically
-I first decided to look at the distribution of responses for the OXYCAGE and OXCNNMAGE variables separately because the questions were worded slightly differently. The distributions of the answers to these questions can be seen below.
-![histogram of responses to OXYCAGE](figures/oxycage_hist.png)
-![cdf of reponses to OXYCAGE](figures/oxycage_cdf.png)
-![histogram of responses to OXCNNMAGE](figures/oxcnnmage_hist.png)
-![cdf of responses to OXCNNMAGE](figures/oxcnnmage_cdf.png)
+The PMF and CDF of the ages are shown below.
+![PMF of AGE2](figures/age2_pmf.png)
+![CDF of AGE2](figures/age2_cdf.png)
 
-For both questions, it appears that people were much more likely to try OxyContin for the first time non-medically in their late 40s and early 50s than at any other time in their lives. I found it intriguing that there is a much smaller cluster of respondents that tried OxyContin when they were less than 20 years old, but there aren't any data points for people trying it in their 20s and 30s. This makes me wary of the data. Nothing in the codebook points to the responses to the question being coded in a special way, but this clustering is very fishy. In the responses to OXCNNMAGE, there are only a handful of reported ages, which I am also surprised by.
+To get a better idea of the age distribution, I compressed the younger age groups. The new age groups I made are:
+1. Respondent is between 12 and 19 years old
+2. Respondent is between 20 and 29 years old
+3. Respondent is between 30 and 34 years old
+4. Respondent is between 35 and 49 years old
+5. Respondent is between 50 and 64 years old
+6. Respondent is 65 years old or older
 
-I then combined the responses to OXYCAGE and OXCNNMAGE together into the column `agefirst`. The distributions of the combined responses are shown below.
-![histogram of agefirst](figures/agefirst_hist.png)
-![cdf of agefirst](figures/agefirst_cdf.png)
+The PMF and CDF of the new groupings are shown below.
+![PMF of AGE2](figures/age2_grouped_pmf.png)
+![CDF of AGE2](figures/age2_grouped_cdf.png)
 
-As expected, the combined distributions look very similar to the distribution for responses to OXYCAGE alone. I chose to use this combined distribution for analyzing the answers grouped by respondent age. The median age is 50 and the IQR is 2 years, which is an extremely tight window for most people to have tried the drug for the first time.
+#### Age of First Trying OxyContin Non-medically
+#### Time Since Last Trying OxyContin Non-medically
+#### Total Number of Days Using OxyContin in 12 Months Prior to Survey
+#### Number of Days Using OxyContin Non-Medically in 12 Months Prior to Survey
 
-#### Distribution of Age of First Try By Grouped by Age of Respondent
+
+#### Age of First Try By Grouped by Age of Respondent
 In order to get a better idea of the trend in ages that people try OxyContin non-medically for the first time, I created histograms for age groupings. These are shown below.
 
 For the most part, I chose to use the age groupings that the survey put respondents into initially. However, for the younger ages, I decided to further group them together. The groupings I chose to look at were:
