@@ -122,7 +122,9 @@ The 'AGE2' variable groups respondents into 17 categories:
 17. Respondent is 65 years old or older
 
 The PMF and CDF of the ages are shown below.
+
 ![PMF of AGE2](figures/age2_pmf.png)
+
 ![CDF of AGE2](figures/age2_cdf.png)
 
 To get a better idea of the age distribution, I compressed the younger age groups. The new age groups I made are:
@@ -134,14 +136,52 @@ To get a better idea of the age distribution, I compressed the younger age group
 6. Respondent is 65 years old or older
 
 The PMF and CDF of the new groupings are shown below.
+
 ![PMF of AGE2](figures/age2_grouped_pmf.png)
+
 ![CDF of AGE2](figures/age2_grouped_cdf.png)
 
 #### Age of First Trying OxyContin Non-medically
+
+![PDF of OXYCAGE](figures/oxycage_pmf.png)
+
+![CDF of OXYCAGE](figures/oxycage_cdf.png)
+
 #### Time Since Last Trying OxyContin Non-medically
+
+![PMF of OXCYCREC with "never used" answers](figures/oxycrec_w_nevers.png)
+
+![PMF of OXYCREC without "never used" answers](figures/oxycrec_wo_nevers.png)
+
 #### Total Number of Days Using OxyContin in 12 Months Prior to Survey
+
+![PMF of OXYYRTOT with '0' answers](figures/oxyyrtot_w_0s.png)
+
+![PMF of OXYYRTOT without '0' answers](figures/oxyyrtot_wo_0s_pmf.png)
+
+![CDF of OXYYRTOT without '0' answers](figures/oxyyrtot_wo_0s_cdf.png)
+
 #### Number of Days Using OxyContin Non-Medically in 12 Months Prior to Survey
 
+![PMF of OXYYRTOT with '0' answers](figures/oxdaypyr_w_0s_pmf.png)
+
+![PMF of OXYYRTOT without '0' answers](figures/oxdaypyr_wo_0s_pmf.png)
+
+![CDF of OXYYRTOT without '0' answers](figures/oxdaypyr_wo_0s_cdf.png)
+
+### Relationships by Age
+
+![Oxycage for under 20s group](figures/oxycage_under_20.png)
+
+![Oxycage for 20s group](figures/oxycage_20s.png)
+
+![Oxycage for 30-34 group](figures/oxycage_30_34.png)
+
+![Oxycage for 35-49 group](figures/oxycage_35_49.png)
+
+![Oxycage for 50-64 group](figures/oxycage_50_64.png)
+
+![Oxycage for 65 and over group](figures/oxycage_65.png)
 
 #### Age of First Try By Grouped by Age of Respondent
 In order to get a better idea of the trend in ages that people try OxyContin non-medically for the first time, I created histograms for age groupings. These are shown below.
