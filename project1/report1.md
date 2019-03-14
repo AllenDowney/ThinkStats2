@@ -97,31 +97,53 @@ Finally, I resampled the cleaned data using the person-level sample weights.
 
 ## Analysis of the Data
 
-### Age of First Use
-The age at which people first try a drug can say a lot about which demographics are at a high risk of choosing to use the drug. I decided to look at the distribution of the age of the respondents, the distribution of ages that respondents first tried OxyContin non-medically, and the breakdown of that distribution by age group.
+### Individual Variables
+I started my analysis by looking at the individual varibles to get an idea of the responses to the survey and to pull out any information that may generate more analysis questions.
 
-#### Distribution of Age of Respondents
-To get an idea of the distribution of the ages of respondents, I made a histogram of the age groups, which can be seen below.
-![histogram of age group distribution](figures/age_group_dist.png)
+#### Age of Respondents.
 
-The 35-49 year old age group has almost twice more respondents than any other category. I was intrigued by this, which is why I chose to break down the age of first trying OxyContin non-medically by age. The rest of the distribution looks fairly flat. I am surprised by the number of young respondents in the survey.
+The 'AGE2' variable groups respondents into 17 categories:
+1. Respondent is 12 years old
+2. Respondent is 13 years old
+3. Respondent is 14 years old
+4. Respondent is 15 years old
+5. Respondent is 16 years old
+6. Respondent is 17 years old
+7. Respondent is 18 years old
+8. Respondent is 19 years old
+9. Respondent is 20 years old
+10. Respondent is 21 years old
+11. Respondent is 22 or 23 years old
+12. Respondent is 24 or 25 years old
+13. Respondent is between 26 and 29 years old
+14. Respondent is between 30 and 34 years old
+15. Respondent is between 35 and 49 years old
+16. Respondent is between 50 and 64 years old
+17. Respondent is 65 years old or older
 
-#### Distribution of Age of First Trying OxyContin Non-medically
-I first decided to look at the distribution of responses for the OXYCAGE and OXCNNMAGE variables separately because the questions were worded slightly differently. The distributions of the answers to these questions can be seen below.
-![histogram of responses to OXYCAGE](figures/oxycage_hist.png)
-![cdf of reponses to OXYCAGE](figures/oxycage_cdf.png)
-![histogram of responses to OXCNNMAGE](figures/oxcnnmage_hist.png)
-![cdf of responses to OXCNNMAGE](figures/oxcnnmage_cdf.png)
+The PMF and CDF of the ages are shown below.
+![PMF of AGE2](figures/age2_pmf.png)
+![CDF of AGE2](figures/age2_cdf.png)
 
-For both questions, it appears that people were much more likely to try OxyContin for the first time non-medically in their late 40s and early 50s than at any other time in their lives. I found it intriguing that there is a much smaller cluster of respondents that tried OxyContin when they were less than 20 years old, but there aren't any data points for people trying it in their 20s and 30s. This makes me wary of the data. Nothing in the codebook points to the responses to the question being coded in a special way, but this clustering is very fishy. In the responses to OXCNNMAGE, there are only a handful of reported ages, which I am also surprised by.
+To get a better idea of the age distribution, I compressed the younger age groups. The new age groups I made are:
+1. Respondent is between 12 and 19 years old
+2. Respondent is between 20 and 29 years old
+3. Respondent is between 30 and 34 years old
+4. Respondent is between 35 and 49 years old
+5. Respondent is between 50 and 64 years old
+6. Respondent is 65 years old or older
 
-I then combined the responses to OXYCAGE and OXCNNMAGE together into the column `agefirst`. The distributions of the combined responses are shown below.
-![histogram of agefirst](figures/agefirst_hist.png)
-![cdf of agefirst](figures/agefirst_cdf.png)
+The PMF and CDF of the new groupings are shown below.
+![PMF of AGE2](figures/age2_grouped_pmf.png)
+![CDF of AGE2](figures/age2_grouped_cdf.png)
 
-As expected, the combined distributions look very similar to the distribution for responses to OXYCAGE alone. I chose to use this combined distribution for analyzing the answers grouped by respondent age. The median age is 50 and the IQR is 2 years, which is an extremely tight window for most people to have tried the drug for the first time.
+#### Age of First Trying OxyContin Non-medically
+#### Time Since Last Trying OxyContin Non-medically
+#### Total Number of Days Using OxyContin in 12 Months Prior to Survey
+#### Number of Days Using OxyContin Non-Medically in 12 Months Prior to Survey
 
-#### Distribution of Age of First Try By Grouped by Age of Respondent
+
+#### Age of First Try By Grouped by Age of Respondent
 In order to get a better idea of the trend in ages that people try OxyContin non-medically for the first time, I created histograms for age groupings. These are shown below.
 
 For the most part, I chose to use the age groupings that the survey put respondents into initially. However, for the younger ages, I decided to further group them together. The groupings I chose to look at were:
