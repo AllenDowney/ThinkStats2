@@ -127,7 +127,7 @@ The PMF and CDF of the ages are shown below.
 
 ![CDF of AGE2](figures/age2_cdf.png)
 
-To get a better idea of the age distribution, I compressed the younger age groups. The new age groups I made are:
+Respondants are more likely to be from the three oldest age groups, but the younger age groups are also smaller in range, so this makes sense. To get a better idea of the age distribution, I compressed the younger age groups into larger groups. The new age groups I made are:
 1. Respondent is between 12 and 19 years old
 2. Respondent is between 20 and 29 years old
 3. Respondent is between 30 and 34 years old
@@ -141,15 +141,25 @@ The PMF and CDF of the new groupings are shown below.
 
 ![CDF of AGE2](figures/age2_grouped_cdf.png)
 
+The three oldest age groups are still the most represented, but this still makes sense because the younger groups still have smaller age ranges.
+
 ###### Age of First Trying OxyContin Non-medically
+The 'OXYCAGE' variable represents the age at which people first used OxyContin non-medically. Because of the way the question was asked and the way I cleaned the data, this variable only represents the respondents who have ever used OxyContin nonmedically in their lives. The PMF and CDF of 'OXYCAGE' are shown below.
 
 ![PDF of OXYCAGE](figures/oxycage_pmf.png)
 
 ![CDF of OXYCAGE](figures/oxycage_cdf.png)
 
+The median age is 22, the mean age is 24.55, and the interquartile range is 10 years. So, respondents who have ever used OxyContin non-medically are much more likely to try it in their 20s for the first time than at older ages. This is consistent with what I expected to see. I expect that young people are more likely to use medication in a way that was not directed by a doctor. I would also expect young people to experiment with more drugs based on anecdotal evidence.
+
+The distribution is skewed right, since the median is less than the mean. This is also consistent with what I expected of this data. Very young people are probably not going to have the freedom or wish to take drugs in a way not directed by their doctor, but people in their 30s upwards are probably more likely to be prescribed or have access to OxyContin, and they may choose to take it in a way other than prescribed. 
+
 ###### Time Since Last Trying OxyContin Non-medically
+The 'OXYCREC' variable represents the time since respondents reported last using OxyContin nonmedically. This variable includes both people who have used OxyContin nonmedically ever in their lives as well as people who have never used it. The PMF of this variable is shown below.
 
 ![PMF of OXCYCREC with "never used" answers](figures/oxycrec_w_nevers.png)
+
+An overwhelming majority of respondents reported never using OxyContin in their lives, so it is hard to get a clear idea of what the distribution of the respondent who have ever used OxyContin non-medically looks like.
 
 ![PMF of OXYCREC without "never used" answers](figures/oxycrec_wo_nevers.png)
 
