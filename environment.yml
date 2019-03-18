@@ -8,7 +8,7 @@ dependencies:
   - seaborn
   - pandas
   - scipy
-  pip:
-    - ThinkStats2
+  - pip:
+    - thinkstats2
     
 
