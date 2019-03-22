@@ -9,7 +9,7 @@ dependencies:
   - pandas
   - scipy
   - pip:
-    - thinkstats2
+    - .
 
 
 
