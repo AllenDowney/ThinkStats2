@@ -1225,7 +1225,7 @@ class Cdf:
 
         returns: array of percentile ranks in the range 0 to 100
         """
-        return self.Probs(x) * 100
+        return self.Probs(xs) * 100
 
     def Random(self):
         """Chooses a random value from this distribution."""
