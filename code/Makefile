@@ -100,3 +100,6 @@ docs: $(DOCPY)
 $(DOCPY):
 	pydoc -w ./$@
 
+scrub:
+	scrub/scrub_code.py chap01soln.ipynb; mv chap01soln_scrub.ipynb chap01ex.ipynb
+	scrub/scrub_code.py chap02soln.ipynb; mv chap02soln_scrub.ipynb chap02ex.ipynb
