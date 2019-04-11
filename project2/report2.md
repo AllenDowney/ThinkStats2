@@ -18,4 +18,4 @@ Below there is a histogram of the number of respondents within different religio
 
 <img src="religbidge.png"
      alt="Markdown Monster icon"
-     style="float: left; margin-right: 10px;" />
+     style="float: center; margin-right: 10px;" />
