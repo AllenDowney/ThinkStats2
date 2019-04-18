@@ -9,6 +9,7 @@ dependencies:
   - pandas
   - pytables
   - scipy
+  - scikit-learn
   - pip:
     - .
 
