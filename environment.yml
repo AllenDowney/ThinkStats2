@@ -7,7 +7,9 @@ dependencies:
   - matplotlib
   - seaborn
   - pandas
+  - pytables
   - scipy
+  - scikit-learn
   - pip:
     - .
 
