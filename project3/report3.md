@@ -24,21 +24,21 @@ The lasso regression shows that chest pain and the status of the respondents tha
 
 #### Deep Learning Model
 
-We implemented a deep learning model to predict if a respondent has heart disease. Two hidden layers were used within the model. The first one used tanh as the activation function. A tanh function is similar to a logistic function, but it keeps values between -1 and 1. We chose this function because it is similar to a logistic function, which means that it will put the model closer to the answer it is searching for. The answer we are looking for is binary, which means that it is either 0 or 1, and using the tanh function, we close in on this range by putting the answer in between 1 and -1. The second hidden layer uses a logistic function. Both of these are put through a logistic function and arrive at the answer. The deep learning algorithm uses this model and performs gradient descent on it in order to minimize the loss.
+We implemented a deep learning model to predict if a respondent has heart disease. Two hidden layers were used within the model. The first one used tanh as the activation function. A tanh function is similar to a logistic function, but it keeps values between -1 and 1. We chose this function because it is similar to a logistic function, which means that it will bring the model predictions closer to the 0-1 range that the answer resides in. The second hidden layer uses a logistic function. Both of these are put through a logistic function and arrive at the answer. The deep learning algorithm uses this model and performs gradient descent on it in order to minimize the loss.
 
 <p align="center">
 <img src ="./deeplearning1.png"/>
 </p>
 
-After the model is run for ten thousand iterations, the loss managed to be minimized to only 0.38. A deep learning model looks to minimize the difference between the actual answer and the predicted answer, which is called the loss. A perfect loss would be 0, and in this case, the worst loss would be 1. The loss for this model is pretty good since its falls below 0.5, but it is not excellent. After minimizing the loss for the model and finding the optimal parameters, the model was used on a test dataset to see if it could correctly predict whether or not the respondents had heart disease. Below is the confusion matrix generated using those predictions.
+ A deep learning model looks to minimize the difference between the actual answer and the predicted answer, which is called the loss. A perfect loss would be 0, and in this case, the worst loss would be 1. After the model is run for ten thousand iterations, the loss managed to be minimized to only 0.38. The loss for this model is pretty good since its falls below 0.5, but it is not excellent. After minimizing the loss for the model and finding the optimal parameters, the model was used on a test dataset to see if it could correctly predict whether or not the respondents had heart disease. Below is the confusion matrix generated using those predictions.
 
 <p align="center">
 <img src ="./confusion1.png"/>
 </p>
 
-The confusion matrix shows how many true positives(upper left), true negatives (lower right), false positives(upper right) and false negatives (lower left) the model generates. A true positive would be a correct guess that a respondent does have heart disease, and a true negative would be a correct guess that a respondent does not have heart disease. From the colors on the confusion matrix, we can see that the model does get a majority of its predictions are correct. Using the values in the confusion matrix, you can calculate that 83 percent of the predictions were correct.
+The confusion matrix above shows how many true positives(upper left), true negatives (lower right), false positives (upper right) and false negatives (lower left) the model generates. A true positive would be a correct guess that a respondent does have heart disease, and a true negative would be a correct guess that a respondent does not have heart disease. From the colors on the confusion matrix, we can see that the model does get a majority of its predictions correct. Using the values in the confusion matrix, you can calculate that 83 percent of the predictions were correct.
 
-This model was fairly accurate, but it is possible that there is a more accurate model if different activation functions and a different number of hidden layers are used. Therefore running a few more models may prove useful for getting a better number of predictions.
+This model was fairly accurate, but it is possible that there is a more accurate model if different activation functions or fewer hidden layers are used. Therefore running a few more models may prove useful for getting a better number of predictions.
 
 The next model that has one hidden layer that uses a logistic activation function, and the output layer still uses a logistic function. This model was also run for ten thousand iterations.
 
@@ -46,9 +46,9 @@ Loss Graph        |  Confusion Matrix
 :-------------------------:|:-------------------------:
 ![](deeplearning2.png)  |  ![](confusion2.png)
 
-This model has more loss than the previous one, the model coming to a final loss of 0.42 after running through many iterations of gradient descent. The confusion matrix shows that the model is still very accurate. There are mostly correct predictions and only a few incorrect predictions. 85 percent of this model's predictions are correction, which is slightly better than the previous model.
+This model has more loss than the previous one, coming to a final loss of 0.42 after running through many iterations of gradient descent. The confusion matrix shows that the model is still very accurate. There are mostly correct predictions and only a few incorrect predictions. 85 percent of this model's predictions are correction, which is slightly better than the previous model.
 
-One last model to present has two hidden layers. The first hidden layer uses a logistic activation function, and the second layer uses a relu activation function.
+One last model to present has two hidden layers. The first hidden layer uses a logistic activation function, and the second layer uses a relu activation function. A relu activation function causes has all positive values stay the same and sets all negative values to 0.
 
 Loss Graph        |  Confusion Matrix
 :-------------------------:|:-------------------------:
@@ -58,9 +58,8 @@ The current model has the lowest loss yet with 0.36. The confusion matrix shows 
 
 #### Logistic Regression Model
 
-The most accurate model that was made using the deep learning model predicted 85% of the respondents correctly. Now that an accurate deep learning model has been created, we can create a logistic regression model and compare the accuracy of both methods. A logistic regression model is a lot simple to set up than a deep learning model, and  does not use as much computation power because it does not need to go through multiple iterations of gradient descent.
+The most accurate model that was made using the deep learning model predicted 85% of the respondents correctly. Now that an accurate deep learning model has been created, we can create a logistic regression model and compare the accuracy of both methods. A logistic regression model is a lot simpler to set up than a deep learning model, and  does not use as much computation power because it does not need to go through multiple iterations of gradient descent.
 
-Above, is a ROC curve which can illustrate the true positive and false positive rate of the logistic regression model. The area under the curve represents the true positive rate, and it was calculated to be 89%. That mean the model correctly guessed that a respondent had heart disease 90% of the time.
 <p align="center">
 <img src ="./confusion4.png"/>
 </p>
@@ -71,6 +70,7 @@ This confusion matrix for the logistic model looks very similar to the confusion
 <img src ="./aucroc.png"/>
 </p>
 
+Above, is a ROC curve which can illustrate the true positive and false positive rate of the logistic regression model. The area under the curve represents the true positive rate, and it was calculated to be 89%. That mean the model correctly guessed that a respondent had heart disease 90% of the time.
 
 #### Conclusion
 
