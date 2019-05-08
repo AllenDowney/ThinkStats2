@@ -1,41 +1,42 @@
 ## Keep it Simple
 By: Jordan Crawford-O'Banner
 
-Heart disease is the number one cause of death worldwide. As such, Driven Data has proposed a challenged to use a specific dataset from the Cleveland Heart Disease Database to try and create a machine learning model that can predict if a person has heart disease based upon certain factors. The data has 13 different health factors that are linked to heart disease. This is a classification problem because the goal is to determine only if they have heart disease or not. There are a few approaches to the problem that can be taking by using machine learning. This notebook will compare a few of those approaches.
-<img src ="./heartdata.png"/>
+Heart disease is the number one cause of death worldwide. As such, Driven Data has proposed a challenge: using a specific dataset from the Cleveland Heart Disease Database, create a machine learning model that can predict if a person has heart disease based upon certain factors. The data to train the model has 13 different health factors, each previously linked to heart disease. Solving this classification problem and providing a tool that determines if a patient has heart disease or not could allow health care specialists to provide treatment in a more informed manner. In response to Driven Data's challenge, this notebook will compare two of the better-known approaches to this machine learning problem.
 
-The two approaches that we will be taking are by comparing a simple regression model and a deep learning model. Each of these approaches has their advantages and their disadvantages. The simple regression model has a lot of parts that can be analyzed in detail. The different parameters within the model can be tuned, and it is easy to test its accuracy. The deep learning model on the other hand, tend to be more accurate when they are done correctly. However, they can only be changed from the surface, and it can be very difficult to identify the inner workings of their algorithms.
+
+To start, we will create a deep learning model that classifies patients based on the 13 traits. We then compare these results to that of a simple regression model built on the same data. Each of these approaches comes with advantages and disadvantages. For example, the simple regression model has a lot of parts that can be analyzed in detail. The different parameters within the model can be tuned, and it is easy to test its accuracy. The deep learning model has the potential to be more accurate; however, it also can only be changed from the surface, and the black-box nature of the model means it can be very difficult to diagnose when something goes wrong.
 
 <p align="center">
+<img src ="./heartdata.png"/>
 </p>
 
-The data shown above contains thirteen explanatory variables and one target variable. The variables include the age and sex of the respondent. The data corresponds people who are as male to 0 and people who are female to 1. There is also chest pain, which is recorded on a scale from 1 to 4. Other variables include resting blood pressure, serum cholesterol, if fasting blood pressure is greater 120 mg/dl , resting electrocardiograph results, maximum heart rate achieved, exercise induced angina, ST depression induced by exercise relative to rest, the slope of the peak exercise ST segment, number of major vessels colored by flourosopy, and the status of the respondents thalamus. The target value is whether or not the respondent has heart disease, and it is recorded as either being a 1 if they do have heart disease or 0 if they do not.
+The data shown above contains thirteen explanatory variables and one target variable. The variables include the age--a direct number-- and sex--mapping 0 to male and 1 to female-- of the respondent. Other variables include chest pain on a scale from 1 to 4, resting blood pressure, serum cholesterol, whether the fasting blood pressure is greater 120 mg/dl, resting electrocardiograph results, maximum heart rate achieved, exercise induced angina, ST depression induced by exercise relative to rest, the slope of the peak exercise ST segment, number of major vessels colored by flourosopy, and the status of the respondents thalamus. All of these are used to predict a simple binary: a 1 if the respondent has heart disease and a 0 if they  are in the clear.
 
 #### Lasso Regression
 
-The data has a lot of variables to keep track of, but a machine learning model does not need to be aware of the meaning of the variables. Nonetheless getting a better understanding of which variables are more influential on predicting a respondent has heart disease by using lasso regression is useful.
+To us, the data has a lot of variables to keep track of. A machine learning model, on the other hand, can easily handle this many, and does not need to be aware of the meaning of the variables. Nonetheless getting a better understanding of which variables are more influential on predicting a respondent has heart disease by using lasso regression is useful. Lasso regression is a type of linear regression that can be used to select important features of a dataset. By using shrinkage, lasso regression shrinks the coefficients of less important features to exactly 0 while leaving the coefficients of more important.
 
 <p align="center">
 <img src ="./lasso.png"/>
 </p>
 
-The lasso regression shows that chest pain and the status of the respondents thalamus is the most important variables within the dataset. The thalamus data is the most influential data within the dataset. Although these two variables are the most influential, all the variables will still be used in the models in order to ensure that they can be as accurate as possible.
+The lasso regression shows that chest pain and the status of the respondents thalamus is the most important variables within the dataset because they are the only two variables that have non-zero coefficients. Since the thalamus data has the highest coefficient of all the variables within the dataset, we can see that it is the most influential of all the variables. Although these two variables are the most influential, all the variables will still be used in the models in order to ensure that they can be as accurate as possible.
 
 #### Deep Learning Model
 
-A deep learning model was implemented to predict if a respondent has heart disease. Two hidden layers were used within the model. The first one used tanh as the activation function. A tanh function is similar to a logistic function, but it keeps values between -1 and 1. This function was chosen because it is similar to a logistic function, which means that it will put the model closer to the answer it is searching for. The second hidden layer uses a logistic function. Both of these through a logistic function and arrive at the answer. The deep learning algorithm uses this model and performs gradient descent on it in order to minimize the loss.
+We implemented a deep learning model to predict if a respondent has heart disease. Two hidden layers were used within the model. The first one used tanh as the activation function. A tanh function is similar to a logistic function, but it keeps values between -1 and 1. We chose this function because it is similar to a logistic function, which means that it will put the model closer to the answer it is searching for. The answer we are looking for is binary, which means that it is either 0 or 1, and using the tanh function, we close in on this range by putting the answer in between 1 and -1. The second hidden layer uses a logistic function. Both of these are put through a logistic function and arrive at the answer. The deep learning algorithm uses this model and performs gradient descent on it in order to minimize the loss.
 
 <p align="center">
 <img src ="./deeplearning1.png"/>
 </p>
 
-After the model is run for ten thousand iterations, the loss managed to be minimized to only 0.38. After minimizing the loss for the model and finding the optimal parameters, the model was used on a test dataset to see if it could correctly predict whether or not the respondents had heart disease. Below is the confusion matrix generated using those predictions.
+After the model is run for ten thousand iterations, the loss managed to be minimized to only 0.38. A deep learning model looks to minimize the difference between the actual answer and the predicted answer, which is called the loss. A perfect loss would be 0, and in this case, the worst loss would be 1. The loss for this model is pretty good since its falls below 0.5, but it is not excellent. After minimizing the loss for the model and finding the optimal parameters, the model was used on a test dataset to see if it could correctly predict whether or not the respondents had heart disease. Below is the confusion matrix generated using those predictions.
 
 <p align="center">
 <img src ="./confusion1.png"/>
 </p>
 
-The confusion matrix shows that the model does get a majority of its predictions are correct. Using the values in the confusion matrix, you can calculate that 83 percent of the predictions were correct.
+The confusion matrix shows how many true positives(upper left), true negatives (lower right), false positives(upper right) and false negatives (lower left) the model generates. A true positive would be a correct guess that a respondent does have heart disease, and a true negative would be a correct guess that a respondent does not have heart disease. From the colors on the confusion matrix, we can see that the model does get a majority of its predictions are correct. Using the values in the confusion matrix, you can calculate that 83 percent of the predictions were correct.
 
 This model was fairly accurate, but it is possible that there is a more accurate model if different activation functions and a different number of hidden layers are used. Therefore running a few more models may prove useful for getting a better number of predictions.
 
