@@ -1,0 +1,3 @@
+## Keep it Simple
+
+Heart disease is the number one cause of death worldwide. As such, Driven Data has proposed a challenge: using a specific dataset from the Cleveland Heart Disease Database, create a machine learning model that can predict if a person has heart disease based upon certain factors.In response to Driven Data's challenge, I compared a deep learning model and a  simple regression model. After three different permutations, the best deep learning model correctly predicted if 85% of the respondents had heart disease. The logistic regression model correctly predict the status of 88% of the respondents. In the end, it is unnecessary to use something as complicated as a deep learning model, when a simple regression model is just as effective.
