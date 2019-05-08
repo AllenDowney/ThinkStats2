@@ -46,7 +46,7 @@ Loss Graph        |  Confusion Matrix
 :-------------------------:|:-------------------------:
 ![](deeplearning2.png)  |  ![](confusion2.png)
 
-This model has more loss than the previous one, coming to a final loss of 0.42 after running through many iterations of gradient descent. The confusion matrix shows that the model is still very accurate. There are mostly correct predictions and only a few incorrect predictions. 85 percent of this model's predictions are correction, which is slightly better than the previous model.
+This model has a greater loss than the previous one, coming to a final loss of 0.42 after running through many iterations of gradient descent. The confusion matrix shows that the model is still very accurate. There are mostly correct predictions and only a few incorrect predictions. 85 percent of this model's predictions are correction, which is slightly better than the previous model.
 
 One last model to present has two hidden layers. The first hidden layer uses a logistic activation function, and the second layer uses a relu activation function. A relu activation function causes has all positive values stay the same and sets all negative values to 0.
 
@@ -70,7 +70,7 @@ This confusion matrix for the logistic model looks very similar to the confusion
 <img src ="./aucroc.png"/>
 </p>
 
-Above, is a ROC curve which can illustrate the true positive and false positive rate of the logistic regression model. The area under the curve represents the true positive rate, and it was calculated to be 89%. That mean the model correctly guessed that a respondent had heart disease 90% of the time.
+Above, is a ROC curve which is a probability curve that demonstrates the likelihood of getting either a true positive or a false positive. The area under this curve represents the degree of separation. The two attributes together represent how good a model is at distinguishing between classifications. A good model has an area under the curve of 1 and a bad model has an area under the curve of 0. The logistic regression model we implemented has an area under the curve of 0.89, which is very good. This is further proof that the simple logistic regression model is a performs well for the purposes of this challenge.
 
 #### Conclusion
 
