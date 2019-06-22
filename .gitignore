@@ -65,7 +65,3 @@ docs/_build/
 
 # Jupyter Files
 .ipynb_checkpoints/
-
-# VS Code Files
-launch.json
-settings.json
