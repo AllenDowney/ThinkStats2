@@ -12,7 +12,7 @@ from operator import itemgetter
 
 import first
 import thinkstats2
-
+import nsfg
 
 def Mode(hist):
     """Returns the value with the highest frequency.
@@ -21,7 +21,8 @@ def Mode(hist):
 
     returns: value from Hist
     """
-    return 0
+    mode = max(hist, key=hist.Freq)
+    return mode
 
 
 def AllModes(hist):
@@ -31,7 +32,8 @@ def AllModes(hist):
 
     returns: iterator of value-freq pairs
     """
-    return []
+    allModes = sorted(hist.Items(), key=hist.Freq, reverse=True) 
+    return allModes
 
 
 def main(script):
@@ -53,6 +55,14 @@ def main(script):
 
     for value, freq in modes[:5]:
         print(value, freq)
+
+    firsts_wgt = firsts.totalwgt_lb.mean()
+    others_wgt = others.totalwgt_lb.mean()
+    print("firsts = {} pounds, others = {} pounds, dif = {} pounds "
+    .format(firsts_wgt, others_wgt, firsts_wgt - others_wgt))
+
+    d = thinkstats2.CohenEffectSize(firsts.totalwgt_lb, others.totalwgt_lb)
+    print(d)
 
     print('%s: All tests passed.' % script)
 
