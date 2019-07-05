@@ -43,10 +43,13 @@ Activate the 2.7 environment and install nose and lifelines
  - source activate thinkstats2-py27
  - pip install nose lifelines
 
-Activate the 3.6 environment and install nose
+Activate the 3.6 environment and install nose and lifelines
 
  - source activate thinkstats2-py36
  - pip install nose lifelines
+
+*For conda versions after 4.4 use `conda activate` instead of `source activate`*
+
 
 Extras that are helpful --
 
