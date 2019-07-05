@@ -199,7 +199,7 @@ class Test(unittest.TestCase):
         hist = thinkstats2.Hist(t)
 
         cdf = thinkstats2.Cdf(pmf)
-        self.assertEqual(len(str(cdf)), 37)
+        self.assertEqual(len(str(cdf)), 33)
 
         self.assertEqual(cdf[0], 0)
         self.assertAlmostEqual(cdf[1], 0.2)
