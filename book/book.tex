@@ -15,8 +15,9 @@
 
 % for some of these packages, you might have to install
 % texlive-latex-extra (in Ubuntu)
+% texlive-collection-fontsrecommended (in Fedora)
 
-%\usepackage[T1]{fontenc}
+\usepackage[T1]{fontenc}
 %\usepackage{textcomp}
 %\usepackage{mathpazo}
 %\usepackage{pslatex}
@@ -33,6 +34,10 @@
 \usepackage{setspace}
 \usepackage{hevea}                           
 \usepackage{upquote}
+
+% use a modern sans-serif font for PDFs read on a computer
+\usepackage{lmodern}
+\renewcommand{\familydefault}{\sfdefault}
 
 \title{Think Stats}
 \author{Allen B. Downey}
