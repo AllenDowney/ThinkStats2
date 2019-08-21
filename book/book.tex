@@ -537,7 +537,7 @@ damage.
 ---
 
 Allen B. Downey is a Professor of Computer Science at
-the Franklin W. Olin College of Engineering in Needham, MA.
+the Franklin W. Olin College of Engineering in Needham, MA\@.
 
 
 
@@ -1622,7 +1622,7 @@ You can read the documentation for {\tt thinkplot} at
 
 \section{NSFG variables}
 
-Now let's get back to the data from the NSFG.  The code in this
+Now let's get back to the data from the NSFG\@.  The code in this
 chapter is in {\tt first.py}.
 For information about downloading and
 working with this code, see Section~\ref{code}.
@@ -3199,7 +3199,7 @@ of the sample is below the 10th percentile, 20\% is below the
 So, regardless of the shape of the CDF, the distribution of
 percentile ranks is uniform.  This property is useful, because it
 is the basis of a simple and efficient algorithm for generating
-random numbers with a given CDF.  Here's how:
+random numbers with a given CDF\@.  Here's how:
 \index{inverse CDF algorithm}
 \index{random number}
 
@@ -3300,7 +3300,7 @@ uniform between 0 and 1; that is, every value in the range
 should have the same probability.
 
 Generate 1000 numbers from {\tt random.random} and plot their
-PMF and CDF.  Is the distribution uniform?
+PMF and CDF\@.  Is the distribution uniform?
 \index{uniform distribution}
 \index{distribution!uniform}
 \index{random number}
@@ -3446,7 +3446,7 @@ midnight.
 
 {\tt diffs} is the difference between consecutive birth times, and
 {\tt cdf} is the distribution of these interarrival times.
-Figure~\ref{analytic_interarrival_cdf} (left) shows the CDF.  It seems
+Figure~\ref{analytic_interarrival_cdf} (left) shows the CDF\@.  It seems
 to have the general shape of an exponential distribution, but how can
 we tell?
 
@@ -3568,7 +3568,7 @@ distributions with a range of parameters.  The sigmoid shape of these
 curves is a recognizable characteristic of a normal distribution.
 
 In the previous chapter we looked at the distribution of birth
-weights in the NSFG.  Figure~\ref{analytic_birthwgt_model} shows the
+weights in the NSFG\@.  Figure~\ref{analytic_birthwgt_model} shows the
 empirical CDF of weights for all live births and the CDF of
 a normal distribution with the same mean and variance.
 \index{National Survey of Family Growth}
@@ -4209,7 +4209,7 @@ about downloading and working with this code, see Section~\ref{code}.
 \section{PDFs}
 
 The derivative of a CDF is called a {\bf probability density function},
-or PDF.  For example, the PDF of an exponential distribution is
+or PDF\@.  For example, the PDF of an exponential distribution is
 %
 \[ \PDF_{expo}(x) = \lambda e^{-\lambda x}   \]
 %
@@ -4368,7 +4368,7 @@ method.
 {\tt Density} takes a value or sequence, calls
 \verb"gaussian_kde.evaluate", and returns the resulting density.  The
 word ``Gaussian'' appears in the name because it uses a filter based
-on a Gaussian distribution to smooth the KDE.  \index{density}
+on a Gaussian distribution to smooth the KDE\@.  \index{density}
 
 Here's an example that generates a sample from a normal
 distribution and then makes an EstimatedPdf to fit it:
@@ -4446,7 +4446,7 @@ in the next few sections.
 \index{cumulative probability}
 
 A PDF is the derivative of a continuous CDF; or, equivalently,
-a CDF is the integral of a PDF.  Remember that a PDF maps from
+a CDF is the integral of a PDF\@.  Remember that a PDF maps from
 values to probability densities; to get a probability, you have to
 integrate.
 \index{discrete distribution}
@@ -4467,7 +4467,7 @@ distribution.  Another option is kernel density estimation.
 
 The opposite of smoothing is {\bf discretizing}, or quantizing.  If you
 evaluate a PDF at discrete points, you can generate a PMF that is an
-approximation of the PDF.  You can get a better approximation using
+approximation of the PDF\@.  You can get a better approximation using
 numerical integration.  \index{discretize}
 \index{quantize}
 \index{binning}
@@ -4838,7 +4838,7 @@ Pearson's median skewness is -0.23.
 \end{figure}
 
 Now let's compare this distribution to the distribution of adult
-weight in the BRFSS.  Again, here's the code:
+weight in the BRFSS\@.  Again, here's the code:
 \index{thinkplot}
 
 \begin{verbatim}
@@ -5563,7 +5563,7 @@ the difference between Pearson's and Spearman's correlation.
 
 If variables A and B are correlated, there are three possible
 explanations: A causes B, or B causes A, or some other set of factors
-causes both A and B.  These explanations are called ``causal
+causes both A and B\@.  These explanations are called ``causal
 relationships''.
 \index{causal relationship}
 
@@ -5977,7 +5977,7 @@ unknown population mean, $\mu$.
 Having weighed 9 female gorillas, you might find $\xbar=90$ kg and
 sample standard deviation, $S=7.5$ kg.  The sample mean
 is an unbiased estimator of $\mu$, and in the long run it
-minimizes MSE.  So if you report a single
+minimizes MSE\@.  So if you report a single
 estimate that summarizes the results, you would report 90 kg.
 \index{MSE}
 \index{sample mean}
