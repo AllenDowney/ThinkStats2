@@ -2,7 +2,7 @@
 % Exploratory data analysis in Python''
 % Copyright 2014  Allen B. Downey.
 
-% License: Creative Commons 
+% License: Creative Commons
 % Attribution-NonCommercial-ShareAlike 4.0 International
 % http://creativecommons.org/licenses/by-nc-sa/4.0/
 %
@@ -31,7 +31,7 @@
 %\usepackage{amssymb}
 \usepackage{makeidx}
 \usepackage{setspace}
-\usepackage{hevea}                           
+\usepackage{hevea}
 \usepackage{upquote}
 
 \title{Think Stats}
@@ -50,7 +50,7 @@
 \setlinkstext
   {\imgsrc[ALT="Previous"]{back.png}}
   {\imgsrc[ALT="Up"]{up.png}}
-  {\imgsrc[ALT="Next"]{next.png}} 
+  {\imgsrc[ALT="Next"]{next.png}}
 
 \makeindex
 
@@ -90,9 +90,9 @@
 \newcommand*{\Anchor}[1]{%
   \@bsphack%
     \Hy@GlobalStepCount\anchorcnt%
-    \edef\@currentHref{anchor.\the\anchorcnt}% 
-    \Hy@raisedlink{\hyper@anchorstart{\@currentHref}\hyper@anchorend}% 
-    \M@gettitle{}\label{#1}% 
+    \edef\@currentHref{anchor.\the\anchorcnt}%
+    \Hy@raisedlink{\hyper@anchorstart{\@currentHref}\hyper@anchorend}%
+    \M@gettitle{}\label{#1}%
     \@esphack%
 }
 
@@ -303,7 +303,7 @@ when I start working with a dataset:
 \index{estimation}
 \index{hypothesis testing}
 
-\item Visualization: During exploration, visualization is an important 
+\item Visualization: During exploration, visualization is an important
   tool for finding possible relationships and effects.  Then if an
   apparent effect holds up to scrutiny, visualization is an effective
   way to communicate results.
@@ -420,7 +420,7 @@ pages throughout the book and I encourage you to follow those links;
 in many cases, the Wikipedia page picks up where my description leaves
 off.  The vocabulary and notation in this book are generally
 consistent with Wikipedia, unless I had a good reason to deviate.
-Other resources I found useful were Wolfram MathWorld and 
+Other resources I found useful were Wolfram MathWorld and
 the Reddit statistics forum, \url{http://www.reddit.com/r/statistics}.
 
 
@@ -536,7 +536,7 @@ damage.
 
 ---
 
-Allen B. Downey is a Professor of Computer Science at 
+Allen B. Downey is a Professor of Computer Science at
 the Franklin W. Olin College of Engineering in Needham, MA.
 
 
@@ -544,7 +544,7 @@ the Franklin W. Olin College of Engineering in Needham, MA.
 
 \section*{Contributor List}
 
-If you have a suggestion or correction, please send email to 
+If you have a suggestion or correction, please send email to
 {\tt downey@allendowney.com}.  If I make a change based on your
 feedback, I will add you to the contributor list
 (unless you ask to be omitted).
@@ -624,9 +624,9 @@ this book, has sent many corrections and helpful suggestions.
 Other people who found typos and similar errors are Andrew Heine,
 G\'{a}bor Lipt\'{a}k,
 Dan Kearney,
-Alexander Gryzlov, 
-Martin Veillette, 
-Haitao Ma, 
+Alexander Gryzlov,
+Martin Veillette,
+Haitao Ma,
 Jeff Pickhardt,
 Rohit Deshpande,
 Joanne Pratt,
@@ -834,7 +834,7 @@ user's guide for the NSFG data are available from
 
 The code and data used in this book are available from
 \url{https://github.com/AllenDowney/ThinkStats2}.  For information
-about downloading and working with this code, 
+about downloading and working with this code,
 see Section~\ref{code}.
 
 Once you download the code, you should have a file called {\tt
@@ -862,7 +862,7 @@ infile dictionary {
 \end{verbatim}
 
 This dictionary describes two variables: {\tt caseid} is a 12-character
-string that represents the respondent ID; {\tt pregorder} is a 
+string that represents the respondent ID; {\tt pregorder} is a
 one-byte integer that indicates which pregnancy this record
 describes for this respondent.
 
@@ -926,7 +926,7 @@ names as Unicode strings:
 Index([u'caseid', u'pregordr', u'howpreg_n', u'howpreg_p', ... ])
 \end{verbatim}
 
-The result is an Index, which is another pandas data structure.  
+The result is an Index, which is another pandas data structure.
 We'll learn more about Index later, but for
 now we'll treat it like a list:
 \index{pandas}
@@ -1075,7 +1075,7 @@ def CleanFemPreg(df):
     df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
     df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
 
-    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0    
+    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0
 \end{verbatim}
 
 {\tt agepreg} contains the mother's age at the end of the
@@ -1090,7 +1090,7 @@ In addition it uses several special codes:
 
 \begin{verbatim}
 97	NOT ASCERTAINED
-98	REFUSED	 
+98	REFUSED
 99	DON'T KNOW
 \end{verbatim}
 
@@ -1127,14 +1127,14 @@ must use dictionary syntax, like this
 
 \begin{verbatim}
     # CORRECT
-    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0 
+    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0
 \end{verbatim}
 
 Not dot notation, like this:
 
 \begin{verbatim}
     # WRONG!
-    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0 
+    df.totalwgt_lb = df.birthwgt_lb + df.birthwgt_oz / 16.0
 \end{verbatim}
 
 The version with dot notation adds an attribute to the DataFrame
@@ -1295,7 +1295,7 @@ to respondent {\tt 10229}.
 Using this list as an index into {\tt df.outcome} selects the
 indicated rows and yields a Series.  Instead of printing the
 whole Series, I selected the {\tt values} attribute, which is
-a NumPy array.  
+a NumPy array.
 \index{NumPy}
 \index{Series}
 
@@ -1623,7 +1623,7 @@ You can read the documentation for {\tt thinkplot} at
 \section{NSFG variables}
 
 Now let's get back to the data from the NSFG.  The code in this
-chapter is in {\tt first.py}.  
+chapter is in {\tt first.py}.
 For information about downloading and
 working with this code, see Section~\ref{code}.
 
@@ -2112,7 +2112,7 @@ most frequent values.
 \index{mode}
 
 \item normal distribution: An idealization of a bell-shaped distribution;
-also known as a Gaussian distribution. 
+also known as a Gaussian distribution.
 \index{Gaussian distribution}
 \index{normal distribution}
 
@@ -2124,7 +2124,7 @@ the same frequency.
 \index{tail}
 
 \item central tendency: A characteristic of a sample or population;
-intuitively, it is an average or typical value. 
+intuitively, it is an average or typical value.
 \index{central tendency}
 
 \item outlier: A value far from the central tendency.
@@ -2278,7 +2278,7 @@ probability mass function.
 
 \begin{itemize}
 
-\item To plot a Pmf as a bar graph, you can use 
+\item To plot a Pmf as a bar graph, you can use
 {\tt thinkplot.Hist}.  Bar graphs are most useful if the number
 of values in the Pmf is small.
 \index{bar plot}
@@ -2450,7 +2450,7 @@ construct a PMF, compute the mean, and report that the
 average class size is 23.7.  Here's the code:
 
 \begin{verbatim}
-    d = { 7: 8, 12: 8, 17: 14, 22: 4, 
+    d = { 7: 8, 12: 8, 17: 14, 22: 4,
           27: 6, 32: 12, 37: 8, 42: 3, 47: 2 }
 
     pmf = thinkstats2.Pmf(d, label='actual')
@@ -2475,7 +2475,7 @@ def BiasPmf(pmf, label):
 
     for x, p in pmf.Items():
         new_pmf.Mult(x, x)
-        
+
     new_pmf.Normalize()
     return new_pmf
 \end{verbatim}
@@ -2522,7 +2522,7 @@ def UnbiasPmf(pmf, label):
 
     for x, p in pmf.Items():
         new_pmf.Mult(x, 1.0/x)
-        
+
     new_pmf.Normalize()
     return new_pmf
 \end{verbatim}
@@ -2672,7 +2672,7 @@ distribution for the number of children under 18 in the household.
 
 Now compute the biased distribution we would see if we surveyed the
 children and asked them how many children under 18 (including themselves)
-are in their household.  
+are in their household.
 
 Plot the actual and biased distributions, and compute their means.
 As a starting place, you can use \verb"chap03ex.ipynb".
@@ -2694,7 +2694,7 @@ where the $x_i$ are the unique values in the PMF and $p_i=PMF(x_i)$.
 Similarly, you can compute variance like this:
 %
 \[ S^2 = \sum_i p_i~(x_i - \xbar)^2\]
-% 
+%
 Write functions called {\tt PmfMean} and {\tt PmfVar} that take a
 Pmf object and compute the mean and variance.  To test these methods,
 check that they are consistent with the methods {\tt Mean} and {\tt
@@ -2950,7 +2950,7 @@ the result is a probability in the range 0--1 rather than a
 percentile rank in the range 0--100.
 \index{sample}
 
-As an example, suppose we collect a sample with the values 
+As an example, suppose we collect a sample with the values
 {\tt [1, 2, 2, 3, 5]}.  Here are some values from its CDF:
 %
 \[ CDF(0) = 0 \]
@@ -3077,7 +3077,7 @@ Figure~\ref{cumulative_birthwgt_cdf} shows the result.
 Compared to Figure~\ref{nsfg_birthwgt_pmf},
 this figure makes the shape of the distributions, and the differences
 between them, much clearer.  We can see that first babies are slightly
-lighter throughout the distribution, with a larger discrepancy above 
+lighter throughout the distribution, with a larger discrepancy above
 the mean.
 \index{shape}
 
@@ -4096,7 +4096,7 @@ values from an exponential distribution with the same mean as the
 data, about 33 minutes between births.
 
 Plot the distribution of the random values and compare it to the
-actual distribution.  You can use {\tt random.expovariate} 
+actual distribution.  You can use {\tt random.expovariate}
 to generate the values.
 
 \end{exercise}
@@ -4215,8 +4215,8 @@ or PDF.  For example, the PDF of an exponential distribution is
 %
 The PDF of a normal distribution is
 %
-\[ \PDF_{normal}(x) = \frac{1}{\sigma \sqrt{2 \pi}} 
-                 \exp \left[ -\frac{1}{2} 
+\[ \PDF_{normal}(x) = \frac{1}{\sigma \sqrt{2 \pi}}
+                 \exp \left[ -\frac{1}{2}
                  \left( \frac{x - \mu}{\sigma} \right)^2 \right]  \]
 %
 Evaluating a PDF for a particular value of $x$ is usually not useful.
@@ -4249,10 +4249,10 @@ following methods:
   approximates the Pdf.
 \index{Pmf}
 
-\item {\tt GetLinspace}, which returns the default set of points used 
+\item {\tt GetLinspace}, which returns the default set of points used
   by {\tt Render} and {\tt MakePmf}.
 
-\end{itemize}  
+\end{itemize}
 
 Pdf is an abstract parent class, which means you should not
 instantiate it; that is, you cannot create a Pdf object.  Instead, you
@@ -4336,10 +4336,10 @@ and the kernel density estimate of a sample with $n=500$.}
 \end{figure}
 
 
-\section{Kernel density estimation} 
+\section{Kernel density estimation}
 
 {\bf Kernel density estimation} (KDE) is an algorithm that takes
-a sample and finds an appropriately smooth PDF that fits 
+a sample and finds an appropriately smooth PDF that fits
 the data.  You can read details at
 \url{http://en.wikipedia.org/wiki/Kernel_density_estimation}.
 \index{KDE}
@@ -4612,7 +4612,7 @@ Cdf is proportional to $n \log n$.
 \index{frequency}
 
 Here is the implementation of {\tt Prob}, which takes a value
-and returns its cumulative probability: 
+and returns its cumulative probability:
 
 \begin{verbatim}
 # class Cdf
@@ -4755,7 +4755,7 @@ $g_1$ is the third {\bf standardized moment}, which means that it has
 been normalized so it has no units.
 \index{standardized moment}
 
-Negative skewness indicates that a distribution 
+Negative skewness indicates that a distribution
 skews left; positive skewness indicates
 that a distribution skews right.  The magnitude of $g_1$ indicates
 the strength of the skewness, but by itself it is not easy to
@@ -4911,7 +4911,7 @@ the number of respondents in each frame.
 \index{model}
 
 It also takes \verb"log_upper", which is an assumed upper bound
-on the highest range, expressed in {\tt log10} dollars.  
+on the highest range, expressed in {\tt log10} dollars.
 The default value, \verb"log_upper=6.0" represents the assumption
 that the largest income among the respondents is
 $10^6$, or one million dollars.
@@ -5049,7 +5049,7 @@ chosen more than once.
 
 The result, in Figure~\ref{scatter1} (left), shows the shape of
 the relationship.  As we expected, taller
-people tend to be heavier.  
+people tend to be heavier.
 
 \begin{figure}
 % scatter.py
@@ -5137,7 +5137,7 @@ of 414 509.
 
 To handle larger datasets, another option is a hexbin plot, which
 divides the graph into hexagonal bins and colors each bin according to
-how many data points fall in it.  {\tt thinkplot} provides 
+how many data points fall in it.  {\tt thinkplot} provides
 {\tt HexBin}:
 %
 \begin{verbatim}
@@ -5251,7 +5251,7 @@ There are two common solutions to these problems:
 \begin{enumerate}
 
 \item Transform each value to a {\bf standard score}, which is the
-number of standard deviations from the mean.  
+number of standard deviations from the mean.
 This transform leads to
 the ``Pearson product-moment correlation coefficient.''
 \index{standard score}
@@ -5524,7 +5524,7 @@ reasons for the difference, including:
 
 \item If the relationship is
 nonlinear, Pearson's correlation tends to underestimate the strength
-of the relationship, and 
+of the relationship, and
 \index{nonlinear}
 
 \item Pearson's correlation can be affected (in either direction)
@@ -5659,7 +5659,7 @@ visualization.
 \index{jitter}
 
 \item saturation: Loss of information when multiple points are
-plotted on top of each other. 
+plotted on top of each other.
 \index{saturation}
 
 \item correlation: A statistic that measures the strength of the
@@ -5859,7 +5859,7 @@ in 8, and that's the best you can do.  \index{MLE}
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-{\em I'm thinking of a distribution.}  It's a normal distribution, and 
+{\em I'm thinking of a distribution.}  It's a normal distribution, and
 here's a (familiar) sample:
 
 {\tt [-0.441, 1.774, -0.101, -1.138, 2.975, -2.138]}
@@ -5868,7 +5868,7 @@ What do you think is the variance, $\sigma^2$, of my distribution?
 Again, the obvious choice is to use the sample variance, $S^2$, as an
 estimator.
 %
-\[ S^2 = \frac{1}{n} \sum (x_i - \xbar)^2 \] 
+\[ S^2 = \frac{1}{n} \sum (x_i - \xbar)^2 \]
 %
 For large samples, $S^2$ is an adequate estimator, but for small
 samples it tends to be too low.  Because of this unfortunate
@@ -5884,7 +5884,7 @@ after many iterations of the estimation game, is 0.
 Fortunately, there is another simple statistic that is an unbiased
 estimator of $\sigma^2$:
 %
-\[ S_{n-1}^2 = \frac{1}{n-1} \sum (x_i - \xbar)^2 \] 
+\[ S_{n-1}^2 = \frac{1}{n-1} \sum (x_i - \xbar)^2 \]
 %
 For an explanation of why $S^2$ is biased, and a proof that
 $S_{n-1}^2$ is unbiased, see
@@ -5996,7 +5996,7 @@ To quantify sampling error, we can simulate the
 sampling process with hypothetical values of $\mu$ and $\sigma$, and
 see how much $\xbar$ varies.
 
-Since we don't know the actual values of 
+Since we don't know the actual values of
 $\mu$ and $\sigma$ in the population, we'll use the estimates
 $\xbar$ and $S$.
 So the question we answer is:
@@ -6101,7 +6101,7 @@ It is important to remember that confidence intervals
 and standard errors only quantify sampling error; that is,
 error due to measuring only part of the population.
 The sampling distribution does not account for other
-sources of error, notably sampling bias and measurement error, 
+sources of error, notably sampling bias and measurement error,
 which are the topics of the next section.
 
 
@@ -6167,7 +6167,7 @@ biggest.
 \index{distribution!exponential}
 
 Let's play one more round of the estimation game.
-{\em I'm thinking of a distribution.}  It's an exponential distribution, and 
+{\em I'm thinking of a distribution.}  It's an exponential distribution, and
 here's a sample:
 
 {\tt [5.384, 4.493, 19.198, 2.790, 6.122, 12.844]}
@@ -6272,7 +6272,7 @@ Also check whether $S^2$ or $S_{n-1}^2$ yields a lower MSE.
 
 \begin{exercise}
 
-Suppose you draw a sample with size $n=10$ from 
+Suppose you draw a sample with size $n=10$ from
 an exponential distribution with $\lambda=2$.  Simulate
 this experiment 1000 times and plot the sampling distribution of
 the estimate $\lamhat$.  Compute the standard error of the estimate
@@ -6478,7 +6478,7 @@ class HypothesisTest(object):
         self.actual = self.TestStatistic(data)
 
     def PValue(self, iters=1000):
-        self.test_stats = [self.TestStatistic(self.RunModel()) 
+        self.test_stats = [self.TestStatistic(self.RunModel())
                            for _ in range(iters)]
 
         count = sum(1 for x in self.test_stats if x >= self.actual)
@@ -6867,7 +6867,7 @@ is crooked.  You roll the die 60 times and get the following results:
 \begin{center}
 \begin{tabular}{|l|c|c|c|c|c|c|}
 \hline
-Value     &  1  &  2  &  3  &  4  &  5  &  6  \\ 
+Value     &  1  &  2  &  3  &  4  &  5  &  6  \\
 \hline
 Frequency &  8  &  9  &  19  &  5  &  8  &  11  \\
 \hline
@@ -6944,7 +6944,7 @@ statistic:
 %
 %% TODO: Consider using upper case chi, which is more strictly correct,
 %% but harder to distinguish from X.
-% 
+%
 Where $O_i$ are the observed frequencies and $E_i$ are the expected
 frequencies.  Here's the Python code:
 \index{chi-squared test}
@@ -7479,7 +7479,7 @@ guessing too high might be better (or worse) than guessing too low.
 In that case you might want to compute some cost function for each
 residual, and minimize total cost, {\tt sum(cost(res))}.
 However, computing a least squares fit is quick, easy and often good
-enough.  
+enough.
 \index{cost function}
 
 
@@ -7691,7 +7691,7 @@ def Summarize(estimates, actual=None):
 \end{verbatim}
 
 {\tt Summarize} takes a sequence of estimates and the actual value.
-It prints the mean of the estimates, the standard error and 
+It prints the mean of the estimates, the standard error and
 a 90\% confidence interval.
 \index{standard error}
 \index{confidence interval}
@@ -7779,7 +7779,7 @@ substantially.
 \index{prediction}
 
 Another way to measure goodness of fit is  the {\bf
-  coefficient of determination}, usually denoted $R^2$ and 
+  coefficient of determination}, usually denoted $R^2$ and
 called ``R-squared'':
 \index{coefficient of determination}
 \index{r-squared}
@@ -7986,7 +7986,7 @@ sampling distribution:
     pvalue = slope_cdf[0]
 \end{verbatim}
 
-Again, we find $p < 0.001$.  
+Again, we find $p < 0.001$.
 
 
 \section{Weighted resampling}
@@ -8081,11 +8081,11 @@ The following table summarizes the results:
 \begin{center}
 \begin{tabular}{|l|c|c|c|}
 \hline
-                    &  mean birth   & standard  &  90\% CI  \\ 
-                    &  weight (lbs) & error     &           \\ 
+                    &  mean birth   & standard  &  90\% CI  \\
+                    &  weight (lbs) & error     &           \\
 \hline
-Unweighted          &  7.27  &  0.014  &  (7.24, 7.29)  \\ 
-Weighted            &  7.35  &  0.014  &  (7.32, 7.37)  \\ 
+Unweighted          &  7.27  &  0.014  &  (7.24, 7.29)  \\
+Weighted            &  7.35  &  0.014  &  (7.32, 7.37)  \\
 \hline
 \end{tabular}
 \end{center}
@@ -8311,7 +8311,7 @@ And {\tt results} provides {\tt resid}, a sequence of residuals, and
 \index{residuals}
 
 The results object provides {\tt summary()}, which
-represents the results in a readable format.  
+represents the results in a readable format.
 
 \begin{verbatim}
     print(results.summary())
@@ -8398,7 +8398,7 @@ slope * diff_age
 
 The result is 0.063, just about half of the observed difference.
 So we conclude, tentatively, that the observed difference in birth
-weight can be partly explained by the difference in mother's age. 
+weight can be partly explained by the difference in mother's age.
 
 Using multiple regression, we can explore these relationships
 more systematically.
@@ -8430,7 +8430,7 @@ into categories, like True and False, and should not be treated
 as numbers.  The estimated parameter is the effect on birth
 weight when {\tt isfirst} is true, so the result,
 -0.125 lbs, is the difference in
-birth weight between first babies and others.  
+birth weight between first babies and others.
 \index{birth weight}
 \index{weight!birth}
 \index{categorical variable}
@@ -8525,7 +8525,7 @@ is smaller in this model, and no longer statistically significant.
   \index{significant} \index{statistically significant}
 
 Using computed variables like {\tt agepreg2} is a common way to
-fit polynomials and other functions to data.  
+fit polynomials and other functions to data.
 This process is still considered linear
 regression, because the dependent variable is a linear function of
 the explanatory variables, regardless of whether some variables
@@ -8566,7 +8566,7 @@ due to chance.
 In this example, mother's age acts as a {\bf control variable};
 including {\tt agepreg} in the model ``controls for'' the
 difference in age between first-time mothers and others, making
-it possible to isolate the effect (if any) of {\tt isfirst}. 
+it possible to isolate the effect (if any) of {\tt isfirst}.
 \index{control variable}
 
 
@@ -8592,7 +8592,7 @@ not familiar with betting pools, see
 \index{betting pool}
 
 Now suppose that you {\em really} want to win the pool.  What could
-you do to improve your chances?  Well, 
+you do to improve your chances?  Well,
 the NSFG dataset includes 244 variables about each pregnancy and another
 3087 variables about each respondent.  Maybe some of those variables
 have predictive power.  To find out which ones are most useful,
@@ -8628,7 +8628,7 @@ due date.
 
 The next line reads the respondent file.  The result is a DataFrame
 with integer indices; in order to look up respondents efficiently,
-I replace {\tt resp.index} with {\tt resp.caseid}. 
+I replace {\tt resp.index} with {\tt resp.caseid}.
 
 The {\tt join} method is invoked on {\tt live}, which is considered
 the ``left'' table, and passed {\tt resp}, which is the ``right'' table.
@@ -8783,7 +8783,7 @@ The encoding for {\tt babysex} is 1 for male, 2 for female; writing
 female.
 \index{boolean}
 
-Similarly {\tt nbrnaliv>1} is True for multiple births and 
+Similarly {\tt nbrnaliv>1} is True for multiple births and
 {\tt paydu==1} is True for respondents who own their houses.
 
 {\tt totincr} is encoded numerically from 1-14, with each increment
@@ -8823,7 +8823,7 @@ age, probably including {\tt paydu} and {\tt totincr}.
 \index{income}
 
 All of these variables are statistically significant, some with
-very low p-values, but 
+very low p-values, but
 $R^2$ is only 0.06, still quite small.
 RMSE without using the model is 1.27 lbs; with the model it drops
 to 1.23.  So your chance of winning the pool is not substantially
@@ -8971,7 +8971,7 @@ and $\beta_2=1.1$:
 Then for each row we can compute \verb"log_o":
 
 \begin{verbatim}
->>> log_o = beta[0] + beta[1] * x1 + beta[2] * x2 
+>>> log_o = beta[0] + beta[1] * x1 + beta[2] * x2
 [-1.5 -0.4 -0.4  2.4]
 \end{verbatim}
 
@@ -9241,7 +9241,7 @@ on sex ratio.
 
 As an exercise, use a data mining approach to test the other variables
 in the pregnancy and respondent files.  Can you find any factors with
-a substantial effect?  
+a substantial effect?
 \index{data mining}
 
 \end{exercise}
@@ -9314,7 +9314,7 @@ variables, but only one dependent variable.
 parameters by minimizing the squared error of the residuals.
 \index{ordinary least squares}
 
-\item spurious relationship: A relationship between two variables that is 
+\item spurious relationship: A relationship between two variables that is
 caused by a statistical artifact or a factor, not included in the
 model, that is related to both variables.
 \index{spurious relationship}
@@ -9408,7 +9408,7 @@ pandas DataFrame:
 as dates and convert them to NumPy {\tt datetime64} objects.
 \index{NumPy}
 
-The DataFrame has a row for each reported transaction and 
+The DataFrame has a row for each reported transaction and
 the following columns:
 
 \begin{itemize}
@@ -9454,7 +9454,7 @@ def GroupByQualityAndDay(transactions):
     groups = transactions.groupby('quality')
     dailies = {}
     for name, group in groups:
-        dailies[name] = GroupByDay(group)        
+        dailies[name] = GroupByDay(group)
 
     return dailies
 \end{verbatim}
@@ -9524,7 +9524,7 @@ the three time series:
         title = 'price per gram ($)' if i==0 else ''
         thinkplot.Config(ylim=[0, 20], title=title)
         thinkplot.Scatter(daily.index, daily.ppg, s=10, label=name)
-        if i == 2: 
+        if i == 2:
             pyplot.xticks(rotation=30)
         else:
             thinkplot.Config(xticks=[])
@@ -9655,7 +9655,7 @@ and a linear least squares fit.}
 {\tt PlotFittedValues} makes a scatter plot of the data points and a line
 plot of the fitted values.  Figure~\ref{timeseries2} shows the results
 for high quality cannabis.  The model seems like a good linear fit
-for the data; nevertheless, linear regression is not the most 
+for the data; nevertheless, linear regression is not the most
 appropriate choice for this data:
 \index{model}
 \index{fitted values}
@@ -9770,7 +9770,7 @@ Now we can plot the rolling mean like this:
 \end{verbatim}
 
 The window size is 30, so each value in \verb"roll_mean" is
-the mean of 30 values from {\tt reindexed.ppg}.  
+the mean of 30 values from {\tt reindexed.ppg}.
 \index{pandas}
 \index{window}
 
@@ -9783,7 +9783,7 @@ moving average (right).}
 \end{figure}
 
 Figure~\ref{timeseries10} (left)
-shows the result. 
+shows the result.
 The rolling mean seems to do a good job of smoothing out the noise and
 extracting the trend.  The first 29 values are {\tt nan}, and wherever
 there's a missing value, it's followed by another 29 {\tt nan}s.
@@ -10075,7 +10075,7 @@ to be visible through the noise.
 \index{lag}
 
 
-\section{Prediction}  
+\section{Prediction}
 
 Time series analysis can be used to investigate, and sometimes
 explain, the behavior of systems that vary in time.  It can also
@@ -10128,7 +10128,7 @@ trend, and we expect this variation to continue in the future.
 
 \item Modeling error: We have already seen evidence that the long-term
 trend is not linear, so predictions based on a linear model will
-eventually fail.  
+eventually fail.
 \index{modeling error}
 
 \end{itemize}
@@ -10156,7 +10156,7 @@ different.  Here is a function that runs the simulations:
 def SimulateResults(daily, iters=101):
     model, results = RunLinearModel(daily)
     fake = daily.copy()
-    
+
     result_seq = []
     for i in range(iters):
         fake.ppg = results.fittedvalues + Resample(results.resid)
@@ -10189,7 +10189,7 @@ def GeneratePredictions(result_seq, years, add_resid=False):
     n = len(years)
     d = dict(Intercept=np.ones(n), years=years, years2=years**2)
     predict_df = pandas.DataFrame(d)
-    
+
     predict_seq = []
     for fake_results in result_seq:
         predict = fake_results.predict(predict_df)
@@ -10329,7 +10329,7 @@ The linear model I used in this chapter has the obvious drawback
 that it is linear, and there is no reason to expect prices to
 change linearly over time.
 We can add flexibility to the model by adding a quadratic term,
-as we did in Section~\ref{nonlinear}.  
+as we did in Section~\ref{nonlinear}.
 \index{nonlinear}
 \index{linear model}
 \index{quadratic model}
@@ -10529,7 +10529,7 @@ hazard curve (bottom).}
 
 Figure~\ref{survival1} (top) shows the CDF of pregnancy length
 and its complement, the survival curve.  To represent the
-survival curve, I define an object that wraps a Cdf and 
+survival curve, I define an object that wraps a Cdf and
 adapts the interface:
 \index{Cdf}
 \index{pregnancy length}
@@ -11067,7 +11067,7 @@ decade of birth for each respondent:
 
 \begin{verbatim}
     month0 = pandas.to_datetime('1899-12-15')
-    dates = [month0 + pandas.DateOffset(months=cm) 
+    dates = [month0 + pandas.DateOffset(months=cm)
              for cm in resp.cmbirth]
     resp['decade'] = (pandas.DatetimeIndex(dates).year - 1900) // 10
 \end{verbatim}
@@ -11091,7 +11091,7 @@ group respondents by decade, and plot survival curves:
 
 \begin{verbatim}
     for i in range(iters):
-        samples = [thinkstats2.ResampleRowsWeighted(resp) 
+        samples = [thinkstats2.ResampleRowsWeighted(resp)
                    for resp in resps]
         sample = pandas.concat(samples, ignore_index=True)
         groups = sample.groupby('decade')
@@ -11265,7 +11265,7 @@ a Pmf.
 \index{Cdf}
 
 {\tt cutoff} is the highest probability in the Cdf, which is 1
-if the Cdf is complete, and otherwise less than 1.  
+if the Cdf is complete, and otherwise less than 1.
 If the Cdf is incomplete, we plug in the provided value, {\tt filler},
 to cap it off.
 
@@ -11558,7 +11558,7 @@ distribution has this property; if $X \sim \normal~(\mu,
 %
 \[ X' \sim \normal~(a \mu + b, a^{2} \sigma^2) \tag*{(1)} \]
 %
-Normal distributions are also closed under addition.  
+Normal distributions are also closed under addition.
 If $Z = X + Y$ and
 $X \sim \normal~(\mu_{X}, \sigma_{X}^{2})$ and
 $Y \sim \normal~(\mu_{Y}, \sigma_{Y}^{2})$ then
@@ -11998,7 +11998,7 @@ is unlikely to be due to chance.
 \index{hypothesis testing}
 
 In this example, the null hypothesis is that the distribution of
-pregnancy lengths is the same for first babies and others.  
+pregnancy lengths is the same for first babies and others.
 So we can compute the sampling distribution of the mean
 like this:
 \index{sampling distribution}
@@ -12022,7 +12022,7 @@ def SamplingDistMean(data, n):
 
 {\tt mean} and {\tt var} are the mean and variance of
 {\tt data}.  We approximate the distribution of the data with
-a normal distribution, {\tt dist}.  
+a normal distribution, {\tt dist}.
 
 In this example, the data are not normally distributed, so this
 approximation is not very good.  But then we compute {\tt dist.Sum(n)
@@ -12153,7 +12153,7 @@ we apply the inverse transform,
 The result is the sampling distribution of $r$ under the null hypothesis.
 Figure~\ref{normal4} shows this distribution along with the distribution
 we generated in Section~\ref{corrtest} by resampling.  They are nearly
-identical.  Although the actual distributions are not normal, 
+identical.  Although the actual distributions are not normal,
 Pearson's coefficient of correlation is based on sample means
 and variances.  By the Central Limit Theorem, these moment-based
 statistics are normally distributed even if the data are not.
@@ -12299,7 +12299,7 @@ into account these pros and cons, I recommend the following process:
   optimization.
 
 \item If replacing a computational method with an analytic method is
-  appropriate, use the computational method as a basis of comparison, 
+  appropriate, use the computational method as a basis of comparison,
   providing mutual validation between the computational and
   analytic results.
 \index{model}
