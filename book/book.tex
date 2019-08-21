@@ -864,7 +864,7 @@ infile dictionary {
 \end{verbatim}
 
 This dictionary describes two variables: {\tt caseid} is a 12-character
-string that represents the respondent ID; {\tt pregorder} is a
+string that represents the respondent ID\@; {\tt pregorder} is a
 one-byte integer that indicates which pregnancy this record
 describes for this respondent.
 
@@ -2975,7 +2975,7 @@ percentile rank in the range 0--100.%
 \index{sample}
 
 As an example, suppose we collect a sample with the values
-{\tt [1, 2, 2, 3, 5]}.  Here are some values from its CDF:
+{\tt [1, 2, 2, 3, 5]}.  Here are some values from its CDF\@:
 %
 \[ CDF(0) = 0 \]
 %
@@ -3001,7 +3001,7 @@ If $x$ is greater than the largest value, $\CDF(x)$ is 1.
 \label{example_cdf}
 \end{figure}
 
-Figure~\ref{example_cdf} is a graphical representation of this CDF.
+Figure~\ref{example_cdf} is a graphical representation of this CDF\@.
 The CDF of a sample is a step function.%
 \index{step function}
 
@@ -3058,7 +3058,7 @@ read a CDF is to look up percentiles.  For example, it looks like
 about 10\% of pregnancies are shorter than 36 weeks, and about 90\%
 are shorter than 41 weeks.  The CDF also provides a visual
 representation of the shape of the distribution.  Common values appear
-as steep or vertical sections of the CDF; in this example, the mode at
+as steep or vertical sections of the CDF\@; in this example, the mode at
 39 weeks is apparent.  There are few values below 30 weeks, so
 the CDF in this range is flat.%
 \index{CDF, interpreting}
@@ -3260,7 +3260,7 @@ age groups, you can convert race times to percentile ranks.%
 \index{percentile rank}
 
 A few years ago I ran the James Joyce Ramble 10K in
-Dedham MA; I finished in 42:44, which was 97th in a field of 1633.  I beat or
+Dedham MA\@; I finished in 42:44, which was 97th in a field of 1633.  I beat or
 tied 1537 runners out of 1633, so my percentile rank in the field is
 94\%.%
 \index{James Joyce Ramble}%
@@ -3351,7 +3351,7 @@ less than or equal to a given value.%
 \index{CDF}%
 \index{cumulative probability}
 
-\item inverse CDF: A function that maps from a cumulative probability,
+\item inverse CDF\@: A function that maps from a cumulative probability,
   $p$, to the corresponding value.%
 \index{inverse CDF}%
 \index{CDF, inverse}
@@ -4221,7 +4221,7 @@ often good models of more complex empirical distributions.%
 \item interarrival time: The elapsed time between two events.%
 \index{interarrival time}
 
-\item complementary CDF: A function that maps from a value, $x$,
+\item complementary CDF\@: A function that maps from a value, $x$,
 to the fraction of values that exceed $x$, which is $1 - \CDF(x)$.%
 \index{complementary CDF}%
 \index{CDF!complementary}%
@@ -4490,13 +4490,13 @@ to each other.%
 
 We started with PMFs, which represent the probabilities for a discrete
 set of values.  To get from a PMF to a CDF, you add up the probability
-masses to get cumulative probabilities.  
+masses to get cumulative probabilities.
 To get from a CDF back to a PMF, you compute differences in cumulative
 probabilities.  We'll see the implementation of these operations
 in the next few sections.%
 \index{cumulative probability}
 
-A PDF is the derivative of a continuous CDF; or, equivalently,
+A PDF is the derivative of a continuous CDF\@; or, equivalently,
 a CDF is the integral of a PDF\@.  Remember that a PDF maps from
 values to probability densities; to get a probability, you have to
 integrate.%
@@ -4629,7 +4629,7 @@ not renormalize the Pmf.
 A CDF maps from values to cumulative probabilities, so I could have
 implemented Cdf as a \verb"_DictWrapper".  But the values in a CDF are
 ordered and the values in a \verb"_DictWrapper" are not.  Also, it is
-often useful to compute the inverse CDF; that is, the map from
+often useful to compute the inverse CDF\@; that is, the map from
 cumulative probability to value.  So the implementaion I chose is two
 sorted lists.  That way I can use binary search to do a forward or
 inverse lookup in logarithmic time.%
@@ -5867,7 +5867,7 @@ number of times we play the game.  {\tt means} is the list of
 estimates based on $\xbar$.  {\tt medians} is the list of medians.%
 \index{median}
 
-Here's the function that computes RMSE:
+Here's the function that computes RMSE\@:
 
 \begin{verbatim}
 def RMSE(estimates, actual):
@@ -6317,7 +6317,7 @@ For the following exercises, you might want to start with a copy of
 \begin{exercise}
 
 In this chapter we used $\xbar$ and median to estimate $\mu$, and
-found that $\xbar$  yields lower MSE.
+found that $\xbar$  yields lower MSE\@.
 Also, we used $S^2$ and $S_{n-1}^2$ to estimate $\sigma$, and found that
 $S^2$ is biased and $S_{n-1}^2$ unbiased.
 
@@ -6367,7 +6367,7 @@ until the total time exceeds 1 game, then returns the number of goals
 scored.
 
 Write another function that simulates many games, stores the
-estimates of {\tt lam}, then computes their mean error and RMSE.
+estimates of {\tt lam}, then computes their mean error and RMSE\@.
 
 Is this way of making an estimate biased?  Plot the sampling
 distribution of the estimates and the 90\% confidence interval.  What
@@ -7909,7 +7909,7 @@ intelligence.%
 According to one study, there is a Pearson correlation of
 $\rho=0.72$ between total SAT scores and IQ scores, which sounds like
 a strong correlation.  But $R^2 = \rho^2 = 0.52$, so SAT scores
-account for only 52\% of variance in IQ.
+account for only 52\% of variance in IQ\@.
 
 IQ scores are normalized with {\tt Std(ys) = 15}, so
 
@@ -11260,7 +11260,7 @@ at age 35 they have caught up with both of the previous cohorts.
 
 \item Women born in the 80s are even less likely to marry before
 age 25.  What happens after that is not clear; for more data, we
-have to wait for the next cycle of the NSFG.
+have to wait for the next cycle of the NSFG\@.
 
 \end{itemize}
 
@@ -11465,7 +11465,7 @@ Women older than 22 have increasing remaining time until first
 marriage.  Components with this property are called {\bf UBNE} for
 "used better than new in expectation."  That is, the older the part,
 the longer it is expected to last.  Newborns and cancer patients are
-also UBNE; their life expectancy increases the longer they live.%
+also UBNE\@; their life expectancy increases the longer they live.%
 \index{UBNE}
 
 For this example I computed median, rather than mean, because the
@@ -11558,11 +11558,11 @@ birth, in a particular interval of time.%
 \item cohort effect: a difference between cohorts.%
 \index{cohort effect}
 
-\item NBUE: A property of expected remaining lifetime, ``New
+\item NBUE\@: A property of expected remaining lifetime, ``New
 better than used in expectation.''%
 \index{NBUE}
 
-\item UBNE: A property of expected remaining lifetime, ``Used
+\item UBNE\@: A property of expected remaining lifetime, ``Used
 better than new in expectation.''%
 \index{UBNE}
 
@@ -12165,7 +12165,7 @@ the same distribution to have the same mean, on average.  The variance
 of the sampling distribution is 0.0032.%
 \index{sampling distribution}
 
-{\tt Normal} provides {\tt Prob}, which evaluates the normal CDF.
+{\tt Normal} provides {\tt Prob}, which evaluates the normal CDF\@.
 We can use {\tt Prob} to compute the probability of a
 difference as large as {\tt delta} under the null hypothesis:%
 \index{null hypothesis}
