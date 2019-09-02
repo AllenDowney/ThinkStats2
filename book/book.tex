@@ -11556,22 +11556,30 @@ linear transformation if $X'$ is in the same family as $X$.  The normal
 distribution has this property; if $X \sim \normal~(\mu,
 \sigma^2)$,
 %
-\[ X' \sim \normal~(a \mu + b, a^{2} \sigma^2) \tag*{(1)} \]
+\begin{equation}\label{eq:1}
+    X' \sim \normal~(a \mu + b, a^{2} \sigma^2) \tag{1}
+\end{equation}
 %
 Normal distributions are also closed under addition.  
 If $Z = X + Y$ and
 $X \sim \normal~(\mu_{X}, \sigma_{X}^{2})$ and
 $Y \sim \normal~(\mu_{Y}, \sigma_{Y}^{2})$ then
 %
-\[ Z \sim \normal~(\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2)  \tag*{(2)}\]
+\begin{equation}\label{eq:2}
+    Z \sim \normal~(\mu_X + \mu_Y, \sigma_X^2 + \sigma_Y^2) \tag{2}
+\end{equation}
 %
 In the special case $Z = X + X$, we have
 %
-\[ Z \sim \normal~(2 \mu_X, 2 \sigma_X^2) \]
+\begin{equation*}
+    Z \sim \normal~(2 \mu_X, 2 \sigma_X^2)
+\end{equation*}
 %
 and in general if we draw $n$ values of $X$ and add them up, we have
 %
-\[ Z \sim \normal~(n \mu_X, n \sigma_X^2)  \tag*{(3)}\]
+\begin{equation}\label{eq:3}
+    Z \sim \normal~(n \mu_X, n \sigma_X^2) \tag{3}
+\end{equation}
 
 
 \section{Sampling distributions}
@@ -11592,12 +11600,12 @@ If we weigh $n$ gorillas, the total weight, $Y$, is distributed
 %
 \[ Y \sim \normal~(n \mu, n \sigma^2) \]
 %
-using Equation 3.  And if we divide by $n$, the sample mean,
+using Equation \eqref{eq:3}.  And if we divide by $n$, the sample mean,
 $Z$, is distributed
 %
 \[ Z \sim \normal~(\mu, \sigma^2/n) \]
 %
-using Equation 1 with $a = 1/n$.
+using Equation \eqref{eq:1} with $a = 1/n$.
 
 The distribution of $Z$ is the sampling distribution of $\xbar$.
 The mean of $Z$ is $\mu$, which shows that $\xbar$ is an unbiased
@@ -11690,7 +11698,7 @@ N(90, 56.25)
 
 {\tt Normal} provides {\tt Sum}, which takes a sample size, {\tt n},
 and returns the distribution of the sum of {\tt n} values, using
-Equation 3:
+Equation \eqref{eq:3}:
 
 \begin{verbatim}
     def Sum(self, n):
@@ -11698,7 +11706,7 @@ Equation 3:
 \end{verbatim}
 
 Normal also knows how to multiply and divide using
-Equation 1:
+Equation \eqref{eq:1}:
 
 \begin{verbatim}
     def __mul__(self, factor):
@@ -12034,7 +12042,7 @@ distribution of the mean is, by the Central Limit Theorem.
 
 Next, we compute the sampling distribution of the difference
 in the means.  The {\tt Normal} class knows how to perform
-subtraction using Equation 2:
+subtraction using Equation \eqref{eq:2}:
 \index{Normal}
 
 \begin{verbatim}
