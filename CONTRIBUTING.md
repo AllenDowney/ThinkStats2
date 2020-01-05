@@ -71,13 +71,13 @@ continue.
 Start in the root directory where you have cloned the ThinkStats2 repository
 and run for Python 2.7 --
 
- - source active thinkstats2-py27
+ - conda activate thinkstats2-py27
  - cd code
  - nosetests
 
 And then for Python 3.6 --
 
- - source activate thinkstats2-py36
+ - conda activate thinkstats2-py36
  - cd code
  - nosetests
 
