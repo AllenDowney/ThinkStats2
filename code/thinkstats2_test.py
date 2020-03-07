@@ -133,8 +133,18 @@ class Test(unittest.TestCase):
         self.assertEqual(pmf, pmf2)
 
         xs, ys = pmf.Render()
-        self.assertEqual(tuple(xs), tuple(sorted(pmf.Values())))        
-        
+        self.assertEqual(tuple(xs), tuple(sorted(pmf.Values())))
+
+    def testSortedItems(self):
+        pmf = thinkstats2.Pmf('allen')
+        items = pmf.SortedItems()
+        self.assertEqual(len(items), 4)
+
+        pmf =  thinkstats2.Pmf(['a', float('nan'), 1, pmf])
+        # should generate a warning
+        items = pmf.SortedItems()
+        self.assertEqual(len(items), 4)
+
     def testPmfAddSub(self):
         pmf = thinkstats2.Pmf([1, 2, 3, 4, 5, 6])
 
@@ -171,8 +181,7 @@ class Test(unittest.TestCase):
         self.assertEqual(d6.ProbGreater(3), 0.5)
         two = d6 + d6
         three = two + d6
-        self.assertAlmostEqual(two > three, 0.15200617284)
-        self.assertAlmostEqual(two < three, 0.778549382716049)
+        # Pmf no longer supports magic comparators
         self.assertAlmostEqual(two.ProbGreater(three), 0.15200617284)
         self.assertAlmostEqual(two.ProbLess(three), 0.778549382716049)
 
@@ -190,7 +199,7 @@ class Test(unittest.TestCase):
         hist = thinkstats2.Hist(t)
 
         cdf = thinkstats2.Cdf(pmf)
-        self.assertEqual(len(str(cdf)), 37)
+        self.assertEqual(len(str(cdf)), 33)
 
         self.assertEqual(cdf[0], 0)
         self.assertAlmostEqual(cdf[1], 0.2)
@@ -200,7 +209,7 @@ class Test(unittest.TestCase):
         self.assertAlmostEqual(cdf[5], 1)
         self.assertAlmostEqual(cdf[6], 1)
 
-        xs = range(-1, 7)
+        xs = list(range(-1, 7))
         ps = cdf.Probs(xs)
         for p1, p2 in zip(ps, [0, 0, 0.2, 0.6, 0.8, 0.8, 1, 1]):
             self.assertAlmostEqual(p1, p2)
@@ -406,6 +415,11 @@ class Test(unittest.TestCase):
         ps = cdf.Probs(t)
         print(ps)
 
+    def testPmfOfHist(self):
+        bowl1 = thinkstats2.Hist(dict(vanilla=30, chocolate=10))
+        bowl2 = thinkstats2.Hist(dict(vanilla=20, chocolate=20))
+        pmf = thinkstats2.Pmf([bowl1, bowl2])
+        pmf.Print()
 
 if __name__ == "__main__":
     unittest.main()
