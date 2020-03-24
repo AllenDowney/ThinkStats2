@@ -1,0 +1,9 @@
+
+% RESPONSIVE HTML
+\let\oldmeta=\@meta
+\renewcommand{\@meta}{%
+\oldmeta
+\begin{rawhtml}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+\end{rawhtml}}
+
