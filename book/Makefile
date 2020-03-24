@@ -10,7 +10,7 @@ hevea:
 	sed 's/\(figs\/[^.]*\).\(pdf\|png\)/\1.eps/' book.tex > thinkstats2.tex
 	rm -rf html
 	mkdir html
-	hevea -O -e latexonly htmlonly thinkstats2
+	hevea macros.hva -O -e latexonly htmlonly thinkstats2
 # the following greps are a kludge to prevent imagen from seeing
 # the definitions in latexonly, and to avoid headers on the images
 	grep -v latexonly thinkstats2.image.tex > a; mv a thinkstats2.image.tex
@@ -18,6 +18,7 @@ hevea:
 	imagen -png thinkstats2
 	hacha thinkstats2.html
 	cp up.png next.png back.png html
+	cat custom.css >> thinkstats2.css
 	mv index.html thinkstats2.css thinkstats2*.html thinkstats2*.png *motif.gif html
 
 DEST = /home/downey/public_html/greent/thinkstats2
@@ -62,6 +63,18 @@ oreilly:
 
 clean:
 	rm -f *~ *.aux *.log *.dvi *.idx *.ilg *.ind *.toc
+	$(MAKE) clean-hevea
+
+clean-hevea:
+	rm -rf book.out html/ thinkstats2.*
 
 
+docker-build:
+	uid=$(id -u) docker build -t thinkbooks:latest .
+
+docker-run-bash:
+	docker run --rm -it -v "$(shell pwd)/..":/home/app/src thinkbooks:latest /bin/bash
+
+docker-run-hevea:
+	docker run --rm -it -v "$(shell pwd)/..":/home/app/src thinkbooks:latest make -C /home/app/src/book hevea
 
