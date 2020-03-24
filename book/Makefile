@@ -6,11 +6,15 @@ all:	book.tex
 	mv book.pdf thinkstats2.pdf
 	evince thinkstats2.pdf
 
+HEVEABUILDLOG=build.log
+#HEVEABUILDLOG=build.log.old.log
+#HEVEABUILDLOG=build.log.$(shell git rev-parse --short HEAD).log
+
 hevea:
 	sed 's/\(figs\/[^.]*\).\(pdf\|png\)/\1.eps/' book.tex > thinkstats2.tex
 	rm -rf html
 	mkdir html
-	hevea macros.hva -O -e latexonly htmlonly thinkstats2
+	hevea macros.hva -O -e latexonly htmlonly thinkstats2 2>&1 | tee ${HEVEABUILDLOG}
 # the following greps are a kludge to prevent imagen from seeing
 # the definitions in latexonly, and to avoid headers on the images
 	grep -v latexonly thinkstats2.image.tex > a; mv a thinkstats2.image.tex
@@ -77,4 +81,32 @@ docker-run-bash:
 
 docker-run-hevea:
 	docker run --rm -it -v "$(shell pwd)/..":/home/app/src thinkbooks:latest make -C /home/app/src/book hevea
+
+
+## Using heavea-compare-logs to determine when the hevea build output changed:
+# pip install --user pyline
+#
+# make hevea; cp build.log ~/build.log.old.log
+# git checkout abc123; mv ~/build.log.old.log .
+# make hevea
+# make hevea-compare-logs
+#
+# rev=$(git rev-parse --short HEAD)
+# make hevea HEAVEABUILDLOG=build.log.${rev}.log
+# make hevea-compare-logs LOG1=build.log.${rev}.log LOG2=build.log
+
+PYLINE_CMD=pyline -F ':' --max 2 '(w[0], w[2]) if len(w) == 3 else l'
+LOG1=build.log.old.log
+LOG2=build.log
+LOGSUFFIX=.stripped.log
+LOG1STRIPPED=${LOG1}${LOGSUFFIX}
+LOG2STRIPPED=${LOG2}${LOGSUFFIX}
+
+hevea-compare-logs:
+	@# pip install --user pyline
+	test -f ${LOG1}
+	test -f ${LOG2}
+	cat ${LOG1} | ${PYLINE_CMD} > ${LOG1STRIPPED}
+	cat ${LOG2} | ${PYLINE_CMD} > ${LOG2STRIPPED}
+	diff -Naur ${LOG1STRIPPED} ${LOG2STRIPPED}
 
