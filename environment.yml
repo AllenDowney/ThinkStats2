@@ -10,6 +10,7 @@ dependencies:
   - pytables
   - scipy
   - scikit-learn
+  - pip
   - pip:
     - .
 
