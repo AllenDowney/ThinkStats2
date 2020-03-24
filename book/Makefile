@@ -100,7 +100,7 @@ LOG1=build.log.old.log
 LOG2=build.log
 LOGSUFFIX=.stripped.log
 LOG1STRIPPED=${LOG1}${LOGSUFFIX}
-LOG2STRIPPED=${LOG1}${LOGSUFFIX}
+LOG2STRIPPED=${LOG2}${LOGSUFFIX}
 
 hevea-compare-logs:
 	@# pip install --user pyline
