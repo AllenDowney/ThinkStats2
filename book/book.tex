@@ -772,7 +772,7 @@ Since 1973 the U.S. Centers for Disease Control and Prevention (CDC)
 have conducted the National Survey of Family Growth (NSFG),
 which is intended to gather ``information on family life, marriage and
 divorce, pregnancy, infertility, use of contraception, and men's and
-women's health. The survey results are used ... to plan health services and
+women's health. The survey results are used \ldots to plan health services and
 health education programs, and to do statistical studies of families,
 fertility, and health.''  See
   \url{http://cdc.gov/nchs/nsfg.htm}.
@@ -4145,7 +4145,7 @@ will also find \verb"hinc.py", which reads this file.
 
 Extract the distribution of incomes from this dataset.  Are any of the
 analytic distributions in this chapter a good model of the data?  A
-solution to this exercise is in \url{hinc_soln.py}.
+solution to this exercise is in {\tt hinc_soln.py}.
 \index{model}
 
 \end{exercise}
@@ -10886,7 +10886,7 @@ The chance of surviving past time \verb"t" is the chance of surviving
 all times up through \verb"t", which is the cumulative product of
 the complementary hazard function:
 %
-\[ [1-\lambda(0)] [1-\lambda(1)] ... [1-\lambda(t)] \]
+\[ [1-\lambda(0)] [1-\lambda(1)] \ldots [1-\lambda(t)] \]
 %
 The \verb"HazardFunction" class provides \verb"MakeSurvival", which
 computes this product:
@@ -12320,7 +12320,7 @@ gains each year is proportional to their current weight.
 In that case, adult weight is the product of a large number
 of multiplicative factors:
 %
-\[ w = w_0 f_1 f_2 ... f_n  \]
+\[ w = w_0 f_1 f_2 \ldots f_n  \]
 %
 where $w$ is adult weight, $w_0$ is birth weight, and $f_i$
 is the weight gain factor for year $i$.
@@ -12333,7 +12333,7 @@ is the weight gain factor for year $i$.
 The log of a product is the sum of the logs of the
 factors:
 %
-\[ \log w = \log w_0 + \log f_1 + \log f_2 + ... + \log f_n \]
+\[ \log w = \log w_0 + \log f_1 + \log f_2 + \cdots + \log f_n \]
 %
 So by the Central Limit Theorem, the distribution of $\log w$ is
 approximately normal for large $n$, which implies that the

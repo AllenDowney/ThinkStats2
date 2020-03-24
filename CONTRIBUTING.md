@@ -43,10 +43,13 @@ Activate the 2.7 environment and install nose and lifelines
  - source activate thinkstats2-py27
  - pip install nose lifelines
 
-Activate the 3.6 environment and install nose
+Activate the 3.6 environment and install nose and lifelines
 
  - source activate thinkstats2-py36
  - pip install nose lifelines
+
+*For conda versions after 4.4 use `conda activate` instead of `source activate`*
+
 
 Extras that are helpful --
 
@@ -71,13 +74,13 @@ continue.
 Start in the root directory where you have cloned the ThinkStats2 repository
 and run for Python 2.7 --
 
- - source active thinkstats2-py27
+ - conda activate thinkstats2-py27
  - cd code
  - nosetests
 
 And then for Python 3.6 --
 
- - source activate thinkstats2-py36
+ - conda activate thinkstats2-py36
  - cd code
  - nosetests
 
