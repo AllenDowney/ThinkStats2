@@ -34,12 +34,17 @@
 \usepackage{hevea}                           
 \usepackage{upquote}
 
+% include this so we can compile without hyperref
+% https://tex.stackexchange.com/questions/44088/when-do-i-need-to-invoke-phantomsection
+\providecommand\phantomsection{}
+
+
 \title{Think Stats}
 \author{Allen B. Downey}
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.0.38}
+\newcommand{\theversion}{2.1.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -4145,7 +4150,7 @@ will also find \verb"hinc.py", which reads this file.
 
 Extract the distribution of incomes from this dataset.  Are any of the
 analytic distributions in this chapter a good model of the data?  A
-solution to this exercise is in {\tt hinc_soln.py}.
+solution to this exercise is in \verb"hinc_soln.py".
 \index{model}
 
 \end{exercise}
