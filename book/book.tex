@@ -376,7 +376,7 @@ data from two sources:
 Other examples use data from the IRS, the U.S. Census, and
 the Boston Marathon.
 
-This second edition of {\it Think Stats} includes the chapters from
+This second edition of {\it Think Stats\/} includes the chapters from
 the first edition, many of them substantially revised, and new
 chapters on regression, time series analysis, survival analysis,
 and analytic methods.  The previous edition did not use pandas,
@@ -507,8 +507,8 @@ that include these packages.
 \index{installation}
 
 After you clone the repository or unzip the zip file, you should have
-a folder called {\tt ThinkStats2/code} with a file called {nsfg.py}.
-If you run {nsfg.py}, it should read a data file, run some tests, and print a
+a folder called {\tt ThinkStats2/code} with a file called {\tt nsfg.py}.
+If you run {\tt nsfg.py}, it should read a data file, run some tests, and print a
 message like, ``All tests passed.''  If you get import errors, it
 probably means there are packages you need to install.
 
@@ -772,7 +772,7 @@ Since 1973 the U.S. Centers for Disease Control and Prevention (CDC)
 have conducted the National Survey of Family Growth (NSFG),
 which is intended to gather ``information on family life, marriage and
 divorce, pregnancy, infertility, use of contraception, and men's and
-women's health. The survey results are used ... to plan health services and
+women's health. The survey results are used \ldots to plan health services and
 health education programs, and to do statistical studies of families,
 fertility, and health.''  See
   \url{http://cdc.gov/nchs/nsfg.htm}.
@@ -862,7 +862,7 @@ infile dictionary {
 \end{verbatim}
 
 This dictionary describes two variables: {\tt caseid} is a 12-character
-string that represents the respondent ID; {\tt pregorder} is a 
+string that represents the respondent ID; {\tt pregordr} is a 
 one-byte integer that indicates which pregnancy this record
 describes for this respondent.
 
@@ -1089,12 +1089,12 @@ baby, in pounds and ounces, for pregnancies that end in live birth.
 In addition it uses several special codes:
 
 \begin{verbatim}
-97	NOT ASCERTAINED
-98	REFUSED	 
-99	DON'T KNOW
+97      NOT ASCERTAINED
+98      REFUSED
+99      DON'T KNOW
 \end{verbatim}
 
-Special values encoded as numbers are {\em dangerous} because if they
+Special values encoded as numbers are {\em dangerous\/} because if they
 are not handled properly, they can generate bogus results, like
 a 99-pound baby.  The {\tt replace} method replaces these values with
 {\tt np.nan}, a special floating-point value that represents ``not a
@@ -1155,13 +1155,13 @@ tables that summarize each variable.  Here is the table for
 {\tt outcome}, which encodes the outcome of each pregnancy:
 
 \begin{verbatim}
-value	label	 	        Total
-1	LIVE BIRTH              9148
-2	INDUCED ABORTION        1862
-3	STILLBIRTH               120
-4	MISCARRIAGE             1921
-5	ECTOPIC PREGNANCY        190
-6	CURRENT PREGNANCY        352
+value   label                  Total
+1       LIVE BIRTH              9148
+2       INDUCED ABORTION        1862
+3       STILLBIRTH               120
+4       MISCARRIAGE             1921
+5       ECTOPIC PREGNANCY        190
+6       CURRENT PREGNANCY        352
 \end{verbatim}
 
 The Series class provides a method, \verb"value_counts", that
@@ -1190,13 +1190,13 @@ values in {\tt outcome} are correct.  Similarly, here is the published
 table for \verb"birthwgt_lb"
 
 \begin{verbatim}
-value	label                  Total
-.	INAPPLICABLE            4449
-0-5	UNDER 6 POUNDS          1125
-6	6 POUNDS                2223
-7	7 POUNDS                3049
-8	8 POUNDS                1889
-9-95	9 POUNDS OR MORE         799
+value   label                  Total
+.       INAPPLICABLE            4449
+0-5     UNDER 6 POUNDS          1125
+6       6 POUNDS                2223
+7       7 POUNDS                3049
+8       8 POUNDS                1889
+9-95    9 POUNDS OR MORE         799
 \end{verbatim}
 
 And here are the value counts:
@@ -2028,7 +2028,7 @@ a patient, you might choose statistics that put the differences in
 context.
 
 Of course your decisions should also be guided by professional ethics.
-It's ok to be persuasive; you {\em should} design statistical reports
+It's ok to be persuasive; you {\em should\/} design statistical reports
 and visualizations that tell a story clearly.  But you should also do
 your best to make your reports honest, and to acknowledge uncertainty
 and limitations.
@@ -2048,7 +2048,7 @@ reassure an anxious patient?
 \index{Straight Dope, The}
 
 Finally, imagine that you are Cecil Adams, author of {\it The Straight
-  Dope} (\url{http://straightdope.com}), and your job is to answer the
+  Dope\/} (\url{http://straightdope.com}), and your job is to answer the
 question, ``Do first babies arrive late?''  Write a paragraph that
 uses the results in this chapter to answer the question clearly,
 precisely, and honestly.
@@ -3735,7 +3735,7 @@ with $\log x$ substituted for $x$.
 \[ CDF_{lognormal}(x) = CDF_{normal}(\log x)\]
 %
 The parameters of the lognormal distribution are usually denoted
-$\mu$ and $\sigma$.  But remember that these parameters are {\em not}
+$\mu$ and $\sigma$.  But remember that these parameters are {\em not\/}
 the mean and standard deviation; the mean of a lognormal distribution
 is $\exp(\mu +\sigma^2/2)$ and the standard deviation is
 ugly (see \url{http://wikipedia.org/wiki/Log-normal_distribution}).
@@ -4146,7 +4146,7 @@ will also find {\tt hinc.py}, which reads this file.
 
 Extract the distribution of incomes from this dataset.  Are any of the
 analytic distributions in this chapter a good model of the data?  A
-solution to this exercise is in \url{hinc_soln.py}.
+solution to this exercise is in {\tt hinc_soln.py}.
 \index{model}
 
 \end{exercise}
@@ -4395,7 +4395,7 @@ Estimating a density function with KDE is useful for several purposes:
 
 \begin{itemize}
 
-\item {\it Visualization:} During the exploration phase of a project, CDFs
+\item {\it Visualization:\/} During the exploration phase of a project, CDFs
   are usually the best visualization of a distribution.  After you
   look at a CDF, you can decide whether an estimated PDF is an
   appropriate model of the distribution.  If so, it can be a better
@@ -4404,13 +4404,13 @@ Estimating a density function with KDE is useful for several purposes:
 \index{visualization}
 \index{model}
 
-\item {\it Interpolation:} An estimated PDF is a way to get from a sample
+\item {\it Interpolation:\/} An estimated PDF is a way to get from a sample
   to a model of the population.  If you have reason to believe that
   the population distribution is smooth, you can use KDE to interpolate
   the density for values that don't appear in the sample.
 \index{interpolation}
 
-\item {\it Simulation:} Simulations are often based on the distribution
+\item {\it Simulation:\/} Simulations are often based on the distribution
   of a sample.  If the sample size is small, it
   might be appropriate to smooth the sample distribution using KDE,
   which allows the simulation to explore more possible outcomes,
@@ -5433,7 +5433,7 @@ strong correlation compared to similar human-related variables.
 If Pearson's correlation is near 0, it is tempting to conclude
 that there is no relationship between the variables, but that
 conclusion is not valid.  Pearson's correlation only measures {\em
-  linear} relationships.  If there's a nonlinear relationship, $\rho$
+  linear\/} relationships.  If there's a nonlinear relationship, $\rho$
 understates its strength.  \index{linear relationship}
 \index{nonlinear}
 \index{Pearson coefficient of correlation}
@@ -5744,7 +5744,7 @@ introducing outliers.
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-{\em I'm thinking of a distribution.}  It's a normal distribution, and
+{\em I'm thinking of a distribution.\/}  It's a normal distribution, and
 here's a sample that was collected by an unreliable surveyor who
 occasionally puts the decimal point in the wrong place.
 \index{measurement error}
@@ -5859,7 +5859,7 @@ in 8, and that's the best you can do.  \index{MLE}
 \index{Gaussian distribution}
 \index{distribution!Gaussian}
 
-{\em I'm thinking of a distribution.}  It's a normal distribution, and 
+{\em I'm thinking of a distribution\/.}  It's a normal distribution, and 
 here's a (familiar) sample:
 
 {\tt [-0.441, 1.774, -0.101, -1.138, 2.975, -2.138]}
@@ -6019,7 +6019,7 @@ def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
     stderr = RMSE(means, mu)
 \end{verbatim}
 
-{\tt mu} and {\tt sigma} are the {\em hypothetical} values of
+{\tt mu} and {\tt sigma} are the {\em hypothetical\/} values of
 the parameters.  {\tt n} is the sample size, the number of
 gorillas we measured.  {\tt m} is the number of times we run
 the simulation.
@@ -6087,7 +6087,7 @@ Standard errors and confidence intervals are the source of much confusion:
 \item People often think that there is a 90\% probability that the
   actual parameter, $\mu$, falls in the 90\% confidence interval.
   Sadly, that is not true.  If you want to make a claim like that, you
-  have to use Bayesian methods (see my book, {\it Think Bayes}).
+  have to use Bayesian methods (see my book, {\it Think Bayes\/}).
 \index{Bayesian statistics}
 
   The sampling distribution answers a different question: it gives you
@@ -6167,7 +6167,7 @@ biggest.
 \index{distribution!exponential}
 
 Let's play one more round of the estimation game.
-{\em I'm thinking of a distribution.}  It's an exponential distribution, and 
+{\em I'm thinking of a distribution.\/}  It's an exponential distribution, and 
 here's a sample:
 
 {\tt [5.384, 4.493, 19.198, 2.790, 6.122, 12.844]}
@@ -7442,7 +7442,7 @@ are the ones that minimize the residuals.
 We might try to minimize the absolute value of the
 residuals, or their squares, or their cubes; but the most common
 choice is to minimize the sum of squared residuals,
-{\tt sum(res**2))}.
+{\tt sum(res**2)}.
 
 Why?  There are three good reasons and one less important one:
 
@@ -7970,7 +7970,7 @@ distribution exceeds 0.)
 
 The second option is easier because we normally want to compute the
 sampling distribution of the parameters anyway.  And it is a good
-approximation unless the sample size is small {\em and} the
+approximation unless the sample size is small {\em and\/} the
 distribution of residuals is skewed.  Even then, it is usually good
 enough, because p-values don't have to be precise.
 \index{skewness}
@@ -8591,7 +8591,7 @@ not familiar with betting pools, see
 \url{https://en.wikipedia.org/wiki/Betting_pool}).
 \index{betting pool}
 
-Now suppose that you {\em really} want to win the pool.  What could
+Now suppose that you {\em really\/} want to win the pool.  What could
 you do to improve your chances?  Well, 
 the NSFG dataset includes 244 variables about each pregnancy and another
 3087 variables about each respondent.  Maybe some of those variables
@@ -10715,7 +10715,7 @@ For women who have not been married, we know their age when interviewed,
 but have no way of knowing when or if they will get married.
 \index{age}
 
-Since we know the age at first marriage for {\em some} women, it
+Since we know the age at first marriage for {\em some\/} women, it
 might be tempting to exclude the rest and compute the CDF of
 the known data.  That is a bad idea.  The result would
 be doubly misleading: (1) older women would be overrepresented,
@@ -10889,7 +10889,7 @@ The chance of surviving past time {\tt t} is the chance of surviving
 all times up through {\tt t}, which is the cumulative product of
 the complementary hazard function:
 %
-\[ [1-\lambda(0)] [1-\lambda(1)] ... [1-\lambda(t)] \]
+\[ [1-\lambda(0)] [1-\lambda(1)] \ldots [1-\lambda(t)] \]
 %
 The {\tt HazardFunction} class provides {\tt MakeSurvival}, which
 computes this product:
@@ -10933,12 +10933,12 @@ the curve is nearly flat, indicating that women who do not marry
 before age 35 are unlikely to get married.
 
 A curve like this was the basis of a famous magazine article in 1986;
-{\it Newsweek} reported that a 40-year old unmarried woman was ``more
+{\it Newsweek\/} reported that a 40-year old unmarried woman was ``more
 likely to be killed by a terrorist'' than get married.  These
 statistics were widely reported and became part of popular culture,
 but they were wrong then (because they were based on faulty analysis)
 and turned out to be even more wrong (because of cultural changes that
-were already in progress and continued).  In 2006, {\it Newsweek} ran
+were already in progress and continued).  In 2006, {\it Newsweek\/} ran
 an another article admitting that they were wrong.
 \index{Newsweek}
 
@@ -11140,7 +11140,7 @@ have married.
 \index{marital status}
 
 Women born in the 60s turned 25 between 1985 and 1995.  Remembering
-that the {\it Newsweek} article I mentioned was published in 1986, it
+that the {\it Newsweek\/} article I mentioned was published in 1986, it
 is tempting to imagine that the article triggered a marriage boom.
 That explanation would be too pat, but it is possible that the article
 and the reaction to it were indicative of a mood that affected the
@@ -11349,14 +11349,14 @@ After that it increases again: by age 30 it is back where it started,
 at 14 years.
 
 Based on this data, young women have decreasing remaining
-"lifetimes".  Mechanical components with this property are called {\bf NBUE}
-for "new better than used in expectation," meaning that a new part is
+``lifetimes''.  Mechanical components with this property are called {\bf NBUE}
+for ``new better than used in expectation,'' meaning that a new part is
 expected to last longer.
 \index{NBUE}
 
 Women older than 22 have increasing remaining time until first
 marriage.  Components with this property are called {\bf UBNE} for
-"used better than new in expectation."  That is, the older the part,
+``used better than new in expectation.''  That is, the older the part,
 the longer it is expected to last.  Newborns and cancer patients are
 also UBNE; their life expectancy increases the longer they live.
 \index{UBNE}
@@ -12188,7 +12188,7 @@ In Section~\ref{casino2} we used the chi-squared statistic to
 test whether a die is crooked.  The chi-squared statistic measures
 the total normalized deviation from the expected values in a table:
 %
-\[ \goodchi^2 = \sum_i \frac{(O_i - E_i)^2}{E_i} \]
+\[ \goodchi^2 = \sum_i \frac{{(O_i - E_i)}^2}{E_i} \]
 %
 One reason the chi-squared statistic is widely used is that
 its sampling distribution under the null hypothesis is analytic;
@@ -12323,7 +12323,7 @@ gains each year is proportional to their current weight.
 In that case, adult weight is the product of a large number
 of multiplicative factors:
 %
-\[ w = w_0 f_1 f_2 ... f_n  \]
+\[ w = w_0 f_1 f_2 \ldots f_n  \]
 %
 where $w$ is adult weight, $w_0$ is birth weight, and $f_i$
 is the weight gain factor for year $i$.
@@ -12336,7 +12336,7 @@ is the weight gain factor for year $i$.
 The log of a product is the sum of the logs of the
 factors:
 %
-\[ \log w = \log w_0 + \log f_1 + \log f_2 + ... + \log f_n \]
+\[ \log w = \log w_0 + \log f_1 + \log f_2 + \cdots + \log f_n \]
 %
 So by the Central Limit Theorem, the distribution of $\log w$ is
 approximately normal for large $n$, which implies that the
@@ -12417,7 +12417,9 @@ distribution of this change, and is it statistically significant?
   \index{significant} \index{statistically significant}
 \end{exercise}
 
-
+\cleardoublepage
+\phantomsection
+\addcontentsline{toc}{chapter}{\indexname}%
 \printindex
 
 \clearemptydoublepage
