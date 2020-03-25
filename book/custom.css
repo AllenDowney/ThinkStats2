@@ -50,15 +50,6 @@ body div#content a, body div#sidebar a {
     text-decoration: underline;
 }
 
-img.prevarrow:after {
-    content: " 🡄"
-}
-img.uparrow:after {
-    content: " 🡅"
-}
-img.nextarrow:after {
-    content: " 🡆"
-}
 /* end navarrow links */
 
 div.notice {

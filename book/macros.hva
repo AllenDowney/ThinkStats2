@@ -7,3 +7,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 \end{rawhtml}}
 
+% UTF-8 Charset
+\renewcommand{\@charset}{UTF-8}
+
+% NAVIGATION LINKS
+\renewcommand{\toplinks}[3]
+  {\sbox{\@toplinks}
+    {\@printnostyle{<!--LINKS }%
+    \@open{div}{\@print{class="navlinks" role="navigation"}}
+    \begin{itemize}
+    \item \@link@arg{PREV}{#1}%
+    \item \@link@arg{UP}{#2}%
+    \item \@link@arg{NEXT}{#3}%
+    \end{itemize}
+    \@close{div}%
+    \@printnostyle{-->
+}}}
+
+\renewcommand{\setlinkstext}[3]
+  {\sbox{\@linkstext}
+    {\@printnostyle{<!--SETENV }%
+    \@open{div}{\@print{class="navlinks" role="navigation"}}
+    \begin{itemize}
+    \item \@link@arg{PREVTXT}{#1}%
+    \item \@link@arg{UPTXT}{#2}%
+    \item \@link@arg{NEXTTXT}{#3}%
+    \end{itemize}
+    \@close{div}%
+    \@printnostyle{-->
+}}}
