@@ -10,29 +10,22 @@
 % UTF-8 Charset
 \renewcommand{\@charset}{UTF-8}
 
-% NAVIGATION LINKS
-\renewcommand{\toplinks}[3]
-  {\sbox{\@toplinks}
-    {\@printnostyle{<!--LINKS }%
-    \@open{div}{\@print{class="navlinks" role="navigation"}}
-    \begin{itemize}
-    \item \@link@arg{PREV}{#1}%
-    \item \@link@arg{UP}{#2}%
-    \item \@link@arg{NEXT}{#3}%
-    \end{itemize}
-    \@close{div}%
-    \@printnostyle{-->
-}}}
-
-\renewcommand{\setlinkstext}[3]
-  {\sbox{\@linkstext}
-    {\@printnostyle{<!--SETENV }%
-    \@open{div}{\@print{class="navlinks" role="navigation"}}
-    \begin{itemize}
-    \item \@link@arg{PREVTXT}{#1}%
-    \item \@link@arg{UPTXT}{#2}%
-    \item \@link@arg{NEXTTXT}{#3}%
-    \end{itemize}
-    \@close{div}%
-    \@printnostyle{-->
-}}}
+% Style navigation links
+\newcommand{\myprev}[1]
+{\@open{li}{}\ahref[title="Previous" aria-label="Previous"]{#1}{Previous \@print@u{X1F844}}\@close{li}
+}
+\newcommand{\myup}[1]
+{\@open{li}{}\ahref[title="Up" aria-label="Up"]{#1}{Up \@print@u{X1F845}}\@close{li}
+}
+\newcommand{\mynext}[1]
+{\@open{li}{}\ahref[title="Next" aria-label="Next"]{#1}{Next \@print@u{X1F846}}\@close{li}
+}
+\newif\iftmp
+\newcommand{\mylinks}[1]
+{\if@silent\tmptrue\else\tmpfalse\@silenttrue\fi\@open{div}{class="navarrows" role="navigation"}
+\@open{ul}{}
+#1
+\@close{ul}
+\@close{div}
+\iftmp\else\silentrue\fi}
+\formatlinks{\mylinks}{\myprev}{\myup}{\mynext}

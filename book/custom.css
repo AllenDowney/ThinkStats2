@@ -33,21 +33,18 @@ pre.verbatim {
 }
 
 /* navarrow links */
-img.navarrow {
-    padding: 0 5px;
-    text-decoration: none;
-    color: #DC143C;
+
+div.navarrows ul {
+    padding-left: 0;
 }
 
-body > a, body > a:link {
-    color: #DC143C;
-}
-body > a:hover {
-    text-decoration: underline;
+div.navarrows ul li {
+    list-style-type: none;
+    display: inline;
 }
 
-body div#content a, body div#sidebar a {
-    text-decoration: underline;
+div.navarrows ul li a {
+    color: #DC143C;
 }
 
 /* end navarrow links */
@@ -87,7 +84,7 @@ div.notice {
         max-width: 200px;
         padding: 0px 10px;
     }
-    img.prevarrow {
+    div.navarrows {
         margin-left: 15%;
     }
 }
