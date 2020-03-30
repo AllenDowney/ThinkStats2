@@ -4,7 +4,7 @@ all:	book.tex
 	makeindex book.idx
 	pdflatex book
 	mv book.pdf thinkstats2.pdf
-	evince thinkstats2.pdf
+	$(shell if evince; then evince thinkstats2.pdf; fi)
 
 HEVEA=hevea
 #HEVEA=/usr/local/bin/hevea
