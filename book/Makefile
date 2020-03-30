@@ -25,9 +25,8 @@ hevea:
 	sed s/\\\\usepackage{fancyhdr}// < thinkstats2.image.tex > a; mv a thinkstats2.image.tex
 	imagen -png thinkstats2
 	hacha thinkstats2.html
-	cp up.png next.png back.png html
 	cat custom.css >> thinkstats2.css
-	mv index.html thinkstats2.css thinkstats2*.html thinkstats2*.png *motif.gif html
+	mv index.html thinkstats2.css thinkstats2*.html thinkstats2*.png *_motif.??? html
 
 DEST = /home/downey/public_html/greent/thinkstats2
 
