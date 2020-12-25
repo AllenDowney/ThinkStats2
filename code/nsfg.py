@@ -38,6 +38,7 @@ def CleanFemPreg(df):
     df.agepreg /= 100.0
 
     # birthwgt_lb contains at least one bogus value (51 lbs)
+    # this is not a good code
     # replace with NaN
     df.loc[df.birthwgt_lb > 20, 'birthwgt_lb'] = np.nan
     
