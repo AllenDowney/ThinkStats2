@@ -1,3 +1,5 @@
+Updates charlie dummy test
+
 ThinkStats2
 ===========
 
