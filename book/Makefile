@@ -4,7 +4,10 @@ all:	book.tex
 	makeindex book.idx
 	pdflatex book
 	mv book.pdf thinkstats2.pdf
-	evince thinkstats2.pdf
+	$(shell if evince; then evince thinkstats2.pdf; fi)
+
+HEVEA=hevea
+#HEVEA=/usr/local/bin/hevea
 
 HEVEABUILDLOG=build.log
 #HEVEABUILDLOG=build.log.old.log
@@ -14,16 +17,16 @@ hevea:
 	sed 's/\(figs\/[^.]*\).\(pdf\|png\)/\1.eps/' book.tex > thinkstats2.tex
 	rm -rf html
 	mkdir html
-	hevea macros.hva -O -e latexonly htmlonly thinkstats2 2>&1 | tee ${HEVEABUILDLOG}
+	${HEVEA} -version
+	${HEVEA} macros.hva -O -e latexonly htmlonly thinkstats2 2>&1 | tee ${HEVEABUILDLOG}
 # the following greps are a kludge to prevent imagen from seeing
 # the definitions in latexonly, and to avoid headers on the images
 	grep -v latexonly thinkstats2.image.tex > a; mv a thinkstats2.image.tex
 	sed s/\\\\usepackage{fancyhdr}// < thinkstats2.image.tex > a; mv a thinkstats2.image.tex
 	imagen -png thinkstats2
 	hacha thinkstats2.html
-	cp up.png next.png back.png html
 	cat custom.css >> thinkstats2.css
-	mv index.html thinkstats2.css thinkstats2*.html thinkstats2*.png *motif.gif html
+	mv index.html thinkstats2.css thinkstats2*.html thinkstats2*.png *_motif.??? html
 
 DEST = /home/downey/public_html/greent/thinkstats2
 
@@ -74,7 +77,11 @@ clean-hevea:
 
 
 docker-build:
-	uid=$(id -u) docker build -t thinkbooks:latest .
+	docker build -t thinkbooks:latest --build-arg uid=$(shell id -u) .
+
+docker-build-hevea-master:
+	docker build -t thinkbooks:latest --build-arg uid=$(shell id -u) --build-arg heveaversion=master .
+
 
 docker-run-bash:
 	docker run --rm -it -v "$(shell pwd)/..":/home/app/src thinkbooks:latest /bin/bash
@@ -82,6 +89,8 @@ docker-run-bash:
 docker-run-hevea:
 	docker run --rm -it -v "$(shell pwd)/..":/home/app/src thinkbooks:latest make -C /home/app/src/book hevea
 
+docker-run-hevea-src:
+	docker run --rm -it -v "$(shell pwd)/..":/home/app/src thinkbooks:latest make -C /home/app/src/book hevea HEVEA=/usr/local/bin/hevea
 
 ## Using heavea-compare-logs to determine when the hevea build output changed:
 # pip install --user pyline

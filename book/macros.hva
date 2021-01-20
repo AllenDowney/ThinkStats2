@@ -7,3 +7,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 \end{rawhtml}}
 
+% UTF-8 Charset
+\renewcommand{\@charset}{UTF-8}
+
+% Style navigation links
+\newcommand{\myprev}[1]
+{\@open{li}{}\ahref[title="Previous" aria-label="Previous"]{#1}{Previous \@print@u{X1F844}}\@close{li}
+}
+\newcommand{\myup}[1]
+{\@open{li}{}\ahref[title="Up" aria-label="Up"]{#1}{Up \@print@u{X1F845}}\@close{li}
+}
+\newcommand{\mynext}[1]
+{\@open{li}{}\ahref[title="Next" aria-label="Next"]{#1}{Next \@print@u{X1F846}}\@close{li}
+}
+\newif\iftmp
+\newcommand{\mylinks}[1]
+{\if@silent\tmptrue\else\tmpfalse\@silenttrue\fi\@open{div}{class="navarrows" role="navigation"}
+\@open{ul}{}
+#1
+\@close{ul}
+\@close{div}
+\iftmp\else\silentrue\fi}
+\formatlinks{\mylinks}{\myprev}{\myup}{\mynext}

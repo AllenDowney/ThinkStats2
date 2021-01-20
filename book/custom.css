@@ -33,32 +33,20 @@ pre.verbatim {
 }
 
 /* navarrow links */
-img.navarrow {
-    padding: 0 5px;
-    text-decoration: none;
+
+div.navarrows ul {
+    padding-left: 0;
+}
+
+div.navarrows ul li {
+    list-style-type: none;
+    display: inline;
+}
+
+div.navarrows ul li a {
     color: #DC143C;
 }
 
-body > a, body > a:link {
-    color: #DC143C;
-}
-body > a:hover {
-    text-decoration: underline;
-}
-
-body div#content a, body div#sidebar a {
-    text-decoration: underline;
-}
-
-img.prevarrow:after {
-    content: " 🡄"
-}
-img.uparrow:after {
-    content: " 🡅"
-}
-img.nextarrow:after {
-    content: " 🡆"
-}
 /* end navarrow links */
 
 div.notice {
@@ -96,7 +84,7 @@ div.notice {
         max-width: 200px;
         padding: 0px 10px;
     }
-    img.prevarrow {
+    div.navarrows {
         margin-left: 15%;
     }
 }
