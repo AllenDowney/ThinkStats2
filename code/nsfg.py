@@ -78,7 +78,8 @@ def CleanFemPreg(df):
     # convert to a single column in lb
     # NOTE: creating a new column requires dictionary syntax,
     # not attribute assignment (like df.totalwgt_lb)
-    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0    
+    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0
+    df['totalwgt_kg'] = df.totalwgt_lb * 0.453592
 
     # due to a bug in ReadStataDct, the last variable gets clipped;
     # so for now set it to NaN
