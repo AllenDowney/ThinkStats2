@@ -5,7 +5,6 @@ Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-from __future__ import print_function, division
 
 """This file contains class definitions for:
 
@@ -2866,7 +2865,7 @@ def ReadStataDct(dct_file, **options):
 
     # fill in the end column by shifting the start column
     variables['end'] = variables.start.shift(-1)
-    variables.loc[len(variables)-1, 'end'] = 0
+    variables.loc[len(variables)-1, 'end'] = -1
 
     dct = FixedWidthVariables(variables, index_base=1)
     return dct
