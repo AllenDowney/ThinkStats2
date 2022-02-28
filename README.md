@@ -23,3 +23,33 @@ If you have basic skills in Python, you can use them to learn concepts in probab
 * Many of the exercises use short programs to run experiments and help readers develop understanding.
 
 This book is available under a Creative Commons license, which means that you are free to copy, distribute, and modify it, as long as you attribute the source and don’t use it for commercial purposes.
+
+## Working with the code
+
+* [Chapter 1 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap01ex.ipynb)   [Chapter 1 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap01soln.ipynb)
+
+* [Chapter 2 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap02ex.ipynb)   [Chapter 2 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap02soln.ipynb)
+
+* [Chapter 3 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap03ex.ipynb)   [Chapter 3 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap03soln.ipynb)
+
+* [Chapter 4 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap04ex.ipynb)   [Chapter 4 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap04soln.ipynb)
+
+* [Chapter 5 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap05ex.ipynb)   [Chapter 5 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap05soln.ipynb)
+
+* [Chapter 6 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap06ex.ipynb)   [Chapter 6 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap06soln.ipynb)
+
+* [Chapter 7 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap07ex.ipynb)   [Chapter 7 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap07soln.ipynb)
+
+* [Chapter 8 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap08ex.ipynb)   [Chapter 8 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap08soln.ipynb)
+
+* [Chapter 9 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap09ex.ipynb)   [Chapter 9 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap09soln.ipynb)
+
+* [Chapter 10 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap10ex.ipynb)   [Chapter 10 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap10soln.ipynb)
+
+* [Chapter 11 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap11ex.ipynb)   [Chapter 11 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap11soln.ipynb)
+
+* [Chapter 12 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap12ex.ipynb)   [Chapter 12 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap12soln.ipynb)
+
+* [Chapter 13 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap13ex.ipynb)   [Chapter 13 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap13soln.ipynb)
+
+* [Chapter 14 code with exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap14ex.ipynb)   [Chapter 14 code with exercises and solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap14soln.ipynb)
