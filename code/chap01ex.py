@@ -19,8 +19,8 @@ def main(script):
 
     script: string script name
     """
-    print('%s: All tests passed.' % script)
+    print("%s: All tests passed." % script)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(*sys.argv)

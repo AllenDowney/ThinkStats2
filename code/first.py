@@ -40,9 +40,9 @@ def Summarize(live, firsts, others):
     var = live.prglngth.var()
     std = live.prglngth.std()
 
-    print('Live mean', mean)
-    print('Live variance', var)
-    print('Live std', std)
+    print("Live mean", mean)
+    print("Live variance", var)
+    print("Live std", std)
 
     mean1 = firsts.prglngth.mean()
     mean2 = others.prglngth.mean()
@@ -50,21 +50,21 @@ def Summarize(live, firsts, others):
     var1 = firsts.prglngth.var()
     var2 = others.prglngth.var()
 
-    print('Mean')
-    print('First babies', mean1)
-    print('Others', mean2)
+    print("Mean")
+    print("First babies", mean1)
+    print("Others", mean2)
 
-    print('Variance')
-    print('First babies', var1)
-    print('Others', var2)
+    print("Variance")
+    print("First babies", var1)
+    print("Others", var2)
 
-    print('Difference in weeks', mean1 - mean2)
-    print('Difference in hours', (mean1 - mean2) * 7 * 24)
+    print("Difference in weeks", mean1 - mean2)
+    print("Difference in hours", (mean1 - mean2) * 7 * 24)
 
-    print('Difference relative to 39 weeks', (mean1 - mean2) / 39 * 100)
+    print("Difference relative to 39 weeks", (mean1 - mean2) / 39 * 100)
 
     d = thinkstats2.CohenEffectSize(firsts.prglngth, others.prglngth)
-    print('Cohen d', d)
+    print("Cohen d", d)
 
 
 def PrintExtremes(live):
@@ -73,21 +73,23 @@ def PrintExtremes(live):
     live: DataFrame of live births
     """
     hist = thinkstats2.Hist(live.prglngth)
-    thinkplot.Hist(hist, label='live births')
+    thinkplot.Hist(hist, label="live births")
 
-    thinkplot.Save(root='first_nsfg_hist_live', 
-                   title='Histogram',
-                   xlabel='weeks',
-                   ylabel='frequency')
+    thinkplot.Save(
+        root="first_nsfg_hist_live",
+        title="Histogram",
+        xlabel="weeks",
+        ylabel="frequency",
+    )
 
-    print('Shortest lengths:')
+    print("Shortest lengths:")
     for weeks, freq in hist.Smallest(10):
         print(weeks, freq)
 
-    print('Longest lengths:')
+    print("Longest lengths:")
     for weeks, freq in hist.Largest(10):
         print(weeks, freq)
-    
+
 
 def MakeHists(live):
     """Plot Hists for live births
@@ -95,32 +97,36 @@ def MakeHists(live):
     live: DataFrame
     others: DataFrame
     """
-    hist = thinkstats2.Hist(live.birthwgt_lb, label='birthwgt_lb')
+    hist = thinkstats2.Hist(live.birthwgt_lb, label="birthwgt_lb")
     thinkplot.Hist(hist)
-    thinkplot.Save(root='first_wgt_lb_hist', 
-                   xlabel='pounds',
-                   ylabel='frequency',
-                   axis=[-1, 14, 0, 3200])
+    thinkplot.Save(
+        root="first_wgt_lb_hist",
+        xlabel="pounds",
+        ylabel="frequency",
+        axis=[-1, 14, 0, 3200],
+    )
 
-    hist = thinkstats2.Hist(live.birthwgt_oz, label='birthwgt_oz')
+    hist = thinkstats2.Hist(live.birthwgt_oz, label="birthwgt_oz")
     thinkplot.Hist(hist)
-    thinkplot.Save(root='first_wgt_oz_hist', 
-                   xlabel='ounces',
-                   ylabel='frequency',
-                   axis=[-1, 16, 0, 1200])
+    thinkplot.Save(
+        root="first_wgt_oz_hist",
+        xlabel="ounces",
+        ylabel="frequency",
+        axis=[-1, 16, 0, 1200],
+    )
 
-    hist = thinkstats2.Hist(np.floor(live.agepreg), label='agepreg')
+    hist = thinkstats2.Hist(np.floor(live.agepreg), label="agepreg")
     thinkplot.Hist(hist)
-    thinkplot.Save(root='first_agepreg_hist', 
-                   xlabel='years',
-                   ylabel='frequency')
+    thinkplot.Save(root="first_agepreg_hist", xlabel="years", ylabel="frequency")
 
-    hist = thinkstats2.Hist(live.prglngth, label='prglngth')
+    hist = thinkstats2.Hist(live.prglngth, label="prglngth")
     thinkplot.Hist(hist)
-    thinkplot.Save(root='first_prglngth_hist', 
-                   xlabel='weeks',
-                   ylabel='frequency',
-                   axis=[-1, 53, 0, 5000])
+    thinkplot.Save(
+        root="first_prglngth_hist",
+        xlabel="weeks",
+        ylabel="frequency",
+        axis=[-1, 53, 0, 5000],
+    )
 
 
 def MakeComparison(firsts, others):
@@ -129,19 +135,21 @@ def MakeComparison(firsts, others):
     firsts: DataFrame
     others: DataFrame
     """
-    first_hist = thinkstats2.Hist(firsts.prglngth, label='first')
-    other_hist = thinkstats2.Hist(others.prglngth, label='other')
+    first_hist = thinkstats2.Hist(firsts.prglngth, label="first")
+    other_hist = thinkstats2.Hist(others.prglngth, label="other")
 
     width = 0.45
     thinkplot.PrePlot(2)
-    thinkplot.Hist(first_hist, align='right', width=width)
-    thinkplot.Hist(other_hist, align='left', width=width)
+    thinkplot.Hist(first_hist, align="right", width=width)
+    thinkplot.Hist(other_hist, align="left", width=width)
 
-    thinkplot.Save(root='first_nsfg_hist', 
-                   title='Histogram',
-                   xlabel='weeks',
-                   ylabel='frequency',
-                   axis=[27, 46, 0, 2700])
+    thinkplot.Save(
+        root="first_nsfg_hist",
+        title="Histogram",
+        xlabel="weeks",
+        ylabel="frequency",
+        axis=[27, 46, 0, 2700],
+    )
 
 
 def main(script):
@@ -153,8 +161,7 @@ def main(script):
     Summarize(live, firsts, others)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     main(*sys.argv)
-
-

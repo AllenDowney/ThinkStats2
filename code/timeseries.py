@@ -17,7 +17,8 @@ import matplotlib.pyplot as pyplot
 import thinkplot
 import thinkstats2
 
-FORMATS = ['png']
+FORMATS = ["png"]
+
 
 def ReadData():
     """Reads data about cannabis transactions.
@@ -26,14 +27,14 @@ def ReadData():
 
     returns: DataFrame
     """
-    transactions = pandas.read_csv('mj-clean.csv', parse_dates=[5])
+    transactions = pandas.read_csv("mj-clean.csv", parse_dates=[5])
     return transactions
 
 
 def tmean(series):
     """Computes a trimmed mean.
 
-    series: Series 
+    series: Series
 
     returns: float
     """
@@ -41,8 +42,8 @@ def tmean(series):
     n = len(t)
     if n <= 3:
         return t.mean()
-    trim = max(1, n//10)
-    return np.mean(sorted(t)[trim:n-trim])
+    trim = max(1, n // 10)
+    return np.mean(sorted(t)[trim : n - trim])
 
 
 def GroupByDay(transactions, func=np.mean):
@@ -52,13 +53,13 @@ def GroupByDay(transactions, func=np.mean):
 
     returns: DataFrame of daily prices
     """
-    groups = transactions[['date', 'ppg']].groupby('date')
+    groups = transactions[["date", "ppg"]].groupby("date")
     daily = groups.aggregate(func)
 
-    daily['date'] = daily.index
+    daily["date"] = daily.index
     start = daily.date[0]
-    one_year = np.timedelta64(1, 'Y')
-    daily['years'] = (daily.date - start) / one_year
+    one_year = np.timedelta64(1, "Y")
+    daily["years"] = (daily.date - start) / one_year
 
     return daily
 
@@ -67,13 +68,13 @@ def GroupByQualityAndDay(transactions):
     """Divides transactions by quality and computes mean daily price.
 
     transaction: DataFrame of transactions
-    
+
     returns: map from quality to time series of ppg
     """
-    groups = transactions.groupby('quality')
+    groups = transactions.groupby("quality")
     dailies = {}
     for name, group in groups:
-        dailies[name] = GroupByDay(group)        
+        dailies[name] = GroupByDay(group)
 
     return dailies
 
@@ -85,17 +86,16 @@ def PlotDailies(dailies):
     """
     thinkplot.PrePlot(rows=3)
     for i, (name, daily) in enumerate(dailies.items()):
-        thinkplot.SubPlot(i+1)
-        title = 'price per gram ($)' if i == 0 else ''
+        thinkplot.SubPlot(i + 1)
+        title = "price per gram ($)" if i == 0 else ""
         thinkplot.Config(ylim=[0, 20], title=title)
         thinkplot.Scatter(daily.ppg, s=10, label=name)
-        if i == 2: 
+        if i == 2:
             pyplot.xticks(rotation=30)
         else:
             thinkplot.Config(xticks=[])
 
-    thinkplot.Save(root='timeseries1',
-                   formats=FORMATS)
+    thinkplot.Save(root="timeseries1", formats=FORMATS)
 
 
 def RunLinearModel(daily):
@@ -105,12 +105,12 @@ def RunLinearModel(daily):
 
     returns: model, results
     """
-    model = smf.ols('ppg ~ years', data=daily)
+    model = smf.ols("ppg ~ years", data=daily)
     results = model.fit()
     return model, results
 
 
-def PlotFittedValues(model, results, label=''):
+def PlotFittedValues(model, results, label=""):
     """Plots original data and fitted values.
 
     model: StatsModel model object
@@ -119,14 +119,14 @@ def PlotFittedValues(model, results, label=''):
     years = model.exog[:, 1]
     values = model.endog
     thinkplot.Scatter(years, values, s=15, label=label)
-    thinkplot.Plot(years, results.fittedvalues, label='model')
+    thinkplot.Plot(years, results.fittedvalues, label="model")
 
 
 def PlotResiduals(model, results):
     """Plots the residuals of a model.
 
     model: StatsModel model object
-    results: StatsModel results object    
+    results: StatsModel results object
     """
     years = model.exog[:, 1]
     thinkplot.Plot(years, results.resid, linewidth=0.5, alpha=0.5)
@@ -154,7 +154,7 @@ def PlotResidualPercentiles(model, results, index=1, num_bins=20):
     thinkplot.PrePlot(3)
     for percent in [75, 50, 25]:
         percentiles = [cdf.Percentile(percent) for cdf in cdfs]
-        label = '%dth' % percent
+        label = "%dth" % percent
         thinkplot.Plot(means, percentiles, label=label)
 
 
@@ -169,7 +169,7 @@ def SimulateResults(daily, iters=101, func=RunLinearModel):
     """
     _, results = func(daily)
     fake = daily.copy()
-    
+
     result_seq = []
     for _ in range(iters):
         fake.ppg = results.fittedvalues + thinkstats2.Resample(results.resid)
@@ -197,8 +197,7 @@ def SimulateIntervals(daily, iters=101, func=RunLinearModel):
         fake = subset.copy()
 
         for _ in range(iters):
-            fake.ppg = (results.fittedvalues + 
-                        thinkstats2.Resample(results.resid))
+            fake.ppg = results.fittedvalues + thinkstats2.Resample(results.resid)
             _, fake_results = func(fake)
             result_seq.append(fake_results)
 
@@ -212,7 +211,7 @@ def GeneratePredictions(result_seq, years, add_resid=False):
 
     When add_resid is True, they also include residual error (which is
     more relevant to prediction).
-    
+
     result_seq: list of model results
     years: sequence of times (in years) to make predictions for
     add_resid: boolean, whether to add in resampled residuals
@@ -222,7 +221,7 @@ def GeneratePredictions(result_seq, years, add_resid=False):
     n = len(years)
     d = dict(Intercept=np.ones(n), years=years, years2=years**2)
     predict_df = pandas.DataFrame(d)
-    
+
     predict_seq = []
     for fake_results in result_seq:
         predict = fake_results.predict(predict_df)
@@ -260,15 +259,15 @@ def PlotPredictions(daily, years, iters=101, percent=90, func=RunLinearModel):
     """
     result_seq = SimulateResults(daily, iters=iters, func=func)
     p = (100 - percent) / 2
-    percents = p, 100-p
+    percents = p, 100 - p
 
     predict_seq = GeneratePredictions(result_seq, years, add_resid=True)
     low, high = thinkstats2.PercentileRows(predict_seq, percents)
-    thinkplot.FillBetween(years, low, high, alpha=0.3, color='gray')
+    thinkplot.FillBetween(years, low, high, alpha=0.3, color="gray")
 
     predict_seq = GeneratePredictions(result_seq, years, add_resid=False)
     low, high = thinkstats2.PercentileRows(predict_seq, percents)
-    thinkplot.FillBetween(years, low, high, alpha=0.5, color='gray')
+    thinkplot.FillBetween(years, low, high, alpha=0.5, color="gray")
 
 
 def PlotIntervals(daily, years, iters=101, percent=90, func=RunLinearModel):
@@ -282,11 +281,11 @@ def PlotIntervals(daily, years, iters=101, percent=90, func=RunLinearModel):
     """
     result_seq = SimulateIntervals(daily, iters=iters, func=func)
     p = (100 - percent) / 2
-    percents = p, 100-p
+    percents = p, 100 - p
 
     predict_seq = GeneratePredictions(result_seq, years, add_resid=True)
     low, high = thinkstats2.PercentileRows(predict_seq, percents)
-    thinkplot.FillBetween(years, low, high, alpha=0.2, color='gray')
+    thinkplot.FillBetween(years, low, high, alpha=0.2, color="gray")
 
 
 def Correlate(dailies):
@@ -301,7 +300,7 @@ def Correlate(dailies):
         df[name] = daily.ppg
 
     return df.corr()
-        
+
 
 def CorrelateResid(dailies):
     """Compute the correlation matrix between residuals.
@@ -326,7 +325,7 @@ def TestCorrelateResid(dailies, iters=101):
     """
 
     t = []
-    names = ['high', 'medium', 'low']
+    names = ["high", "medium", "low"]
     for name in names:
         daily = dailies[name]
         t.append(SimulateResults(daily, iters=iters))
@@ -356,18 +355,18 @@ def RunModels(dailies):
         intercept, slope = results.params
         p1, p2 = results.pvalues
         r2 = results.rsquared
-        s = r'%0.3f (%0.2g) & %0.3f (%0.2g) & %0.3f \\'
+        s = r"%0.3f (%0.2g) & %0.3f (%0.2g) & %0.3f \\"
         row = s % (intercept, p1, slope, p2, r2)
         rows.append(row)
 
     # print results in a LaTeX table
-    print(r'\begin{tabular}{|c|c|c|}')
-    print(r'\hline')
-    print(r'intercept & slope & $R^2$ \\ \hline')
+    print(r"\begin{tabular}{|c|c|c|}")
+    print(r"\hline")
+    print(r"intercept & slope & $R^2$ \\ \hline")
     for row in rows:
         print(row)
-    print(r'\hline')
-    print(r'\end{tabular}')
+    print(r"\hline")
+    print(r"\end{tabular}")
 
 
 def FillMissing(daily, span=30):
@@ -389,8 +388,8 @@ def FillMissing(daily, span=30):
     fake_data = ewma + thinkstats2.Resample(resid, len(reindexed))
     reindexed.ppg.fillna(fake_data, inplace=True)
 
-    reindexed['ewma'] = ewma
-    reindexed['resid'] = reindexed.ppg - ewma
+    reindexed["ewma"] = ewma
+    reindexed["resid"] = reindexed.ppg - ewma
     return reindexed
 
 
@@ -401,7 +400,7 @@ def AddWeeklySeasonality(daily):
 
     returns: new DataFrame of daily prices
     """
-    frisat = (daily.index.dayofweek==4) | (daily.index.dayofweek==5)
+    frisat = (daily.index.dayofweek == 4) | (daily.index.dayofweek == 5)
     fake = daily.copy()
     fake.ppg[frisat] += np.random.uniform(0, 2, frisat.sum())
     return fake
@@ -417,30 +416,32 @@ def PrintSerialCorrelations(dailies):
         filled_dailies[name] = FillMissing(daily, span=30)
 
     # print serial correlations for raw price data
-    for name, filled in filled_dailies.items():            
+    for name, filled in filled_dailies.items():
         corr = thinkstats2.SerialCorr(filled.ppg, lag=1)
         print(name, corr)
 
     rows = []
     for lag in [1, 7, 30, 365]:
         row = [str(lag)]
-        for name, filled in filled_dailies.items():            
+        for name, filled in filled_dailies.items():
             corr = thinkstats2.SerialCorr(filled.resid, lag)
-            row.append('%.2g' % corr)
+            row.append("%.2g" % corr)
         rows.append(row)
 
-    print(r'\begin{tabular}{|c|c|c|c|}')
-    print(r'\hline')
-    print(r'lag & high & medium & low \\ \hline')
+    print(r"\begin{tabular}{|c|c|c|c|}")
+    print(r"\hline")
+    print(r"lag & high & medium & low \\ \hline")
     for row in rows:
-        print(' & '.join(row) + r' \\')
-    print(r'\hline')
-    print(r'\end{tabular}')
+        print(" & ".join(row) + r" \\")
+    print(r"\hline")
+    print(r"\end{tabular}")
 
-    filled = filled_dailies['high']
+    filled = filled_dailies["high"]
     acf = smtsa.acf(filled.resid, nlags=365, unbiased=True)
-    print('%0.3f, %0.3f, %0.3f, %0.3f, %0.3f' % 
-          (acf[0], acf[1], acf[7], acf[30], acf[365]))
+    print(
+        "%0.3f, %0.3f, %0.3f, %0.3f, %0.3f"
+        % (acf[0], acf[1], acf[7], acf[30], acf[365])
+    )
 
 
 def SimulateAutocorrelation(daily, iters=1001, nlags=40):
@@ -460,8 +461,8 @@ def SimulateAutocorrelation(daily, iters=1001, nlags=40):
 
     high = thinkstats2.PercentileRows(t, [97.5])[0]
     low = -high
-    lags = list(range(1, nlags+1))
-    thinkplot.FillBetween(lags, low, high, alpha=0.2, color='gray')
+    lags = list(range(1, nlags + 1))
+    thinkplot.FillBetween(lags, low, high, alpha=0.2, color="gray")
 
 
 def PlotAutoCorrelation(dailies, nlags=40, add_weekly=False):
@@ -472,7 +473,7 @@ def PlotAutoCorrelation(dailies, nlags=40, add_weekly=False):
     add_weekly: boolean, whether to add a simulated weekly pattern
     """
     thinkplot.PrePlot(3)
-    daily = dailies['high']
+    daily = dailies["high"]
     SimulateAutocorrelation(daily)
 
     for name, daily in dailies.items():
@@ -490,24 +491,25 @@ def PlotAutoCorrelation(dailies, nlags=40, add_weekly=False):
 def MakeAcfPlot(dailies):
     """Makes a figure showing autocorrelation functions.
 
-    dailies: map from category name to DataFrame of daily prices    
+    dailies: map from category name to DataFrame of daily prices
     """
     axis = [0, 41, -0.2, 0.2]
 
     thinkplot.PrePlot(cols=2)
     PlotAutoCorrelation(dailies, add_weekly=False)
-    thinkplot.Config(axis=axis, 
-                     loc='lower right',
-                     ylabel='correlation',
-                     xlabel='lag (day)')
+    thinkplot.Config(
+        axis=axis, loc="lower right", ylabel="correlation", xlabel="lag (day)"
+    )
 
     thinkplot.SubPlot(2)
     PlotAutoCorrelation(dailies, add_weekly=True)
-    thinkplot.Save(root='timeseries9',
-                   axis=axis,
-                   loc='lower right',
-                   xlabel='lag (days)',
-                   formats=FORMATS)
+    thinkplot.Save(
+        root="timeseries9",
+        axis=axis,
+        loc="lower right",
+        xlabel="lag (days)",
+        formats=FORMATS,
+    )
 
 
 def PlotRollingMean(daily, name):
@@ -521,17 +523,16 @@ def PlotRollingMean(daily, name):
     thinkplot.PrePlot(cols=2)
     thinkplot.Scatter(reindexed.ppg, s=15, alpha=0.1, label=name)
     roll_mean = pandas.rolling_mean(reindexed.ppg, 30)
-    thinkplot.Plot(roll_mean, label='rolling mean')
+    thinkplot.Plot(roll_mean, label="rolling mean")
     pyplot.xticks(rotation=30)
-    thinkplot.Config(ylabel='price per gram ($)')
+    thinkplot.Config(ylabel="price per gram ($)")
 
     thinkplot.SubPlot(2)
     thinkplot.Scatter(reindexed.ppg, s=15, alpha=0.1, label=name)
     ewma = pandas.ewma(reindexed.ppg, span=30)
-    thinkplot.Plot(ewma, label='EWMA')
+    thinkplot.Plot(ewma, label="EWMA")
     pyplot.xticks(rotation=30)
-    thinkplot.Save(root='timeseries10',
-                   formats=FORMATS)
+    thinkplot.Save(root="timeseries10", formats=FORMATS)
 
 
 def PlotFilled(daily, name):
@@ -541,37 +542,39 @@ def PlotFilled(daily, name):
     """
     filled = FillMissing(daily, span=30)
     thinkplot.Scatter(filled.ppg, s=15, alpha=0.3, label=name)
-    thinkplot.Plot(filled.ewma, label='EWMA', alpha=0.4)
+    thinkplot.Plot(filled.ewma, label="EWMA", alpha=0.4)
     pyplot.xticks(rotation=30)
-    thinkplot.Save(root='timeseries8',
-                   ylabel='price per gram ($)',
-                   formats=FORMATS)
-    
+    thinkplot.Save(root="timeseries8", ylabel="price per gram ($)", formats=FORMATS)
+
 
 def PlotLinearModel(daily, name):
     """Plots a linear fit to a sequence of prices, and the residuals.
-    
+
     daily: DataFrame of daily prices
     name: string
     """
     model, results = RunLinearModel(daily)
     PlotFittedValues(model, results, label=name)
-    thinkplot.Save(root='timeseries2',
-                   title='fitted values',
-                   xlabel='years',
-                   xlim=[-0.1, 3.8],
-                   ylabel='price per gram ($)',
-                   formats=FORMATS)
+    thinkplot.Save(
+        root="timeseries2",
+        title="fitted values",
+        xlabel="years",
+        xlim=[-0.1, 3.8],
+        ylabel="price per gram ($)",
+        formats=FORMATS,
+    )
 
     PlotResidualPercentiles(model, results)
-    thinkplot.Save(root='timeseries3',
-                   title='residuals',
-                   xlabel='years',
-                   ylabel='price per gram ($)',
-                   formats=FORMATS)
-    
-    #years = np.linspace(0, 5, 101)
-    #predict = GenerateSimplePrediction(results, years)
+    thinkplot.Save(
+        root="timeseries3",
+        title="residuals",
+        xlabel="years",
+        ylabel="price per gram ($)",
+        formats=FORMATS,
+    )
+
+    # years = np.linspace(0, 5, 101)
+    # predict = GenerateSimplePrediction(results, years)
 
 
 def main(name):
@@ -584,7 +587,7 @@ def main(name):
     PrintSerialCorrelations(dailies)
     MakeAcfPlot(dailies)
 
-    name = 'high'
+    name = "high"
     daily = dailies[name]
 
     PlotLinearModel(daily, name)
@@ -594,29 +597,34 @@ def main(name):
     years = np.linspace(0, 5, 101)
     thinkplot.Scatter(daily.years, daily.ppg, alpha=0.1, label=name)
     PlotPredictions(daily, years)
-    xlim = years[0]-0.1, years[-1]+0.1
-    thinkplot.Save(root='timeseries4',
-                   title='predictions',
-                   xlabel='years',
-                   xlim=xlim,
-                   ylabel='price per gram ($)',
-                   formats=FORMATS)
+    xlim = years[0] - 0.1, years[-1] + 0.1
+    thinkplot.Save(
+        root="timeseries4",
+        title="predictions",
+        xlabel="years",
+        xlim=xlim,
+        ylabel="price per gram ($)",
+        formats=FORMATS,
+    )
 
-    name = 'medium'
+    name = "medium"
     daily = dailies[name]
 
     thinkplot.Scatter(daily.years, daily.ppg, alpha=0.1, label=name)
     PlotIntervals(daily, years)
     PlotPredictions(daily, years)
-    xlim = years[0]-0.1, years[-1]+0.1
-    thinkplot.Save(root='timeseries5',
-                   title='predictions',
-                   xlabel='years',
-                   xlim=xlim,
-                   ylabel='price per gram ($)',
-                   formats=FORMATS)
+    xlim = years[0] - 0.1, years[-1] + 0.1
+    thinkplot.Save(
+        root="timeseries5",
+        title="predictions",
+        xlabel="years",
+        xlim=xlim,
+        ylabel="price per gram ($)",
+        formats=FORMATS,
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     main(*sys.argv)

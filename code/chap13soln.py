@@ -22,14 +22,13 @@ def CleanData(resp):
     """
     resp.cmdivorcx.replace([9998, 9999], np.nan, inplace=True)
 
-    resp['notdivorced'] = resp.cmdivorcx.isnull().astype(int)
-    resp['duration'] = (resp.cmdivorcx - resp.cmmarrhx) / 12.0
-    resp['durationsofar'] = (resp.cmintvw - resp.cmmarrhx) / 12.0
+    resp["notdivorced"] = resp.cmdivorcx.isnull().astype(int)
+    resp["duration"] = (resp.cmdivorcx - resp.cmmarrhx) / 12.0
+    resp["durationsofar"] = (resp.cmintvw - resp.cmmarrhx) / 12.0
 
-    month0 = pandas.to_datetime('1899-12-15')
-    dates = [month0 + pandas.DateOffset(months=cm) 
-             for cm in resp.cmbirth]
-    resp['decade'] = (pandas.DatetimeIndex(dates).year - 1900) // 10
+    month0 = pandas.to_datetime("1899-12-15")
+    dates = [month0 + pandas.DateOffset(months=cm) for cm in resp.cmbirth]
+    resp["decade"] = (pandas.DatetimeIndex(dates).year - 1900) // 10
 
 
 def ResampleDivorceCurve(resps):
@@ -38,33 +37,28 @@ def ResampleDivorceCurve(resps):
     resps: list of respondent DataFrames
     """
     for _ in range(41):
-        samples = [thinkstats2.ResampleRowsWeighted(resp) 
-                   for resp in resps]
+        samples = [thinkstats2.ResampleRowsWeighted(resp) for resp in resps]
         sample = pandas.concat(samples, ignore_index=True)
-        PlotDivorceCurveByDecade(sample, color='#225EA8', alpha=0.1)
+        PlotDivorceCurveByDecade(sample, color="#225EA8", alpha=0.1)
 
-    thinkplot.Show(xlabel='years',
-                   axis=[0, 28, 0, 1])
+    thinkplot.Show(xlabel="years", axis=[0, 28, 0, 1])
 
 
 def ResampleDivorceCurveByDecade(resps):
     """Plots divorce curves for each birth cohort.
 
-    resps: list of respondent DataFrames    
+    resps: list of respondent DataFrames
     """
     for i in range(41):
-        samples = [thinkstats2.ResampleRowsWeighted(resp) 
-                   for resp in resps]
+        samples = [thinkstats2.ResampleRowsWeighted(resp) for resp in resps]
         sample = pandas.concat(samples, ignore_index=True)
-        groups = sample.groupby('decade')
+        groups = sample.groupby("decade")
         if i == 0:
             survival.AddLabelsByDecade(groups, alpha=0.7)
 
         EstimateSurvivalByDecade(groups, alpha=0.1)
 
-    thinkplot.Save(root='survival7',
-                   xlabel='years',
-                   axis=[0, 28, 0, 1])
+    thinkplot.Save(root="survival7", xlabel="years", axis=[0, 28, 0, 1])
 
 
 def EstimateSurvivalByDecade(groups, **options):
@@ -98,14 +92,14 @@ def EstimateSurvival(resp):
 def main():
     resp6 = survival.ReadFemResp2002()
     CleanData(resp6)
-    married6 = resp6[resp6.evrmarry==1]
+    married6 = resp6[resp6.evrmarry == 1]
 
     resp7 = survival.ReadFemResp2010()
     CleanData(resp7)
-    married7 = resp7[resp7.evrmarry==1]
+    married7 = resp7[resp7.evrmarry == 1]
 
     ResampleDivorceCurveByDecade([married6, married7])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

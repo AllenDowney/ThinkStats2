@@ -39,6 +39,7 @@ is weaker.
 
 """
 
+
 def ScatterPlot(ages, weights, alpha=1.0):
     """Make a scatter plot and save it.
 
@@ -47,11 +48,13 @@ def ScatterPlot(ages, weights, alpha=1.0):
     alpha: float
     """
     thinkplot.Scatter(ages, weights, alpha=alpha)
-    thinkplot.Config(xlabel='age (years)',
-                     ylabel='weight (lbs)',
-                     xlim=[10, 45],
-                     ylim=[0, 15],
-                     legend=False)
+    thinkplot.Config(
+        xlabel="age (years)",
+        ylabel="weight (lbs)",
+        xlim=[10, 45],
+        ylim=[0, 15],
+        legend=False,
+    )
 
 
 def HexBin(ages, weights, bins=None):
@@ -62,9 +65,7 @@ def HexBin(ages, weights, bins=None):
     bins: 'log' or None for linear
     """
     thinkplot.HexBin(ages, weights, bins=bins)
-    thinkplot.Config(xlabel='age (years)',
-                     ylabel='weight (lbs)',
-                     legend=False)
+    thinkplot.Config(xlabel="age (years)", ylabel="weight (lbs)", legend=False)
 
 
 def BinnedPercentiles(df):
@@ -82,34 +83,32 @@ def BinnedPercentiles(df):
     thinkplot.PrePlot(3)
     for percent in [75, 50, 25]:
         weights = [cdf.Percentile(percent) for cdf in cdfs]
-        label = '%dth' % percent
+        label = "%dth" % percent
         thinkplot.Plot(ages, weights, label=label)
 
-    thinkplot.Save(root='chap07scatter3',
-                   formats=['jpg'],
-                   xlabel="mother's age (years)",
-                   ylabel='birth weight (lbs)')
-
+    thinkplot.Save(
+        root="chap07scatter3",
+        formats=["jpg"],
+        xlabel="mother's age (years)",
+        ylabel="birth weight (lbs)",
+    )
 
 
 def main(script):
     thinkstats2.RandomSeed(17)
-    
+
     live, firsts, others = first.MakeFrames()
-    live = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    live = live.dropna(subset=["agepreg", "totalwgt_lb"])
     BinnedPercentiles(live)
 
     ages = live.agepreg
     weights = live.totalwgt_lb
-    print('thinkstats2 Corr', thinkstats2.Corr(ages, weights))
-    print('thinkstats2 SpearmanCorr', 
-          thinkstats2.SpearmanCorr(ages, weights))
+    print("thinkstats2 Corr", thinkstats2.Corr(ages, weights))
+    print("thinkstats2 SpearmanCorr", thinkstats2.SpearmanCorr(ages, weights))
 
     ScatterPlot(ages, weights, alpha=0.1)
-    thinkplot.Save(root='chap07scatter1', 
-                   legend=False,
-                   formats=['jpg'])
+    thinkplot.Save(root="chap07scatter1", legend=False, formats=["jpg"])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(*sys.argv)
