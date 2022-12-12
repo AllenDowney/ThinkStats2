@@ -21,7 +21,7 @@ def PlotPregLengths(live, firsts, others):
 
     live, firsts, others: DataFrames
 
-    Results:  
+    Results:
     null hypothesis N(0, 0.00319708)
     0.0837707042554 0.0837707042554     (90% CI)
 
@@ -38,28 +38,27 @@ def PlotPregLengths(live, firsts, others):
     you could reasonably compute whichever one is easier.
 
     """
-    print('prglngth example')
+    print("prglngth example")
     delta = firsts.prglngth.mean() - others.prglngth.mean()
     print(delta)
 
     dist1 = normal.SamplingDistMean(live.prglngth, len(firsts))
     dist2 = normal.SamplingDistMean(live.prglngth, len(others))
     dist = dist1 - dist2
-    print('null hypothesis', dist)
+    print("null hypothesis", dist)
     print(dist.Prob(-delta), 1 - dist.Prob(delta))
 
     thinkplot.PrePlot(2)
-    thinkplot.Plot(dist, label='null hypothesis')
+    thinkplot.Plot(dist, label="null hypothesis")
 
     dist1 = normal.SamplingDistMean(firsts.prglngth, len(firsts))
     dist2 = normal.SamplingDistMean(others.prglngth, len(others))
     dist = dist1 - dist2
-    print('estimated params', dist)
+    print("estimated params", dist)
     print(dist.Percentile(5), dist.Percentile(95))
 
-    thinkplot.Plot(dist, label='estimated params')
-    thinkplot.Show(xlabel='difference in means (weeks)',
-                   ylabel='CDF')
+    thinkplot.Plot(dist, label="estimated params")
+    thinkplot.Show(xlabel="difference in means (weeks)", ylabel="CDF")
 
 
 def GenerateAdultWeight(birth_weights, n):
@@ -81,7 +80,7 @@ def PlotAdultWeights(live):
 
     live: DataFrame of live births
 
-    results: 
+    results:
 
     With n=40 the distribution is approximately lognormal except for
     the lowest weights.
@@ -94,8 +93,7 @@ def PlotAdultWeights(live):
     aws = [GenerateAdultWeight(birth_weights, 40) for _ in range(1000)]
     log_aws = np.log10(aws)
     thinkstats2.NormalProbabilityPlot(log_aws)
-    thinkplot.Show(xlabel='standard normal values',
-                   ylabel='adult weight (log10 lbs)')
+    thinkplot.Show(xlabel="standard normal values", ylabel="adult weight (log10 lbs)")
 
 
 def TestIntervention():
@@ -121,19 +119,19 @@ def TestIntervention():
     female_after = normal.Normal(3.18, 0.16**2)
 
     diff_before = female_before - male_before
-    print('mean, p-value', diff_before.mu, 1-diff_before.Prob(0))
-    print('CI', diff_before.Percentile(5), diff_before.Percentile(95))
-    print('stderr', diff_before.sigma)
+    print("mean, p-value", diff_before.mu, 1 - diff_before.Prob(0))
+    print("CI", diff_before.Percentile(5), diff_before.Percentile(95))
+    print("stderr", diff_before.sigma)
 
     diff_after = female_after - male_after
-    print('mean, p-value', diff_after.mu, 1-diff_after.Prob(0))
-    print('CI', diff_after.Percentile(5), diff_after.Percentile(95))
-    print('stderr', diff_after.sigma)
+    print("mean, p-value", diff_after.mu, 1 - diff_after.Prob(0))
+    print("CI", diff_after.Percentile(5), diff_after.Percentile(95))
+    print("stderr", diff_after.sigma)
 
     diff = diff_after - diff_before
-    print('mean, p-value', diff.mu, diff.Prob(0))
-    print('CI', diff.Percentile(5), diff.Percentile(95))
-    print('stderr', diff.sigma)
+    print("mean, p-value", diff.mu, diff.Prob(0))
+    print("CI", diff.Percentile(5), diff.Percentile(95))
+    print("stderr", diff.sigma)
 
 
 def main():
@@ -148,5 +146,5 @@ def main():
     PlotPregLengths(live, firsts, others)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

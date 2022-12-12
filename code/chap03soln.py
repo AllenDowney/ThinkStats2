@@ -51,7 +51,7 @@ def Diffs(t):
     """List of differences between the first elements and others.
 
     t: list of numbers
-    
+
     returns: list of numbers
     """
     first = t[0]
@@ -75,12 +75,11 @@ def PairWiseDifferences(live):
             diffs.extend(Diffs(lengths))
 
     mean = thinkstats2.Mean(diffs)
-    print('Mean difference between pairs', mean)
+    print("Mean difference between pairs", mean)
 
     pmf = thinkstats2.Pmf(diffs)
-    thinkplot.Hist(pmf, align='center')
-    thinkplot.Show(xlabel='Difference in weeks',
-                   ylabel='PMF')
+    thinkplot.Hist(pmf, align="center")
+    thinkplot.Show(xlabel="Difference in weeks", ylabel="PMF")
 
 
 def main(script):
@@ -97,12 +96,12 @@ def main(script):
     mean = PmfMean(pmf)
     var = PmfVar(pmf)
 
-    assert(mean == pmf.Mean())
-    assert(var == pmf.Var())
-    print('mean/var preg length', mean, var)
+    assert mean == pmf.Mean()
+    assert var == pmf.Var()
+    print("mean/var preg length", mean, var)
 
-    print('%s: All tests passed.' % script)
+    print("%s: All tests passed." % script)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(*sys.argv)

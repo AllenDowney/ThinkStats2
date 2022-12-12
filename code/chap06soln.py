@@ -59,6 +59,7 @@ between two random people).
 
 """
 
+
 def InterpolateSample(df, log_upper=6.0):
     """Makes a sample of log10 household income.
 
@@ -70,11 +71,11 @@ def InterpolateSample(df, log_upper=6.0):
     returns: NumPy array of log10 household income
     """
     # compute the log10 of the upper bound for each range
-    df['log_upper'] = np.log10(df.income)
+    df["log_upper"] = np.log10(df.income)
 
     # get the lower bounds by shifting the upper bound and filling in
     # the first element
-    df['log_lower'] = df.log_upper.shift(1)
+    df["log_lower"] = df.log_upper.shift(1)
     df.log_lower[0] = 3.0
 
     # plug in a value for the unknown upper bound of the highest range
@@ -98,19 +99,17 @@ def main():
 
     log_cdf = thinkstats2.Cdf(log_sample)
     thinkplot.Cdf(log_cdf)
-    thinkplot.Show(xlabel='household income',
-                   ylabel='CDF')
+    thinkplot.Show(xlabel="household income", ylabel="CDF")
 
     sample = np.power(10, log_sample)
     mean, median = density.Summarize(sample)
 
     cdf = thinkstats2.Cdf(sample)
-    print('cdf[mean]', cdf[mean])
+    print("cdf[mean]", cdf[mean])
 
     pdf = thinkstats2.EstimatedPdf(sample)
     thinkplot.Pdf(pdf)
-    thinkplot.Show(xlabel='household income',
-                   ylabel='PDF')
+    thinkplot.Show(xlabel="household income", ylabel="PDF")
 
 
 if __name__ == "__main__":

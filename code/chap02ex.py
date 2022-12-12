@@ -42,9 +42,9 @@ def main(script):
     live, firsts, others = first.MakeFrames()
     hist = thinkstats2.Hist(live.prglngth)
 
-    # test Mode    
+    # test Mode
     mode = Mode(hist)
-    print('Mode of preg length', mode)
+    print("Mode of preg length", mode)
     assert mode == 39, mode
 
     # test AllModes
@@ -54,8 +54,8 @@ def main(script):
     for value, freq in modes[:5]:
         print(value, freq)
 
-    print('%s: All tests passed.' % script)
+    print("%s: All tests passed." % script)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main(*sys.argv)

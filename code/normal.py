@@ -21,7 +21,7 @@ import thinkplot
 class Normal(object):
     """Represents a Normal distribution"""
 
-    def __init__(self, mu, sigma2, label=''):
+    def __init__(self, mu, sigma2, label=""):
         """Initializes.
 
         mu: mean
@@ -34,9 +34,9 @@ class Normal(object):
     def __repr__(self):
         """Returns a string representation."""
         if self.label:
-            return 'Normal(%g, %g, %s)' % (self.mu, self.sigma2, self.label)
+            return "Normal(%g, %g, %s)" % (self.mu, self.sigma2, self.label)
         else:
-            return 'Normal(%g, %g)' % (self.mu, self.sigma2)
+            return "Normal(%g, %g)" % (self.mu, self.sigma2)
 
     __str__ = __repr__
 
@@ -105,8 +105,7 @@ class Normal(object):
         return Normal(n * self.mu, n * self.sigma2)
 
     def Render(self):
-        """Returns pair of xs, ys suitable for plotting.
-        """
+        """Returns pair of xs, ys suitable for plotting."""
         mean, std = self.mu, self.sigma
         low, high = mean - 3 * std, mean + 3 * std
         xs, ys = thinkstats2.RenderNormalCdf(mean, std, low, high)
@@ -124,10 +123,10 @@ class Normal(object):
 
         p: percentile rank 0-100
         """
-        return thinkstats2.EvalNormalCdfInverse(p/100, self.mu, self.sigma)
+        return thinkstats2.EvalNormalCdfInverse(p / 100, self.mu, self.sigma)
 
 
-def NormalPlotSamples(samples, plot=1, ylabel=''):
+def NormalPlotSamples(samples, plot=1, ylabel=""):
     """Makes normal probability plots for samples.
 
     samples: list of samples
@@ -137,11 +136,9 @@ def NormalPlotSamples(samples, plot=1, ylabel=''):
         thinkplot.SubPlot(plot)
         thinkstats2.NormalProbabilityPlot(sample)
 
-        thinkplot.Config(title='n=%d' % n,
-                         legend=False,
-                         xticks=[],
-                         yticks=[],
-                         ylabel=ylabel)
+        thinkplot.Config(
+            title="n=%d" % n, legend=False, xticks=[], yticks=[], ylabel=ylabel
+        )
         plot += 1
 
 
@@ -155,8 +152,7 @@ def MakeExpoSamples(beta=2.0, iters=1000):
     """
     samples = []
     for n in [1, 10, 100]:
-        sample = [np.sum(np.random.exponential(beta, n))
-                  for _ in range(iters)]
+        sample = [np.sum(np.random.exponential(beta, n)) for _ in range(iters)]
         samples.append((n, sample))
     return samples
 
@@ -172,8 +168,7 @@ def MakeLognormalSamples(mu=1.0, sigma=1.0, iters=1000):
     """
     samples = []
     for n in [1, 10, 100]:
-        sample = [np.sum(np.random.lognormal(mu, sigma, n))
-                  for _ in range(iters)]
+        sample = [np.sum(np.random.lognormal(mu, sigma, n)) for _ in range(iters)]
         samples.append((n, sample))
     return samples
 
@@ -189,15 +184,14 @@ def MakeParetoSamples(alpha=1.0, iters=1000):
     samples = []
 
     for n in [1, 10, 100]:
-        sample = [np.sum(np.random.pareto(alpha, n))
-                  for _ in range(iters)]
+        sample = [np.sum(np.random.pareto(alpha, n)) for _ in range(iters)]
         samples.append((n, sample))
     return samples
 
 
 def GenerateCorrelated(rho, n):
     """Generates a sequence of correlated values from a standard normal dist.
-    
+
     rho: coefficient of correlation
     n: length of sequence
 
@@ -207,7 +201,7 @@ def GenerateCorrelated(rho, n):
     yield x
 
     sigma = math.sqrt(1 - rho**2)
-    for _ in range(n-1):
+    for _ in range(n - 1):
         x = random.gauss(x * rho, sigma)
         yield x
 
@@ -233,11 +227,10 @@ def MakeCorrelatedSamples(rho=0.9, iters=1000):
     iters: number of samples to generate for each size
 
     returns: list of samples
-    """    
+    """
     samples = []
     for n in [1, 10, 100]:
-        sample = [np.sum(GenerateExpoCorrelated(rho, n))
-                  for _ in range(iters)]
+        sample = [np.sum(GenerateExpoCorrelated(rho, n)) for _ in range(iters)]
         samples.append((n, sample))
     return samples
 
@@ -260,20 +253,18 @@ def PlotPregLengths(live, firsts, others):
 
     live, firsts, others: DataFrames
     """
-    print('prglngth example')
+    print("prglngth example")
     delta = firsts.prglngth.mean() - others.prglngth.mean()
     print(delta)
 
     dist1 = SamplingDistMean(live.prglngth, len(firsts))
     dist2 = SamplingDistMean(live.prglngth, len(others))
     dist = dist1 - dist2
-    print('null hypothesis', dist)
+    print("null hypothesis", dist)
     print(dist.Prob(-delta), 1 - dist.Prob(delta))
 
-    thinkplot.Plot(dist, label='null hypothesis')
-    thinkplot.Save(root='normal3',
-                   xlabel='difference in means (weeks)',
-                   ylabel='CDF')
+    thinkplot.Plot(dist, label="null hypothesis")
+    thinkplot.Save(root="normal3", xlabel="difference in means (weeks)", ylabel="CDF")
 
 
 class CorrelationPermute(hypothesis.CorrelationPermute):
@@ -295,7 +286,7 @@ def ResampleCorrelations(live):
 
     returns: sample size, observed correlation, CDF of resampled correlations
     """
-    live2 = live.dropna(subset=['agepreg', 'totalwgt_lb'])
+    live2 = live.dropna(subset=["agepreg", "totalwgt_lb"])
     data = live2.agepreg.values, live2.totalwgt_lb.values
     ht = CorrelationPermute(data)
     p_value = ht.PValue()
@@ -310,7 +301,7 @@ def StudentCdf(n):
     returns: Cdf
     """
     ts = np.linspace(-3, 3, 101)
-    ps = scipy.stats.t.cdf(ts, df=n-2)
+    ps = scipy.stats.t.cdf(ts, df=n - 2)
     rs = ts / np.sqrt(n - 2 + ts**2)
     return thinkstats2.Cdf(rs, ps)
 
@@ -324,16 +315,13 @@ def TestCorrelation(live):
     n, r, cdf = ResampleCorrelations(live)
 
     model = StudentCdf(n)
-    thinkplot.Plot(model.xs, model.ps, color='gray',
-                   alpha=0.3, label='Student t')
-    thinkplot.Cdf(cdf, label='sample')
+    thinkplot.Plot(model.xs, model.ps, color="gray", alpha=0.3, label="Student t")
+    thinkplot.Cdf(cdf, label="sample")
 
-    thinkplot.Save(root='normal4',
-                   xlabel='correlation',
-                   ylabel='CDF')
+    thinkplot.Save(root="normal4", xlabel="correlation", ylabel="CDF")
 
-    t = r * math.sqrt((n-2) / (1-r**2))
-    p_value = 1 - scipy.stats.t.cdf(t, df=n-2)
+    t = r * math.sqrt((n - 2) / (1 - r**2))
+    p_value = 1 - scipy.stats.t.cdf(t, df=n - 2)
     print(r, p_value)
 
 
@@ -341,58 +329,53 @@ def ChiSquaredCdf(n):
     """Discrete approximation of the chi-squared CDF with df=n-1.
 
     n: sample size
-    
+
     returns: Cdf
     """
     xs = np.linspace(0, 25, 101)
-    ps = scipy.stats.chi2.cdf(xs, df=n-1)
+    ps = scipy.stats.chi2.cdf(xs, df=n - 1)
     return thinkstats2.Cdf(xs, ps)
 
 
 def TestChiSquared():
-    """Performs a chi-squared test analytically.
-    """
+    """Performs a chi-squared test analytically."""
     data = [8, 9, 19, 5, 8, 11]
     dt = hypothesis.DiceChiTest(data)
     p_value = dt.PValue(iters=1000)
     n, chi2, cdf = len(data), dt.actual, dt.test_cdf
 
     model = ChiSquaredCdf(n)
-    thinkplot.Plot(model.xs, model.ps, color='gray',
-                   alpha=0.3, label='chi squared')
-    thinkplot.Cdf(cdf, label='sample')
+    thinkplot.Plot(model.xs, model.ps, color="gray", alpha=0.3, label="chi squared")
+    thinkplot.Cdf(cdf, label="sample")
 
-    thinkplot.Save(root='normal5',
-                   xlabel='chi-squared statistic',
-                   ylabel='CDF',
-                   loc='lower right')
+    thinkplot.Save(
+        root="normal5", xlabel="chi-squared statistic", ylabel="CDF", loc="lower right"
+    )
 
     # compute the p-value
-    p_value = 1 - scipy.stats.chi2.cdf(chi2, df=n-1)
+    p_value = 1 - scipy.stats.chi2.cdf(chi2, df=n - 1)
     print(chi2, p_value)
 
 
 def MakeCltPlots():
-    """Makes plot showing distributions of sums converging to normal.
-    """
+    """Makes plot showing distributions of sums converging to normal."""
     thinkplot.PrePlot(num=3, rows=2, cols=3)
     samples = MakeExpoSamples()
-    NormalPlotSamples(samples, plot=1, ylabel='sum of expo values')
+    NormalPlotSamples(samples, plot=1, ylabel="sum of expo values")
 
     thinkplot.PrePlot(num=3)
     samples = MakeLognormalSamples()
-    NormalPlotSamples(samples, plot=4, ylabel='sum of lognormal values')
-    thinkplot.Save(root='normal1', legend=False)
-
+    NormalPlotSamples(samples, plot=4, ylabel="sum of lognormal values")
+    thinkplot.Save(root="normal1", legend=False)
 
     thinkplot.PrePlot(num=3, rows=2, cols=3)
     samples = MakeParetoSamples()
-    NormalPlotSamples(samples, plot=1, ylabel='sum of Pareto values')
+    NormalPlotSamples(samples, plot=1, ylabel="sum of Pareto values")
 
     thinkplot.PrePlot(num=3)
     samples = MakeCorrelatedSamples()
-    NormalPlotSamples(samples, plot=4, ylabel='sum of correlated expo values')
-    thinkplot.Save(root='normal2', legend=False)
+    NormalPlotSamples(samples, plot=4, ylabel="sum of correlated expo values")
+    thinkplot.Save(root="normal2", legend=False)
 
 
 def main():
@@ -400,7 +383,7 @@ def main():
 
     MakeCltPlots()
 
-    print('Gorilla example')
+    print("Gorilla example")
     dist = Normal(90, 7.5**2)
     print(dist)
     dist_xbar = dist.Sum(9) / 9
@@ -414,6 +397,5 @@ def main():
     TestChiSquared()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

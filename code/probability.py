@@ -22,21 +22,19 @@ def MakeHists(live):
     live: DataFrame
     others: DataFrame
     """
-    hist = thinkstats2.Hist(np.floor(live.agepreg), label='agepreg')
+    hist = thinkstats2.Hist(np.floor(live.agepreg), label="agepreg")
     thinkplot.PrePlot(2, cols=2)
 
     thinkplot.SubPlot(1)
     thinkplot.Hist(hist)
-    thinkplot.Config(xlabel='years',
-                     ylabel='frequency',
-                     axis=[0, 45, 0, 700])
+    thinkplot.Config(xlabel="years", ylabel="frequency", axis=[0, 45, 0, 700])
 
     thinkplot.SubPlot(2)
     thinkplot.Pmf(hist)
 
-    thinkplot.Save(root='probability_agepreg_hist', 
-                   xlabel='years',
-                   axis=[0, 45, 0, 700])
+    thinkplot.Save(
+        root="probability_agepreg_hist", xlabel="years", axis=[0, 45, 0, 700]
+    )
 
 
 def MakeFigures(firsts, others):
@@ -46,23 +44,19 @@ def MakeFigures(firsts, others):
     others: DataFrame
     """
     # plot the PMFs
-    first_pmf = thinkstats2.Pmf(firsts.prglngth, label='first')
-    other_pmf = thinkstats2.Pmf(others.prglngth, label='other')
+    first_pmf = thinkstats2.Pmf(firsts.prglngth, label="first")
+    other_pmf = thinkstats2.Pmf(others.prglngth, label="other")
     width = 0.45
 
     thinkplot.PrePlot(2, cols=2)
-    thinkplot.Hist(first_pmf, align='right', width=width)
-    thinkplot.Hist(other_pmf, align='left', width=width)
-    thinkplot.Config(xlabel='weeks',
-                     ylabel='probability',
-                     axis=[27, 46, 0, 0.6])
+    thinkplot.Hist(first_pmf, align="right", width=width)
+    thinkplot.Hist(other_pmf, align="left", width=width)
+    thinkplot.Config(xlabel="weeks", ylabel="probability", axis=[27, 46, 0, 0.6])
 
     thinkplot.PrePlot(2)
     thinkplot.SubPlot(2)
     thinkplot.Pmfs([first_pmf, other_pmf])
-    thinkplot.Save(root='probability_nsfg_pmf',
-                   xlabel='weeks',
-                   axis=[27, 46, 0, 0.6])
+    thinkplot.Save(root="probability_nsfg_pmf", xlabel="weeks", axis=[27, 46, 0, 0.6])
 
     # plot the differences in the PMFs
     weeks = range(35, 46)
@@ -74,14 +68,16 @@ def MakeFigures(firsts, others):
         diffs.append(diff)
 
     thinkplot.Bar(weeks, diffs)
-    thinkplot.Save(root='probability_nsfg_diffs',
-                   title='Difference in PMFs',
-                   xlabel='weeks',
-                   ylabel='percentage points',
-                   legend=False)
+    thinkplot.Save(
+        root="probability_nsfg_diffs",
+        title="Difference in PMFs",
+        xlabel="weeks",
+        ylabel="percentage points",
+        legend=False,
+    )
 
 
-def BiasPmf(pmf, label=''):
+def BiasPmf(pmf, label=""):
     """Returns the Pmf with oversampling proportional to value.
 
     If pmf is the distribution of true values, the result is the
@@ -101,12 +97,12 @@ def BiasPmf(pmf, label=''):
 
     for x, p in pmf.Items():
         new_pmf.Mult(x, x)
-        
+
     new_pmf.Normalize()
     return new_pmf
 
 
-def UnbiasPmf(pmf, label=''):
+def UnbiasPmf(pmf, label=""):
     """Returns the Pmf with oversampling proportional to 1/value.
 
     Args:
@@ -119,43 +115,40 @@ def UnbiasPmf(pmf, label=''):
     new_pmf = pmf.Copy(label=label)
 
     for x, p in pmf.Items():
-        new_pmf.Mult(x, 1.0/x)
-        
+        new_pmf.Mult(x, 1.0 / x)
+
     new_pmf.Normalize()
     return new_pmf
 
 
 def ClassSizes():
-    """Generate PMFs of observed and actual class size.
-    """
+    """Generate PMFs of observed and actual class size."""
     # start with the actual distribution of class sizes from the book
-    d = { 7: 8, 12: 8, 17: 14, 22: 4, 
-          27: 6, 32: 12, 37: 8, 42: 3, 47: 2 }
+    d = {7: 8, 12: 8, 17: 14, 22: 4, 27: 6, 32: 12, 37: 8, 42: 3, 47: 2}
 
     # form the pmf
-    pmf = thinkstats2.Pmf(d, label='actual')
-    print('mean', pmf.Mean())
-    print('var', pmf.Var())
-    
+    pmf = thinkstats2.Pmf(d, label="actual")
+    print("mean", pmf.Mean())
+    print("var", pmf.Var())
+
     # compute the biased pmf
-    biased_pmf = BiasPmf(pmf, label='observed')
-    print('mean', biased_pmf.Mean())
-    print('var', biased_pmf.Var())
+    biased_pmf = BiasPmf(pmf, label="observed")
+    print("mean", biased_pmf.Mean())
+    print("var", biased_pmf.Var())
 
     # unbias the biased pmf
-    unbiased_pmf = UnbiasPmf(biased_pmf, label='unbiased')
-    print('mean', unbiased_pmf.Mean())
-    print('var', unbiased_pmf.Var())
+    unbiased_pmf = UnbiasPmf(biased_pmf, label="unbiased")
+    print("mean", unbiased_pmf.Mean())
+    print("var", unbiased_pmf.Var())
 
     # plot the Pmfs
     thinkplot.PrePlot(2)
     thinkplot.Pmfs([pmf, biased_pmf])
-    thinkplot.Save(root='class_size1',
-                   xlabel='class size',
-                   ylabel='PMF',
-                   axis=[0, 52, 0, 0.27])
-    
- 
+    thinkplot.Save(
+        root="class_size1", xlabel="class size", ylabel="PMF", axis=[0, 52, 0, 0.27]
+    )
+
+
 def main(script):
     live, firsts, others = first.MakeFrames()
     MakeFigures(firsts, others)
@@ -164,8 +157,7 @@ def main(script):
     ClassSizes()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import sys
+
     main(*sys.argv)
-
-
