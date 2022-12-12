@@ -26,7 +26,7 @@ class CoinTest(thinkstats2.HypothesisTest):
     def TestStatistic(self, data):
         """Computes the test statistic.
 
-        data: data in whatever form is relevant
+        data: data in whatever form is relevant        
         """
         heads, tails = data
         test_stat = abs(heads - tails)
@@ -39,9 +39,9 @@ class CoinTest(thinkstats2.HypothesisTest):
         """
         heads, tails = self.data
         n = heads + tails
-        sample = [random.choice("HT") for _ in range(n)]
+        sample = [random.choice('HT') for _ in range(n)]
         hist = thinkstats2.Hist(sample)
-        data = hist["H"], hist["T"]
+        data = hist['H'], hist['T']
         return data
 
 
@@ -51,14 +51,15 @@ class DiffMeansPermute(thinkstats2.HypothesisTest):
     def TestStatistic(self, data):
         """Computes the test statistic.
 
-        data: data in whatever form is relevant
+        data: data in whatever form is relevant        
         """
         group1, group2 = data
         test_stat = abs(group1.mean() - group2.mean())
         return test_stat
 
     def MakeModel(self):
-        """Build a model of the null hypothesis."""
+        """Build a model of the null hypothesis.
+        """
         group1, group2 = self.data
         self.n, self.m = len(group1), len(group2)
         self.pool = np.hstack((group1, group2))
@@ -69,7 +70,7 @@ class DiffMeansPermute(thinkstats2.HypothesisTest):
         returns: simulated data
         """
         np.random.shuffle(self.pool)
-        data = self.pool[: self.n], self.pool[self.n :]
+        data = self.pool[:self.n], self.pool[self.n:]
         return data
 
 
@@ -79,7 +80,7 @@ class DiffMeansOneSided(DiffMeansPermute):
     def TestStatistic(self, data):
         """Computes the test statistic.
 
-        data: data in whatever form is relevant
+        data: data in whatever form is relevant        
         """
         group1, group2 = data
         test_stat = group1.mean() - group2.mean()
@@ -92,7 +93,7 @@ class DiffStdPermute(DiffMeansPermute):
     def TestStatistic(self, data):
         """Computes the test statistic.
 
-        data: data in whatever form is relevant
+        data: data in whatever form is relevant        
         """
         group1, group2 = data
         test_stat = group1.std() - group2.std()
@@ -141,7 +142,7 @@ class DiceTest(thinkstats2.HypothesisTest):
         returns: simulated data
         """
         n = sum(self.data)
-        values = [1, 2, 3, 4, 5, 6]
+        values = [1,2,3,4,5,6]
         rolls = np.random.choice(values, n, replace=True)
         hist = thinkstats2.Hist(rolls)
         freqs = hist.Freqs(values)
@@ -159,7 +160,7 @@ class DiceChiTest(DiceTest):
         observed = data
         n = sum(observed)
         expected = np.ones(6) * n / 6
-        test_stat = sum((observed - expected) ** 2 / expected)
+        test_stat = sum((observed - expected)**2 / expected)
         return test_stat
 
 
@@ -177,7 +178,7 @@ class PregLengthTest(thinkstats2.HypothesisTest):
 
     def ChiSquared(self, lengths):
         """Computes the chi-squared statistic.
-
+        
         lengths: sequence of lengths
 
         returns: float
@@ -185,11 +186,12 @@ class PregLengthTest(thinkstats2.HypothesisTest):
         hist = thinkstats2.Hist(lengths)
         observed = np.array(hist.Freqs(self.values))
         expected = self.expected_probs * len(lengths)
-        stat = sum((observed - expected) ** 2 / expected)
+        stat = sum((observed - expected)**2 / expected)
         return stat
 
     def MakeModel(self):
-        """Build a model of the null hypothesis."""
+        """Build a model of the null hypothesis.
+        """
         firsts, others = self.data
         self.n = len(firsts)
         self.pool = np.hstack((firsts, others))
@@ -204,17 +206,18 @@ class PregLengthTest(thinkstats2.HypothesisTest):
         returns: simulated data
         """
         np.random.shuffle(self.pool)
-        data = self.pool[: self.n], self.pool[self.n :]
+        data = self.pool[:self.n], self.pool[self.n:]
         return data
 
 
 def RunDiceTest():
-    """Tests whether a die is fair."""
+    """Tests whether a die is fair.
+    """
     data = [8, 9, 19, 5, 8, 11]
     dt = DiceTest(data)
-    print("dice test", dt.PValue(iters=10000))
+    print('dice test', dt.PValue(iters=10000))
     dt = DiceChiTest(data)
-    print("dice chi test", dt.PValue(iters=10000))
+    print('dice chi test', dt.PValue(iters=10000))
 
 
 def FalseNegRate(data, num_runs=1000):
@@ -245,9 +248,9 @@ def PrintTest(p_value, ht):
     p_value: float
     ht: HypothesisTest
     """
-    print("p-value =", p_value)
-    print("actual =", ht.actual)
-    print("ts max =", ht.MaxTestStat())
+    print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
 
 
 def RunTests(data, iters=1000):
@@ -260,64 +263,63 @@ def RunTests(data, iters=1000):
     # test the difference in means
     ht = DiffMeansPermute(data)
     p_value = ht.PValue(iters=iters)
-    print("\nmeans permute two-sided")
+    print('\nmeans permute two-sided')
     PrintTest(p_value, ht)
 
     ht.PlotCdf()
-    thinkplot.Save(
-        root="hypothesis1",
-        title="Permutation test",
-        xlabel="difference in means (weeks)",
-        ylabel="CDF",
-        legend=False,
-    )
-
+    thinkplot.Save(root='hypothesis1',
+                   title='Permutation test',
+                   xlabel='difference in means (weeks)',
+                   ylabel='CDF',
+                   legend=False) 
+    
     # test the difference in means one-sided
     ht = DiffMeansOneSided(data)
     p_value = ht.PValue(iters=iters)
-    print("\nmeans permute one-sided")
+    print('\nmeans permute one-sided')
     PrintTest(p_value, ht)
 
     # test the difference in std
     ht = DiffStdPermute(data)
     p_value = ht.PValue(iters=iters)
-    print("\nstd permute one-sided")
+    print('\nstd permute one-sided')
     PrintTest(p_value, ht)
 
 
-def ReplicateTests():
+def ReplicateTests():    
     """Replicates tests with the new NSFG data."""
 
     live, firsts, others = nsfg2.MakeFrames()
 
     # compare pregnancy lengths
-    print("\nprglngth2")
+    print('\nprglngth2')
     data = firsts.prglngth.values, others.prglngth.values
     ht = DiffMeansPermute(data)
     p_value = ht.PValue(iters=1000)
-    print("means permute two-sided")
+    print('means permute two-sided')
     PrintTest(p_value, ht)
 
-    print("\nbirth weight 2")
-    data = (firsts.totalwgt_lb.dropna().values, others.totalwgt_lb.dropna().values)
+    print('\nbirth weight 2')
+    data = (firsts.totalwgt_lb.dropna().values,
+            others.totalwgt_lb.dropna().values)
     ht = DiffMeansPermute(data)
     p_value = ht.PValue(iters=1000)
-    print("means permute two-sided")
+    print('means permute two-sided')
     PrintTest(p_value, ht)
 
     # test correlation
-    live2 = live.dropna(subset=["agepreg", "totalwgt_lb"])
+    live2 = live.dropna(subset=['agepreg', 'totalwgt_lb'])
     data = live2.agepreg.values, live2.totalwgt_lb.values
     ht = CorrelationPermute(data)
     p_value = ht.PValue()
-    print("\nage weight correlation 2")
+    print('\nage weight correlation 2')
     PrintTest(p_value, ht)
 
     # compare pregnancy lengths (chi-squared)
     data = firsts.prglngth.values, others.prglngth.values
     ht = PregLengthTest(data)
     p_value = ht.PValue()
-    print("\npregnancy length chi-squared 2")
+    print('\npregnancy length chi-squared 2')
     PrintTest(p_value, ht)
 
 
@@ -327,29 +329,30 @@ def main():
     # run the coin test
     ct = CoinTest((140, 110))
     pvalue = ct.PValue()
-    print("coin test p-value", pvalue)
+    print('coin test p-value', pvalue)
 
     # compare pregnancy lengths
-    print("\nprglngth")
+    print('\nprglngth')
     live, firsts, others = first.MakeFrames()
     data = firsts.prglngth.values, others.prglngth.values
     RunTests(data)
 
     # compare birth weights
-    print("\nbirth weight")
-    data = (firsts.totalwgt_lb.dropna().values, others.totalwgt_lb.dropna().values)
+    print('\nbirth weight')
+    data = (firsts.totalwgt_lb.dropna().values,
+            others.totalwgt_lb.dropna().values)
     ht = DiffMeansPermute(data)
     p_value = ht.PValue(iters=1000)
-    print("means permute two-sided")
+    print('means permute two-sided')
     PrintTest(p_value, ht)
 
     # test correlation
-    live2 = live.dropna(subset=["agepreg", "totalwgt_lb"])
+    live2 = live.dropna(subset=['agepreg', 'totalwgt_lb'])
     data = live2.agepreg.values, live2.totalwgt_lb.values
     ht = CorrelationPermute(data)
     p_value = ht.PValue()
-    print("\nage weight correlation")
-    print("n=", len(live2))
+    print('\nage weight correlation')
+    print('n=', len(live2))
     PrintTest(p_value, ht)
 
     # run the dice test
@@ -359,13 +362,13 @@ def main():
     data = firsts.prglngth.values, others.prglngth.values
     ht = PregLengthTest(data)
     p_value = ht.PValue()
-    print("\npregnancy length chi-squared")
+    print('\npregnancy length chi-squared')
     PrintTest(p_value, ht)
 
     # compute the false negative rate for difference in pregnancy length
     data = firsts.prglngth.values, others.prglngth.values
     neg_rate = FalseNegRate(data)
-    print("false neg rate", neg_rate)
+    print('false neg rate', neg_rate)
 
     # run the tests with new nsfg data
     ReplicateTests()

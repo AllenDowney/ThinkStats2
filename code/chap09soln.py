@@ -92,10 +92,9 @@ different models can yield very different results.
 
 """
 
-
 class DiffMeansResample(hypothesis.DiffMeansPermute):
     """Tests a difference in means using resampling."""
-
+    
     def RunModel(self):
         """Run the model of the null hypothesis.
 
@@ -104,7 +103,7 @@ class DiffMeansResample(hypothesis.DiffMeansPermute):
         group1 = np.random.choice(self.pool, self.n, replace=True)
         group2 = np.random.choice(self.pool, self.m, replace=True)
         return group1, group2
-
+  
 
 def RunResampleTest(firsts, others):
     """Tests differences in means by resampling.
@@ -115,18 +114,19 @@ def RunResampleTest(firsts, others):
     data = firsts.prglngth.values, others.prglngth.values
     ht = DiffMeansResample(data)
     p_value = ht.PValue(iters=10000)
-    print("\nmeans permute preglength")
-    print("p-value =", p_value)
-    print("actual =", ht.actual)
-    print("ts max =", ht.MaxTestStat())
+    print('\nmeans permute preglength')
+    print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
 
-    data = (firsts.totalwgt_lb.dropna().values, others.totalwgt_lb.dropna().values)
+    data = (firsts.totalwgt_lb.dropna().values,
+            others.totalwgt_lb.dropna().values)
     ht = hypothesis.DiffMeansPermute(data)
     p_value = ht.PValue(iters=10000)
-    print("\nmeans permute birthweight")
-    print("p-value =", p_value)
-    print("actual =", ht.actual)
-    print("ts max =", ht.MaxTestStat())
+    print('\nmeans permute birthweight')
+    print('p-value =', p_value)
+    print('actual =', ht.actual)
+    print('ts max =', ht.MaxTestStat())
 
 
 def RunTests(live, iters=1000):
@@ -144,12 +144,13 @@ def RunTests(live, iters=1000):
     ht = hypothesis.DiffMeansPermute(data)
     p1 = ht.PValue(iters=iters)
 
-    data = (firsts.totalwgt_lb.dropna().values, others.totalwgt_lb.dropna().values)
+    data = (firsts.totalwgt_lb.dropna().values,
+            others.totalwgt_lb.dropna().values)
     ht = hypothesis.DiffMeansPermute(data)
     p2 = ht.PValue(iters=iters)
 
     # test correlation
-    live2 = live.dropna(subset=["agepreg", "totalwgt_lb"])
+    live2 = live.dropna(subset=['agepreg', 'totalwgt_lb'])
     data = live2.agepreg.values, live2.totalwgt_lb.values
     ht = hypothesis.CorrelationPermute(data)
     p3 = ht.PValue(iters=iters)
@@ -159,7 +160,7 @@ def RunTests(live, iters=1000):
     ht = hypothesis.PregLengthTest(data)
     p4 = ht.PValue(iters=iters)
 
-    print("%d\t%0.2f\t%0.2f\t%0.2f\t%0.2f" % (n, p1, p2, p3, p4))
+    print('%d\t%0.2f\t%0.2f\t%0.2f\t%0.2f' % (n, p1, p2, p3, p4))
 
 
 def main():
@@ -175,5 +176,5 @@ def main():
         n //= 2
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

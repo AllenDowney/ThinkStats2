@@ -20,12 +20,11 @@ Place Div/Tot  Div   Guntime Nettime  Pace  Name                   Ag S Race# Ci
    97  26/256  M4049   42:48   42:44   6:53 Allen Downey           42 M   337 Needham MA 
 """
 
-
 def ConvertPaceToSpeed(pace):
     """Converts pace in MM:SS per mile to MPH."""
-    m, s = [int(x) for x in pace.split(":")]
-    secs = m * 60 + s
-    mph = 1 / secs * 60 * 60
+    m, s = [int(x) for x in pace.split(':')]
+    secs = m*60 + s
+    mph  = 1 / secs * 60 * 60 
     return mph
 
 
@@ -34,20 +33,20 @@ def CleanLine(line):
     t = line.split()
     if len(t) < 6:
         return None
-
+    
     place, divtot, div, gun, net, pace = t[0:6]
 
-    if not "/" in divtot:
+    if not '/' in divtot:
         return None
 
     for time in [gun, net, pace]:
-        if ":" not in time:
+        if ':' not in time:
             return None
 
     return place, divtot, div, gun, net, pace
 
 
-def ReadResults(filename="Apr25_27thAn_set1.shtml"):
+def ReadResults(filename='Apr25_27thAn_set1.shtml'):
     """Read results from a file and return a list of tuples."""
     results = []
     for line in open(filename):
@@ -88,13 +87,13 @@ def main():
 
     speeds = BinData(speeds, 3, 12, 100)
 
-    pmf = thinkstats2.Pmf(speeds, "speeds")
+    pmf = thinkstats2.Pmf(speeds, 'speeds')
 
     thinkplot.Pmf(pmf)
-    thinkplot.Show(
-        title="PMF of running speed", xlabel="speed (mph)", ylabel="probability"
-    )
+    thinkplot.Show(title='PMF of running speed',
+                   xlabel='speed (mph)',
+                   ylabel='probability')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

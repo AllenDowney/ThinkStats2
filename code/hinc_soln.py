@@ -65,8 +65,8 @@ so you might have to
 
 
 class SmoothCdf(thinkstats2.Cdf):
-    """Represents a CDF based on calculated quantiles."""
-
+    """Represents a CDF based on calculated quantiles.
+    """
     def Render(self):
         """Because this CDF was not computed from a sample, it
         should not be rendered as a step function.
@@ -74,40 +74,44 @@ class SmoothCdf(thinkstats2.Cdf):
         return self.xs, self.ps
 
     def Prob(self, x):
-        """Compute CDF(x), interpolating between known values."""
+        """Compute CDF(x), interpolating between known values.
+        """
         return np.interp(x, self.xs, self.ps)
 
     def Value(self, p):
-        """Compute inverse CDF(x), interpolating between probabilities."""
+        """Compute inverse CDF(x), interpolating between probabilities.
+        """
         return np.interp(p, self.ps, self.xs)
 
 
 def MakeFigures(df):
-    """Plots the CDF of income in several forms."""
+    """Plots the CDF of income in several forms.
+    """
     xs, ps = df.income.values, df.ps.values
-    cdf = SmoothCdf(xs, ps, label="data")
-    cdf_log = SmoothCdf(np.log10(xs), ps, label="data")
-
+    cdf = SmoothCdf(xs, ps, label='data')
+    cdf_log = SmoothCdf(np.log10(xs), ps, label='data')
+    
     # linear plot
-    thinkplot.Cdf(cdf)
-    thinkplot.Save(root="hinc_linear", xlabel="household income", ylabel="CDF")
+    thinkplot.Cdf(cdf) 
+    thinkplot.Save(root='hinc_linear',
+                   xlabel='household income',
+                   ylabel='CDF')
 
     # pareto plot
     # for the model I chose parameters by hand to fit the tail
-    xs, ys = thinkstats2.RenderParetoCdf(xmin=55000, alpha=2.5, low=0, high=250000)
-    thinkplot.Plot(xs, 1 - ys, label="model", color="0.8")
+    xs, ys = thinkstats2.RenderParetoCdf(xmin=55000, alpha=2.5, 
+                                         low=0, high=250000)
+    thinkplot.Plot(xs, 1-ys, label='model', color='0.8')
 
-    thinkplot.Cdf(cdf, complement=True)
-    thinkplot.Save(
-        root="hinc_pareto",
-        xlabel="log10 household income",
-        ylabel="CCDF",
-        xscale="log",
-        yscale="log",
-    )
+    thinkplot.Cdf(cdf, complement=True) 
+    thinkplot.Save(root='hinc_pareto',
+                   xlabel='log10 household income',
+                   ylabel='CCDF',
+                   xscale='log',
+                   yscale='log')
 
     # lognormal plot
-    # for the model I estimate mu and sigma using
+    # for the model I estimate mu and sigma using 
     # percentile-based statistics
     median = cdf_log.Percentile(50)
     iqr = cdf_log.Percentile(75) - cdf_log.Percentile(25)
@@ -118,11 +122,13 @@ def MakeFigures(df):
     print(median, std)
 
     xs, ps = thinkstats2.RenderNormalCdf(median, std, low=3.5, high=5.5)
-    thinkplot.Plot(xs, ps, label="model", color="0.8")
+    thinkplot.Plot(xs, ps, label='model', color='0.8')
 
-    thinkplot.Cdf(cdf_log)
-    thinkplot.Save(root="hinc_normal", xlabel="log10 household income", ylabel="CDF")
-
+    thinkplot.Cdf(cdf_log) 
+    thinkplot.Save(root='hinc_normal',
+                   xlabel='log10 household income',
+                   ylabel='CDF')
+    
 
 def main():
     df = hinc.ReadData()

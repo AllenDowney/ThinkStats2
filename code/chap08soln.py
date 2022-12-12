@@ -101,7 +101,6 @@ See https://en.wikipedia.org/wiki/Poisson_distribution
 
 """
 
-
 def Estimate1(n=7, m=100000):
     """Mean error for xbar and median as estimators of population mean.
 
@@ -120,9 +119,9 @@ def Estimate1(n=7, m=100000):
         means.append(xbar)
         medians.append(median)
 
-    print("Experiment 1")
-    print("mean error xbar", MeanError(means, mu))
-    print("mean error median", MeanError(medians, mu))
+    print('Experiment 1')
+    print('mean error xbar', MeanError(means, mu))
+    print('mean error median', MeanError(medians, mu))
 
 
 def Estimate2(n=7, m=100000):
@@ -143,9 +142,9 @@ def Estimate2(n=7, m=100000):
         estimates1.append(biased)
         estimates2.append(unbiased)
 
-    print("Experiment 2")
-    print("RMSE biased", RMSE(estimates1, sigma**2))
-    print("RMSE unbiased", RMSE(estimates2, sigma**2))
+    print('Experiment 2')
+    print('RMSE biased', RMSE(estimates1, sigma**2))
+    print('RMSE unbiased', RMSE(estimates2, sigma**2))
 
 
 def SimulateSample(lam=2, n=10, m=1000):
@@ -155,33 +154,30 @@ def SimulateSample(lam=2, n=10, m=1000):
     n: sample size
     m: number of iterations
     """
-
     def VertLine(x, y=1):
-        thinkplot.Plot([x, x], [0, y], color="0.8", linewidth=3)
+        thinkplot.Plot([x, x], [0, y], color='0.8', linewidth=3)
 
     estimates = []
     for j in range(m):
-        xs = np.random.exponential(1 / lam, n)
-        lamhat = 1 / np.mean(xs)
+        xs = np.random.exponential(1/lam, n)
+        lamhat = 1/np.mean(xs)
         estimates.append(lamhat)
 
     stderr = RMSE(estimates, lam)
-    print("standard error", stderr)
+    print('standard error', stderr)
 
     cdf = thinkstats2.Cdf(estimates)
     ci = cdf.Percentile(5), cdf.Percentile(95)
-    print("confidence interval", ci)
+    print('confidence interval', ci)
     VertLine(ci[0])
     VertLine(ci[1])
 
     # plot the CDF
     thinkplot.Cdf(cdf)
-    thinkplot.Save(
-        root="estimation2",
-        xlabel="estimate",
-        ylabel="CDF",
-        title="Sampling distribution",
-    )
+    thinkplot.Save(root='estimation2',
+                   xlabel='estimate',
+                   ylabel='CDF',
+                   title='Sampling distribution')
 
     return stderr
 
@@ -212,15 +208,15 @@ def Estimate4(lam=2, m=1000000):
         L = SimulateGame(lam)
         estimates.append(L)
 
-    print("Experiment 4")
-    print("rmse L", RMSE(estimates, lam))
-    print("mean error L", MeanError(estimates, lam))
-
+    print('Experiment 4')
+    print('rmse L', RMSE(estimates, lam))
+    print('mean error L', MeanError(estimates, lam))
+    
     pmf = thinkstats2.Pmf(estimates)
 
     thinkplot.Hist(pmf)
     thinkplot.Show()
-
+        
 
 def main():
     thinkstats2.RandomSeed(17)
@@ -228,7 +224,7 @@ def main():
     Estimate1()
     Estimate2()
 
-    print("Experiment 3")
+    print('Experiment 3')
     for n in [10, 100, 1000]:
         stderr = SimulateSample(n=n)
         print(n, stderr)
@@ -236,5 +232,5 @@ def main():
     Estimate4()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

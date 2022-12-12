@@ -24,50 +24,56 @@ def Summarize(data):
     mean = data.mean()
     std = data.std()
     median = thinkstats2.Median(data)
-    print("mean", mean)
-    print("std", std)
-    print("median", median)
-    print("skewness", thinkstats2.Skewness(data))
-    print("pearson skewness", thinkstats2.PearsonMedianSkewness(data))
+    print('mean', mean)
+    print('std', std)
+    print('median', median)
+    print('skewness', thinkstats2.Skewness(data))
+    print('pearson skewness', 
+          thinkstats2.PearsonMedianSkewness(data))
 
     return mean, median
 
 
 def ComputeSkewnesses():
-    """Plots KDE of birthweight and adult weight."""
-
+    """Plots KDE of birthweight and adult weight.
+    """
     def VertLine(x, y):
-        thinkplot.Plot([x, x], [0, y], color="0.6", linewidth=1)
+        thinkplot.Plot([x, x], [0, y], color='0.6', linewidth=1)
 
     live, firsts, others = first.MakeFrames()
     data = live.totalwgt_lb.dropna()
-    print("Birth weight")
+    print('Birth weight')
     mean, median = Summarize(data)
 
     y = 0.35
     VertLine(mean, y)
-    thinkplot.Text(mean - 0.15, 0.1 * y, "mean", horizontalalignment="right")
+    thinkplot.Text(mean-0.15, 0.1*y, 'mean', horizontalalignment='right')
     VertLine(median, y)
-    thinkplot.Text(median + 0.1, 0.1 * y, "median", horizontalalignment="left")
+    thinkplot.Text(median+0.1, 0.1*y, 'median', horizontalalignment='left')
 
     pdf = thinkstats2.EstimatedPdf(data)
-    thinkplot.Pdf(pdf, label="birth weight")
-    thinkplot.Save(root="density_totalwgt_kde", xlabel="lbs", ylabel="PDF")
+    thinkplot.Pdf(pdf, label='birth weight')
+    thinkplot.Save(root='density_totalwgt_kde',
+                   xlabel='lbs',
+                   ylabel='PDF')
 
     df = brfss.ReadBrfss(nrows=None)
     data = df.wtkg2.dropna()
-    print("Adult weight")
+    print('Adult weight')
     mean, median = Summarize(data)
 
     y = 0.02499
     VertLine(mean, y)
-    thinkplot.Text(mean + 1, 0.1 * y, "mean", horizontalalignment="left")
+    thinkplot.Text(mean+1, 0.1*y, 'mean', horizontalalignment='left')
     VertLine(median, y)
-    thinkplot.Text(median - 1.5, 0.1 * y, "median", horizontalalignment="right")
+    thinkplot.Text(median-1.5, 0.1*y, 'median', horizontalalignment='right')
 
     pdf = thinkstats2.EstimatedPdf(data)
-    thinkplot.Pdf(pdf, label="adult weight")
-    thinkplot.Save(root="density_wtkg2_kde", xlabel="kg", ylabel="PDF", xlim=[0, 200])
+    thinkplot.Pdf(pdf, label='adult weight')
+    thinkplot.Save(root='density_wtkg2_kde',
+                   xlabel='kg',
+                   ylabel='PDF',
+                   xlim=[0, 200])
 
 
 def MakePdfExample(n=500):
@@ -85,14 +91,16 @@ def MakePdfExample(n=500):
 
     # make a PMF and plot it
     thinkplot.PrePlot(2)
-    thinkplot.Pdf(pdf, label="normal")
+    thinkplot.Pdf(pdf, label='normal')
 
     # make a sample, make an estimated PDF, and plot it
     sample = [random.gauss(mean, std) for _ in range(n)]
     sample_pdf = thinkstats2.EstimatedPdf(sample)
-    thinkplot.Pdf(sample_pdf, label="sample KDE")
+    thinkplot.Pdf(sample_pdf, label='sample KDE')
 
-    thinkplot.Save(root="pdf_example", xlabel="Height (cm)", ylabel="Density")
+    thinkplot.Save(root='pdf_example',
+                   xlabel='Height (cm)',
+                   ylabel='Density')
 
 
 def main():
@@ -102,5 +110,5 @@ def main():
     ComputeSkewnesses()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
