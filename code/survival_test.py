@@ -13,13 +13,13 @@ import survival
 import thinkstats2
 import thinkplot
 
-
 class Test(unittest.TestCase):
+
     def testSurvival(self):
         complete = [1, 2, 3, 4, 5]
         ongoing = [3, 4, 5]
         hf = survival.EstimateHazardFunction(complete, ongoing)
-        self.assertAlmostEqual(hf[3], 1 / 6.0)
+        self.assertAlmostEqual(hf[3], 1/6.0)
         self.assertAlmostEqual(hf[5], 0.5)
 
         sf = hf.MakeSurvival()

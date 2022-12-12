@@ -49,21 +49,22 @@ def WeightDifference(live, firsts, others):
     var1 = firsts.totalwgt_lb.var()
     var2 = others.totalwgt_lb.var()
 
-    print("Mean")
-    print("First babies", mean1)
-    print("Others", mean2)
+    print('Mean')
+    print('First babies', mean1)
+    print('Others', mean2)
 
-    print("Variance")
-    print("First babies", var1)
-    print("Others", var2)
+    print('Variance')
+    print('First babies', var1)
+    print('Others', var2)
 
-    print("Difference in lbs", mean1 - mean2)
-    print("Difference in oz", (mean1 - mean2) * 16)
+    print('Difference in lbs', mean1 - mean2)
+    print('Difference in oz', (mean1 - mean2) * 16)
 
-    print("Difference relative to mean (%age points)", (mean1 - mean2) / mean0 * 100)
+    print('Difference relative to mean (%age points)', 
+          (mean1 - mean2) / mean0 * 100)
 
     d = thinkstats2.CohenEffectSize(firsts.totalwgt_lb, others.totalwgt_lb)
-    print("Cohen d", d)
+    print('Cohen d', d)
 
 
 def main(script):
@@ -77,20 +78,20 @@ def main(script):
     # explore the weight difference between first babies and others
     WeightDifference(live, firsts, others)
 
-    # test Mode
+    # test Mode    
     mode = Mode(hist)
-    print("Mode of preg length", mode)
-    assert mode == 39
+    print('Mode of preg length', mode)
+    assert(mode == 39)
 
     # test AllModes
     modes = AllModes(hist)
-    assert modes[0][1] == 4693
+    assert(modes[0][1] == 4693)
 
     for value, freq in modes[:5]:
         print(value, freq)
 
-    print("%s: All tests passed." % script)
+    print('%s: All tests passed.' % script)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main(*sys.argv)

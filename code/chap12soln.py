@@ -24,51 +24,47 @@ def RunQuadraticModel(daily):
 
     returns: model, results
     """
-    daily["years2"] = daily.years**2
-    model = smf.ols("ppg ~ years + years2", data=daily)
+    daily['years2'] = daily.years**2
+    model = smf.ols('ppg ~ years + years2', data=daily)
     results = model.fit()
     return model, results
 
 
 def PlotQuadraticModel(daily, name):
-    """ """
+    """
+    """
     model, results = RunQuadraticModel(daily)
     regression.SummarizeResults(results)
     timeseries.PlotFittedValues(model, results, label=name)
-    thinkplot.Save(
-        root="timeseries11",
-        title="fitted values",
-        xlabel="years",
-        xlim=[-0.1, 3.8],
-        ylabel="price per gram ($)",
-    )
+    thinkplot.Save(root='timeseries11',
+                   title='fitted values',
+                   xlabel='years',
+                   xlim=[-0.1, 3.8],
+                   ylabel='price per gram ($)')
 
     timeseries.PlotResidualPercentiles(model, results)
-    thinkplot.Save(
-        root="timeseries12",
-        title="residuals",
-        xlabel="years",
-        ylabel="price per gram ($)",
-    )
+    thinkplot.Save(root='timeseries12',
+                   title='residuals',
+                   xlabel='years',
+                   ylabel='price per gram ($)')
 
     years = np.linspace(0, 5, 101)
     thinkplot.Scatter(daily.years, daily.ppg, alpha=0.1, label=name)
     timeseries.PlotPredictions(daily, years, func=RunQuadraticModel)
-    thinkplot.Save(
-        root="timeseries13",
-        title="predictions",
-        xlabel="years",
-        xlim=[years[0] - 0.1, years[-1] + 0.1],
-        ylabel="price per gram ($)",
-    )
+    thinkplot.Save(root='timeseries13',
+                   title='predictions',
+                   xlabel='years',
+                   xlim=[years[0]-0.1, years[-1]+0.1],
+                   ylabel='price per gram ($)')
 
 
 def PlotEwmaPredictions(daily, name):
-    """ """
+    """
+    """
 
     # use EWMA to estimate slopes
     filled = timeseries.FillMissing(daily)
-    filled["slope"] = pandas.ewma(filled.ppg.diff(), span=180)
+    filled['slope'] = pandas.ewma(filled.ppg.diff(), span=180)
     filled[-1:]
 
     # extract the last inter and slope
@@ -77,15 +73,14 @@ def PlotEwmaPredictions(daily, name):
     slope = filled.slope[-1]
 
     # reindex the DataFrame, adding a year to the end
-    dates = pandas.date_range(
-        filled.index.min(), filled.index.max() + np.timedelta64(365, "D")
-    )
+    dates = pandas.date_range(filled.index.min(), 
+                              filled.index.max() + np.timedelta64(365, 'D'))
     predicted = filled.reindex(dates)
 
     # generate predicted values and add them to the end
-    predicted["date"] = predicted.index
-    one_day = np.timedelta64(1, "D")
-    predicted["days"] = (predicted.date - start) / one_day
+    predicted['date'] = predicted.index
+    one_day = np.timedelta64(1, 'D')
+    predicted['days'] = (predicted.date - start) / one_day
     predict = inter + slope * predicted.days
     predicted.ewma.fillna(predict, inplace=True)
 
@@ -116,7 +111,7 @@ class SerialCorrelationTest(thinkstats2.HypothesisTest):
         permutation = series.reindex(np.random.permutation(series.index))
         return permutation, lag
 
-
+    
 def TestSerialCorr(daily):
     """Tests serial correlations in daily prices and their residuals.
 
@@ -147,7 +142,7 @@ def main(name):
     transactions = timeseries.ReadData()
 
     dailies = timeseries.GroupByQualityAndDay(transactions)
-    name = "high"
+    name = 'high'
     daily = dailies[name]
 
     PlotQuadraticModel(daily, name)
@@ -155,7 +150,6 @@ def main(name):
     PlotEwmaPredictions(daily, name)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     import sys
-
     main(*sys.argv)

@@ -17,16 +17,16 @@ import thinkstats2
 def Clean(s):
     """Converts dollar amounts to integers."""
     try:
-        return int(s.lstrip("$").replace(",", ""))
+        return int(s.lstrip('$').replace(',', ''))
     except ValueError:
-        if s == "Under":
+        if s == 'Under':
             return 0
-        elif s == "over":
+        elif s == 'over':
             return np.inf
         return None
 
 
-def ReadData(filename="hinc06.csv"):
+def ReadData(filename='hinc06.csv'):
     """Reads filename and returns populations in thousands
 
     filename: string
@@ -35,11 +35,11 @@ def ReadData(filename="hinc06.csv"):
     """
     data = pandas.read_csv(filename, header=None, skiprows=9)
     cols = data[[0, 1]]
-
+        
     res = []
     for _, row in cols.iterrows():
         label, freq = row.values
-        freq = int(freq.replace(",", ""))
+        freq = int(freq.replace(',', ''))
 
         t = label.split()
         low, high = Clean(t[0]), Clean(t[-1])
@@ -55,7 +55,7 @@ def ReadData(filename="hinc06.csv"):
     total = df[2][41]
     df[3] = df[2] / total
     # add column names
-    df.columns = ["income", "freq", "cumsum", "ps"]
+    df.columns = ['income',  'freq', 'cumsum', 'ps']
     return df
 
 

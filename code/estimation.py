@@ -23,7 +23,7 @@ def MeanError(estimates, actual):
 
     returns: float mean error
     """
-    errors = [estimate - actual for estimate in estimates]
+    errors = [estimate-actual for estimate in estimates]
     return np.mean(errors)
 
 
@@ -35,7 +35,7 @@ def RMSE(estimates, actual):
 
     returns: float RMSE
     """
-    e2 = [(estimate - actual) ** 2 for estimate in estimates]
+    e2 = [(estimate-actual)**2 for estimate in estimates]
     mse = np.mean(e2)
     return math.sqrt(mse)
 
@@ -58,9 +58,9 @@ def Estimate1(n=7, m=1000):
         means.append(xbar)
         medians.append(median)
 
-    print("Experiment 1")
-    print("rmse xbar", RMSE(means, mu))
-    print("rmse median", RMSE(medians, mu))
+    print('Experiment 1')
+    print('rmse xbar', RMSE(means, mu))
+    print('rmse median', RMSE(medians, mu))
 
 
 def Estimate2(n=7, m=1000):
@@ -81,9 +81,9 @@ def Estimate2(n=7, m=1000):
         estimates1.append(biased)
         estimates2.append(unbiased)
 
-    print("Experiment 2")
-    print("mean error biased", MeanError(estimates1, sigma**2))
-    print("mean error unbiased", MeanError(estimates2, sigma**2))
+    print('Experiment 2')
+    print('mean error biased', MeanError(estimates1, sigma**2))
+    print('mean error unbiased', MeanError(estimates2, sigma**2))
 
 
 def Estimate3(n=7, m=1000):
@@ -97,17 +97,17 @@ def Estimate3(n=7, m=1000):
     means = []
     medians = []
     for _ in range(m):
-        xs = np.random.exponential(1 / lam, n)
+        xs = np.random.exponential(1/lam, n)
         L = 1 / np.mean(xs)
         Lm = math.log(2) / np.median(xs)
         means.append(L)
         medians.append(Lm)
 
-    print("Experiment 3")
-    print("rmse L", RMSE(means, lam))
-    print("rmse Lm", RMSE(medians, lam))
-    print("mean error L", MeanError(means, lam))
-    print("mean error Lm", MeanError(medians, lam))
+    print('Experiment 3')
+    print('rmse L', RMSE(means, lam))
+    print('rmse Lm', RMSE(medians, lam))
+    print('mean error L', MeanError(means, lam))
+    print('mean error Lm', MeanError(medians, lam))
 
 
 def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
@@ -118,9 +118,8 @@ def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
     n: sample size
     m: number of iterations
     """
-
     def VertLine(x, y=1):
-        thinkplot.Plot([x, x], [0, y], color="0.8", linewidth=3)
+        thinkplot.Plot([x, x], [0, y], color='0.8', linewidth=3)
 
     means = []
     for _ in range(m):
@@ -129,22 +128,20 @@ def SimulateSample(mu=90, sigma=7.5, n=9, m=1000):
         means.append(xbar)
 
     stderr = RMSE(means, mu)
-    print("standard error", stderr)
+    print('standard error', stderr)
 
     cdf = thinkstats2.Cdf(means)
     ci = cdf.Percentile(5), cdf.Percentile(95)
-    print("confidence interval", ci)
+    print('confidence interval', ci)
     VertLine(ci[0])
     VertLine(ci[1])
 
     # plot the CDF
     thinkplot.Cdf(cdf)
-    thinkplot.Save(
-        root="estimation1",
-        xlabel="sample mean",
-        ylabel="CDF",
-        title="Sampling distribution",
-    )
+    thinkplot.Save(root='estimation1',
+                   xlabel='sample mean',
+                   ylabel='CDF',
+                   title='Sampling distribution')
 
 
 def main():
@@ -156,5 +153,6 @@ def main():
     SimulateSample()
 
 
-if __name__ == "__main__":
+
+if __name__ == '__main__':
     main()
