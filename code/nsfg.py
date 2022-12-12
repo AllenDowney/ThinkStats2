@@ -5,7 +5,6 @@ Copyright 2010 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
 """
 
-import sys
 import numpy as np
 import thinkstats2
 
