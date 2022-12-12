@@ -12,9 +12,7 @@ import thinkstats2
 from collections import defaultdict
 
 
-def ReadFemResp(dct_file='2002FemResp.dct',
-                dat_file='2002FemResp.dat.gz',
-                nrows=None):
+def ReadFemResp(dct_file="2002FemResp.dct", dat_file="2002FemResp.dat.gz", nrows=None):
     """Reads the NSFG respondent data.
 
     dct_file: string file name
@@ -23,7 +21,7 @@ def ReadFemResp(dct_file='2002FemResp.dct',
     returns: DataFrame
     """
     dct = thinkstats2.ReadStataDct(dct_file)
-    df = dct.ReadFixedWidth(dat_file, compression='gzip', nrows=nrows)
+    df = dct.ReadFixedWidth(dat_file, compression="gzip", nrows=nrows)
     CleanFemResp(df)
     return df
 
@@ -36,8 +34,7 @@ def CleanFemResp(df):
     pass
 
 
-def ReadFemPreg(dct_file='2002FemPreg.dct',
-                dat_file='2002FemPreg.dat.gz'):
+def ReadFemPreg(dct_file="2002FemPreg.dct", dat_file="2002FemPreg.dat.gz"):
     """Reads the NSFG pregnancy data.
 
     dct_file: string file name
@@ -46,7 +43,7 @@ def ReadFemPreg(dct_file='2002FemPreg.dct',
     returns: DataFrame
     """
     dct = thinkstats2.ReadStataDct(dct_file)
-    df = dct.ReadFixedWidth(dat_file, compression='gzip')
+    df = dct.ReadFixedWidth(dat_file, compression="gzip")
     CleanFemPreg(df)
     return df
 
@@ -61,8 +58,8 @@ def CleanFemPreg(df):
 
     # birthwgt_lb contains at least one bogus value (51 lbs)
     # replace with NaN
-    df.loc[df.birthwgt_lb > 20, 'birthwgt_lb'] = np.nan
-    
+    df.loc[df.birthwgt_lb > 20, "birthwgt_lb"] = np.nan
+
     # replace 'not ascertained', 'refused', 'don't know' with NaN
     na_vals = [97, 98, 99]
     df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
@@ -76,7 +73,7 @@ def CleanFemPreg(df):
     # convert to a single column in lb
     # NOTE: creating a new column requires dictionary syntax,
     # not attribute assignment (like df.totalwgt_lb)
-    df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0    
+    df["totalwgt_lb"] = df.birthwgt_lb + df.birthwgt_oz / 16.0
 
     # due to a bug in ReadStataDct, the last variable gets clipped;
     # so for now set it to NaN
@@ -91,7 +88,7 @@ def ValidatePregnum(resp, preg):
     """
     # make the map from caseid to list of pregnancy indices
     preg_map = MakePregMap(preg)
-    
+
     # iterate through the respondent pregnum series
     for index, pregnum in resp.pregnum.iteritems():
         caseid = resp.caseid[index]
@@ -127,8 +124,8 @@ def main():
     # read and validate the respondent file
     resp = ReadFemResp()
 
-    assert(len(resp) == 7643)
-    assert(resp.pregnum.value_counts()[1] == 1267)
+    assert len(resp) == 7643
+    assert resp.pregnum.value_counts()[1] == 1267
 
     # read and validate the pregnancy file
     preg = ReadFemPreg()
@@ -153,11 +150,10 @@ def main():
 
     # validate that the pregnum column in `resp` matches the number
     # of entries in `preg`
-    assert(ValidatePregnum(resp, preg))
+    assert ValidatePregnum(resp, preg)
 
-    
-    print('All tests passed.')
+    print("All tests passed.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
