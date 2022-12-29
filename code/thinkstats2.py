@@ -2276,7 +2276,7 @@ class Dirichlet(object):
         label: string label
         """
         if n < 2:
-            raise ValueError("A Dirichlet distribution with " "n<2 makes no sense")
+            raise ValueError("A Dirichlet dist with n<2 makes no sense")
 
         self.n = n
         self.params = np.ones(n, dtype=float) * conc

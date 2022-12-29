@@ -1,6 +1,7 @@
 jupyter
 numpy==1.21
 matplotlib
+plotly
 seaborn
 tables
 scipy==1.7

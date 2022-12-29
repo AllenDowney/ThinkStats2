@@ -1,6 +1,8 @@
-# pip install pytest nbmake
+# the versions in code are canonical
+cp ../code/thinkstats2.py .
+cp ../code/thinkplot.py .
 
-# run nbmake
+# pip install pytest nbmake
 pytest --nbmake chap*.ipynb
 
 # push the changes
