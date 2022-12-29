@@ -28,33 +28,89 @@ free service that runs Jupyter notebooks in a web browser.
 For every chapter, I provide two notebooks: one contains the code from the
 chapter and the exercises; the other also contains the solutions.
 
-* Chapter 1: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap01ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap01soln.ipynb)
+*Chapter 1:*
 
-* Chapter 2: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap02ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap02soln.ipynb)
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap01ex.ipynb) 
 
-* Chapter 3: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap03ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap03soln.ipynb)
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap01soln.ipynb)
 
-* Chapter 4: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap04ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap04soln.ipynb)
+*Chapter 2:*
 
-* Chapter 5: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap05ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap05soln.ipynb)
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap02ex.ipynb) 
 
-* Chapter 6: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap06ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap06soln.ipynb)
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap02soln.ipynb)
 
-* Chapter 7: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap07ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap07soln.ipynb)
+*Chapter 3:*
 
-* Chapter 8: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap08ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap08soln.ipynb)
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap03ex.ipynb) 
 
-* Chapter 9: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap09ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap09soln.ipynb)
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap03soln.ipynb)
 
-* Chapter 10: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap10ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap10soln.ipynb)
+*Chapter 4:*
 
-* Chapter 11: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap11ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap11soln.ipynb)
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap04ex.ipynb) 
 
-* Chapter 12: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap12ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap12soln.ipynb)
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap04soln.ipynb)
 
-* Chapter 13: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap13ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap13soln.ipynb)
+*Chapter 5:*
 
-* Chapter 14: [Notebook](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap14ex.ipynb) [Notebook with solutions](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap14soln.ipynb)
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap05ex.ipynb) 
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap05soln.ipynb)
+
+*Chapter 6:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap06ex.ipynb)
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap06soln.ipynb)
+
+*Chapter 7:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap07ex.ipynb) 
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap07soln.ipynb)
+
+*Chapter 8:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap08ex.ipynb) 
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap08soln.ipynb)
+
+*Chapter 9:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap09ex.ipynb) 
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap09soln.ipynb)
+
+*Chapter 10:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap10ex.ipynb) 
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap10soln.ipynb)
+
+*Chapter 11:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap11ex.ipynb)
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap11soln.ipynb)
+
+*Chapter 12:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap12ex.ipynb) 
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap12soln.ipynb)
+
+*Chapter 13:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap13ex.ipynb)
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap13soln.ipynb)
+
+*Chapter 14:*
+
+[Examples from the chapter](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/code/chap14ex.ipynb) 
+
+[Solutions to exercises](https://colab.research.google.com/github/AllenDowney/ThinkStats2/blob/master/solutions/chap14soln.ipynb)
 
 If you want to run these notebooks on your own computer, you can download
 them individually from GitHub or 

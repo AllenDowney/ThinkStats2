@@ -1,0 +1,11 @@
+black
+flake8
+jupyter
+nbformat
+notedown
+numpy
+matplotlib
+seaborn
+tables
+scipy
+pip
