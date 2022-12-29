@@ -37,4 +37,6 @@ create_environment:
 	conda create --name $(PROJECT_NAME) python=$(PYTHON_VERSION) -y
 	@echo ">>> conda env created. Activate with:\nconda activate $(PROJECT_NAME)"
 
+tests:
+	pushd solution; pytest --nbmake chap*soln.ipynb; popd
 
