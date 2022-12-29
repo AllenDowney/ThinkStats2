@@ -1,5 +1,6 @@
+# these versions match Colab as of 2022-12-29
 jupyter
-numpy==1.21
+numpy==1.22
 matplotlib
 plotly
 seaborn
