@@ -1,8 +1,8 @@
 jupyter
-numpy
+numpy==1.21
 matplotlib
 seaborn
 tables
-scipy
-statsmodels
+scipy==1.7
+statsmodels==0.12
 

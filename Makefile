@@ -4,7 +4,7 @@
 
 PROJECT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 PROJECT_NAME = ThinkStats2
-PYTHON_VERSION = 3.10
+PYTHON_VERSION = 3.8
 PYTHON_INTERPRETER = python
 
 
@@ -39,5 +39,7 @@ create_environment:
 
 tests:
 	cd solutions; pytest --nbmake chap*soln.ipynb
-	cd code; pytest --nbmake chap*ex.ipynb
+	cd code; pytest --nbmake chap01ex.ipynb
+	cd code; python thinkplot_test.py  
+	cd code; python thinkstats2_test.py
 
