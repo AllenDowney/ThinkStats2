@@ -38,5 +38,8 @@ create_environment:
 	@echo ">>> conda env created. Activate with:\nconda activate $(PROJECT_NAME)"
 
 tests:
-	pushd solution; pytest --nbmake chap*soln.ipynb; popd
+	cd solution
+	pytest --nbmake chap*soln.ipynb
+	cd ../code
+	pytest --nbmake chap*ex.ipynb
 
