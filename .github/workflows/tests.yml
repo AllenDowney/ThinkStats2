@@ -12,7 +12,6 @@ on:
 jobs:
   tests:
     name: Tests (${{ matrix.os }}, Python ${{ matrix.python-version }})
-    needs: code-quality
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
