@@ -2,8 +2,6 @@
 black
 flake8
 jupyter
-mkdocs
 nbformat
-notedown
 nbmake
 pytest
