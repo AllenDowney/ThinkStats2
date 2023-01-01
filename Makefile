@@ -40,6 +40,6 @@ create_environment:
 tests:
 	cd solutions; pytest --nbmake chap*soln.ipynb
 	cd code; pytest --nbmake chap*ex.ipynb
-	cd code; python thinkplot_test.py  
 	cd code; python thinkstats2_test.py
-
+	# don't run thinkplot_test; it hangs on MacOS and Windows
+	# cd code; python thinkplot_test.py  
