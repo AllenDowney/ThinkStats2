@@ -93,7 +93,7 @@ def ValidatePregnum(resp, preg):
     preg_map = MakePregMap(preg)
     
     # iterate through the respondent pregnum series
-    for index, pregnum in resp.pregnum.iteritems():
+    for index, pregnum in resp.pregnum.items():
         caseid = resp.caseid[index]
         indices = preg_map[caseid]
 
@@ -114,7 +114,7 @@ def MakePregMap(df):
     returns: dict that maps from caseid to list of indices into `preg`
     """
     d = defaultdict(list)
-    for index, caseid in df.caseid.iteritems():
+    for index, caseid in df.caseid.items():
         d[caseid].append(index)
     return d
 
