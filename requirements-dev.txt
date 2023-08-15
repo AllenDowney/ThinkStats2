@@ -2,4 +2,5 @@
 black
 flake8
 nbformat
-
+nbmake
+pytest
