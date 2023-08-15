@@ -1,7 +1,5 @@
 -r requirements.txt
 black
 flake8
-jupyter
 nbformat
-nbmake
-pytest
+

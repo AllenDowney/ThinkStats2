@@ -3,10 +3,9 @@
 
 Copyright 2014 Allen B. Downey
 License: GNU GPLv3 http://www.gnu.org/licenses/gpl.html
-"""
 
 
-"""This file contains class definitions for:
+This file contains class definitions for:
 
 Hist: represents a histogram (map from values to integer frequencies).
 
@@ -2402,10 +2401,10 @@ def NormalProbability(ys, jitter=0):
 
 
 def Jitter(values, jitter=0.5):
-    """Jitters the values by adding a uniform variate in (-jitter, jitter).
+    """Jitters the values by adding a random Gaussian values.
 
     values: sequence
-    jitter: scalar magnitude of jitter
+    jitter: standard deviation of the added noise
 
     returns: new numpy array
     """
@@ -2936,9 +2935,7 @@ def PercentileRow(array, p):
     """
     rows, cols = array.shape
     index = int(rows * p / 100)
-    return array[
-        index,
-    ]
+    return array[index,]
 
 
 def PercentileRows(ys_seq, percents):
@@ -2958,9 +2955,7 @@ def PercentileRows(ys_seq, percents):
     array = np.zeros((nrows, ncols))
 
     for i, ys in enumerate(ys_seq):
-        array[
-            i,
-        ] = ys
+        array[i,] = ys
 
     array = np.sort(array, axis=0)
 
