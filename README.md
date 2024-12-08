@@ -1,6 +1,8 @@
 ThinkStats2
 ===========
 
+!!!This is an updated readme, the update made as a part of the github learning tutorial!!!
+
 [Order *Think Stats* from Amazon.com](http://amzn.to/1ljRCJH).
 
 [Download this book in PDF](http://greenteapress.com/thinkstats2/thinkstats2.pdf).
