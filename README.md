@@ -1,13 +1,13 @@
-ThinkStats2
-===========
+# ThinkStats2
 
-[Order *Think Stats* from Amazon.com](http://amzn.to/1ljRCJH).
+The [third edition of Think Stats](https://allendowney.github.io/ThinkStats/) is available online now.
+The print version will be available soon.
 
-[Download this book in PDF](http://greenteapress.com/thinkstats2/thinkstats2.pdf).
+In the meantime, you can [order the second edition from Amazon.com](http://amzn.to/1ljRCJH).
 
-[Read this book online](http://greenteapress.com/thinkstats2/html/index.html).
+[Download the second edition in PDF](http://greenteapress.com/thinkstats2/thinkstats2.pdf).
 
-[Read the related blog, *Probably Overthinking It*](https://www.allendowney.com/blog/).
+[Read the second edition book online](http://greenteapress.com/thinkstats2/html/index.html).
 
 
 *Think Stats* is an introduction to Statistics and Data Science for Python programmers.
