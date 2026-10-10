@@ -42,7 +42,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.1.0}
+\newcommand{\theversion}{2.2.0}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -1072,8 +1072,8 @@ def CleanFemPreg(df):
     df.agepreg /= 100.0
 
     na_vals = [97, 98, 99]
-    df.birthwgt_lb.replace(na_vals, np.nan, inplace=True)
-    df.birthwgt_oz.replace(na_vals, np.nan, inplace=True)
+    df['birthwgt_lb'] = df.birthwgt_lb.replace(na_vals, np.nan)
+    df['birthwgt_oz'] = df.birthwgt_oz.replace(na_vals, np.nan)
 
     df['totalwgt_lb'] = df.birthwgt_lb + df.birthwgt_oz / 16.0    
 \end{verbatim}
@@ -1098,8 +1098,7 @@ Special values encoded as numbers are {\em dangerous\/} because if they
 are not handled properly, they can generate bogus results, like
 a 99-pound baby.  The \verb"replace" method replaces these values with
 \verb"np.nan", a special floating-point value that represents ``not a
-number.''  The \verb"inplace" flag tells \verb"replace" to modify the
-existing Series rather than create a new one.
+number.''
 \index{NaN}
 
 As part of the IEEE floating-point standard, all mathematical
@@ -9836,13 +9835,11 @@ average.  The Series method \verb"fillna" does just what we want:
 \index{fillna}
 
 \begin{verbatim}
-    reindexed.ppg.fillna(ewma, inplace=True)
+    reindexed['ppg'] = reindexed.ppg.fillna(ewma)
 \end{verbatim}
 
 Wherever \verb"reindexed.ppg" is \verb"nan", \verb"fillna" replaces
-it with the corresponding value from \verb"ewma".  The \verb"inplace"
-flag tells \verb"fillna" to modify the existing Series rather than
-create a new one.
+it with the corresponding value from \verb"ewma".
 
 A drawback of this method is that it understates the noise in the
 series.  We can solve that problem by adding in resampled
@@ -9853,7 +9850,7 @@ residuals:
 \begin{verbatim}
     resid = (reindexed.ppg - ewma).dropna()
     fake_data = ewma + thinkstats2.Resample(resid, len(reindexed))
-    reindexed.ppg.fillna(fake_data, inplace=True)
+    reindexed['ppg'] = reindexed.ppg.fillna(ewma)
 \end{verbatim}
 
 % (One note on vocabulary: in this book I am using
@@ -10839,7 +10836,7 @@ First, we read the respondent file and replace invalid values of
 
 \begin{verbatim}
     resp = chap01soln.ReadFemResp()
-    resp.cmmarrhx.replace([9997, 9998, 9999], np.nan, inplace=True)
+    resp['cmmarrhx'] = resp.cmmarrhx.replace([9997, 9998, 9999], np.nan)
 \end{verbatim}
 
 Then we compute each respondent's age when married and age when
