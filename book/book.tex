@@ -4,7 +4,7 @@
 
 % License: Creative Commons 
 % Attribution-NonCommercial-ShareAlike 4.0 International
-% http://creativecommons.org/licenses/by-nc-sa/4.0/
+% https://creativecommons.org/licenses/by-nc-sa/4.0/
 %
 
 \documentclass[12pt]{book}
@@ -42,7 +42,7 @@
 
 \newcommand{\thetitle}{Think Stats}
 \newcommand{\thesubtitle}{Exploratory Data Analysis in Python}
-\newcommand{\theversion}{2.2.0}
+\newcommand{\theversion}{2.2.1}
 
 % these styles get translated in CSS for the HTML version
 \newstyle{a:link}{color:black;}
@@ -154,6 +154,9 @@ Version \theversion
 
 \vfill
 
+{\large The third edition of \emph{Think Stats} is available at\\
+\href{https://greenteapress.com/wp/think-stats-3e/}{\nolinkurl{greenteapress.com/wp/think-stats-3e}}}
+
 \end{flushright}
 
 %--verso------------------------------------------------------
@@ -219,11 +222,11 @@ Permission is granted to copy, distribute, and/or modify this document
 under the terms of the Creative Commons
 Attribution-NonCommercial-ShareAlike 4.0 International License, which
 is available at
-\url{http://creativecommons.org/licenses/by-nc-sa/4.0/}.
+\url{https://creativecommons.org/licenses/by-nc-sa/4.0/}.
 
 
 The \LaTeX\ source for this book is available from
-\url{http://thinkstats2.com}.
+\url{https://greenteapress.com/wp/think-stats-2e/}.
 
 \vspace{0.2in}
 
@@ -252,7 +255,7 @@ Permission is granted to copy, distribute, and/or modify this document
 under the terms of the Creative Commons 
 Attribution-NonCommercial-ShareAlike 4.0 International
 Unported License, which is available at
-\url{http://creativecommons.org/licenses/by-nc-sa/4.0/}.
+\url{https://creativecommons.org/licenses/by-nc-sa/4.0/}.
 
 \setcounter{chapter}{-1}
 
@@ -9850,7 +9853,7 @@ residuals:
 \begin{verbatim}
     resid = (reindexed.ppg - ewma).dropna()
     fake_data = ewma + thinkstats2.Resample(resid, len(reindexed))
-    reindexed['ppg'] = reindexed.ppg.fillna(ewma)
+    reindexed['ppg'] = reindexed.ppg.fillna(fake_data)
 \end{verbatim}
 
 % (One note on vocabulary: in this book I am using
